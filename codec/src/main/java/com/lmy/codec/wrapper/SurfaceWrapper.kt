@@ -31,7 +31,7 @@ class SurfaceWrapper {
 
     }
 
-    private class GLHandler(private val looper: Looper) : Handler() {
+    private class GLHandler(private val myLooper: Looper) : Handler() {
         private var cameraTexture: SurfaceTexture? = null
         private val screenTexture: SurfaceTexture? = null
         private val syncCameraTextureOp = Any()
