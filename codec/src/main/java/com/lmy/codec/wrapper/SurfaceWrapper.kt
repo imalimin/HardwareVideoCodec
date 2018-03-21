@@ -14,7 +14,7 @@ class SurfaceWrapper {
     private var mGLHandler: GLHandler? = null
 
     init {
-        mDrawHandlerThread!!.start()
+        mDrawHandlerThread.start()
         mGLHandler = GLHandler(mDrawHandlerThread.looper)
         mGLHandler!!.sendEmptyMessage(GLHandler.WHAT_INIT)
     }
