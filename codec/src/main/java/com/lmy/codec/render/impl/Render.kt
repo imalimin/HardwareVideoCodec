@@ -1,4 +1,4 @@
-package com.lmy.codec
+package com.lmy.codec.render.impl
 
 import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
@@ -6,6 +6,7 @@ import android.opengl.GLES20
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
+import com.lmy.codec.render.IRender
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
@@ -16,7 +17,7 @@ import com.lmy.codec.wrapper.ScreenTextureWrapper
 class Render(var screenTexture: SurfaceTexture? = null,
              var width: Int = 1,
              var height: Int = 1)
-    : SurfaceTexture.OnFrameAvailableListener {
+    : IRender {
 
     companion object {
         val INIT = 0x1
@@ -53,7 +54,7 @@ class Render(var screenTexture: SurfaceTexture? = null,
         mScreenWrapper?.egl?.makeCurrent()
     }
 
-    fun draw() {
+    override fun draw() {
         if (null != CameraTextureWrapper.instance.surfaceTexture) {
             CameraTextureWrapper.instance.surfaceTexture?.updateTexImage()
             CameraTextureWrapper.instance.surfaceTexture?.getTransformMatrix(transformMatrix)
@@ -97,18 +98,18 @@ class Render(var screenTexture: SurfaceTexture? = null,
         }
     }
 
-    fun start(texture: SurfaceTexture, width: Int, height: Int) {
+    override fun start(texture: SurfaceTexture, width: Int, height: Int) {
         updateScreenTexture(texture)
         this.width = width
         this.height = height
         mHandler?.sendEmptyMessage(INIT)
     }
 
-    fun stop() {
+    override fun stop() {
         mHandler?.sendEmptyMessage(STOP)
     }
 
-    fun release() {
+    override fun release() {
         stop()
     }
 

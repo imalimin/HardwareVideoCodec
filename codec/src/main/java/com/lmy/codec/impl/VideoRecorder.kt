@@ -2,7 +2,7 @@ package com.lmy.codec.impl
 
 import android.graphics.SurfaceTexture
 import com.lmy.codec.IRecorder
-import com.lmy.codec.Render
+import com.lmy.codec.render.impl.Render
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.wrapper.CameraWrapper
 
