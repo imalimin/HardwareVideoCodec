@@ -40,8 +40,6 @@ class NormalTexture(var inputTextureId: Int) : BaseTexture() {
                 //输出颜色的RGB值
                 "  gl_FragColor = vec4(vCameraColor.r, vCameraColor.g, vCameraColor.b, 1.0);\n" +
                 "}\n"
-        //每行前两个值为顶点坐标，后两个为纹理坐标
-        private val VERTEX_DATA = floatArrayOf(1f, 1f, 1f, 1f, -1f, 1f, 0f, 1f, -1f, -1f, 0f, 0f, 1f, 1f, 1f, 1f, -1f, -1f, 0f, 0f, 1f, -1f, 1f, 0f)
     }
 
     private var aPositionLocation = 0

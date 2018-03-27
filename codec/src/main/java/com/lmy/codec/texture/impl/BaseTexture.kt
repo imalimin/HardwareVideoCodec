@@ -11,6 +11,11 @@ open abstract class BaseTexture(var buffer: FloatBuffer? = null,
                                 var vertexShader: Int? = null,
                                 var fragmentShader: Int? = null,
                                 var mShaderProgram: Int? = null) : Texture {
+    companion object {
+        //每行前两个值为顶点坐标，后两个为纹理坐标
+        val VERTEX_DATA = floatArrayOf(1f, 1f, 1f, 1f, -1f, 1f, 0f, 1f, -1f, -1f, 0f, 0f, 1f, 1f, 1f, 1f, -1f, -1f, 0f, 0f, 1f, -1f, 1f, 0f)
+    }
+
     /**
      * 加载着色器，GL_VERTEX_SHADER代表生成顶点着色器，GL_FRAGMENT_SHADER代表生成片段着色器
      */

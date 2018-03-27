@@ -41,8 +41,6 @@ class GreyTexture(var inputTextureId: Int) : BaseTexture() {
                 //将此灰度值作为输出颜色的RGB值，这样就会变成黑白滤镜
                 "  gl_FragColor = vec4(fGrayColor, fGrayColor, fGrayColor, 1.0);\n" +
                 "}\n"
-        //每行前两个值为顶点坐标，后两个为纹理坐标
-        private val VERTEX_DATA = floatArrayOf(1f, 1f, 1f, 1f, -1f, 1f, 0f, 1f, -1f, -1f, 0f, 0f, 1f, 1f, 1f, 1f, -1f, -1f, 0f, 0f, 1f, -1f, 1f, 0f)
     }
 
     private var aPositionLocation = 0
