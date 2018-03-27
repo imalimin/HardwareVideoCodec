@@ -13,10 +13,10 @@ import com.lmy.codec.wrapper.TextureWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class Render(var cameraWrapper: TextureWrapper,
-             var screenTexture: SurfaceTexture? = null,
-             var width: Int = 1,
-             var height: Int = 1)
+class DefaultRender(var cameraWrapper: TextureWrapper,
+                    var screenTexture: SurfaceTexture? = null,
+                    var width: Int = 1,
+                    var height: Int = 1)
     : IRender {
 
     companion object {
