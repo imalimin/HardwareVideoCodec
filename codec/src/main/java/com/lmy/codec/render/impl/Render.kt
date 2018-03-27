@@ -42,7 +42,7 @@ class Render(var cameraWrapper: TextureWrapper,
                         draw()
                     }
                     STOP -> {
-
+                        mScreenWrapper?.release()
                     }
                 }
             }
