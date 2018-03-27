@@ -14,7 +14,7 @@ class Parameter(var width: Int = 720,
                 var orientation: Int = 10) {
     fun check() {
         if (!isHorizontal() && !isVertical())
-            throw RuntimeException("Orientation must be 0, 90, 180 or 270")
+            throw RuntimeException("Orientation must be 0, 90, 180 or 270. ${isHorizontal()}, ${isVertical()}")
         if (isVertical() && (width > previewHeight || height > previewWidth)
                 || isHorizontal() && (width > previewWidth || height > previewHeight))
             throw RuntimeException("Video size can not be greater than preview size")
