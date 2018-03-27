@@ -1,12 +1,12 @@
 package com.lmy.codec.render.impl
 
 import android.graphics.SurfaceTexture
-import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
 import com.lmy.codec.render.IRender
+import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.wrapper.ScreenTextureWrapper
 import com.lmy.codec.wrapper.TextureWrapper
 
@@ -51,6 +51,7 @@ class Render(var cameraWrapper: TextureWrapper,
 
     fun init() {
         mScreenWrapper = ScreenTextureWrapper(screenTexture)
+        mScreenWrapper?.setFilter(NormalTexture(cameraWrapper.textureId!!))
         mScreenWrapper?.egl?.makeCurrent()
     }
 
@@ -63,37 +64,8 @@ class Render(var cameraWrapper: TextureWrapper,
         GLES20.glViewport(0, 0, width, height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        drawTexture()
+        mScreenWrapper?.drawTexture(transformMatrix)
         mScreenWrapper?.egl?.swapBuffers()
-    }
-
-    private var aPositionLocation = 0
-    private var aTextureCoordLocation = 0
-    private var uTextureMatrixLocation = 0
-    private var uTextureSamplerLocation = 0
-
-    private fun drawTexture() {
-        aPositionLocation = mScreenWrapper!!.getPositionLocation()
-        aTextureCoordLocation = mScreenWrapper!!.getTextureCoordinateLocation()
-        uTextureMatrixLocation = mScreenWrapper!!.getTextureMatrixLocation()
-        uTextureSamplerLocation = mScreenWrapper!!.getTextureSamplerLocation()
-
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, cameraWrapper.textureId!!)
-        GLES20.glUniform1i(uTextureSamplerLocation, 0)
-        GLES20.glUniformMatrix4fv(uTextureMatrixLocation, 1, false, transformMatrix, 0)
-
-        if (null != mScreenWrapper!!.buffer) {
-            mScreenWrapper!!.buffer!!.position(0)
-            GLES20.glEnableVertexAttribArray(aPositionLocation)
-            GLES20.glVertexAttribPointer(aPositionLocation, 2, GLES20.GL_FLOAT, false, 16, mScreenWrapper!!.buffer)
-
-            mScreenWrapper!!.buffer!!.position(2)
-            GLES20.glEnableVertexAttribArray(aTextureCoordLocation)
-            GLES20.glVertexAttribPointer(aTextureCoordLocation, 2, GLES20.GL_FLOAT, false, 16, mScreenWrapper!!.buffer)
-
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
-        }
     }
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {
