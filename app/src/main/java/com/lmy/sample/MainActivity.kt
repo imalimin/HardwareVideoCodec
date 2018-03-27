@@ -7,6 +7,7 @@ import android.view.TextureView
 import com.lmy.codec.IRecorder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.impl.VideoRecorder
+import com.lmy.codec.util.debug_v
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
@@ -40,5 +41,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
         if (null != p0)
             mRecorder.startPreview(p0, p1, p2)
+        debug_v( "onSurfaceTextureAvailable")
     }
 }

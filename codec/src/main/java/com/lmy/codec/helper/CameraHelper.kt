@@ -2,9 +2,8 @@ package com.lmy.codec.helper
 
 import android.graphics.ImageFormat
 import android.hardware.Camera
-import com.lmy.codec.Config
 import com.lmy.codec.entity.Parameter
-import com.lmy.codec.logv
+import com.lmy.codec.util.debug_v
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
@@ -47,8 +46,7 @@ class CameraHelper {
                     fps = it
             }
             cameraParam.setPreviewFpsRange(fps[0], fps[1])
-            if (Config.Debug)
-                logv(this, "fps: ${fps[0]}-${fps[1]}, target: ${videoParam.fps * 1000}")
+            debug_v("fps: ${fps[0]}-${fps[1]}, target: ${videoParam.fps * 1000}")
         }
 
         fun setAutoExposureLock(cameraParam: Camera.Parameters, flag: Boolean) {

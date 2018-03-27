@@ -11,4 +11,5 @@ interface IRecorder {
     fun startPreview(surface: SurfaceTexture, width: Int, height: Int)
     fun updatePreview(width: Int, height: Int)
     fun stopPreview()
+    fun release()
 }

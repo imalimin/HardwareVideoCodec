@@ -5,6 +5,5 @@ package com.lmy.codec
  */
 class Config {
     companion object {
-        var Debug = true
     }
 }

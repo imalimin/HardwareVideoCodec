@@ -2,20 +2,17 @@ package com.lmy.codec.wrapper
 
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
-import com.lmy.codec.Config
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CameraHelper
 import com.lmy.codec.loge
-import com.lmy.codec.logv
+import com.lmy.codec.util.debug_v
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
 class CameraWrapper(private var parameter: Parameter,
-                    private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener,
-                    var surfaceTexture: SurfaceTexture? = null) {
+                    private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener) {
     companion object {
-        val TEXTURE_ID = 10
         fun open(param: Parameter, onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener)
                 : CameraWrapper {
             return CameraWrapper(param, onFrameAvailableListener)
@@ -53,19 +50,17 @@ class CameraWrapper(private var parameter: Parameter,
         CameraHelper.setFlashMode(cameraParam, Camera.Parameters.FLASH_MODE_OFF)
         CameraHelper.setAntibanding(cameraParam, Camera.Parameters.ANTIBANDING_AUTO)
         CameraHelper.setVideoStabilization(cameraParam, true)
-        if (Config.Debug) {
-            val fps = IntArray(2)
-            cameraParam.getPreviewFpsRange(fps)
-            logv(this, "Config: Size(${parameter.previewWidth}x${parameter.previewHeight})\n" +
-                    "Format(${cameraParam.previewFormat})\n" +
-                    "FocusMode(${cameraParam.focusMode})\n" +
-                    "Fps(${fps[0]}-${fps[1]})\n" +
-                    "AutoExposureLock(${cameraParam.autoExposureLock})\n" +
-                    "SceneMode(${cameraParam.sceneMode})\n" +
-                    "FlashMode(${cameraParam.flashMode})\n" +
-                    "Antibanding(${cameraParam.antibanding})\n" +
-                    "VideoStabilization(${cameraParam.videoStabilization})")
-        }
+        val fps = IntArray(2)
+        cameraParam.getPreviewFpsRange(fps)
+        debug_v("Config: Size(${parameter.previewWidth}x${parameter.previewHeight})\n" +
+                "Format(${cameraParam.previewFormat})\n" +
+                "FocusMode(${cameraParam.focusMode})\n" +
+                "Fps(${fps[0]}-${fps[1]})\n" +
+                "AutoExposureLock(${cameraParam.autoExposureLock})\n" +
+                "SceneMode(${cameraParam.sceneMode})\n" +
+                "FlashMode(${cameraParam.flashMode})\n" +
+                "Antibanding(${cameraParam.antibanding})\n" +
+                "VideoStabilization(${cameraParam.videoStabilization})")
         try {
             mCamera!!.parameters = cameraParam
         } catch (e: Exception) {
@@ -77,7 +72,7 @@ class CameraWrapper(private var parameter: Parameter,
     private fun openCamera(index: Int): Camera? {
         return try {
             val camera = Camera.open(index)
-            camera.setDisplayOrientation(0)
+            camera.setDisplayOrientation(90)
             camera
         } catch (e: SecurityException) {
             loge(this, "Camera $index open failed, No permission")
@@ -90,18 +85,19 @@ class CameraWrapper(private var parameter: Parameter,
         }
     }
 
-    private fun release() {
+    fun release() {
         if (null == mCamera) return
+        stopPreview()
+        releaseTexture()
         mCamera!!.release()
         mCamera = null
     }
 
     fun startPreview(): Boolean {
-        surfaceTexture = SurfaceTexture(TEXTURE_ID)
         if (null == mCamera) return false
-        surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
+        CameraTextureWrapper.instance.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
         try {
-            mCamera!!.setPreviewTexture(surfaceTexture)
+            mCamera!!.setPreviewTexture(CameraTextureWrapper.instance.surfaceTexture)
             mCamera!!.startPreview()
             return true
         } catch (e: Exception) {
@@ -123,8 +119,6 @@ class CameraWrapper(private var parameter: Parameter,
     }
 
     fun releaseTexture() {
-        if (null == surfaceTexture) return
-        surfaceTexture!!.release()
-        surfaceTexture = null
+        CameraTextureWrapper.instance.release()
     }
 }
