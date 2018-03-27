@@ -73,7 +73,7 @@ class CameraWrapper(private var parameter: Parameter,
     private fun openCamera(index: Int): Camera? {
         return try {
             val camera = Camera.open(index)
-            camera.setDisplayOrientation(90)
+            camera.setDisplayOrientation(parameter.orientation)
             camera
         } catch (e: SecurityException) {
             loge(this, "Camera $index open failed, No permission")
