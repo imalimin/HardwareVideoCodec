@@ -4,7 +4,7 @@ import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CameraHelper
-import com.lmy.codec.loge
+import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 
 /**
@@ -31,7 +31,7 @@ class CameraWrapper(private var parameter: Parameter,
 
     private fun prepare() {
         if (0 == mCameras) {
-            loge(this, "Unavailable camera")
+            debug_e("Unavailable camera")
             return
         }
         //如果没有前置摄像头，则强制使用后置摄像头
@@ -66,7 +66,7 @@ class CameraWrapper(private var parameter: Parameter,
             mCamera!!.parameters = cameraParam
         } catch (e: Exception) {
             mCamera!!.release()
-            loge(this, "Camera $mCameraIndex open failed. Please check parameters")
+            debug_e("Camera $mCameraIndex open failed. Please check parameters")
         }
     }
 
@@ -76,11 +76,11 @@ class CameraWrapper(private var parameter: Parameter,
             camera.setDisplayOrientation(parameter.orientation)
             camera
         } catch (e: SecurityException) {
-            loge(this, "Camera $index open failed, No permission")
+            debug_e("Camera $index open failed, No permission")
             e.printStackTrace()
             null
         } catch (e: Exception) {
-            loge(this, "Camera $index open failed")
+            debug_e("Camera $index open failed")
             e.printStackTrace()
             null
         }
@@ -103,7 +103,7 @@ class CameraWrapper(private var parameter: Parameter,
             return true
         } catch (e: Exception) {
             release()
-            loge(this, "Start preview failed")
+            debug_e("Start preview failed")
             e.printStackTrace()
             return false
         }
@@ -114,7 +114,7 @@ class CameraWrapper(private var parameter: Parameter,
         try {
             mCamera!!.stopPreview()
         } catch (e: Exception) {
-            loge(this, "Stop preview failed")
+            debug_e("Stop preview failed")
             e.printStackTrace()
         }
     }
