@@ -30,6 +30,7 @@ class CameraHelper {
             debug_v("target preview size: " + videoParam.previewWidth + "x" + videoParam.previewHeight + ", best: " + bestWidth + "x" + bestHeight)
             videoParam.previewWidth = bestWidth
             videoParam.previewHeight = bestHeight
+            videoParam.check()
             cameraParam.setPreviewSize(videoParam.previewWidth, videoParam.previewHeight)
         }
 
