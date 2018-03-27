@@ -2,8 +2,8 @@ package com.lmy.codec.impl
 
 import android.graphics.SurfaceTexture
 import com.lmy.codec.IRecorder
-import com.lmy.codec.render.impl.Render
 import com.lmy.codec.entity.Parameter
+import com.lmy.codec.render.impl.Render
 import com.lmy.codec.wrapper.CameraWrapper
 
 /**
@@ -17,7 +17,7 @@ class VideoRecorder : IRecorder, SurfaceTexture.OnFrameAvailableListener {
     private var isPreviewing: Boolean = false
     override fun prepare(param: Parameter) {
         mCameraWrapper = CameraWrapper.open(param, this)
-        mRender = Render()
+        mRender = Render(mCameraWrapper!!.textureWrapper)
     }
 
     /**
@@ -48,8 +48,7 @@ class VideoRecorder : IRecorder, SurfaceTexture.OnFrameAvailableListener {
         synchronized(syncOp) {
             if (isPreviewing) {
                 mRender?.stop()
-                mCameraWrapper?.stopPreview()
-                mCameraWrapper?.releaseTexture()
+                mCameraWrapper?.release()
             }
             isPreviewing = false
         }

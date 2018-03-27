@@ -7,14 +7,14 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
 import com.lmy.codec.render.IRender
-import com.lmy.codec.util.debug_e
-import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
+import com.lmy.codec.wrapper.TextureWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class Render(var screenTexture: SurfaceTexture? = null,
+class Render(var cameraWrapper: TextureWrapper,
+             var screenTexture: SurfaceTexture? = null,
              var width: Int = 1,
              var height: Int = 1)
     : IRender {
@@ -55,11 +55,10 @@ class Render(var screenTexture: SurfaceTexture? = null,
     }
 
     override fun draw() {
-        if (null != CameraTextureWrapper.instance.surfaceTexture) {
-            CameraTextureWrapper.instance.surfaceTexture?.updateTexImage()
-            CameraTextureWrapper.instance.surfaceTexture?.getTransformMatrix(transformMatrix)
+        if (null != cameraWrapper.surfaceTexture) {
+            cameraWrapper.surfaceTexture?.updateTexImage()
+            cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
-        debug_e("draw")
         mScreenWrapper?.egl?.makeCurrent()
         GLES20.glViewport(0, 0, width, height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
@@ -80,8 +79,7 @@ class Render(var screenTexture: SurfaceTexture? = null,
         uTextureSamplerLocation = mScreenWrapper!!.getTextureSamplerLocation()
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                CameraTextureWrapper.instance.textureId!!)
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, cameraWrapper.textureId!!)
         GLES20.glUniform1i(uTextureSamplerLocation, 0)
         GLES20.glUniformMatrix4fv(uTextureMatrixLocation, 1, false, transformMatrix, 0)
 

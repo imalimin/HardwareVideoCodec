@@ -11,7 +11,8 @@ import com.lmy.codec.util.debug_v
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
 class CameraWrapper(private var parameter: Parameter,
-                    private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener) {
+                    private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener,
+                    var textureWrapper: TextureWrapper = CameraTextureWrapper()) {
     companion object {
         fun open(param: Parameter, onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener)
                 : CameraWrapper {
@@ -95,9 +96,9 @@ class CameraWrapper(private var parameter: Parameter,
 
     fun startPreview(): Boolean {
         if (null == mCamera) return false
-        CameraTextureWrapper.instance.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
+        textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
         try {
-            mCamera!!.setPreviewTexture(CameraTextureWrapper.instance.surfaceTexture)
+            mCamera!!.setPreviewTexture(textureWrapper.surfaceTexture)
             mCamera!!.startPreview()
             return true
         } catch (e: Exception) {
@@ -108,7 +109,7 @@ class CameraWrapper(private var parameter: Parameter,
         }
     }
 
-    fun stopPreview() {
+    private fun stopPreview() {
         if (null == mCamera) return
         try {
             mCamera!!.stopPreview()
@@ -118,7 +119,7 @@ class CameraWrapper(private var parameter: Parameter,
         }
     }
 
-    fun releaseTexture() {
-        CameraTextureWrapper.instance.release()
+    private fun releaseTexture() {
+        textureWrapper?.release()
     }
 }

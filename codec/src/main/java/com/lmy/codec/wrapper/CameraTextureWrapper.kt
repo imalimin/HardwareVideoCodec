@@ -11,13 +11,6 @@ import javax.microedition.khronos.opengles.GL10
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
 class CameraTextureWrapper : TextureWrapper() {
-    private object Holder {
-        val INSTANCE = CameraTextureWrapper()
-    }
-
-    companion object {
-        val instance: CameraTextureWrapper by lazy { Holder.INSTANCE }
-    }
 
     init {
         textureId = createTexture()
