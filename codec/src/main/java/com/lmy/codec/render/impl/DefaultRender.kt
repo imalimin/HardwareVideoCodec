@@ -5,7 +5,7 @@ import android.opengl.GLES20
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
-import com.lmy.codec.render.IRender
+import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.wrapper.ScreenTextureWrapper
 import com.lmy.codec.wrapper.TextureWrapper
@@ -17,7 +17,7 @@ class DefaultRender(var cameraWrapper: TextureWrapper,
                     var screenTexture: SurfaceTexture? = null,
                     var width: Int = 1,
                     var height: Int = 1)
-    : IRender {
+    : Render {
 
     companion object {
         val INIT = 0x1
