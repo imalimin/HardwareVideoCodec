@@ -16,6 +16,20 @@ class CameraHelper {
         }
 
         fun setPreviewSize(cameraParam: Camera.Parameters, videoParam: Parameter) {
+            val supportSizes = cameraParam.supportedPreviewSizes
+            var bestWidth = 0
+            var bestHeight = 0
+            for (size in supportSizes) {
+                if (size.width >= videoParam.previewWidth//预览宽大于输出宽
+                        && size.height >= videoParam.previewHeight//预览高大于输出高
+                        && (size.width * size.height < bestWidth * bestHeight || 0 == bestWidth * bestHeight)) {//选择像素最少的分辨率
+                    bestWidth = size.width
+                    bestHeight = size.height
+                }
+            }
+            debug_v("target preview size: " + videoParam.previewWidth + "x" + videoParam.previewHeight + ", best: " + bestWidth + "x" + bestHeight)
+            videoParam.previewWidth = bestWidth
+            videoParam.previewHeight = bestHeight
             cameraParam.setPreviewSize(videoParam.previewWidth, videoParam.previewHeight)
         }
 
