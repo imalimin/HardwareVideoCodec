@@ -17,6 +17,7 @@ class VideoRecorder : IRecorder, SurfaceTexture.OnFrameAvailableListener {
     private var isPreviewing: Boolean = false
     override fun prepare(param: Parameter) {
         mCameraWrapper = CameraWrapper.open(param, this)
+        param.check()
         mRender = DefaultRender(mCameraWrapper!!.textureWrapper)
     }
 
