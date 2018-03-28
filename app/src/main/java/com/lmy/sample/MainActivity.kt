@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
 
-    private val mPresenter: CameraPreviewPresenter = CameraPreviewPresenter()
+    private val mPresenter: CameraPreviewPresenter = CameraPreviewPresenter(Parameter())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -20,8 +20,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     }
 
     private fun initView() {
-        val param = Parameter()
-        mPresenter.prepare(param)
         mTextureView.keepScreenOn = true
         mTextureView.surfaceTextureListener = this
         mRecordBtn.setOnTouchListener { v, event ->
