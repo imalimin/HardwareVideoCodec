@@ -52,16 +52,16 @@ class CameraHelper {
             val fpsRanges = cameraParam.supportedPreviewFpsRange
             var fps = fpsRanges[0]
             fpsRanges.forEach {
-                if (it[0] == it[1] && it[0] == videoParam.fps * 1000) {
+                if (it[0] == it[1] && it[0] == videoParam.video.fps * 1000) {
                     fps = it
                     return@forEach
                 }
-                if (videoParam.fps * 1000 >= it[0] && videoParam.fps * 1000 <= it[1]
+                if (videoParam.video.fps * 1000 >= it[0] && videoParam.video.fps * 1000 <= it[1]
                         && (it[0] > fps[0] || it[1] < fps[1]))
                     fps = it
             }
             cameraParam.setPreviewFpsRange(fps[0], fps[1])
-            debug_v("fps: ${fps[0]}-${fps[1]}, target: ${videoParam.fps * 1000}")
+            debug_v("fps: ${fps[0]}-${fps[1]}, target: ${videoParam.video.fps * 1000}")
         }
 
         fun setAutoExposureLock(cameraParam: Camera.Parameters, flag: Boolean) {
