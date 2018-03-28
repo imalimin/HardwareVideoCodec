@@ -58,4 +58,9 @@ open abstract class BaseTexture(var buffer: FloatBuffer? = null,
     fun getUniformLocation(name: String): Int {
         return GLES20.glGetUniformLocation(mShaderProgram!!, name)
     }
+
+    fun release() {
+        if (null != mShaderProgram)
+            GLES20.glDeleteProgram(mShaderProgram!!)
+    }
 }
