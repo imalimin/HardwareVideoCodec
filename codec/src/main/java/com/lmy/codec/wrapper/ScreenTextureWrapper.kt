@@ -15,7 +15,7 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
     init {
         if (null != surfaceTexture) {
             egl = Egl()
-            egl!!.initEGL(surfaceTexture!!)
+            egl!!.initEGL(surfaceTexture!!, null)
             egl!!.makeCurrent()
         } else {
             debug_e("Egl create failed")

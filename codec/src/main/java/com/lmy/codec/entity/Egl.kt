@@ -63,7 +63,7 @@ class Egl(var eglDisplay: EGLDisplay? = null,
 //        }
 //    }
 
-    fun initEGL(surfaceTexture: SurfaceTexture) {
+    fun initEGL(surfaceTexture: SurfaceTexture, context: EGLContext?) {
         eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
         if (EGL14.EGL_NO_DISPLAY === eglDisplay) {
             debug_e("eglGetDisplay,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
@@ -85,7 +85,8 @@ class Egl(var eglDisplay: EGLDisplay? = null,
         eglConfig = configs[0]
         val surfaceAttribs = intArrayOf(EGL14.EGL_NONE)
         val contextSpec = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
-        eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig, EGL14.EGL_NO_CONTEXT, contextSpec, 0)
+        eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig,
+                context ?: EGL14.EGL_NO_CONTEXT, contextSpec, 0)
         if (EGL14.EGL_NO_CONTEXT === eglContext) {
             debug_e("eglCreateContext,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
             return
@@ -99,7 +100,7 @@ class Egl(var eglDisplay: EGLDisplay? = null,
         }
     }
 
-    fun initEGL(surface: Surface) {
+    fun initEGL(surface: Surface, context: EGLContext?) {
         eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
         if (EGL14.EGL_NO_DISPLAY === eglDisplay) {
             //            throw new RuntimeException("eglGetDisplay,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
@@ -124,7 +125,8 @@ class Egl(var eglDisplay: EGLDisplay? = null,
         eglConfig = configs[0]
         val surfaceAttribs = intArrayOf(EGL14.EGL_NONE)
         val contextSpec = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
-        eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig, EGL14.EGL_NO_CONTEXT, contextSpec, 0)
+        eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig,
+                context ?: EGL14.EGL_NO_CONTEXT, contextSpec, 0)
         if (EGL14.EGL_NO_CONTEXT === eglContext) {
             debug_e("eglCreateContext,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
             return

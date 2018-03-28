@@ -16,7 +16,7 @@ class CodecTextureWrapper(surface: Surface? = null,
     init {
         if (null != surface) {
             egl = Egl()
-            egl!!.initEGL(surface!!)
+            egl!!.initEGL(surface, null)
             egl!!.makeCurrent()
         } else {
             debug_e("Egl create failed")
