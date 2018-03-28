@@ -3,6 +3,7 @@ package com.lmy.sample
 import android.graphics.SurfaceTexture
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.MotionEvent
 import android.view.TextureView
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.impl.CameraPreviewPresenter
@@ -23,6 +24,17 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
         mPresenter.prepare(param)
         mTextureView.keepScreenOn = true
         mTextureView.surfaceTextureListener = this
+        mRecordBtn.setOnTouchListener { v, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    mPresenter.encoder?.start()
+                }
+                MotionEvent.ACTION_UP -> {
+                    mPresenter.encoder?.pause()
+                }
+            }
+            return@setOnTouchListener true
+        }
     }
 
     override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
@@ -40,6 +52,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
         if (null != p0)
             mPresenter.startPreview(p0, p1, p2)
-        debug_v( "onSurfaceTextureAvailable")
+        debug_v("onSurfaceTextureAvailable")
     }
 }
