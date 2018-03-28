@@ -10,7 +10,7 @@ class Parameter(var video: Video = Video(),
                 var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
                 var previewWidth: Int = 1280,//以水平分辨率为准
                 var previewHeight: Int = 720,//以水平分辨率为准
-                var orientation: Int = 10) {
+                var orientation: Int = 90) {
     fun check() {
         if (!isHorizontal() && !isVertical())
             throw RuntimeException("Orientation must be 0, 90, 180 or 270")
