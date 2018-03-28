@@ -27,7 +27,8 @@ class DefaultEncoder(var parameter: Parameter,
                      private var codec: MediaCodec? = null,
                      private var format: MediaFormat? = null,
                      private var filter: BaseTexture? = null,
-                     private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()) : Encoder {
+                     private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo())
+    : Encoder {
 
     companion object {
         private val WAIT_TIME = 10000L
@@ -85,6 +86,10 @@ class DefaultEncoder(var parameter: Parameter,
                     }
                     STOP -> {
                         debug_v("dequeue left frames")
+                        //编码结束，发送结束信号，让surface不在提供数据
+                        codec!!.signalEndOfInputStream()
+                        codec!!.stop()
+                        codec!!.release()
 //                        dequeue()
                         val listener = msg.obj
                         if (null != listener)
@@ -104,6 +109,7 @@ class DefaultEncoder(var parameter: Parameter,
         mCodecWrapper = CodecTextureWrapper(codec!!.createInputSurface())
         filter = NormalTexture(cameraWrapper.textureId!!)
         mCodecWrapper!!.setFilter(filter!!)
+        mCodecWrapper?.egl?.makeCurrent()
         codec!!.start()
     }
 
@@ -118,6 +124,7 @@ class DefaultEncoder(var parameter: Parameter,
 
     private fun encode() {
         if (null != cameraWrapper.surfaceTexture) {
+            cameraWrapper.surfaceTexture?.updateTexImage()
             cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
         mCodecWrapper?.egl?.makeCurrent()
@@ -138,10 +145,11 @@ class DefaultEncoder(var parameter: Parameter,
                     debug_v("INFO_OUTPUT_BUFFERS_CHANGED")
                 }
                 MediaCodec.INFO_TRY_AGAIN_LATER -> {
-                    debug_v("INFO_TRY_AGAIN_LATER")
+//                    debug_v("INFO_TRY_AGAIN_LATER")
                 }
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("INFO_OUTPUT_FORMAT_CHANGED")
+                    onSampleListener?.onFormatChanged(codec!!.outputFormat)
                 }
                 else -> {
                     if (flag < 0) return@dequeue
