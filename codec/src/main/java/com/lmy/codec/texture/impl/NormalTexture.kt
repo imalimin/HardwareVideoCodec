@@ -38,7 +38,7 @@ class NormalTexture(var inputTextureId: Int) : BaseTexture() {
                 //获取此纹理（预览图像）对应坐标的颜色值
                 "  vec4 vCameraColor = texture2D(uTextureSampler, vTextureCoord);\n" +
                 //输出颜色的RGB值
-                "  gl_FragColor = vec4(vCameraColor.r, vCameraColor.g, vCameraColor.b, 1.0);\n" +
+                "  gl_FragColor = vCameraColor;\n" +
                 "}\n"
     }
 
