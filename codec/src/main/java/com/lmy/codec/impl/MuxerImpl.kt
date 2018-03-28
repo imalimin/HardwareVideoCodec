@@ -24,7 +24,7 @@ class MuxerImpl(var parameter: Parameter,
         private val WRITE = 0x1
     }
 
-    private var mHandlerThread = HandlerThread("Encode_Thread")
+    private var mHandlerThread = HandlerThread("Write_Thread")
     private var mHandler: Handler? = null
 
     init {
