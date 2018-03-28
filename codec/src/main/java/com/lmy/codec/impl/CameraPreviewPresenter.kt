@@ -1,25 +1,42 @@
 package com.lmy.codec.impl
 
 import android.graphics.SurfaceTexture
+import android.media.MediaCodec
 import com.lmy.codec.Encoder
+import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.Sample
 import com.lmy.codec.render.impl.DefaultRender
+import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CameraWrapper
+import java.nio.ByteBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
-class CameraPreviewPresenter : SurfaceTexture.OnFrameAvailableListener {
+class CameraPreviewPresenter(var encoder: Encoder? = null,
+                             private var cameraWrapper: CameraWrapper? = null,
+                             private var render: DefaultRender? = null,
+                             private var muxer: Muxer? = null) : SurfaceTexture.OnFrameAvailableListener,
+        Encoder.OnSampleListener {
 
     private val syncOp = Any()
-    private var mCameraWrapper: CameraWrapper? = null
-    private var mRender: DefaultRender? = null
-    private var mEncoder: Encoder? = null
     private var isPreviewing: Boolean = false
     fun prepare(param: Parameter) {
-        mCameraWrapper = CameraWrapper.open(param, this)
-        mRender = DefaultRender(mCameraWrapper!!.textureWrapper)
-        mEncoder = DefaultEncoder(param)
+        cameraWrapper = CameraWrapper.open(param, this)
+        render = DefaultRender(cameraWrapper!!.textureWrapper)
+        encoder = DefaultEncoder(param, cameraWrapper!!.textureWrapper)
+        encoder!!.setOnSampleListener(this)
+        muxer = MuxerImpl(param, "/storage/emulated/0/test.mp4")
+    }
+
+    /**
+     * 编码后的帧数据
+     * For DefaultEncoder
+     */
+    override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
+        debug_v("onSample: ${info.size}")
+        muxer?.write(Sample.wrap(info, data))
     }
 
     /**
@@ -27,17 +44,18 @@ class CameraPreviewPresenter : SurfaceTexture.OnFrameAvailableListener {
      * For CameraWrapper
      */
     override fun onFrameAvailable(cameraTexture: SurfaceTexture?) {
-        mRender?.onFrameAvailable(cameraTexture)
+        render?.onFrameAvailable(cameraTexture)
+        encoder?.onFrameAvailable(cameraTexture)
     }
 
     fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
         synchronized(syncOp) {
             if (!isPreviewing) {
-                if (!mCameraWrapper!!.startPreview()) {
+                if (!cameraWrapper!!.startPreview()) {
                     return
                 }
             }
-            mRender?.start(screenTexture, width, height)
+            render?.start(screenTexture, width, height)
             isPreviewing = true
         }
     }
@@ -49,8 +67,7 @@ class CameraPreviewPresenter : SurfaceTexture.OnFrameAvailableListener {
     fun stopPreview() {
         synchronized(syncOp) {
             if (isPreviewing) {
-                mRender?.stop()
-                mCameraWrapper?.release()
+                release()
             }
             isPreviewing = false
         }
@@ -61,20 +78,25 @@ class CameraPreviewPresenter : SurfaceTexture.OnFrameAvailableListener {
         fun onAudio()
     }
 
-    fun release() {
+    private fun release() {
         synchronized(syncOp) {
             try {
-                mCameraWrapper?.release()
-                mCameraWrapper = null
+                render?.stop()
+                render?.release()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
             try {
-                mRender?.release()
+                cameraWrapper?.release()
+                cameraWrapper = null
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            encoder?.stop(object : Encoder.OnStopListener {
+                override fun onStop() {
+                    muxer?.release()
+                }
+            })
 
         }
     }
