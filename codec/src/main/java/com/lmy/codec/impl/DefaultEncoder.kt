@@ -124,7 +124,7 @@ class DefaultEncoder(var parameter: Parameter,
 
     private fun encode() {
         if (null != cameraWrapper.surfaceTexture) {
-            cameraWrapper.surfaceTexture?.updateTexImage()
+//            cameraWrapper.surfaceTexture?.updateTexImage()
             cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
         mCodecWrapper?.egl?.makeCurrent()

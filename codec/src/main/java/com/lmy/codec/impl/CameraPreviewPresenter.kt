@@ -7,6 +7,8 @@ import com.lmy.codec.Encoder
 import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.entity.Sample
+import com.lmy.codec.render.Render
+import com.lmy.codec.render.impl.DefaultRender
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CameraWrapper
 import java.nio.ByteBuffer
@@ -17,6 +19,7 @@ import java.nio.ByteBuffer
 class CameraPreviewPresenter(var parameter: Parameter,
                              var encoder: Encoder? = null,
                              private var cameraWrapper: CameraWrapper? = null,
+                             private var render: Render? = null,
                              private var muxer: Muxer? = null) : SurfaceTexture.OnFrameAvailableListener,
         Encoder.OnSampleListener {
 
@@ -24,9 +27,9 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
+        render = DefaultRender(cameraWrapper!!.textureWrapper)
         encoder = DefaultEncoder(parameter, cameraWrapper!!.textureWrapper)
         encoder!!.setOnSampleListener(this)
-        encoder!!.start()
     }
 
     override fun onFormatChanged(format: MediaFormat) {
@@ -47,12 +50,14 @@ class CameraPreviewPresenter(var parameter: Parameter,
      * For CameraWrapper
      */
     override fun onFrameAvailable(cameraTexture: SurfaceTexture?) {
+        render?.onFrameAvailable(cameraTexture)
         encoder?.onFrameAvailable(cameraTexture)
     }
 
     fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
         synchronized(syncOp) {
             cameraWrapper!!.startPreview()
+            render?.start(screenTexture, width, height)
         }
     }
 
@@ -68,6 +73,12 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     private fun release() {
         synchronized(syncOp) {
+            try {
+                render?.stop()
+                render?.release()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             try {
                 cameraWrapper?.release()
                 cameraWrapper = null
