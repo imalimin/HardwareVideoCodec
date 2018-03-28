@@ -8,6 +8,7 @@ import android.os.Message
 import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.util.debug_e
+import java.io.File
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
@@ -25,6 +26,9 @@ class MuxerImpl(var format: MediaFormat,
     private var mHandler: Handler? = null
 
     init {
+        //删除已存在的文件
+        val file = File(path)
+        if (file.exists()) file.delete()
         muxer = MediaMuxer(path, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
         videoTrack = muxer!!.addTrack(format)
         muxer?.start()
