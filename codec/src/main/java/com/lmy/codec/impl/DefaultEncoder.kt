@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.os.Handler
 import android.os.HandlerThread
@@ -16,14 +17,14 @@ import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CodecTextureWrapper
-import com.lmy.codec.wrapper.TextureWrapper
 
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 class DefaultEncoder(var parameter: Parameter,
-                     var cameraWrapper: TextureWrapper,
+                     var textureId: Int,
+                     var eglContext: EGLContext? = null,
                      private var codec: MediaCodec? = null,
                      private var format: MediaFormat? = null,
                      private var filter: BaseTexture? = null,
@@ -40,7 +41,6 @@ class DefaultEncoder(var parameter: Parameter,
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
     private var mCodecWrapper: CodecTextureWrapper? = null
-    private var transformMatrix = FloatArray(16)
     private val mEncodingSyn = Any()
     private var mEncoding = false
 
@@ -106,8 +106,8 @@ class DefaultEncoder(var parameter: Parameter,
             return
         }
         codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        mCodecWrapper = CodecTextureWrapper(codec!!.createInputSurface())
-        filter = NormalTexture(cameraWrapper.textureId!!)
+        mCodecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), eglContext)
+        filter = NormalTexture(textureId)
         mCodecWrapper!!.setFilter(filter!!)
         mCodecWrapper?.egl?.makeCurrent()
         codec!!.start()
@@ -123,15 +123,11 @@ class DefaultEncoder(var parameter: Parameter,
     }
 
     private fun encode() {
-        if (null != cameraWrapper.surfaceTexture) {
-//            cameraWrapper.surfaceTexture?.updateTexImage()
-            cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
-        }
         mCodecWrapper?.egl?.makeCurrent()
         GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        mCodecWrapper?.drawTexture(transformMatrix)
+        mCodecWrapper?.drawTexture(null)
         mCodecWrapper?.egl?.swapBuffers()
         dequeue()
     }

@@ -11,12 +11,11 @@ import com.lmy.codec.util.debug_e
  */
 class CodecTextureWrapper(surface: Surface? = null,
                           var eglContext: EGLContext? = null,
-                          var egl: Egl? = null,
                           private var texture: BaseTexture? = null) : TextureWrapper() {
     init {
         if (null != surface) {
             egl = Egl()
-            egl!!.initEGL(surface, null)
+            egl!!.initEGL(surface, eglContext)
             egl!!.makeCurrent()
         } else {
             debug_e("Egl create failed")
@@ -27,7 +26,7 @@ class CodecTextureWrapper(surface: Surface? = null,
         this.texture = texture
     }
 
-    fun drawTexture(transformMatrix: FloatArray) {
+    override fun drawTexture(transformMatrix: FloatArray?) {
         if (null == texture) {
             debug_e("Render failed. Texture is null")
             return

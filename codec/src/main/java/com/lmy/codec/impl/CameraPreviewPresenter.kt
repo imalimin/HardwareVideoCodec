@@ -28,8 +28,6 @@ class CameraPreviewPresenter(var parameter: Parameter,
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
         render = DefaultRender(cameraWrapper!!.textureWrapper)
-        encoder = DefaultEncoder(parameter, cameraWrapper!!.textureWrapper)
-        encoder!!.setOnSampleListener(this)
     }
 
     override fun onFormatChanged(format: MediaFormat) {
@@ -58,6 +56,12 @@ class CameraPreviewPresenter(var parameter: Parameter,
         synchronized(syncOp) {
             cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
+//            Handler().postDelayed({
+//                encoder = DefaultEncoder(parameter,
+//                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!,
+//                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).egl!!.eglContext)
+//                encoder!!.setOnSampleListener(this)
+//            }, 500)
         }
     }
 

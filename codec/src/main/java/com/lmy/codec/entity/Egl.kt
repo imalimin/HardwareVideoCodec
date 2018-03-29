@@ -4,6 +4,7 @@ import android.graphics.SurfaceTexture
 import android.opengl.*
 import android.view.Surface
 import com.lmy.codec.util.debug_e
+import javax.microedition.khronos.egl.EGL10
 
 
 /**
@@ -63,6 +64,41 @@ class Egl(var eglDisplay: EGLDisplay? = null,
 //        }
 //    }
 
+    fun initEGL() {
+        eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
+        if (EGL14.EGL_NO_DISPLAY === eglDisplay) {
+            debug_e("eglGetDisplay,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
+            return
+        }
+        val versions = IntArray(2)
+        if (!EGL14.eglInitialize(eglDisplay, versions, 0, versions, 1)) {
+            debug_e("eglInitialize,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
+            return
+        }
+        val configsCount = IntArray(1)
+        val configs = arrayOfNulls<EGLConfig>(1)
+        val configSpec = intArrayOf(EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT, EGL14.EGL_RED_SIZE, 8, EGL14.EGL_GREEN_SIZE, 8, EGL14.EGL_BLUE_SIZE, 8, EGL14.EGL_DEPTH_SIZE, 0, EGL14.EGL_STENCIL_SIZE, 0, EGL14.EGL_NONE)
+        EGL14.eglChooseConfig(eglDisplay, configSpec, 0, configs, 0, 1, configsCount, 0)
+        if (configsCount[0] <= 0) {
+            debug_e("eglChooseConfig,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
+            return
+        }
+        eglConfig = configs[0]
+        val surfaceAttribs = intArrayOf(EGL10.EGL_WIDTH, 1, EGL10.EGL_HEIGHT, 1, EGL14.EGL_NONE)
+        val contextSpec = intArrayOf(EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE)
+        eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig, EGL14.EGL_NO_CONTEXT, contextSpec, 0)
+        if (EGL14.EGL_NO_CONTEXT === eglContext) {
+            debug_e("eglCreateContext,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
+            return
+        }
+        val values = IntArray(1)
+        EGL14.eglQueryContext(eglDisplay, eglContext, EGL14.EGL_CONTEXT_CLIENT_VERSION, values, 0)
+        eglSurface = EGL14.eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttribs, 0)
+        if (null == eglSurface || EGL14.EGL_NO_SURFACE == eglSurface) {
+            debug_e("eglCreateWindowSurface,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
+        }
+    }
+
     fun initEGL(surfaceTexture: SurfaceTexture, context: EGLContext?) {
         eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)
         if (EGL14.EGL_NO_DISPLAY === eglDisplay) {
@@ -94,7 +130,7 @@ class Egl(var eglDisplay: EGLDisplay? = null,
         val values = IntArray(1)
         EGL14.eglQueryContext(eglDisplay, eglContext, EGL14.EGL_CONTEXT_CLIENT_VERSION, values, 0)
         eglSurface = EGL14.eglCreateWindowSurface(eglDisplay, eglConfig, surfaceTexture, surfaceAttribs, 0)
-        if (null == eglSurface || EGL14.EGL_NO_SURFACE === eglSurface) {
+        if (null == eglSurface || EGL14.EGL_NO_SURFACE == eglSurface) {
             debug_e("eglCreateWindowSurface,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
             return
         }
@@ -134,19 +170,18 @@ class Egl(var eglDisplay: EGLDisplay? = null,
         val values = IntArray(1)
         EGL14.eglQueryContext(eglDisplay, eglContext, EGL14.EGL_CONTEXT_CLIENT_VERSION, values, 0)
         eglSurface = EGL14.eglCreateWindowSurface(eglDisplay, eglConfig, surface, surfaceAttribs, 0)
-        if (null == eglSurface || EGL14.EGL_NO_SURFACE === eglSurface) {
+        if (null == eglSurface || EGL14.EGL_NO_SURFACE == eglSurface) {
             debug_e("eglCreateWindowSurface,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
         }
     }
 
     fun makeCurrent() {
-        //指定mEGLContext为当前系统的EGL上下文，你可能发现了使用两个mEglSurface，第一个表示绘图表面，第二个表示读取表面
-//        if (!mEgl!!.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
-//            throw RuntimeException("eglMakeCurrent failed! " + mEgl!!.eglGetError())
-//        }
+        makeCurrent(null)
+    }
+    fun makeCurrent(tag:String?) {
         if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
             //            throw new RuntimeException("eglMakeCurrent,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
-            debug_e("eglMakeCurrent,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()))
+            debug_e("eglMakeCurrent,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError())+", $tag")
         }
     }
 

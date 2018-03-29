@@ -61,16 +61,18 @@ class NormalTexture(var inputTextureId: Int) : BaseTexture() {
         buffer!!.put(VERTEX_DATA, 0, VERTEX_DATA.size).position(0)
     }
 
-    override fun drawTexture(transformMatrix: FloatArray) {
+    override fun drawTexture(transformMatrix: FloatArray?) {
         aPositionLocation = getPositionLocation()
         aTextureCoordLocation = getTextureCoordinateLocation()
         uTextureMatrixLocation = getTextureMatrixLocation()
         uTextureSamplerLocation = getTextureSamplerLocation()
 
+        GLES20.glUseProgram(mShaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, inputTextureId)
         GLES20.glUniform1i(uTextureSamplerLocation, 0)
-        GLES20.glUniformMatrix4fv(uTextureMatrixLocation, 1, false, transformMatrix, 0)
+        if (null != transformMatrix)
+            GLES20.glUniformMatrix4fv(uTextureMatrixLocation, 1, false, transformMatrix, 0)
 
         if (null != buffer) {
             buffer!!.position(0)

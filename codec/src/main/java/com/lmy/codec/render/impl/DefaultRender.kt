@@ -7,6 +7,7 @@ import android.os.HandlerThread
 import android.os.Message
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.NormalTexture
+import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
 import com.lmy.codec.wrapper.TextureWrapper
 
@@ -14,7 +15,9 @@ import com.lmy.codec.wrapper.TextureWrapper
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 class DefaultRender(var cameraWrapper: TextureWrapper,
+                    private var transformMatrix: FloatArray = FloatArray(16),
                     var screenTexture: SurfaceTexture? = null,
+                    var screenWrapper: ScreenTextureWrapper? = null,
                     var width: Int = 1,
                     var height: Int = 1)
     : Render {
@@ -27,8 +30,6 @@ class DefaultRender(var cameraWrapper: TextureWrapper,
 
     private var mHandlerThread = HandlerThread("Renderer_Thread")
     private var mHandler: Handler? = null
-    private var mScreenWrapper: ScreenTextureWrapper? = null
-    private var transformMatrix = FloatArray(16)
 
     init {
         mHandlerThread.start()
@@ -42,7 +43,7 @@ class DefaultRender(var cameraWrapper: TextureWrapper,
                         draw()
                     }
                     STOP -> {
-                        mScreenWrapper?.release()
+                        screenWrapper?.release()
                     }
                 }
             }
@@ -50,22 +51,31 @@ class DefaultRender(var cameraWrapper: TextureWrapper,
     }
 
     fun init() {
-        mScreenWrapper = ScreenTextureWrapper(screenTexture)
-        mScreenWrapper?.setFilter(NormalTexture(cameraWrapper.textureId!!))
-        mScreenWrapper?.egl?.makeCurrent()
+        (cameraWrapper as CameraTextureWrapper).initEGL()
+        screenWrapper = ScreenTextureWrapper(screenTexture,(cameraWrapper as CameraTextureWrapper).egl!!.eglContext)
+        screenWrapper?.setFilter(NormalTexture((cameraWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!))
     }
 
     override fun draw() {
+        drawCamera()
+        screenWrapper?.egl?.makeCurrent()
+        GLES20.glViewport(0, 0, width, height)
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
+        screenWrapper?.drawTexture(transformMatrix)
+        screenWrapper?.egl?.swapBuffers()
+    }
+
+    private fun drawCamera() {
         if (null != cameraWrapper.surfaceTexture) {
             cameraWrapper.surfaceTexture?.updateTexImage()
             cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
-        mScreenWrapper?.egl?.makeCurrent()
+        cameraWrapper.egl?.makeCurrent("cameraWrapper")
         GLES20.glViewport(0, 0, width, height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        mScreenWrapper?.drawTexture(transformMatrix)
-        mScreenWrapper?.egl?.swapBuffers()
+        cameraWrapper.drawTexture(transformMatrix)
     }
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {

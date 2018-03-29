@@ -4,17 +4,29 @@ import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
+import com.lmy.codec.entity.Egl
+import com.lmy.codec.texture.impl.BaseFrameBufferTexture
+import com.lmy.codec.texture.impl.CameraTexture
+import com.lmy.codec.util.debug_e
 import javax.microedition.khronos.opengles.GL10
 
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class CameraTextureWrapper : TextureWrapper() {
+class CameraTextureWrapper(var texture: BaseFrameBufferTexture? = null) : TextureWrapper() {
 
     init {
         textureId = createTexture()
         intTexture()
+    }
+
+    fun initEGL() {
+        egl = Egl()
+        egl!!.initEGL()
+        egl!!.makeCurrent()
+        texture = CameraTexture(textureId!!)
+        debug_e("camera textureId: ${textureId}")
     }
 
     private fun createTexture(): Int {
@@ -37,5 +49,13 @@ class CameraTextureWrapper : TextureWrapper() {
     private fun intTexture() {
         if (null != textureId)
             surfaceTexture = SurfaceTexture(textureId!!)
+    }
+
+    override fun drawTexture(transformMatrix: FloatArray?) {
+        if (null == texture) {
+            debug_e("Render failed. Texture is null")
+            return
+        }
+        texture?.drawTexture(transformMatrix)
     }
 }

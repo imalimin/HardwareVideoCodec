@@ -2,18 +2,30 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
 import com.lmy.codec.texture.Texture
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.FloatBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-open abstract class BaseTexture(var buffer: FloatBuffer? = null,
-                                var vertexShader: Int? = null,
-                                var fragmentShader: Int? = null,
-                                var mShaderProgram: Int? = null) : Texture {
+abstract class BaseTexture(var buffer: FloatBuffer? = null,
+                           var vertexShader: Int? = null,
+                           var fragmentShader: Int? = null,
+                           var mShaderProgram: Int? = null) : Texture {
     companion object {
         //每行前两个值为顶点坐标，后两个为纹理坐标
         val VERTEX_DATA = floatArrayOf(1f, 1f, 1f, 1f, -1f, 1f, 0f, 1f, -1f, -1f, 0f, 0f, 1f, 1f, 1f, 1f, -1f, -1f, 0f, 0f, 1f, -1f, 1f, 0f)
+    }
+
+    init {
+        buffer = createShapeVerticesBuffer(VERTEX_DATA)
+    }
+
+    fun createShapeVerticesBuffer(array: FloatArray): FloatBuffer {
+        val result = ByteBuffer.allocateDirect(4 * array.size).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        result.put(array).position(0)
+        return result
     }
 
     /**

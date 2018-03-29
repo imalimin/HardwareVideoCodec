@@ -62,7 +62,7 @@ class GreyTexture(var inputTextureId: Int) : BaseTexture() {
         buffer!!.put(VERTEX_DATA, 0, VERTEX_DATA.size).position(0)
     }
 
-    override fun drawTexture(transformMatrix: FloatArray) {
+    override fun drawTexture(transformMatrix: FloatArray?) {
         aPositionLocation = getPositionLocation()
         aTextureCoordLocation = getTextureCoordinateLocation()
         uTextureMatrixLocation = getTextureMatrixLocation()
