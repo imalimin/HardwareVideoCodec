@@ -22,14 +22,14 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
-class DefaultEncoder(var parameter: Parameter,
-                     var cameraWrapper: CameraTextureWrapper,
-                     var codecWrapper: CodecTextureWrapper? = null,
-                     private var codec: MediaCodec? = null,
-                     private var format: MediaFormat? = null,
-                     private var filter: BaseTexture? = null,
-                     private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
-                     private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
+class VideoEncoderImpl(var parameter: Parameter,
+                       var cameraWrapper: CameraTextureWrapper,
+                       var codecWrapper: CodecTextureWrapper? = null,
+                       private var codec: MediaCodec? = null,
+                       private var format: MediaFormat? = null,
+                       private var filter: BaseTexture? = null,
+                       private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
+                       private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
     : Encoder {
 
     companion object {

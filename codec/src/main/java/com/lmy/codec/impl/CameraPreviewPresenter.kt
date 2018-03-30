@@ -37,7 +37,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     /**
      * 编码后的帧数据
-     * For DefaultEncoder
+     * For VideoEncoderImpl
      */
     override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
         muxer?.write(Sample.wrap(info, data))
@@ -57,7 +57,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
             cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
             Handler().postDelayed({
-                encoder = DefaultEncoder(parameter,
+                encoder = VideoEncoderImpl(parameter,
                         cameraWrapper!!.textureWrapper as CameraTextureWrapper)
                 encoder!!.setOnSampleListener(this)
             }, 1500)
