@@ -24,6 +24,7 @@ class MuxerImpl(var format: MediaFormat,
 
     private var mHandlerThread = HandlerThread("Write_Thread")
     private var mHandler: Handler? = null
+    private var mFrameCount = 0
 
     init {
         //删除已存在的文件
@@ -60,7 +61,8 @@ class MuxerImpl(var format: MediaFormat,
     }
 
     private fun writeSample(sample: Sample) {
-        debug_e("writeSample")
+        ++mFrameCount
+        debug_e("writeVideoSample($mFrameCount, ${sample.bufferInfo.presentationTimeUs}): ${sample.bufferInfo.size}")
         muxer?.writeSampleData(videoTrack, sample.sample, sample.bufferInfo)
     }
 }
