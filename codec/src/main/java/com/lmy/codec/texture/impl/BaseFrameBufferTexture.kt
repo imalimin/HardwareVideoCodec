@@ -34,6 +34,7 @@ abstract class BaseFrameBufferTexture(var frameBuffer: Int? = null,
         if (error != GLES20.GL_NO_ERROR) {
             val msg = "initFrameBuffer: glError 0x" + Integer.toHexString(error)
             debug_e(msg)
+            return
         }
         this.frameBuffer = frameBuffer[0]
         this.frameBufferTexture = frameBufferTex[0]
