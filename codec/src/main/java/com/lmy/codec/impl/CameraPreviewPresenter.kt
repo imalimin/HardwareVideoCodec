@@ -10,7 +10,6 @@ import com.lmy.codec.entity.Parameter
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRender
-import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
 import java.nio.ByteBuffer
@@ -41,7 +40,6 @@ class CameraPreviewPresenter(var parameter: Parameter,
      * For DefaultEncoder
      */
     override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
-        debug_v("onSample: ${info.size}")
         muxer?.write(Sample.wrap(info, data))
     }
 
