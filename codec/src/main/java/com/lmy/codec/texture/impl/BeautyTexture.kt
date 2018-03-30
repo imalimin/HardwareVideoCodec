@@ -42,9 +42,9 @@ class BeautyTexture(var inputTextureId: Int,
     override fun drawTexture(transformMatrix: FloatArray?) {
         GLES20.glUseProgram(shaderProgram!!)
 
-        setParams(2f, 3f)
-        setBrightLevel(0.5f)
-        setTexelOffset(5f)
+        setParams(beautyLevel, toneLevel)
+        setBrightLevel(brightLevel)
+        setTexelOffset(texelWidthOffset)
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureId)
