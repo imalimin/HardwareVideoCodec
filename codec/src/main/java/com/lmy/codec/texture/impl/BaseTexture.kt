@@ -74,6 +74,17 @@ abstract class BaseTexture(var buffer: FloatBuffer? = null,
         return program
     }
 
+    fun enableVertex(posLoc: Int, texLoc: Int, shapeBuffer: FloatBuffer, texBuffer: FloatBuffer) {
+        GLES20.glEnableVertexAttribArray(posLoc)
+        GLES20.glEnableVertexAttribArray(texLoc)
+        GLES20.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
+                GLES20.GL_FLOAT, false,
+                COORDS_PER_VERTEX * 4, shapeBuffer)
+        GLES20.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
+                GLES20.GL_FLOAT, false,
+                TEXTURE_COORDS_PER_VERTEX * 4, texBuffer)
+    }
+
     fun getAttribLocation(name: String): Int {
         return GLES20.glGetAttribLocation(shaderProgram!!, name)
     }

@@ -4,7 +4,6 @@ import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
 /**
@@ -103,17 +102,6 @@ class CameraTexture(width: Int, height: Int,
 //
 //            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
 //        }
-    }
-
-    fun enableVertex(posLoc: Int, texLoc: Int, shapeBuffer: FloatBuffer, texBuffer: FloatBuffer) {
-        GLES20.glEnableVertexAttribArray(posLoc)
-        GLES20.glEnableVertexAttribArray(texLoc)
-        GLES20.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false,
-                COORDS_PER_VERTEX * 4, shapeBuffer)
-        GLES20.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false,
-                TEXTURE_COORDS_PER_VERTEX * 4, texBuffer)
     }
 
     class GLDrawer(var drawIndecesBuffer: ShortBuffer? = null) {
