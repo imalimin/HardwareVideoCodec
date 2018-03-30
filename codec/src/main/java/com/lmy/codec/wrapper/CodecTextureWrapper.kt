@@ -9,16 +9,12 @@ import com.lmy.codec.util.debug_e
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
-class CodecTextureWrapper(surface: Surface? = null,
+class CodecTextureWrapper(var surface: Surface,
                           var eglContext: EGLContext? = null) : TextureWrapper() {
     init {
-        if (null != surface) {
-            egl = Egl()
-            egl!!.initEGL(surface, eglContext)
-            egl!!.makeCurrent()
-        } else {
-            debug_e("Egl create failed")
-        }
+        egl = Egl()
+        egl!!.initEGL(surface, eglContext)
+        egl!!.makeCurrent()
     }
 
     fun setFilter(texture: BaseTexture) {
@@ -31,5 +27,10 @@ class CodecTextureWrapper(surface: Surface? = null,
             return
         }
         texture?.drawTexture(transformMatrix)
+    }
+
+    override fun release() {
+        super.release()
+        surface.release()
     }
 }

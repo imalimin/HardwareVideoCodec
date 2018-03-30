@@ -24,6 +24,7 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
  */
 class DefaultEncoder(var parameter: Parameter,
                      var cameraWrapper: CameraTextureWrapper,
+                     var codecWrapper: CodecTextureWrapper? = null,
                      private var codec: MediaCodec? = null,
                      private var format: MediaFormat? = null,
                      private var filter: BaseTexture? = null,
@@ -39,7 +40,6 @@ class DefaultEncoder(var parameter: Parameter,
 
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
-    private var mCodecWrapper: CodecTextureWrapper? = null
     private val mEncodingSyn = Any()
     private var mEncoding = false
 
@@ -90,6 +90,7 @@ class DefaultEncoder(var parameter: Parameter,
                         codec!!.stop()
                         codec!!.release()
 //                        dequeue()
+                        codecWrapper?.release()
                         val listener = msg.obj
                         if (null != listener)
                             (listener as Encoder.OnStopListener).onStop()
@@ -105,10 +106,10 @@ class DefaultEncoder(var parameter: Parameter,
             return
         }
         codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        mCodecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), cameraWrapper.egl!!.eglContext)
+        codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), cameraWrapper.egl!!.eglContext)
         filter = NormalTexture(cameraWrapper.getFrameTexture(), cameraWrapper.getDrawer())
-        mCodecWrapper!!.setFilter(filter!!)
-        mCodecWrapper?.egl?.makeCurrent()
+        codecWrapper?.setFilter(filter!!)
+        codecWrapper?.egl?.makeCurrent()
         codec!!.start()
     }
 
@@ -122,12 +123,12 @@ class DefaultEncoder(var parameter: Parameter,
     }
 
     private fun encode() {
-        mCodecWrapper?.egl?.makeCurrent()
+        codecWrapper?.egl?.makeCurrent()
         GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        mCodecWrapper?.drawTexture(null)
-        mCodecWrapper?.egl?.swapBuffers()
+        codecWrapper?.drawTexture(null)
+        codecWrapper?.egl?.swapBuffers()
         dequeue()
     }
 
