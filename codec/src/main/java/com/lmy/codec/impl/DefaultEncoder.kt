@@ -42,6 +42,8 @@ class DefaultEncoder(var parameter: Parameter,
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
     private var mEncoding = false
+    private var mTimestamp: Long = 0
+    private var mPresentationTimeUs: Long = 0
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -123,6 +125,12 @@ class DefaultEncoder(var parameter: Parameter,
     }
 
     private fun encode() {
+        val timestamp = System.currentTimeMillis()
+        if (0L != mTimestamp)
+            mPresentationTimeUs += (timestamp - mTimestamp) * 1000
+        else
+            mPresentationTimeUs += 1000000 / parameter.video.fps
+        mTimestamp = timestamp
         codecWrapper?.egl?.makeCurrent()
         GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
@@ -153,6 +161,7 @@ class DefaultEncoder(var parameter: Parameter,
                     if (null != data) {
                         val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
                         if (endOfStream == 0) {
+                            mBufferInfo.presentationTimeUs = mPresentationTimeUs
                             onSampleListener?.onSample(mBufferInfo, data)
                         }
                         // 一定要记得释放
@@ -170,6 +179,7 @@ class DefaultEncoder(var parameter: Parameter,
 
     override fun start() {
         synchronized(mEncodingSyn) {
+            mTimestamp = 0
             mEncoding = true
         }
     }
