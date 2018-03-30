@@ -7,8 +7,7 @@ import java.nio.FloatBuffer
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 class NormalTexture(var inputTextureId: Int,
-                    var drawer: CameraTexture.GLDrawer,
-                    var verticesBuffer: FloatBuffer? = null) : BaseTexture() {
+                    var drawer: CameraTexture.GLDrawer) : BaseTexture() {
 
     companion object {
         private val VERTEX_SHADER = "" +
@@ -40,17 +39,18 @@ class NormalTexture(var inputTextureId: Int,
 
     init {
         verticesBuffer = createShapeVerticesBuffer(VERTICES_SCREEN)
+        createProgram()
+    }
 
-        vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER)
-        fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, FRAGMENT_SHADER)
-        mShaderProgram = linkProgram(vertexShader!!, fragmentShader!!)
+    private fun createProgram() {
+        shaderProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        GLES20.glUseProgram(mShaderProgram!!)
+        GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureId)
         GLES20.glUniform1i(uTextureLocation, 0)

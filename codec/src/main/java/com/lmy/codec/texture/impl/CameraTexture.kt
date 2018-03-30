@@ -12,28 +12,10 @@ import java.nio.ShortBuffer
  */
 class CameraTexture(width: Int, height: Int,
                     var inputTextureId: Int,
-                    var camera2dVerticesBuffer: FloatBuffer? = null,
                     var drawer: GLDrawer = GLDrawer()) : BaseFrameBufferTexture(width, height) {
 
     companion object {
-        private val CAMERA_VERTEX_SHADER = "" +
-                "attribute vec4 aPosition;\n" +
-                "attribute vec2 aTextureCoord;\n" +
-                "varying vec2 vTextureCoord;\n" +
-                "void main(){\n" +
-                "    gl_Position= aPosition;\n" +
-                "    vTextureCoord = aTextureCoord;\n" +
-                "}"
-        private val CAMERA_FRAGMENT_SHADER = "" +
-                "#extension GL_OES_EGL_image_external : require\n" +
-                "precision mediump float;\n" +
-                "varying mediump vec2 vTextureCoord;\n" +
-                "uniform sampler2D uTexture;\n" +
-                "void main(){\n" +
-                "    vec4  color = texture2D(uTexture, vTextureCoord);\n" +
-                "    gl_FragColor = color;\n" +
-                "}"
-        private val CAMERA2D_VERTEX_SHADER = "" +
+        private val VERTEX_SHADER = "" +
                 "attribute vec4 aPosition;\n" +
                 "attribute vec4 aTextureCoord;\n" +
                 "uniform mat4 uTextureMatrix;\n" +
@@ -42,7 +24,7 @@ class CameraTexture(width: Int, height: Int,
                 "    gl_Position= aPosition;\n" +
                 "    vTextureCoord = (uTextureMatrix * aTextureCoord).xy;\n" +
                 "}"
-        private val CAMERA2D_FRAGMENT_SHADER = "" +
+        private val FRAGMENT_SHADER = "" +
                 "#extension GL_OES_EGL_image_external : require\n" +
                 "precision mediump float;\n" +
                 "varying mediump vec2 vTextureCoord;\n" +
@@ -51,35 +33,6 @@ class CameraTexture(width: Int, height: Int,
                 "    vec4  color = texture2D(uTexture, vTextureCoord);\n" +
                 "    gl_FragColor = color;\n" +
                 "}"
-        private val VERTEX_SHADER = "" +
-                //顶点坐标
-                "attribute vec4 aPosition;\n" +
-                //纹理矩阵
-                "uniform mat4 uTextureMatrix;\n" +
-                //自己定义的纹理坐标
-                "attribute vec4 aTextureCoord;\n" +
-                //传给片段着色器的纹理坐标
-                "varying vec2 vTextureCoord;\n" +
-                "void main()\n" +
-                "{\n" +
-                //根据自己定义的纹理坐标和纹理矩阵求取传给片段着色器的纹理坐标
-                "  vTextureCoord = (uTextureMatrix * aTextureCoordinate).xy;\n" +
-                "  gl_Position = aPosition;\n" +
-                "}\n"
-        private val FRAGMENT_SHADER = "" +
-                //使用外部纹理必须支持此扩展
-                "#extension GL_OES_EGL_image_external : require\n" +
-                "precision mediump float;\n" +
-                //外部纹理采样器
-                "uniform samplerExternalOES uTexture;\n" +
-                "varying vec2 vTextureCoord;\n" +
-                "void main() \n" +
-                "{\n" +
-                //获取此纹理（预览图像）对应坐标的颜色值
-                "  vec4 vCameraColor = texture2D(uTexture, vTextureCoord);\n" +
-                //输出颜色的RGB值
-                "  gl_FragColor = vCameraColor;\n" +
-                "}\n"
         private val DRAW_INDICES = shortArrayOf(0, 1, 2, 0, 2, 3)
         private val CAMERA_TEXTURE_VERTICES = floatArrayOf(
                 0.0f, 1.0f,
@@ -98,25 +51,14 @@ class CameraTexture(width: Int, height: Int,
     private var uTextureMatrix = 0
 
     init {
-        camera2dVerticesBuffer = createShapeVerticesBuffer(CAMERA_TEXTURE_VERTICES)
-//        createCameraProgram()
-        createCamera2dProgram()
+        verticesBuffer = createShapeVerticesBuffer(CAMERA_TEXTURE_VERTICES)
+
+        createProgram()
         initFrameBuffer()
     }
 
-    private fun createCameraProgram() {
-        vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, CAMERA_VERTEX_SHADER)
-        fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, CAMERA_FRAGMENT_SHADER)
-        mShaderProgram = linkProgram(vertexShader!!, fragmentShader!!)
-        mPositionLocation = getAttribLocation("aPosition")
-        mTextureLocation = getAttribLocation("uTexture")
-        mTextureCoordinateLocation = getAttribLocation("aTextureCoord")
-    }
-
-    private fun createCamera2dProgram() {
-        vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, CAMERA2D_VERTEX_SHADER)
-        fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, CAMERA2D_FRAGMENT_SHADER)
-        mShaderProgram = linkProgram(vertexShader!!, fragmentShader!!)
+    private fun createProgram() {
+        shaderProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
@@ -127,11 +69,11 @@ class CameraTexture(width: Int, height: Int,
         if (null == transformMatrix)
             throw RuntimeException("TransformMatrix can not be null")
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
-        GLES20.glUseProgram(mShaderProgram!!)
+        GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, inputTextureId)
         GLES20.glUniform1i(uTextureLocation, 0)
-        enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, camera2dVerticesBuffer!!)
+        enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
         GLES20.glUniformMatrix4fv(uTextureMatrix, 1, false, transformMatrix, 0)
 
         drawer.draw()

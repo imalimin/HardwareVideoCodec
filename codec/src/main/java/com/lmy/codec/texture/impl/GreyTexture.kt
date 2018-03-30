@@ -2,8 +2,6 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
@@ -49,17 +47,7 @@ class GreyTexture(var inputTextureId: Int) : BaseTexture() {
     private var uTextureSamplerLocation = 0
 
     init {
-        initBuffer()
-        vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER)
-        fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, FRAGMENT_SHADER)
-        mShaderProgram = linkProgram(vertexShader!!, fragmentShader!!)
-    }
-
-    private fun initBuffer() {
-        buffer = ByteBuffer.allocateDirect(VERTEX_DATA.size * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer()
-        buffer!!.put(VERTEX_DATA, 0, VERTEX_DATA.size).position(0)
+        shaderProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {

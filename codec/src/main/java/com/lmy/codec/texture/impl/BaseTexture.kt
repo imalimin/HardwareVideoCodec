@@ -10,14 +10,12 @@ import java.nio.FloatBuffer
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 abstract class BaseTexture(var buffer: FloatBuffer? = null,
-                           var vertexShader: Int? = null,
-                           var fragmentShader: Int? = null,
-                           var mShaderProgram: Int? = null) : Texture {
+                           var verticesBuffer: FloatBuffer? = null,
+                           var shaderProgram: Int? = null) : Texture {
     companion object {
         var COORDS_PER_VERTEX = 2
         var TEXTURE_COORDS_PER_VERTEX = 2
         //每行前两个值为顶点坐标，后两个为纹理坐标
-        val VERTEX_DATA = floatArrayOf(1f, 1f, 1f, 1f, -1f, 1f, 0f, 1f, -1f, -1f, 0f, 0f, 1f, 1f, 1f, 1f, -1f, -1f, 0f, 0f, 1f, -1f, 1f, 0f)
         val VERTICES_SQUARE = floatArrayOf(
                 -1.0f, 1.0f,
                 -1.0f, -1.0f,
@@ -33,6 +31,12 @@ abstract class BaseTexture(var buffer: FloatBuffer? = null,
         val result = ByteBuffer.allocateDirect(4 * array.size).order(ByteOrder.nativeOrder()).asFloatBuffer()
         result.put(array).position(0)
         return result
+    }
+
+    fun createProgram(vertex: String, fragment: String): Int {
+        val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertex)
+        val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragment)
+        return linkProgram(vertexShader!!, fragmentShader!!)
     }
 
     /**
@@ -71,15 +75,15 @@ abstract class BaseTexture(var buffer: FloatBuffer? = null,
     }
 
     fun getAttribLocation(name: String): Int {
-        return GLES20.glGetAttribLocation(mShaderProgram!!, name)
+        return GLES20.glGetAttribLocation(shaderProgram!!, name)
     }
 
     fun getUniformLocation(name: String): Int {
-        return GLES20.glGetUniformLocation(mShaderProgram!!, name)
+        return GLES20.glGetUniformLocation(shaderProgram!!, name)
     }
 
     fun release() {
-        if (null != mShaderProgram)
-            GLES20.glDeleteProgram(mShaderProgram!!)
+        if (null != shaderProgram)
+            GLES20.glDeleteProgram(shaderProgram!!)
     }
 }
