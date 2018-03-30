@@ -53,6 +53,9 @@ class DefaultRender(var cameraWrapper: CameraTextureWrapper,
         cameraWrapper.initEGL(width, height)
         screenWrapper = ScreenTextureWrapper(screenTexture, cameraWrapper.egl!!.eglContext!!)
         screenWrapper?.setFilter(NormalTexture(cameraWrapper.getFrameTexture(), cameraWrapper.getDrawer()))
+//        (screenWrapper!!.texture as BeautyTexture).setParams(0f, -5f)//beauty: 0 - 2.5, tone: -5 - 5
+//        (screenWrapper!!.texture as BeautyTexture).setBrightLevel(0f)//0 - 1
+//        (screenWrapper!!.texture as BeautyTexture).setTexelOffset(-10f)//-10 - 10
     }
 
     override fun draw() {
