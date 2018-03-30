@@ -23,11 +23,11 @@ class CameraTextureWrapper(var texture: CameraTexture? = null) : TextureWrapper(
         intTexture()
     }
 
-    fun initEGL() {
+    fun initEGL(width: Int, height: Int) {
         egl = Egl()
         egl!!.initEGL()
         egl!!.makeCurrent()
-        texture = CameraTexture(textureId!!)
+        texture = CameraTexture(width, height, textureId!!)
         debug_e("camera textureId: ${textureId}")
     }
 

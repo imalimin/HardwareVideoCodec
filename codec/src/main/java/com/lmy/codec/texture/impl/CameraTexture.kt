@@ -10,9 +10,10 @@ import java.nio.ShortBuffer
 /**
  * Created by lmyooyo@gmail.com on 2018/3/29.
  */
-class CameraTexture(var inputTextureId: Int,
+class CameraTexture(width: Int, height: Int,
+                    var inputTextureId: Int,
                     var camera2dVerticesBuffer: FloatBuffer? = null,
-                    var drawer: GLDrawer = GLDrawer()) : BaseFrameBufferTexture() {
+                    var drawer: GLDrawer = GLDrawer()) : BaseFrameBufferTexture(width, height) {
 
     companion object {
         private val CAMERA_VERTEX_SHADER = "" +

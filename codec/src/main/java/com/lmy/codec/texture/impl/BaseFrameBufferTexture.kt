@@ -6,12 +6,12 @@ import com.lmy.codec.util.debug_e
 /**
  * Created by lmyooyo@gmail.com on 2018/3/29.
  */
-abstract class BaseFrameBufferTexture(var frameBuffer: Int? = null,
+abstract class BaseFrameBufferTexture(var width: Int,
+                                      var height: Int,
+                                      var frameBuffer: Int? = null,
                                       var frameBufferTexture: Int? = null) : BaseTexture() {
 
     fun initFrameBuffer() {
-        val width = 720
-        val height = 1280
         val frameBuffer = IntArray(1)
         val frameBufferTex = IntArray(1)
         GLES20.glGenFramebuffers(1, frameBuffer, 0)

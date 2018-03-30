@@ -51,7 +51,7 @@ class DefaultRender(var cameraWrapper: TextureWrapper,
     }
 
     fun init() {
-        (cameraWrapper as CameraTextureWrapper).initEGL()
+        (cameraWrapper as CameraTextureWrapper).initEGL(width, height)
         screenWrapper = ScreenTextureWrapper(screenTexture,
                 (cameraWrapper as CameraTextureWrapper).egl!!.eglContext!!)
         screenWrapper?.setFilter(NormalTexture((cameraWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!,
