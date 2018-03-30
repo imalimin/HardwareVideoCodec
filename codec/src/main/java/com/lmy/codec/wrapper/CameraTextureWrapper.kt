@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import com.lmy.codec.entity.Egl
+import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.CameraTexture
 import com.lmy.codec.util.debug_e
 import javax.microedition.khronos.opengles.GL10
@@ -53,11 +54,26 @@ class CameraTextureWrapper : TextureWrapper() {
             surfaceTexture = SurfaceTexture(textureId!!)
     }
 
+    private fun checkTexture() {
+        if (null != texture && texture is BaseFrameBufferTexture) return
+        throw RuntimeException("CameraTextureWrapper`s texture must be BaseFrameBufferTexture and texture must not be null")
+    }
+
     override fun drawTexture(transformMatrix: FloatArray?) {
         if (null == texture) {
             debug_e("Render failed. Texture is null")
             return
         }
         texture?.drawTexture(transformMatrix)
+    }
+
+    fun getFrameTexture(): Int {
+        checkTexture()
+        return (texture as BaseFrameBufferTexture).frameBufferTexture!!
+    }
+
+    fun getDrawer(): BaseFrameBufferTexture.GLDrawer {
+        checkTexture()
+        return (texture as BaseFrameBufferTexture).drawer!!
     }
 }

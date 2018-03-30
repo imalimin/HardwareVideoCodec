@@ -6,7 +6,7 @@ import android.opengl.GLES20
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 class NormalTexture(var inputTextureId: Int,
-                    var drawer: CameraTexture.GLDrawer) : BaseTexture() {
+                    var drawer: BaseFrameBufferTexture.GLDrawer) : BaseTexture() {
 
     companion object {
         private val VERTEX_SHADER = "" +

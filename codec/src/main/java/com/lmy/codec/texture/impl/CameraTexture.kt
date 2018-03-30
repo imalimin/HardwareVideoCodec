@@ -2,16 +2,12 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.ShortBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/29.
  */
 class CameraTexture(width: Int, height: Int,
-                    var inputTextureId: Int,
-                    var drawer: GLDrawer = GLDrawer()) : BaseFrameBufferTexture(width, height) {
+                    var inputTextureId: Int) : BaseFrameBufferTexture(width, height) {
 
     companion object {
         private val VERTEX_SHADER = "" +
@@ -32,17 +28,12 @@ class CameraTexture(width: Int, height: Int,
                 "    vec4  color = texture2D(uTexture, vTextureCoord);\n" +
                 "    gl_FragColor = color;\n" +
                 "}"
-        private val DRAW_INDICES = shortArrayOf(0, 1, 2, 0, 2, 3)
         private val CAMERA_TEXTURE_VERTICES = floatArrayOf(
                 0.0f, 1.0f,
                 0.0f, 0.0f,
                 1.0f, 0.0f,
                 1.0f, 1.0f)
     }
-
-    private var mPositionLocation = 0
-    private var mTextureLocation = 0
-    private var mTextureCoordinateLocation = 0
 
     private var aPositionLocation = 0
     private var uTextureLocation = 0
@@ -102,20 +93,5 @@ class CameraTexture(width: Int, height: Int,
 //
 //            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
 //        }
-    }
-
-    class GLDrawer(var drawIndecesBuffer: ShortBuffer? = null) {
-        init {
-            drawIndecesBuffer = ByteBuffer.allocateDirect(2 * DRAW_INDICES.size).order(ByteOrder.nativeOrder()).asShortBuffer()
-            drawIndecesBuffer?.put(DRAW_INDICES)
-            drawIndecesBuffer?.position(0)
-        }
-
-        fun draw() {
-            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawIndecesBuffer!!.limit(),
-                    GLES20.GL_UNSIGNED_SHORT, drawIndecesBuffer)
-        }
     }
 }

@@ -6,16 +6,14 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
 import com.lmy.codec.render.Render
-import com.lmy.codec.texture.impl.CameraTexture
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
-import com.lmy.codec.wrapper.TextureWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class DefaultRender(var cameraWrapper: TextureWrapper,
+class DefaultRender(var cameraWrapper: CameraTextureWrapper,
                     var transformMatrix: FloatArray = FloatArray(16),
                     var screenTexture: SurfaceTexture? = null,
                     var screenWrapper: ScreenTextureWrapper? = null,
@@ -52,15 +50,9 @@ class DefaultRender(var cameraWrapper: TextureWrapper,
     }
 
     fun init() {
-        (cameraWrapper as CameraTextureWrapper).initEGL(width, height)
-        screenWrapper = ScreenTextureWrapper(screenTexture,
-                (cameraWrapper as CameraTextureWrapper).egl!!.eglContext!!)
-        if (cameraWrapper.texture is CameraTexture) {
-            screenWrapper?.setFilter(NormalTexture((cameraWrapper.texture!! as CameraTexture).frameBufferTexture!!,
-                    (cameraWrapper.texture!! as CameraTexture).drawer))
-        } else {
-            throw RuntimeException("CameraTextureWrapper`s texture must be CameraTexture")
-        }
+        cameraWrapper.initEGL(width, height)
+        screenWrapper = ScreenTextureWrapper(screenTexture, cameraWrapper.egl!!.eglContext!!)
+        screenWrapper?.setFilter(NormalTexture(cameraWrapper.getFrameTexture(), cameraWrapper.getDrawer()))
     }
 
     override fun draw() {

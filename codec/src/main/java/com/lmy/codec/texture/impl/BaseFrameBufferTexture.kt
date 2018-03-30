@@ -2,6 +2,9 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
 import com.lmy.codec.util.debug_e
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.ShortBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/29.
@@ -9,7 +12,11 @@ import com.lmy.codec.util.debug_e
 abstract class BaseFrameBufferTexture(var width: Int,
                                       var height: Int,
                                       var frameBuffer: Int? = null,
-                                      var frameBufferTexture: Int? = null) : BaseTexture() {
+                                      var frameBufferTexture: Int? = null,
+                                      var drawer: GLDrawer = GLDrawer()) : BaseTexture() {
+    companion object {
+        private val DRAW_INDICES = shortArrayOf(0, 1, 2, 0, 2, 3)
+    }
 
     fun initFrameBuffer() {
         val frameBuffer = IntArray(1)
@@ -39,5 +46,20 @@ abstract class BaseFrameBufferTexture(var width: Int,
         this.frameBuffer = frameBuffer[0]
         this.frameBufferTexture = frameBufferTex[0]
         debug_e("enable frame buffer: ${this.frameBuffer}, ${this.frameBufferTexture}")
+    }
+
+    class GLDrawer(var drawIndecesBuffer: ShortBuffer? = null) {
+        init {
+            drawIndecesBuffer = ByteBuffer.allocateDirect(2 * DRAW_INDICES.size).order(ByteOrder.nativeOrder()).asShortBuffer()
+            drawIndecesBuffer?.put(DRAW_INDICES)
+            drawIndecesBuffer?.position(0)
+        }
+
+        fun draw() {
+            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawIndecesBuffer!!.limit(),
+                    GLES20.GL_UNSIGNED_SHORT, drawIndecesBuffer)
+        }
     }
 }
