@@ -3,6 +3,7 @@ package com.lmy.codec.impl
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.os.Handler
 import com.lmy.codec.Encoder
 import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Parameter
@@ -10,6 +11,7 @@ import com.lmy.codec.entity.Sample
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRender
 import com.lmy.codec.util.debug_v
+import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
 import java.nio.ByteBuffer
 
@@ -56,12 +58,14 @@ class CameraPreviewPresenter(var parameter: Parameter,
         synchronized(syncOp) {
             cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
-//            Handler().postDelayed({
-//                encoder = DefaultEncoder(parameter,
-//                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!,
-//                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).egl!!.eglContext)
-//                encoder!!.setOnSampleListener(this)
-//            }, 500)
+            Handler().postDelayed({
+                encoder = DefaultEncoder(parameter,
+                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!,
+                        (render as DefaultRender).transformMatrix,
+                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).egl!!.eglContext!!,
+                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).texture!!.drawer)
+                encoder!!.setOnSampleListener(this)
+            }, 1500)
         }
     }
 

@@ -14,12 +14,19 @@ abstract class BaseTexture(var buffer: FloatBuffer? = null,
                            var fragmentShader: Int? = null,
                            var mShaderProgram: Int? = null) : Texture {
     companion object {
+        var COORDS_PER_VERTEX = 2
+        var TEXTURE_COORDS_PER_VERTEX = 2
         //每行前两个值为顶点坐标，后两个为纹理坐标
         val VERTEX_DATA = floatArrayOf(1f, 1f, 1f, 1f, -1f, 1f, 0f, 1f, -1f, -1f, 0f, 0f, 1f, 1f, 1f, 1f, -1f, -1f, 0f, 0f, 1f, -1f, 1f, 0f)
+        val VERTICES_SQUARE = floatArrayOf(
+                -1.0f, 1.0f,
+                -1.0f, -1.0f,
+                1.0f, -1.0f,
+                1.0f, 1.0f)
     }
 
     init {
-        buffer = createShapeVerticesBuffer(VERTEX_DATA)
+        buffer = createShapeVerticesBuffer(VERTICES_SQUARE)
     }
 
     fun createShapeVerticesBuffer(array: FloatArray): FloatBuffer {

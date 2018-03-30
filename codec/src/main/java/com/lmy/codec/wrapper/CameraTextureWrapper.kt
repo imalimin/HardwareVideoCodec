@@ -5,7 +5,6 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import com.lmy.codec.entity.Egl
-import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.CameraTexture
 import com.lmy.codec.util.debug_e
 import javax.microedition.khronos.opengles.GL10
@@ -14,10 +13,13 @@ import javax.microedition.khronos.opengles.GL10
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class CameraTextureWrapper(var texture: BaseFrameBufferTexture? = null) : TextureWrapper() {
+class CameraTextureWrapper(var texture: CameraTexture? = null) : TextureWrapper() {
 
     init {
-        textureId = createTexture()
+        /**
+         * 使用createTexture()会一直返回0，导致一些错误
+         */
+        textureId = 10
         intTexture()
     }
 

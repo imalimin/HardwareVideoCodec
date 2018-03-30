@@ -15,7 +15,7 @@ import com.lmy.codec.wrapper.TextureWrapper
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 class DefaultRender(var cameraWrapper: TextureWrapper,
-                    private var transformMatrix: FloatArray = FloatArray(16),
+                    var transformMatrix: FloatArray = FloatArray(16),
                     var screenTexture: SurfaceTexture? = null,
                     var screenWrapper: ScreenTextureWrapper? = null,
                     var width: Int = 1,
@@ -52,8 +52,10 @@ class DefaultRender(var cameraWrapper: TextureWrapper,
 
     fun init() {
         (cameraWrapper as CameraTextureWrapper).initEGL()
-        screenWrapper = ScreenTextureWrapper(screenTexture,(cameraWrapper as CameraTextureWrapper).egl!!.eglContext)
-        screenWrapper?.setFilter(NormalTexture((cameraWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!))
+        screenWrapper = ScreenTextureWrapper(screenTexture,
+                (cameraWrapper as CameraTextureWrapper).egl!!.eglContext!!)
+        screenWrapper?.setFilter(NormalTexture((cameraWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!,
+                (cameraWrapper as CameraTextureWrapper).texture!!.drawer))
     }
 
     override fun draw() {
