@@ -10,8 +10,7 @@ import com.lmy.codec.util.debug_e
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 class CodecTextureWrapper(surface: Surface? = null,
-                          var eglContext: EGLContext? = null,
-                          private var texture: BaseTexture? = null) : TextureWrapper() {
+                          var eglContext: EGLContext? = null) : TextureWrapper() {
     init {
         if (null != surface) {
             egl = Egl()

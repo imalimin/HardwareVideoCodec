@@ -25,7 +25,6 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
  */
 class DefaultEncoder(var parameter: Parameter,
                      var textureId: Int,
-                     var transformMatrix: FloatArray,
                      var eglContext: EGLContext,
                      var drawer: CameraTexture.GLDrawer,
                      private var codec: MediaCodec? = null,
@@ -130,7 +129,7 @@ class DefaultEncoder(var parameter: Parameter,
         GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        mCodecWrapper?.drawTexture(transformMatrix)
+        mCodecWrapper?.drawTexture(null)
         mCodecWrapper?.egl?.swapBuffers()
         dequeue()
     }

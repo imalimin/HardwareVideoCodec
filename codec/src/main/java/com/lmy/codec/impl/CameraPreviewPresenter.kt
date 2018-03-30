@@ -10,8 +10,8 @@ import com.lmy.codec.entity.Parameter
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRender
+import com.lmy.codec.texture.impl.CameraTexture
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
 import java.nio.ByteBuffer
 
@@ -60,10 +60,9 @@ class CameraPreviewPresenter(var parameter: Parameter,
             render?.start(screenTexture, width, height)
             Handler().postDelayed({
                 encoder = DefaultEncoder(parameter,
-                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!,
-                        (render as DefaultRender).transformMatrix,
-                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).egl!!.eglContext!!,
-                        (cameraWrapper!!.textureWrapper as CameraTextureWrapper).texture!!.drawer)
+                        (cameraWrapper!!.textureWrapper.texture as CameraTexture)!!.frameBufferTexture!!,
+                        cameraWrapper!!.textureWrapper.egl!!.eglContext!!,
+                        (cameraWrapper!!.textureWrapper.texture as CameraTexture)!!.drawer)
                 encoder!!.setOnSampleListener(this)
             }, 1500)
         }

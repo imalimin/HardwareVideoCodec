@@ -13,7 +13,7 @@ import javax.microedition.khronos.opengles.GL10
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class CameraTextureWrapper(var texture: CameraTexture? = null) : TextureWrapper() {
+class CameraTextureWrapper : TextureWrapper() {
 
     init {
         /**

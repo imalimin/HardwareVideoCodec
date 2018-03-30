@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
 import com.lmy.codec.render.Render
+import com.lmy.codec.texture.impl.CameraTexture
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
@@ -54,8 +55,12 @@ class DefaultRender(var cameraWrapper: TextureWrapper,
         (cameraWrapper as CameraTextureWrapper).initEGL(width, height)
         screenWrapper = ScreenTextureWrapper(screenTexture,
                 (cameraWrapper as CameraTextureWrapper).egl!!.eglContext!!)
-        screenWrapper?.setFilter(NormalTexture((cameraWrapper as CameraTextureWrapper).texture!!.frameBufferTexture!!,
-                (cameraWrapper as CameraTextureWrapper).texture!!.drawer))
+        if (cameraWrapper.texture is CameraTexture) {
+            screenWrapper?.setFilter(NormalTexture((cameraWrapper.texture!! as CameraTexture).frameBufferTexture!!,
+                    (cameraWrapper.texture!! as CameraTexture).drawer))
+        } else {
+            throw RuntimeException("CameraTextureWrapper`s texture must be CameraTexture")
+        }
     }
 
     override fun draw() {
