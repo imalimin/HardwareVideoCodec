@@ -1,5 +1,6 @@
 package com.lmy.codec.wrapper
 
+import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import com.lmy.codec.entity.Parameter
@@ -21,19 +22,23 @@ class AudioRecordWrapper(var parameter: Parameter,
     private var onPCMListener: OnPCMListener? = null
 
     init {
-        bufferSize = AudioRecord.getMinBufferSize(parameter.audio.sampleRateInHz,
-                parameter.audio.channel, parameter.audio.pcm)
+        val minBufferSize = AudioRecord.getMinBufferSize(parameter.audio.sampleRateInHz,
+                AudioFormat.CHANNEL_IN_MONO, parameter.audio.pcm)
+        bufferSize = parameter.audio.samplePerFrame * parameter.video.fps
+        if (bufferSize < minBufferSize)
+            bufferSize = (minBufferSize / parameter.audio.samplePerFrame + 1) * parameter.audio.samplePerFrame * 2
+
         debug_e("bufferSize: $bufferSize")
-        buffer = ByteArray(bufferSize)
+        buffer = ByteArray(parameter.audio.samplePerFrame)
         record = AudioRecord(MediaRecorder.AudioSource.MIC, parameter.audio.sampleRateInHz,
-                parameter.audio.channel, parameter.audio.pcm, bufferSize)
+                AudioFormat.CHANNEL_IN_MONO, parameter.audio.pcm, bufferSize)
         record?.startRecording()
         thread = Thread(this)
         thread?.start()
     }
 
     private fun read() {
-        val bufferReadResult = record!!.read(buffer, 0, bufferSize)
+        val bufferReadResult = record!!.read(buffer, 0, parameter.audio.samplePerFrame)
         onPCMListener?.onPCMSample(buffer!!)
     }
 
