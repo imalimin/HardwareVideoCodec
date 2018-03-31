@@ -26,7 +26,7 @@ class VideoEncoderImpl(var parameter: Parameter,
                        var cameraWrapper: CameraTextureWrapper,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
-                       private var format: MediaFormat? = null,
+                       private var format: MediaFormat = MediaFormat(),
                        private var filter: BaseTexture? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
@@ -50,8 +50,6 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     init {
-        format = MediaFormat()
-        CodecHelper.initFormat(format!!, parameter)
         initCodec()
         initThread()
         mHandler?.removeMessages(INIT)
@@ -59,9 +57,10 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun initCodec() {
-        debug_v("create codec: ${format?.getString(MediaFormat.KEY_MIME)}")
+        CodecHelper.initFormat(format, parameter)
+        debug_v("create codec: ${format.getString(MediaFormat.KEY_MIME)}")
         try {
-            codec = MediaCodec.createEncoderByType(format?.getString(MediaFormat.KEY_MIME))
+            codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME))
         } catch (e: Exception) {
             debug_e("Can not create codec")
         } finally {
