@@ -41,7 +41,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
-        render = DefaultRender(cameraWrapper!!.textureWrapper as CameraTextureWrapper)
+        render = DefaultRender(parameter, cameraWrapper!!.textureWrapper as CameraTextureWrapper)
     }
 
     override fun onFormatChanged(format: MediaFormat) {
