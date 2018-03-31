@@ -1,6 +1,8 @@
 package com.lmy.codec.entity
 
 import android.hardware.Camera
+import android.media.AudioFormat
+import android.media.MediaCodecInfo
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
@@ -38,5 +40,10 @@ class Parameter(var video: Video = Video(),
                 var level: Int = 0x200//if support, default level 31
     )
 
-    class Audio(var mime: String = "audio/mp4a-latm")
+    class Audio(var mime: String = "audio/mp4a-latm",
+                var channel: Int = 2,
+                var sampleRateInHz: Int = 44100,
+                var bitrate: Int = 64000,
+                var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
+                var pcm: Int = AudioFormat.ENCODING_PCM_16BIT)
 }
