@@ -13,27 +13,48 @@ import java.io.File
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
-class MuxerImpl(var format: MediaFormat,
-                var path: String,
+class MuxerImpl(var path: String,
                 private var muxer: MediaMuxer? = null,
-                private var videoTrack: Int = 0) : Muxer {
+                var videoTrack: Int = 0,
+                var audioTrack: Int = 0) : Muxer {
 
     companion object {
         private val WRITE = 0x1
     }
 
+    private val mWriteSyn = Any()
     private var mHandlerThread = HandlerThread("Write_Thread")
     private var mHandler: Handler? = null
     private var mFrameCount = 0
+    private var mVideoTrackReady = false
+    private var mAudioTrackReady = false
+    private var mStart = false
 
     init {
         //删除已存在的文件
         val file = File(path)
         if (file.exists()) file.delete()
         muxer = MediaMuxer(path, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-        videoTrack = muxer!!.addTrack(format)
-        muxer?.start()
         initThread()
+    }
+
+    private fun ready() {
+        if (mVideoTrackReady) {
+            muxer?.start()
+            mStart = true
+        }
+    }
+
+    override fun addVideoTrack(format: MediaFormat) {
+        videoTrack = muxer!!.addTrack(format)
+        mVideoTrackReady = true
+        ready()
+    }
+
+    override fun addAudioTrack(format: MediaFormat) {
+        audioTrack = muxer!!.addTrack(format)
+        mAudioTrackReady = true
+        ready()
     }
 
     private fun initThread() {
@@ -42,7 +63,7 @@ class MuxerImpl(var format: MediaFormat,
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
                     WRITE -> {
-                        writeSample(msg.obj as Sample)
+                        writeSample(msg.arg1, msg.obj as Sample)
                     }
                 }
             }
@@ -50,19 +71,31 @@ class MuxerImpl(var format: MediaFormat,
     }
 
     override fun release() {
+        debug_e("Muxer release")
         muxer?.stop()
         muxer?.release()
     }
 
-    override fun write(sample: Sample) {
-        if (null == mHandler) return
-        mHandler?.removeMessages(WRITE)
-        mHandler?.sendMessage(mHandler!!.obtainMessage(WRITE, sample))
+    override fun writeVideoSample(sample: Sample) {
+        if (null == mHandler || !mStart) return
+        ++mFrameCount
+        mHandler?.sendMessage(mHandler!!.obtainMessage(WRITE, videoTrack, 0, sample))
     }
 
-    private fun writeSample(sample: Sample) {
-        ++mFrameCount
-        debug_e("writeVideoSample($mFrameCount, ${sample.bufferInfo.presentationTimeUs}): ${sample.bufferInfo.size}")
-        muxer?.writeSampleData(videoTrack, sample.sample, sample.bufferInfo)
+    override fun writeAudioSample(sample: Sample) {
+        if (null == mHandler || !mStart) return
+        mHandler?.sendMessage(mHandler!!.obtainMessage(WRITE, audioTrack, 0, sample))
+    }
+
+    private fun writeSample(track: Int, sample: Sample) {
+        synchronized(mWriteSyn) {
+            try {
+                debug_e("write${if (videoTrack == track) "Video" else "Audio"}" +
+                        "Sample($mFrameCount, ${sample.bufferInfo.presentationTimeUs}): ${sample.bufferInfo.size}")
+                muxer?.writeSampleData(track, sample.sample, sample.bufferInfo)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }
