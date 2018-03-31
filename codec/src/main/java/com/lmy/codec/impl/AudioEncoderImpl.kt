@@ -26,7 +26,8 @@ class AudioEncoderImpl(var parameter: Parameter,
                        var inputBuffers: Array<ByteBuffer>? = null,
                        var outputBuffers: Array<ByteBuffer>? = null,
                        private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
-                       private var audioWrapper: AudioRecordWrapper? = null)
+                       private var audioWrapper: AudioRecordWrapper? = null,
+                       private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
     : Encoder, AudioRecordWrapper.OnPCMListener {
 
     companion object {
@@ -89,6 +90,7 @@ class AudioEncoderImpl(var parameter: Parameter,
     }
 
     private fun init() {
+        pTimer.reset()
         codec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         codec?.start()
         audioWrapper = AudioRecordWrapper(parameter)
@@ -97,6 +99,7 @@ class AudioEncoderImpl(var parameter: Parameter,
 
     private fun encode(buffer: ByteArray) {
         try {
+            pTimer.record()
             inputBuffers = codec!!.inputBuffers
             outputBuffers = codec!!.outputBuffers
             val inputBufferIndex = codec!!.dequeueInputBuffer(WAIT_TIME)
@@ -146,6 +149,10 @@ class AudioEncoderImpl(var parameter: Parameter,
                         if (endOfStream == 0) {
 //                            bufferInfo.presentationTimeUs = pTimer.presentationTimeUs
 //                            debug_e("read sample($flag): ${bufferInfo.size}")
+//                            if (bufferInfo.presentationTimeUs > 0)
+//                            timestamp += 29023
+//                            bufferInfo.presentationTimeUs = timestamp
+                            bufferInfo.presentationTimeUs = pTimer.presentationTimeUs
                             onSampleListener?.onSample(bufferInfo, data)
                         }
                         // 一定要记得释放
@@ -163,14 +170,16 @@ class AudioEncoderImpl(var parameter: Parameter,
 
     override fun start() {
         synchronized(mEncodingSyn) {
-            //            pTimer.start()
+            pTimer.start()
             mEncoding = true
+            debug_e("audio start")
         }
     }
 
     override fun pause() {
         synchronized(mEncodingSyn) {
             mEncoding = false
+            debug_e("audio pause")
         }
     }
 
@@ -191,5 +200,28 @@ class AudioEncoderImpl(var parameter: Parameter,
 
     @Deprecated("Invalid")
     override fun onFrameAvailable(p0: SurfaceTexture?) {
+    }
+
+    class PresentationTimer(var fps: Int,
+                            var presentationTimeUs: Long = 0,
+                            private var timestamp: Long = 0) {
+
+        fun start() {
+            timestamp = 0
+        }
+
+        fun record() {
+            val timeTmp = System.currentTimeMillis()
+            presentationTimeUs += if (0L != timestamp)
+                (timeTmp - timestamp) * 1000
+            else
+                1000000L / fps
+            timestamp = timeTmp
+        }
+
+        fun reset() {
+            presentationTimeUs = 0
+            timestamp = 0
+        }
     }
 }

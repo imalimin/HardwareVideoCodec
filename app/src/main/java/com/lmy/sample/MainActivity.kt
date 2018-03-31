@@ -26,11 +26,11 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     mPresenter.encoder?.start()
-//                    mPresenter.audioEncoder?.start()
+                    mPresenter.audioEncoder?.start()
                 }
                 MotionEvent.ACTION_UP -> {
                     mPresenter.encoder?.pause()
-//                    mPresenter.audioEncoder?.start()
+                    mPresenter.audioEncoder?.pause()
                 }
             }
             return@setOnTouchListener true
