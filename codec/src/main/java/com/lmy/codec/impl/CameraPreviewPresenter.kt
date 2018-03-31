@@ -10,6 +10,7 @@ import com.lmy.codec.entity.Parameter
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRender
+import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
 import java.nio.ByteBuffer
@@ -19,12 +20,24 @@ import java.nio.ByteBuffer
  */
 class CameraPreviewPresenter(var parameter: Parameter,
                              var encoder: Encoder? = null,
+                             var audioEncoder: Encoder? = null,
                              private var cameraWrapper: CameraWrapper? = null,
                              private var render: Render? = null,
-                             private var muxer: Muxer? = null) : SurfaceTexture.OnFrameAvailableListener,
-        Encoder.OnSampleListener {
+                             private var muxer: Muxer? = MuxerImpl("/storage/emulated/0/test.mp4"))
+    : SurfaceTexture.OnFrameAvailableListener, Encoder.OnSampleListener {
 
     private val syncOp = Any()
+    private val onAudioSampleListener: Encoder.OnSampleListener = object : Encoder.OnSampleListener {
+        override fun onFormatChanged(format: MediaFormat) {
+            debug_e("Add audio track")
+            muxer?.addAudioTrack(format)
+        }
+
+        override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
+            debug_e("audio sample(${info.size})")
+            muxer?.writeAudioSample(Sample.wrap(info, data))
+        }
+    }
 
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
@@ -32,7 +45,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
     }
 
     override fun onFormatChanged(format: MediaFormat) {
-        muxer = MuxerImpl(format, "/storage/emulated/0/test.mp4")
+        muxer?.addVideoTrack(format)
     }
 
     /**
@@ -40,7 +53,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
      * For VideoEncoderImpl
      */
     override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
-        muxer?.write(Sample.wrap(info, data))
+        muxer?.writeVideoSample(Sample.wrap(info, data))
     }
 
     /**
@@ -60,6 +73,8 @@ class CameraPreviewPresenter(var parameter: Parameter,
                 encoder = VideoEncoderImpl(parameter,
                         cameraWrapper!!.textureWrapper as CameraTextureWrapper)
                 encoder!!.setOnSampleListener(this)
+                audioEncoder = AudioEncoderImpl(parameter)
+                audioEncoder!!.setOnSampleListener(onAudioSampleListener)
             }, 1500)
         }
     }
@@ -88,12 +103,12 @@ class CameraPreviewPresenter(var parameter: Parameter,
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-            encoder?.stop(object : Encoder.OnStopListener {
-                override fun onStop() {
-                    muxer?.release()
-                }
-            })
-
         }
+        encoder?.stop(object : Encoder.OnStopListener {
+            override fun onStop() {
+                muxer?.release()
+            }
+        })
+        audioEncoder?.stop()
     }
 }
