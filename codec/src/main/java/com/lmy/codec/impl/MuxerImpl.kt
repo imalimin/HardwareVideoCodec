@@ -85,7 +85,9 @@ class MuxerImpl(var path: String,
 
     override fun release() {
         debug_e("Muxer release")
-        muxer?.stop()
+        if (mStart) {
+            muxer?.stop()
+        }
         muxer?.release()
     }
 
