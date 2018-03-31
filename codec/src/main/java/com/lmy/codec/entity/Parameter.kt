@@ -41,8 +41,9 @@ class Parameter(var video: Video = Video(),
     )
 
     class Audio(var mime: String = "audio/mp4a-latm",
-                var channel: Int = 2,
-                var sampleRateInHz: Int = 44100,
+                var channel: Int = 1,
+                var samplePerFrame: Int = 1024,
+                var sampleRateInHz: Int = 16000,
                 var bitrate: Int = 64000,
                 var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
                 var pcm: Int = AudioFormat.ENCODING_PCM_16BIT)
