@@ -31,7 +31,7 @@ class Parameter(var video: Video = Video(),
 
     class Video(var mime: String = "video/avc",
                 var width: Int = 720,
-                var height: Int = 1280,
+                var height: Int = 480,
                 var fps: Int = 24,
                 var bitrate: Int = width * height * 3,
                 var iFrameInterval: Int = 2,
