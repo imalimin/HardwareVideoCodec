@@ -1,5 +1,6 @@
 package com.lmy.codec.helper
 
+import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.os.Build
@@ -25,6 +26,13 @@ class CodecHelper {
                     mediaFormat.setInteger(MediaFormat.KEY_LEVEL, parameter.video.level)
                 }
             }
+        }
+        fun initAudioFormat(mediaFormat: MediaFormat, parameter: Parameter) {
+            mediaFormat.setString(MediaFormat.KEY_MIME, parameter.audio.mime)
+            mediaFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, parameter.audio.channel)
+            mediaFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, parameter.audio.sampleRateInHz)
+            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, parameter.audio.bitrate)
+            mediaFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, parameter.audio.profile)
         }
     }
 }
