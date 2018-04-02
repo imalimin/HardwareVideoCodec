@@ -43,10 +43,8 @@ class AudioRecordWrapper(var parameter: Parameter,
     }
 
     override fun run() {
-        synchronized(mStartSyn) {
-            while (mStart) {
-                read()
-            }
+        while (mStart) {
+            read()
         }
     }
 
