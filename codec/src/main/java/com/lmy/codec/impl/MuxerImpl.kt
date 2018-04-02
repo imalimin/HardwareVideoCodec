@@ -85,6 +85,8 @@ class MuxerImpl(var path: String,
 
     override fun release() {
         debug_e("Muxer release")
+        mHandlerThread.looper.quitSafely()
+        mAudioThread.looper.quitSafely()
         if (mStart) {
             muxer?.stop()
         }

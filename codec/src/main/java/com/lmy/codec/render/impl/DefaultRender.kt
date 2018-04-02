@@ -49,6 +49,7 @@ class DefaultRender(var parameter: Parameter,
                         draw()
                     }
                     STOP -> {
+                        mHandlerThread.looper.quitSafely()
                         screenWrapper?.release()
                     }
                 }
@@ -129,7 +130,10 @@ class DefaultRender(var parameter: Parameter,
     }
 
     override fun stop() {
-        mHandler?.sendEmptyMessage(STOP)
+        try {
+            mHandler?.sendEmptyMessage(STOP)
+        } catch (e: Exception) {
+        }
     }
 
     override fun release() {
@@ -137,7 +141,10 @@ class DefaultRender(var parameter: Parameter,
     }
 
     override fun onFrameAvailable(cameraTexture: SurfaceTexture?) {
-        mHandler?.sendEmptyMessage(RENDER)
+        try {
+            mHandler?.sendEmptyMessage(RENDER)
+        } catch (e: Exception) {
+        }
     }
 
     fun updateScreenTexture(texture: SurfaceTexture?) {
