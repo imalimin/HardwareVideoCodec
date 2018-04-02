@@ -49,7 +49,7 @@ class DefaultRender(var parameter: Parameter,
                         draw()
                     }
                     STOP -> {
-                        mHandlerThread.looper.quitSafely()
+                        mHandlerThread.quitSafely()
                         screenWrapper?.release()
                     }
                 }

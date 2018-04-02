@@ -81,7 +81,7 @@ class AudioEncoderImpl(var parameter: Parameter,
                         codec!!.stop()
                         codec!!.release()
                         audioWrapper?.stop()
-                        mHandlerThread.looper.quitSafely()
+                        mHandlerThread.quitSafely()
                         val listener = msg.obj
                         if (null != listener)
                             (listener as Encoder.OnStopListener).onStop()

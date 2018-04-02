@@ -92,7 +92,7 @@ class VideoEncoderImpl(var parameter: Parameter,
                         codec!!.stop()
                         codec!!.release()
                         codecWrapper?.release()
-                        mHandlerThread.looper.quitSafely()
+                        mHandlerThread.quitSafely()
                         val listener = msg.obj
                         if (null != listener)
                             (listener as Encoder.OnStopListener).onStop()
