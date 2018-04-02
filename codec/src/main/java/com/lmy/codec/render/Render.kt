@@ -8,6 +8,7 @@ import android.graphics.SurfaceTexture
 interface Render : SurfaceTexture.OnFrameAvailableListener {
     fun draw()
     fun start(texture: SurfaceTexture, width: Int, height: Int)
+    fun start(texture: SurfaceTexture, width: Int, height: Int, runnable: Runnable?)
     fun stop()
     fun release()
 }
