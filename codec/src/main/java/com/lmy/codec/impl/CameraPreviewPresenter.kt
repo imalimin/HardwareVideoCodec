@@ -27,6 +27,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
     : SurfaceTexture.OnFrameAvailableListener, Encoder.OnSampleListener {
 
     private val syncOp = Any()
+    private var onStateListener: OnStateListener? = null
     private val onAudioSampleListener: Encoder.OnSampleListener = object : Encoder.OnSampleListener {
         override fun onFormatChanged(format: MediaFormat) {
             debug_e("Add audio track")
@@ -113,9 +114,18 @@ class CameraPreviewPresenter(var parameter: Parameter,
                 audioEncoder?.stop(object : Encoder.OnStopListener {
                     override fun onStop() {
                         muxer?.release()
+                        onStateListener?.onStop()
                     }
                 })
             }
         })
+    }
+
+    fun setOnStateListener(listener: OnStateListener) {
+        onStateListener = listener
+    }
+
+    interface OnStateListener {
+        fun onStop()
     }
 }
