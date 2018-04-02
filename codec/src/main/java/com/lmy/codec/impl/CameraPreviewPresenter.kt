@@ -8,7 +8,7 @@ import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.render.Render
-import com.lmy.codec.render.impl.DefaultRender
+import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
@@ -41,7 +41,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
-        render = DefaultRender(parameter, cameraWrapper!!.textureWrapper as CameraTextureWrapper)
+        render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper as CameraTextureWrapper)
     }
 
     override fun onFormatChanged(format: MediaFormat) {

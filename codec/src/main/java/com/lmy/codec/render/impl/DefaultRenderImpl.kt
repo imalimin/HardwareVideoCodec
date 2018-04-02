@@ -15,17 +15,17 @@ import com.lmy.codec.wrapper.ScreenTextureWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class DefaultRender(var parameter: Parameter,
-                    var cameraWrapper: CameraTextureWrapper,
-                    var transformMatrix: FloatArray = FloatArray(16),
-                    var screenTexture: SurfaceTexture? = null,
-                    var screenWrapper: ScreenTextureWrapper? = null,
-                    var width: Int = 1,
-                    var height: Int = 1,
-                    private var viewportX: Int = 0,
-                    private var viewportY: Int = 0,
-                    var cameraWidth: Int = 0,
-                    var cameraHeight: Int = 0)
+class DefaultRenderImpl(var parameter: Parameter,
+                        var cameraWrapper: CameraTextureWrapper,
+                        var transformMatrix: FloatArray = FloatArray(16),
+                        var screenTexture: SurfaceTexture? = null,
+                        var screenWrapper: ScreenTextureWrapper? = null,
+                        var width: Int = 1,
+                        var height: Int = 1,
+                        private var viewportX: Int = 0,
+                        private var viewportY: Int = 0,
+                        var cameraWidth: Int = 0,
+                        var cameraHeight: Int = 0)
     : Render {
 
     companion object {
