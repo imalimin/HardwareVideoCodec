@@ -104,11 +104,18 @@ class CameraPreviewPresenter(var parameter: Parameter,
                 e.printStackTrace()
             }
         }
+        stopEncoder()
+    }
+
+    private fun stopEncoder() {
         encoder?.stop(object : Encoder.OnStopListener {
             override fun onStop() {
-                muxer?.release()
+                audioEncoder?.stop(object : Encoder.OnStopListener {
+                    override fun onStop() {
+                        muxer?.release()
+                    }
+                })
             }
         })
-        audioEncoder?.stop()
     }
 }
