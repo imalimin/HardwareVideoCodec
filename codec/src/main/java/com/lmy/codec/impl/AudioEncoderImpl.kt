@@ -68,18 +68,20 @@ class AudioEncoderImpl(var parameter: Parameter,
         mHandler = object : Handler(mHandlerThread.looper) {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
-                    VideoEncoderImpl.INIT -> {
+                    INIT -> {
                         init()
                     }
-                    VideoEncoderImpl.ENCODE -> {
+                    ENCODE -> {
                         encode(msg.obj as ByteArray)
                     }
-                    VideoEncoderImpl.STOP -> {
-                        //编码结束，发送结束信号，让surface不在提供数据
-                        codec!!.signalEndOfInputStream()
+                    STOP -> {
+                        while (dequeue()) {//取出编码器中剩余的帧
+                        }
+                        debug_e("Audio encoder stop")
                         codec!!.stop()
                         codec!!.release()
                         audioWrapper?.stop()
+                        mHandlerThread.looper.quitSafely()
                         val listener = msg.obj
                         if (null != listener)
                             (listener as Encoder.OnStopListener).onStop()
@@ -110,14 +112,6 @@ class AudioEncoderImpl(var parameter: Parameter,
                 codec!!.queueInputBuffer(inputBufferIndex, 0, buffer.size, 0, 0)
             }
             dequeue()
-//            var outputBufferIndex = codec!!.dequeueOutputBuffer(bufferInfo, 0)
-//            while (outputBufferIndex >= 0) {
-//                val outputBuffer = outputBuffers!![outputBufferIndex]
-////                outputBuffer.position(bufferInfo.offset)
-//                onSampleListener?.onSample(bufferInfo, outputBuffer)
-//                codec!!.releaseOutputBuffer(outputBufferIndex, false)
-//                outputBufferIndex = codec!!.dequeueOutputBuffer(bufferInfo, 0)
-//            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -133,16 +127,19 @@ class AudioEncoderImpl(var parameter: Parameter,
     }
 
     @SuppressLint("WrongConstant", "SwitchIntDef")
-    private fun dequeue() {
+    private fun dequeue(): Boolean {
         try {
             val flag = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
             when (flag) {
+                MediaCodec.INFO_TRY_AGAIN_LATER -> {
+                    return false
+                }
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("AUDIO INFO_OUTPUT_FORMAT_CHANGED")
                     onSampleListener?.onFormatChanged(codec!!.outputFormat)
                 }
                 else -> {
-                    if (flag < 0) return@dequeue
+                    if (flag < 0) return@dequeue false
                     val data = codec!!.outputBuffers[flag]
                     if (null != data) {
                         val endOfStream = bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
@@ -157,29 +154,29 @@ class AudioEncoderImpl(var parameter: Parameter,
                         }
                         // 一定要记得释放
                         codec!!.releaseOutputBuffer(flag, false)
-                        if (endOfStream == MediaCodec.BUFFER_FLAG_END_OF_STREAM) {
-                            return
-                        }
+//                        if (endOfStream == MediaCodec.BUFFER_FLAG_END_OF_STREAM) {
+//                            return true
+//                        }
+                        return true
                     }
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        return false
     }
 
     override fun start() {
         synchronized(mEncodingSyn) {
             pTimer.start()
             mEncoding = true
-            debug_e("audio start")
         }
     }
 
     override fun pause() {
         synchronized(mEncodingSyn) {
             mEncoding = false
-            debug_e("audio pause")
         }
     }
 
@@ -189,9 +186,8 @@ class AudioEncoderImpl(var parameter: Parameter,
 
     override fun stop(listener: Encoder.OnStopListener?) {
         pause()
-        audioWrapper?.stop()
-        mHandler?.removeMessages(VideoEncoderImpl.STOP)
-        mHandler?.sendMessage(mHandler!!.obtainMessage(VideoEncoderImpl.STOP, listener))
+        mHandler?.removeMessages(STOP)
+        mHandler?.sendMessage(mHandler!!.obtainMessage(STOP, listener))
     }
 
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {

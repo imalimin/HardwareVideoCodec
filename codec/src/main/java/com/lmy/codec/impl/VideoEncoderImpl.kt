@@ -84,13 +84,15 @@ class VideoEncoderImpl(var parameter: Parameter,
                         }
                     }
                     STOP -> {
-                        debug_v("dequeue left frames")
+                        while (dequeue()) {//取出编码器中剩余的帧
+                        }
+                        debug_e("Video encoder stop")
                         //编码结束，发送结束信号，让surface不在提供数据
                         codec!!.signalEndOfInputStream()
                         codec!!.stop()
                         codec!!.release()
-//                        dequeue()
                         codecWrapper?.release()
+                        mHandlerThread.looper.quitSafely()
                         val listener = msg.obj
                         if (null != listener)
                             (listener as Encoder.OnStopListener).onStop()
@@ -135,7 +137,7 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     @SuppressLint("WrongConstant")
-    private fun dequeue() {
+    private fun dequeue(): Boolean {
         try {
             val flag = codec!!.dequeueOutputBuffer(mBufferInfo, WAIT_TIME)
             when (flag) {
@@ -144,13 +146,14 @@ class VideoEncoderImpl(var parameter: Parameter,
                 }
                 MediaCodec.INFO_TRY_AGAIN_LATER -> {
 //                    debug_v("INFO_TRY_AGAIN_LATER")
+                    return false
                 }
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("INFO_OUTPUT_FORMAT_CHANGED")
                     onSampleListener?.onFormatChanged(codec!!.outputFormat)
                 }
                 else -> {
-                    if (flag < 0) return@dequeue
+                    if (flag < 0) return@dequeue false
                     val data = codec!!.outputBuffers[flag]
                     if (null != data) {
                         val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
@@ -160,15 +163,17 @@ class VideoEncoderImpl(var parameter: Parameter,
                         }
                         // 一定要记得释放
                         codec!!.releaseOutputBuffer(flag, false)
-                        if (endOfStream == MediaCodec.BUFFER_FLAG_END_OF_STREAM) {
-                            return
-                        }
+//                        if (endOfStream == MediaCodec.BUFFER_FLAG_END_OF_STREAM) {
+//                            return true
+//                        }
+                        return true
                     }
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        return false
     }
 
     override fun start() {
