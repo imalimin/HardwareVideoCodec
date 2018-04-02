@@ -2,6 +2,9 @@ package com.lmy.codec.wrapper
 
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Message
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CameraHelper
 import com.lmy.codec.util.debug_e
@@ -14,19 +17,40 @@ class CameraWrapper(private var parameter: Parameter,
                     private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener,
                     var textureWrapper: TextureWrapper = CameraTextureWrapper()) {
     companion object {
+        private val PREPARE = 0x1
         fun open(param: Parameter, onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener)
                 : CameraWrapper {
             return CameraWrapper(param, onFrameAvailableListener)
         }
     }
 
+    private var mHandlerThread = HandlerThread("Renderer_Thread")
+    private var mHandler: Handler? = null
     private var mCamera: Camera? = null
     private var mCameras = 0
     private var mCameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK
 
+    private var mPrepare = false
+    private var mRequestPreview = false
+
     init {
         mCameras = CameraHelper.getNumberOfCameras()
-        prepare()
+        initThread()
+        mHandler?.removeMessages(PREPARE)
+        mHandler?.sendEmptyMessage(PREPARE)
+    }
+
+    private fun initThread() {
+        mHandlerThread.start()
+        mHandler = object : Handler(mHandlerThread.looper) {
+            override fun handleMessage(msg: Message) {
+                when (msg.what) {
+                    PREPARE -> {
+                        prepare()
+                    }
+                }
+            }
+        }
     }
 
     private fun prepare() {
@@ -39,7 +63,9 @@ class CameraWrapper(private var parameter: Parameter,
             parameter.cameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK
         mCameraIndex = parameter.cameraIndex
 
+        val time = System.currentTimeMillis()
         mCamera = openCamera(mCameraIndex)
+        debug_e("open time: ${System.currentTimeMillis() - time}")
         if (null == mCamera) return
         val cameraParam = mCamera!!.parameters
         CameraHelper.setPreviewSize(cameraParam, parameter)
@@ -64,6 +90,12 @@ class CameraWrapper(private var parameter: Parameter,
                 "VideoStabilization(${cameraParam.videoStabilization})")
         try {
             mCamera!!.parameters = cameraParam
+            mPrepare = true
+            if (mRequestPreview) {
+                startPreview()
+                mRequestPreview = false
+                mPrepare = false
+            }
         } catch (e: Exception) {
             mCamera!!.release()
             debug_e("Camera $mCameraIndex open failed. Please check parameters")
@@ -96,17 +128,19 @@ class CameraWrapper(private var parameter: Parameter,
     }
 
     fun startPreview(): Boolean {
+        mRequestPreview = true
+        if (!mPrepare) return false
         if (null == mCamera) return false
         textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
-        try {
+        return try {
             mCamera!!.setPreviewTexture(textureWrapper.surfaceTexture)
             mCamera!!.startPreview()
-            return true
+            true
         } catch (e: Exception) {
             release()
             debug_e("Start preview failed")
             e.printStackTrace()
-            return false
+            false
         }
     }
 
@@ -118,9 +152,10 @@ class CameraWrapper(private var parameter: Parameter,
             debug_e("Stop preview failed")
             e.printStackTrace()
         }
+        mHandlerThread.quitSafely()
     }
 
     private fun releaseTexture() {
-        textureWrapper?.release()
+        textureWrapper.release()
     }
 }
