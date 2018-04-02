@@ -3,7 +3,6 @@ package com.lmy.codec.impl
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
-import android.os.Handler
 import com.lmy.codec.Encoder
 import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Parameter
@@ -69,14 +68,13 @@ class CameraPreviewPresenter(var parameter: Parameter,
     fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
         synchronized(syncOp) {
             cameraWrapper!!.startPreview()
-            render?.start(screenTexture, width, height)
-            Handler().postDelayed({
+            render?.start(screenTexture, width, height, Runnable {
                 encoder = VideoEncoderImpl(parameter,
                         cameraWrapper!!.textureWrapper as CameraTextureWrapper)
-                encoder!!.setOnSampleListener(this)
+                encoder!!.setOnSampleListener(this@CameraPreviewPresenter)
                 audioEncoder = AudioEncoderImpl(parameter)
                 audioEncoder!!.setOnSampleListener(onAudioSampleListener)
-            }, 1500)
+            })
         }
     }
 

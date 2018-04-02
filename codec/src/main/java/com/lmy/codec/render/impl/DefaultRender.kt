@@ -44,6 +44,9 @@ class DefaultRender(var parameter: Parameter,
                 when (msg.what) {
                     INIT -> {
                         init()
+                        if (null != msg.obj) {
+                            (msg.obj as Runnable).run()
+                        }
                     }
                     RENDER -> {
                         draw()
@@ -89,9 +92,13 @@ class DefaultRender(var parameter: Parameter,
     }
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {
+        start(texture, width, height, null)
+    }
+
+    override fun start(texture: SurfaceTexture, width: Int, height: Int, runnable: Runnable?) {
         updateScreenTexture(texture)
         initViewport(width, height)
-        mHandler?.sendEmptyMessage(INIT)
+        mHandler?.sendMessage(mHandler!!.obtainMessage(INIT, runnable))
     }
 
     private fun initViewport(width: Int, height: Int) {
