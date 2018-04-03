@@ -56,8 +56,8 @@ class BeautyTexture(var inputTextureId: Int,
         GLES20.glFinish()
         GLES20.glDisableVertexAttribArray(aPositionLocation)
         GLES20.glDisableVertexAttribArray(aTextureCoordinateLocation)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
-        GLES20.glUseProgram(0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
+        GLES20.glUseProgram(GLES20.GL_NONE)
     }
 
     private var texelHeightOffset = 0f
