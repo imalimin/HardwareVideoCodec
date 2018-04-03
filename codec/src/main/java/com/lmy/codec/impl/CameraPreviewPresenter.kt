@@ -69,7 +69,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
         synchronized(syncOp) {
             cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height, Runnable {
-                encoder = VideoEncoderImpl(parameter,
+                encoder = SoftVideoEncoderImpl(parameter,
                         cameraWrapper!!.textureWrapper as CameraTextureWrapper)
                 encoder!!.setOnSampleListener(this@CameraPreviewPresenter)
                 audioEncoder = AudioEncoderImpl(parameter)
