@@ -1,7 +1,5 @@
 package com.lmy.codec.impl
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.SurfaceTexture
 import android.media.MediaFormat
 import android.opengl.GLES20
@@ -14,7 +12,6 @@ import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.x264.X264Encoder
-import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -92,22 +89,23 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         if (buffer == null || !isFinish) return
         isFinish = false
         buffer?.clear()
-        buffer?.position(0)
+//        debug_e("check: ${GLES20.glCheckFramebufferStatus(cameraWrapper.getFrameBuffer())}, ${GLES20.glGetError()}")
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, cameraWrapper.getFrameBuffer())
         GLES20.glReadPixels(0, 0, parameter.video.width, parameter.video.height, GLES20.GL_RGBA,
-                GLES20.GL_UNSIGNED_BYTE, buffer)
+                GLES20.GL_UNSIGNED_BYTE, buffer!!)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
-        val options = BitmapFactory.Options()
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888
-        val bitmap = BitmapFactory.decodeByteArray(buffer!!.array(), 0, buffer!!.capacity(), options)
-        if (null == bitmap) {
-            debug_e("Bitmap is null[${buffer!![1000]}, ${buffer!![1003]}, ${buffer!![1006]}, ${buffer!![1009]}]")
-            isFinish = true
-            return
-        }
-        val out = FileOutputStream("/storage/emulated/0/000.jpg")
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
-        debug_e("Saved!")
+        debug_e("buffer[${buffer!![1000]}, ${buffer!![1003]}, ${buffer!![1006]}, ${buffer!![1009]}]")
+//        val options = BitmapFactory.Options()
+//        options.inPreferredConfig = Bitmap.Config.ARGB_8888
+//        val bitmap = BitmapFactory.decodeByteArray(buffer!!.array(), 0, buffer!!.capacity(), options)
+//        if (null == bitmap) {
+//            debug_e("Bitmap is null")
+//            isFinish = true
+//            return
+//        }
+//        val out = FileOutputStream("/storage/emulated/0/000.jpg")
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
+//        debug_e("Saved!")
         isFinish = true
     }
 
