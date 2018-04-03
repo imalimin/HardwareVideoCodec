@@ -4,8 +4,6 @@ apply plugin: 'kotlin-android'
 android {
     compileSdkVersion 26
 
-
-
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 26
@@ -14,8 +12,20 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        ndk {
+            moduleName "codec"
+            abiFilters "armeabi"//输出指定abi体系结构下的so库
+        }
+        sourceSets.main {
+            jni.srcDirs = []
+            jniLibs.srcDir "src/main/jniLibs"
+        }
     }
-
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/jni/Android.mk"
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
