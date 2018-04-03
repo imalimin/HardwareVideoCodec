@@ -67,6 +67,11 @@ class CameraTextureWrapper : TextureWrapper() {
         texture?.drawTexture(transformMatrix)
     }
 
+    fun getFrameBuffer(): Int {
+        checkTexture()
+        return (texture as BaseFrameBufferTexture).frameBuffer!!
+    }
+
     fun getFrameTexture(): Int {
         checkTexture()
         return (texture as BaseFrameBufferTexture).frameBufferTexture!!
