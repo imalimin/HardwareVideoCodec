@@ -33,6 +33,9 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
     encoder = (Encoder *) malloc(sizeof(Encoder));
     encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
     encoder->picture = (x264_param_t *) malloc(sizeof(x264_picture_t));
+    //开启多帧并行编码
+    encoder->param->b_sliced_threads = 0;
+    //encoder->param->i_threads = 8;
     x264_param_default(encoder->param);
 }
 
