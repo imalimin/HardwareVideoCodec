@@ -3,6 +3,7 @@ package com.lmy.codec.impl
 import android.graphics.SurfaceTexture
 import android.media.MediaFormat
 import android.opengl.GLES20
+import android.opengl.GLES30
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
@@ -90,11 +91,11 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         isFinish = false
         buffer?.clear()
 //        debug_e("check: ${GLES20.glCheckFramebufferStatus(cameraWrapper.getFrameBuffer())}, ${GLES20.glGetError()}")
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, cameraWrapper.getFrameBuffer())
+//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, cameraWrapper.getFrameBuffer())
         GLES20.glReadPixels(0, 0, parameter.video.width, parameter.video.height, GLES20.GL_RGBA,
                 GLES20.GL_UNSIGNED_BYTE, buffer!!)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
-        debug_e("buffer[${buffer!![1000]}, ${buffer!![1003]}, ${buffer!![1006]}, ${buffer!![1009]}]")
+//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+        debug_e("buffer(${cameraWrapper.getFrameBuffer()})[${buffer!![1000]}, ${buffer!![1003]}, ${buffer!![1006]}, ${buffer!![1009]}]")
 //        val options = BitmapFactory.Options()
 //        options.inPreferredConfig = Bitmap.Config.ARGB_8888
 //        val bitmap = BitmapFactory.decodeByteArray(buffer!!.array(), 0, buffer!!.capacity(), options)
