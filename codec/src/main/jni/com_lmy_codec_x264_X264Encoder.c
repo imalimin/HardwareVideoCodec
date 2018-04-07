@@ -3,6 +3,8 @@
 //
 
 #include <com_lmy_codec_x264_X264Encoder.h>
+#include <malloc.h>
+#include <string.h>
 
 //Log
 #ifdef ANDROID
@@ -27,16 +29,39 @@ typedef struct {
 } Encoder;
 Encoder *encoder = NULL;
 int state = INVALID;
+jmethodID createBufferMethod = 0;
+jobject bufferObj = 0;
+jbyte *buffer = 0;
+
+static void createBuffer(JNIEnv *env, jobject thiz, int size) {
+    bufferObj = (*env)->CallObjectMethod(env, thiz, createBufferMethod, size);
+    buffer = (*env)->GetByteArrayElements(env, bufferObj, 0);
+}
+
+static void initBufferMethod(JNIEnv *env) {
+    jclass clazz = (*env)->FindClass(env, "com/lmy/codec/x264/X264Encoder");
+    if (clazz == 0) {
+        LOGE("com/lmy/codec/x264/X264Encoder not found");
+        return;
+    }
+
+    createBufferMethod = (*env)->GetMethodID(env, clazz, "createBuffer", "(I)[B");
+    if (createBufferMethod == 0) {
+        LOGE("createBuffer not found");
+        return;
+    }
+}
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
         (JNIEnv *env, jobject thiz) {
+    initBufferMethod(env);
     encoder = (Encoder *) malloc(sizeof(Encoder));
     encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
     encoder->picture = (x264_param_t *) malloc(sizeof(x264_picture_t));
     //开启多帧并行编码
-    encoder->param->b_sliced_threads = 0;
+    //encoder->param->b_sliced_threads = 0;
     //encoder->param->i_threads = 8;
-    x264_param_default(encoder->param);
+    x264_param_default_preset(encoder->param, "fast", "zerolatency");
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
@@ -79,20 +104,14 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_stop
 
 JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
         (JNIEnv *env, jobject thiz, jbyteArray src, jint srcSize, jbyteArray out) {
-    jbyte *Buf = (*env)->GetByteArrayElements(env, src, 0);
-    jbyte *h264Buf = (*env)->GetByteArrayElements(env, out, 0);
+    jbyte *buf = (*env)->GetByteArrayElements(env, src, 0);
+    jbyte *outBuf = (*env)->GetByteArrayElements(env, out, 0);
 
     x264_picture_t pic_out;
-    int i_data = 0;
     int nNal = -1;
-    int result = 0;
-    int i = 0, j = 0;
-    int nPix = 0;
+    int size = 0, i = 0;
 
-    unsigned char *pTmpOut = h264Buf;
-
-    int nPicSize = encoder->param->i_width * encoder->param->i_height * 3;
-    memcpy(encoder->picture->img.plane[0], Buf, nPicSize);
+    memcpy(encoder->picture->img.plane[0], buf, srcSize);
 
     encoder->picture->i_type = X264_TYPE_AUTO;
 
@@ -100,16 +119,19 @@ JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
         0) {
         return -1;
     }
+//    LOGE("x264 frame size = %d", encoder->nal[0].i_payload)
+//    createBuffer(env, thiz, size);
     for (i = 0; i < nNal; i++) {
-        memcpy(pTmpOut, encoder->nal[i].p_payload, encoder->nal[i].i_payload);
-        pTmpOut += encoder->nal[i].i_payload;
-        result += encoder->nal[i].i_payload;
+        memcpy(outBuf, encoder->nal[i].p_payload, encoder->nal[i].i_payload);
+        buffer += encoder->nal[i].i_payload;
+        size += encoder->nal[i].i_payload;
     }
+    LOGE("encode");
+    (*env)->ReleaseByteArrayElements(env, src, buf, 0);
+    (*env)->ReleaseByteArrayElements(env, out, outBuf, 0);
+//    (*env)->ReleaseByteArrayElements(env, bufferObj, buffer, 0);
 
-    (*env)->ReleaseByteArrayElements(env, src, Buf, 0);
-    (*env)->ReleaseByteArrayElements(env, out, h264Buf, 0);
-
-    return result;
+    return size;
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setVideoSize

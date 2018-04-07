@@ -6,7 +6,6 @@
 
 #ifndef _Included_com_lmy_codec_x264_X264Encoder
 #define _Included_com_lmy_codec_x264_X264Encoder
-#define NULL 0
 #ifdef __cplusplus
 extern "C" {
 #endif
