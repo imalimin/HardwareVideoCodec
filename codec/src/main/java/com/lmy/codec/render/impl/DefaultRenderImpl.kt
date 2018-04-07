@@ -20,6 +20,7 @@ class DefaultRenderImpl(var parameter: Parameter,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
+                        private var runnable: Runnable? = null,
                         var width: Int = 1,
                         var height: Int = 1,
                         private var viewportX: Int = 0,
@@ -77,6 +78,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         screenWrapper?.drawTexture(transformMatrix)
         screenWrapper?.egl?.swapBuffers()
+        runnable?.run()
     }
 
     private fun drawCamera() {
@@ -147,14 +149,19 @@ class DefaultRenderImpl(var parameter: Parameter,
         stop()
     }
 
-    override fun onFrameAvailable(cameraTexture: SurfaceTexture?) {
+    override fun onFrameAvailable(): Render {
         try {
             mHandler?.sendEmptyMessage(RENDER)
         } catch (e: Exception) {
         }
+        return this
     }
 
     fun updateScreenTexture(texture: SurfaceTexture?) {
         screenTexture = texture
+    }
+
+    override fun afterRender(runnable: Runnable) {
+        this.runnable = runnable
     }
 }
