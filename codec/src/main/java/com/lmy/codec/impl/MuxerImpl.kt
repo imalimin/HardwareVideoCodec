@@ -41,7 +41,7 @@ class MuxerImpl(var path: String,
     }
 
     private fun ready() {
-        if (mVideoTrackReady && mAudioTrackReady) {
+        if (mVideoTrackReady) {
             muxer?.start()
             mStart = true
             debug_e("Muxer start")
@@ -49,13 +49,25 @@ class MuxerImpl(var path: String,
     }
 
     override fun addVideoTrack(format: MediaFormat) {
-        videoTrack = muxer!!.addTrack(format)
+        try {
+            videoTrack = muxer!!.addTrack(format)
+        } catch (e: Exception) {
+            debug_e("Add video track failed")
+            e.printStackTrace()
+            return
+        }
         mVideoTrackReady = true
         ready()
     }
 
     override fun addAudioTrack(format: MediaFormat) {
-        audioTrack = muxer!!.addTrack(format)
+        try {
+            audioTrack = muxer!!.addTrack(format)
+        } catch (e: Exception) {
+            debug_e("Add audio track failed")
+            e.printStackTrace()
+            return
+        }
         mAudioTrackReady = true
         ready()
     }

@@ -29,6 +29,7 @@ typedef struct {
 } Encoder;
 Encoder *encoder = NULL;
 int state = INVALID;
+jmethodID setTypeMethod = 0;
 jmethodID createBufferMethod = 0;
 jobject bufferObj = 0;
 jbyte *buffer = 0;
@@ -36,6 +37,10 @@ jbyte *buffer = 0;
 static void createBuffer(JNIEnv *env, jobject thiz, int size) {
     bufferObj = (*env)->CallObjectMethod(env, thiz, createBufferMethod, size);
     buffer = (*env)->GetByteArrayElements(env, bufferObj, 0);
+}
+
+static void setType(JNIEnv *env, jobject thiz, int type) {
+    (*env)->CallVoidMethod(env, thiz, setTypeMethod, type);
 }
 
 static void initBufferMethod(JNIEnv *env) {
@@ -52,9 +57,24 @@ static void initBufferMethod(JNIEnv *env) {
     }
 }
 
+static void initSetTypeMethod(JNIEnv *env) {
+    jclass clazz = (*env)->FindClass(env, "com/lmy/codec/x264/X264Encoder");
+    if (clazz == 0) {
+        LOGE("com/lmy/codec/x264/X264Encoder not found");
+        return;
+    }
+
+    setTypeMethod = (*env)->GetMethodID(env, clazz, "setType", "(I)V");
+    if (setTypeMethod == 0) {
+        LOGE("setType not found");
+        return;
+    }
+}
+
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
         (JNIEnv *env, jobject thiz) {
     initBufferMethod(env);
+    initSetTypeMethod(env);
     encoder = (Encoder *) malloc(sizeof(Encoder));
     encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
     encoder->picture = (x264_param_t *) malloc(sizeof(x264_picture_t));
@@ -126,7 +146,8 @@ JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
         buffer += encoder->nal[i].i_payload;
         size += encoder->nal[i].i_payload;
     }
-    LOGE("encode");
+    setType(env, thiz, pic_out.i_type);
+    LOGE("encode: %d", pic_out.i_type);
     (*env)->ReleaseByteArrayElements(env, src, buf, 0);
     (*env)->ReleaseByteArrayElements(env, out, outBuf, 0);
 //    (*env)->ReleaseByteArrayElements(env, bufferObj, buffer, 0);

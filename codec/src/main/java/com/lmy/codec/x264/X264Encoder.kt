@@ -9,7 +9,8 @@ import java.nio.ByteOrder
  * Created by lmyooyo@gmail.com on 2018/4/3.
  */
 class X264Encoder(private var format: MediaFormat,
-                  var buffer: ByteBuffer? = null) {
+                  var buffer: ByteBuffer? = null,
+                  private var type: Int = -1) {
     init {
         System.loadLibrary("x264")
         System.loadLibrary("codec")
@@ -25,6 +26,15 @@ class X264Encoder(private var format: MediaFormat,
     private fun createBuffer(size: Int): ByteArray {
         debug_e("Create buffer($size)")
         return buffer!!.array()
+    }
+
+    private fun setType(type: Int) {
+//        debug_e("setType($type)")
+        this.type = type
+    }
+
+    fun getType(): Int {
+        return this.type
     }
 
     fun encode(src: ByteArray, srcSize: Int): Int {
