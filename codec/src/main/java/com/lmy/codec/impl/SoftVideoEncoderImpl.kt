@@ -1,9 +1,9 @@
 package com.lmy.codec.impl
 
 import android.graphics.SurfaceTexture
+import android.media.MediaCodec
 import android.media.MediaFormat
 import android.opengl.GLES20
-import android.opengl.GLES30
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
@@ -23,7 +23,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                            var cameraWrapper: CameraTextureWrapper,
                            var codec: X264Encoder? = null,
                            private var format: MediaFormat = MediaFormat(),
-                           private var buffer: ByteBuffer? = null,
+                           private var srcBuffer: ByteBuffer? = null,
+                           private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                            private var pTimer: VideoEncoderImpl.PresentationTimer = VideoEncoderImpl.PresentationTimer(parameter.video.fps)) : Encoder {
 
     companion object {
@@ -36,6 +37,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
     private var mEncoding = false
+    private var mCount = 0
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -45,6 +47,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     init {
         initCodec()
         initThread()
+        srcBuffer = ByteBuffer.allocate(720 * 480 * 3)
+        srcBuffer?.order(ByteOrder.nativeOrder())
         mHandler?.removeMessages(VideoEncoderImpl.INIT)
         mHandler?.sendEmptyMessage(VideoEncoderImpl.INIT)
     }
@@ -64,8 +68,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                 when (msg.what) {
                     INIT -> {
                         pTimer.reset()
-                        buffer = ByteBuffer.allocate(parameter.video.width * parameter.video.height * 4)
-                        buffer?.order(ByteOrder.nativeOrder())
+                        onSampleListener?.onFormatChanged(format)
                     }
                     ENCODE -> {
                         synchronized(mEncodingSyn) {
@@ -84,30 +87,40 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         }
     }
 
-    private var isFinish = true
     private fun encode() {
         pTimer.record()
-        if (buffer == null || !isFinish) return
-        isFinish = false
-        buffer?.clear()
-//        debug_e("check: ${GLES20.glCheckFramebufferStatus(cameraWrapper.getFrameBuffer())}, ${GLES20.glGetError()}")
+        if (srcBuffer == null) return
+        val time = System.currentTimeMillis()
+        val size = codec?.encode(srcBuffer!!.array(), srcBuffer!!.capacity())!!
+        if (0 == size) return
+        mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
+        mBufferInfo.size = size
+        codec!!.buffer!!.position(0)
+        codec!!.buffer!!.limit(size)
+        onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, size))
+        debug_e("x264 frame size = $size, cost ${System.currentTimeMillis() - time}ms")
+    }
+
+    private fun readPixels() {
+        ++mCount
+        if (0 != mCount % 24) return
+        srcBuffer!!.clear()
+        srcBuffer!!.position(0)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, cameraWrapper.getFrameBuffer())
-        GLES20.glReadPixels(0, 0, parameter.video.width, parameter.video.height, GLES20.GL_RGBA,
-                GLES20.GL_UNSIGNED_BYTE, buffer!!)
-//        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
-        debug_e("buffer(${cameraWrapper.getFrameBuffer()})[${buffer!![1000]}, ${buffer!![1003]}, ${buffer!![1006]}, ${buffer!![1009]}]")
-//        val options = BitmapFactory.Options()
-//        options.inPreferredConfig = Bitmap.Config.ARGB_8888
-//        val bitmap = BitmapFactory.decodeByteArray(buffer!!.array(), 0, buffer!!.capacity(), options)
+        GLES20.glReadPixels(0, 576, 720, 480, GLES20.GL_RGB,
+                GLES20.GL_UNSIGNED_BYTE, srcBuffer!!)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+        debug_e("buffer[${srcBuffer!![2000]}, ${srcBuffer!![2001]}, ${srcBuffer!![2002]}, ${srcBuffer!![2003]}]")
+
+//        val bitmap = Bitmap.createBitmap(bmpBuffer!!.array(), 720, 480, Bitmap.Config.RGB_565)
 //        if (null == bitmap) {
 //            debug_e("Bitmap is null")
-//            isFinish = true
 //            return
 //        }
 //        val out = FileOutputStream("/storage/emulated/0/000.jpg")
 //        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
 //        debug_e("Saved!")
-        isFinish = true
     }
 
     override fun start() {
@@ -136,6 +149,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
             if (mEncoding) {
+                readPixels()
                 mHandler?.removeMessages(VideoEncoderImpl.ENCODE)
                 mHandler?.sendEmptyMessage(VideoEncoderImpl.ENCODE)
             }
