@@ -31,12 +31,12 @@ class CameraPreviewPresenter(var parameter: Parameter,
     private val onAudioSampleListener: Encoder.OnSampleListener = object : Encoder.OnSampleListener {
         override fun onFormatChanged(format: MediaFormat) {
             debug_e("Add audio track")
-//            muxer?.addAudioTrack(format)
+            muxer?.addAudioTrack(format)
         }
 
         override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
-            debug_e("audio sample(${info.size})")
-//            muxer?.writeAudioSample(Sample.wrap(info, data))
+//            debug_e("audio sample(${info.size})")
+            muxer?.writeAudioSample(Sample.wrap(info, data))
         }
     }
 
