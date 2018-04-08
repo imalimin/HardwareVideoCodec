@@ -10,7 +10,12 @@ class Sample private constructor(var bufferInfo: MediaCodec.BufferInfo,
                                  var sample: ByteBuffer) {
     companion object {
         fun wrap(bufferInfo: MediaCodec.BufferInfo, sample: ByteBuffer): Sample {
-            return Sample(bufferInfo, sample)
+            val info = MediaCodec.BufferInfo()
+            info.presentationTimeUs = bufferInfo.presentationTimeUs
+            info.size = bufferInfo.size
+            info.offset = bufferInfo.offset
+            info.flags = bufferInfo.flags
+            return Sample(info, sample)
         }
     }
 }
