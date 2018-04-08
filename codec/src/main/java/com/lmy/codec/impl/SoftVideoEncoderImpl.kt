@@ -128,6 +128,16 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun encode() {
         ++mFrameCount
+        if (1 == mFrameCount) {
+            mBufferInfo.size = 31
+            mBufferInfo.presentationTimeUs = 1
+            mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
+            val byteArray = ByteArray(mBufferInfo.size)
+            HEADER.forEachIndexed { index, byte ->
+                byteArray[index] = byte
+            }
+            onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(byteArray, 0, mBufferInfo.size))
+        }
         pTimer.record()
         if (srcBuffer == null) return
         val time = System.currentTimeMillis()
@@ -143,18 +153,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 //        }
         val size = codec?.encode(data, srcBuffer!!.capacity())!!
         if (0 == size) return
-//        if (1 == mFrameCount) {
-//            mBufferInfo.size = 31
-//            mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-//            mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
-//            val byteArray = ByteArray(mBufferInfo.size)
-//            HEADER.forEachIndexed { index, byte ->
-//                byteArray[index] = byte
-//            }
-//            onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(byteArray, 0, mBufferInfo.size))
-//            pTimer.record()
-//            return
-//        }
         mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
         mBufferInfo.size = size
         when (codec!!.getType()) {
@@ -243,6 +241,10 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         synchronized(mEncodingSyn) {
             if (mEncoding) {
                 readPixels()
+//                if (0 == mFrameCount) {//PBO第一帧为空
+//                    ++mFrameCount
+//                    return
+//                }
                 mHandler?.removeMessages(VideoEncoderImpl.ENCODE)
                 mHandler?.sendEmptyMessage(VideoEncoderImpl.ENCODE)
             }
