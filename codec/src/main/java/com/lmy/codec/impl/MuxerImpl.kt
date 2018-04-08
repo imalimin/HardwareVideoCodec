@@ -43,7 +43,7 @@ class MuxerImpl(var path: String,
     }
 
     private fun ready() {
-        if (mVideoTrackReady) {
+        if (mVideoTrackReady && mAudioTrackReady) {
             muxer?.start()
             mStart = true
             debug_e("Muxer start")
