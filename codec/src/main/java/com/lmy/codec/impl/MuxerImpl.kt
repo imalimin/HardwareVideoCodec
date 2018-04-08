@@ -9,6 +9,7 @@ import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.util.debug_e
 import java.io.File
+import java.util.*
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
@@ -22,6 +23,7 @@ class MuxerImpl(var path: String,
         private val WRITE = 0x1
     }
 
+    private val mQueue = LinkedList<Sample>()
     private val mWriteSyn = Any()
     private var mHandlerThread = HandlerThread("Write_Thread")
     private var mHandler: Handler? = null
@@ -79,7 +81,11 @@ class MuxerImpl(var path: String,
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
                     WRITE -> {
-                        writeSample(msg.arg1, msg.obj as Sample)
+                        synchronized(mWriteSyn) {
+                            while (!mQueue.isEmpty()) {
+                                writeSample(videoTrack, mQueue.poll())
+                            }
+                        }
                     }
                 }
             }
@@ -108,7 +114,10 @@ class MuxerImpl(var path: String,
     override fun writeVideoSample(sample: Sample) {
         if (null == mHandler || !mStart) return
         ++mFrameCount
-        mHandler?.sendMessage(mHandler!!.obtainMessage(WRITE, videoTrack, 0, sample))
+        synchronized(mWriteSyn) {
+            mQueue.push(sample)
+            mHandler?.sendMessage(mHandler!!.obtainMessage(WRITE, videoTrack, 0, sample))
+        }
     }
 
     override fun writeAudioSample(sample: Sample) {
