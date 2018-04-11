@@ -38,8 +38,8 @@ class X264Encoder(private var format: MediaFormat,
     }
 
     fun encode(src: ByteArray, srcSize: Int): Int {
-        buffer?.position()
         buffer?.clear()
+        buffer?.position(0)
         return encode(src, srcSize, buffer!!.array())
     }
 
