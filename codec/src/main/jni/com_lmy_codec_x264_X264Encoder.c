@@ -12,6 +12,7 @@
 #include <jni.h>
 #include <x264.h>
 
+#define X264_TYPE_HEADER          -0x0001  /* Headers SPS/PPS */
 #define INVALID 0//未初始化
 #define START 1//开始
 #define STOP 1//停止
@@ -33,6 +34,7 @@ jmethodID setTypeMethod = 0;
 jmethodID createBufferMethod = 0;
 jobject bufferObj = 0;
 jbyte *buffer = 0;
+int hasNalHeader = 0;
 
 static void createBuffer(JNIEnv *env, jobject thiz, int size) {
     bufferObj = (*env)->CallObjectMethod(env, thiz, createBufferMethod, size);
@@ -81,7 +83,7 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
     //开启多帧并行编码
     //encoder->param->b_sliced_threads = 0;
     //encoder->param->i_threads = 8;
-    x264_param_default_preset(encoder->param, "fast", "zerolatency");
+    x264_param_default_preset(encoder->param, "veryfast", "zerolatency");
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
@@ -122,14 +124,42 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_stop
     LOGI("X264Encoder stop");
 }
 
+static int encode_headers(jbyte *outBuf) {
+    int nal, size = 0;
+    x264_nal_t *nals;
+    x264_encoder_headers(encoder->handle, &nals, &nal);
+    for (int i = 0; i < nal; i++) {
+        if (nals[i].i_type == NAL_SPS) {
+            LOGE("SPS---------------->i=%d,len=%d", i, nals[i].i_payload);
+            memcpy(outBuf, nals[i].p_payload, nals[i].i_payload);
+            outBuf += nals[i].i_payload;
+            size += nals[i].i_payload;
+        }
+//        else if (nals[i].i_type == NAL_PPS) {
+//            LOGE("PPS---------------->i=%d,len=%d", i, nals[i].i_payload);
+//            memcpy(outBuf, nals[i].p_payload, nals[i].i_payload);
+//            size += nals[i].i_payload;
+//        }
+    }
+    return size;
+}
+
 JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
         (JNIEnv *env, jobject thiz, jbyteArray src, jint srcSize, jbyteArray out) {
-    jbyte *buf = (*env)->GetByteArrayElements(env, src, 0);
     jbyte *outBuf = (*env)->GetByteArrayElements(env, out, 0);
 
-    x264_picture_t pic_out;
-    int nNal = -1;
     int size = 0, i = 0;
+    if (0 == hasNalHeader) {
+        hasNalHeader = 1;
+        size = encode_headers(outBuf);
+        setType(env, thiz, X264_TYPE_HEADER);
+        (*env)->ReleaseByteArrayElements(env, out, outBuf, 0);
+        return size;
+    }
+    jbyte *buf = (*env)->GetByteArrayElements(env, src, 0);
+
+    int nNal = -1;
+    x264_picture_t pic_out;
 
     memcpy(encoder->picture->img.plane[0], buf, srcSize);
 
@@ -143,7 +173,7 @@ JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
 //    createBuffer(env, thiz, size);
     for (i = 0; i < nNal; i++) {
         memcpy(outBuf, encoder->nal[i].p_payload, encoder->nal[i].i_payload);
-        buffer += encoder->nal[i].i_payload;
+        outBuf += encoder->nal[i].i_payload;
         size += encoder->nal[i].i_payload;
     }
     setType(env, thiz, pic_out.i_type);
@@ -151,6 +181,7 @@ JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
     (*env)->ReleaseByteArrayElements(env, src, buf, 0);
     (*env)->ReleaseByteArrayElements(env, out, outBuf, 0);
 //    (*env)->ReleaseByteArrayElements(env, bufferObj, buffer, 0);
+    LOGE("encode: end");
 
     return size;
 }
