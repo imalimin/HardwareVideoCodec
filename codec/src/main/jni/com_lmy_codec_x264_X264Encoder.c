@@ -31,32 +31,10 @@ typedef struct {
 Encoder *encoder = NULL;
 int state = INVALID;
 jmethodID setTypeMethod = 0;
-jmethodID createBufferMethod = 0;
-jobject bufferObj = 0;
-jbyte *buffer = 0;
 int hasNalHeader = 0;
-
-static void createBuffer(JNIEnv *env, jobject thiz, int size) {
-    bufferObj = (*env)->CallObjectMethod(env, thiz, createBufferMethod, size);
-    buffer = (*env)->GetByteArrayElements(env, bufferObj, 0);
-}
 
 static void setType(JNIEnv *env, jobject thiz, int type) {
     (*env)->CallVoidMethod(env, thiz, setTypeMethod, type);
-}
-
-static void initBufferMethod(JNIEnv *env) {
-    jclass clazz = (*env)->FindClass(env, "com/lmy/codec/x264/X264Encoder");
-    if (clazz == 0) {
-        LOGE("com/lmy/codec/x264/X264Encoder not found");
-        return;
-    }
-
-    createBufferMethod = (*env)->GetMethodID(env, clazz, "createBuffer", "(I)[B");
-    if (createBufferMethod == 0) {
-        LOGE("createBuffer not found");
-        return;
-    }
 }
 
 static void initSetTypeMethod(JNIEnv *env) {
@@ -73,9 +51,85 @@ static void initSetTypeMethod(JNIEnv *env) {
     }
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
-        (JNIEnv *env, jobject thiz) {
-    initBufferMethod(env);
+static int encode_headers(jbyte *dest) {
+    int nal, size = 0;
+    x264_nal_t *nals;
+    x264_encoder_headers(encoder->handle, &nals, &nal);
+    for (int i = 0; i < nal; i++) {
+        if (nals[i].i_type == NAL_SPS) {
+            LOGE("SPS---------------->i=%d,len=%d", i, nals[i].i_payload);
+            memcpy(dest, nals[i].p_payload, nals[i].i_payload);
+            dest += nals[i].i_payload;
+            size += nals[i].i_payload;
+        }
+//        else if (nals[i].i_type == NAL_PPS) {
+//            LOGE("PPS---------------->i=%d,len=%d", i, nals[i].i_payload);
+//            memcpy(outBuf, nals[i].p_payload, nals[i].i_payload);
+//            size += nals[i].i_payload;
+//        }
+    }
+    return size;
+}
+
+static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *dest) {
+    int size = 0, i = 0;
+    if (0 == hasNalHeader) {
+        hasNalHeader = 1;
+        size = encode_headers(dest);
+        setType(env, thiz, X264_TYPE_HEADER);
+        return size;
+    }
+
+    int nNal = -1;
+    x264_picture_t pic_out;
+
+    memcpy(encoder->picture->img.plane[0], src, srcSize);
+
+    encoder->picture->i_type = X264_TYPE_AUTO;
+
+    if (x264_encoder_encode(encoder->handle, &(encoder->nal), &nNal, encoder->picture, &pic_out) <
+        0) {
+        return -1;
+    }
+//    LOGE("x264 frame size = %d", encoder->nal[0].i_payload)
+//    createBuffer(env, thiz, size);
+    for (i = 0; i < nNal; i++) {
+        memcpy(dest, encoder->nal[i].p_payload, encoder->nal[i].i_payload);
+        dest += encoder->nal[i].i_payload;
+        size += encoder->nal[i].i_payload;
+    }
+    setType(env, thiz, pic_out.i_type);
+    LOGE("encode: %d", pic_out.i_type);
+}
+
+static void setVideoSize(int width, int height) {
+    encoder->param->i_width = width; //set frame width
+    encoder->param->i_height = height; //set frame height
+}
+
+static void setBitrate(int bitrate) {
+    encoder->param->rc.i_bitrate = bitrate;
+}
+
+static void setFrameFormat(int format) {
+    encoder->param->i_csp = format; // 设置输入的视频采样的格式
+}
+
+static void setFps(int fps) {
+    encoder->param->i_fps_num = (uint32_t) fps;
+    encoder->param->i_fps_den = 1;
+}
+
+static void setProfile(char *profile) {
+    LOGI("setProfile: %s", profile);
+    x264_param_apply_profile(encoder->param, profile);
+}
+
+static void setLevel(int level) {
+    encoder->param->i_level_idc = level;// 11 12 13 20 for CIF;31 for 720P
+}
+
+static void init(JNIEnv *env) {
     initSetTypeMethod(env);
     encoder = (Encoder *) malloc(sizeof(Encoder));
     encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
@@ -86,8 +140,7 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
     x264_param_default_preset(encoder->param, "veryfast", "zerolatency");
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
-        (JNIEnv *env, jobject thiz) {
+static void start() {
     if (INVALID != state) {
         LOGI("Start failed. Invalid state");
         return;
@@ -102,8 +155,7 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
     LOGI("X264Encoder start");
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_stop
-        (JNIEnv *env, jobject thiz) {
+static void stop() {
     if (START != state) {
         LOGI("Stop failed. Invalid state");
         return;
@@ -124,100 +176,59 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_stop
     LOGI("X264Encoder stop");
 }
 
-static int encode_headers(jbyte *outBuf) {
-    int nal, size = 0;
-    x264_nal_t *nals;
-    x264_encoder_headers(encoder->handle, &nals, &nal);
-    for (int i = 0; i < nal; i++) {
-        if (nals[i].i_type == NAL_SPS) {
-            LOGE("SPS---------------->i=%d,len=%d", i, nals[i].i_payload);
-            memcpy(outBuf, nals[i].p_payload, nals[i].i_payload);
-            outBuf += nals[i].i_payload;
-            size += nals[i].i_payload;
-        }
-//        else if (nals[i].i_type == NAL_PPS) {
-//            LOGE("PPS---------------->i=%d,len=%d", i, nals[i].i_payload);
-//            memcpy(outBuf, nals[i].p_payload, nals[i].i_payload);
-//            size += nals[i].i_payload;
-//        }
-    }
-    return size;
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
+        (JNIEnv *env, jobject thiz) {
+    init(env);
+}
+
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
+        (JNIEnv *env, jobject thiz) {
+    start();
+}
+
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_stop
+        (JNIEnv *env, jobject thiz) {
+    stop();
 }
 
 JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
         (JNIEnv *env, jobject thiz, jbyteArray src, jint srcSize, jbyteArray out) {
-    jbyte *buffer = (*env)->GetByteArrayElements(env, out, 0);
-
-    int size = 0, i = 0;
-    if (0 == hasNalHeader) {
-        hasNalHeader = 1;
-        size = encode_headers(buffer);
-        setType(env, thiz, X264_TYPE_HEADER);
-        (*env)->ReleaseByteArrayElements(env, out, buffer, 0);
-        return size;
-    }
-    jbyte *inBuffer = (*env)->GetByteArrayElements(env, src, 0);
-
-    int nNal = -1;
-    x264_picture_t pic_out;
-
-    memcpy(encoder->picture->img.plane[0], inBuffer, srcSize);
-
-    encoder->picture->i_type = X264_TYPE_AUTO;
-
-    if (x264_encoder_encode(encoder->handle, &(encoder->nal), &nNal, encoder->picture, &pic_out) <
-        0) {
-        return -1;
-    }
-//    LOGE("x264 frame size = %d", encoder->nal[0].i_payload)
-//    createBuffer(env, thiz, size);
-    for (i = 0; i < nNal; i++) {
-        memcpy(buffer, encoder->nal[i].p_payload, encoder->nal[i].i_payload);
-        buffer += encoder->nal[i].i_payload;
-        size += encoder->nal[i].i_payload;
-    }
-    setType(env, thiz, pic_out.i_type);
-    LOGE("encode: %d", pic_out.i_type);
-    (*env)->ReleaseByteArrayElements(env, src, inBuffer, 0);
-    (*env)->ReleaseByteArrayElements(env, out, buffer, 0);
-//    (*env)->ReleaseByteArrayElements(env, bufferObj, buffer, 0);
-    LOGE("encode: end");
-
+    jbyte *srcBuffer = (*env)->GetByteArrayElements(env, src, 0);
+    jbyte *destBuffer = (*env)->GetByteArrayElements(env, out, 0);
+    int size = encode(env, thiz, srcBuffer, srcSize, destBuffer);
+    (*env)->ReleaseByteArrayElements(env, src, srcBuffer, 0);
+    (*env)->ReleaseByteArrayElements(env, out, destBuffer - size, 0);
     return size;
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setVideoSize
         (JNIEnv *env, jobject thiz, jint width, jint height) {
-    encoder->param->i_width = width; //set frame width
-    encoder->param->i_height = height; //set frame height
+    setVideoSize(width, height);
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setBitrate
         (JNIEnv *env, jobject thiz, jint bitrate) {
-    encoder->param->rc.i_bitrate = bitrate;
+    setBitrate(bitrate);
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setFrameFormat
         (JNIEnv *env, jobject thiz, jint format) {
-    encoder->param->i_csp = format; // 设置输入的视频采样的格式
+    setFrameFormat(format);
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setFps
         (JNIEnv *env, jobject thiz, jint fps) {
-    encoder->param->i_fps_num = (uint32_t) fps;
-    encoder->param->i_fps_den = 1;
+    setFps(fps);
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setProfile
         (JNIEnv *env, jobject thiz, jstring profile) {
     char *profileTmp = (char *) (*env)->GetStringUTFChars(env, profile, NULL);
-    LOGI("setProfile: %s", profileTmp);
-    x264_param_apply_profile(encoder->param, profileTmp);
-
+    setProfile(profileTmp);
     (*env)->ReleaseStringUTFChars(env, profile, profileTmp);
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setLevel
         (JNIEnv *env, jobject thiz, jint level) {
-    encoder->param->i_level_idc = level;// 11 12 13 20 for CIF;31 for 720P
+    setLevel(level);
 }
