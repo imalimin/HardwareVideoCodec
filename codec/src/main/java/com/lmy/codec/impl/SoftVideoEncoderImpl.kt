@@ -128,16 +128,16 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun encode() {
         ++mFrameCount
-        if (1 == mFrameCount) {
-            mBufferInfo.size = 31
-            mBufferInfo.presentationTimeUs = 1
-            mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
-            val byteArray = ByteArray(mBufferInfo.size)
-            HEADER.forEachIndexed { index, byte ->
-                byteArray[index] = byte
-            }
-            onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(byteArray, 0, mBufferInfo.size))
-        }
+//        if (1 == mFrameCount) {
+//            mBufferInfo.size = 31
+//            mBufferInfo.presentationTimeUs = 1
+//            mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
+//            val byteArray = ByteArray(mBufferInfo.size)
+//            HEADER.forEachIndexed { index, byte ->
+//                byteArray[index] = byte
+//            }
+//            onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(byteArray, 0, mBufferInfo.size))
+//        }
         pTimer.record()
         if (srcBuffer == null) return
         val time = System.currentTimeMillis()
@@ -156,13 +156,14 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
         mBufferInfo.size = size
         when (codec!!.getType()) {
+            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
             1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME
             else -> mBufferInfo.flags = 0
         }
+        debug_e("x264 frame size = $size, cost ${System.currentTimeMillis() - time}ms")
         codec!!.buffer!!.position(0)
         codec!!.buffer!!.limit(size)
         onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, mBufferInfo.size))
-        debug_e("x264 frame size = $size, cost ${System.currentTimeMillis() - time}ms")
     }
 
     private fun readPixels() {
