@@ -140,7 +140,8 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     override fun stop() {
         try {
-            mHandler?.sendEmptyMessage(STOP)
+            if (mHandlerThread.isAlive)
+                mHandler?.sendEmptyMessage(STOP)
         } catch (e: Exception) {
         }
     }
