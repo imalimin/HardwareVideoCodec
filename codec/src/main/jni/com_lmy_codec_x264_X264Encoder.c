@@ -72,16 +72,15 @@ static int encode_headers(jbyte *dest) {
 }
 
 static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *dest) {
-    int size = 0, i = 0;
     if (0 == hasNalHeader) {
         hasNalHeader = 1;
-        size = encode_headers(dest);
         setType(env, thiz, X264_TYPE_HEADER);
-        return size;
+        return encode_headers(dest);
     }
 
     int nNal = -1;
     x264_picture_t pic_out;
+    int size = 0, i = 0;
 
     memcpy(encoder->picture->img.plane[0], src, srcSize);
 
@@ -100,6 +99,7 @@ static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *de
     }
     setType(env, thiz, pic_out.i_type);
     LOGE("encode: %d", pic_out.i_type);
+    return size;
 }
 
 static void setVideoSize(int width, int height) {
@@ -197,7 +197,7 @@ JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
     jbyte *destBuffer = (*env)->GetByteArrayElements(env, out, 0);
     int size = encode(env, thiz, srcBuffer, srcSize, destBuffer);
     (*env)->ReleaseByteArrayElements(env, src, srcBuffer, 0);
-    (*env)->ReleaseByteArrayElements(env, out, destBuffer - size, 0);
+    (*env)->ReleaseByteArrayElements(env, out, destBuffer, 0);
     return size;
 }
 

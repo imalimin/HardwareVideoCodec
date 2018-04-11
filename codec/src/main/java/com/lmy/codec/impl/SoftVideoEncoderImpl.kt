@@ -152,7 +152,10 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 //            shotScreen(data, parameter.video.width, parameter.video.height)
 //        }
         val size = codec?.encode(data, srcBuffer!!.capacity())!!
-        if (0 == size) return
+        if (size <= 0) {
+            debug_e("Encode failed. size = $size")
+            return
+        }
         mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
         mBufferInfo.size = size
         when (codec!!.getType()) {
