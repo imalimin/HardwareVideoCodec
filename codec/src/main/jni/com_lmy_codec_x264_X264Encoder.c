@@ -137,6 +137,7 @@ static void init(JNIEnv *env) {
     //开启多帧并行编码
     //encoder->param->b_sliced_threads = 0;
     //encoder->param->i_threads = 8;
+    encoder->param->b_repeat_headers = 0;
     x264_param_default_preset(encoder->param, "veryfast", "zerolatency");
 }
 

@@ -13,7 +13,6 @@ import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
 import java.nio.ByteBuffer
-import java.util.*
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
@@ -50,7 +49,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
                 "width=${format.getInteger(MediaFormat.KEY_WIDTH)}," +
                 "height=${format.getInteger(MediaFormat.KEY_HEIGHT)}," +
                 "bitrate=${format.getInteger(MediaFormat.KEY_BIT_RATE)}," +
-//                "fps=${format.getInteger(MediaFormat.KEY_FRAME_RATE)}," +
+                "fps=${format.getInteger(MediaFormat.KEY_FRAME_RATE)}," +
 //                "iFrame=${format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)}," +
 //                "captureRate=${format.getInteger(MediaFormat.KEY_CAPTURE_RATE)}," +
 //                "bitrateMode=${format.getInteger(MediaFormat.KEY_BITRATE_MODE)}," +
@@ -92,7 +91,11 @@ class CameraPreviewPresenter(var parameter: Parameter,
      * For VideoEncoderImpl
      */
     override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
-        debug_e("BufferInfo(size=${info.size}, " +
+        debug_e("BufferInfo[${data[0]},${data[1]},${data[2]},${data[3]},${data[4]}," +
+                "${data[5]},${data[6]},${data[7]},${data[8]}," +
+                "${data[9]},${data[10]},${data[11]},${data[12]}," +
+                "${data[13]},${data[14]},${data[15]},${data[16]},]" +
+                "(size=${info.size}, " +
                 "timestamp=${info.presentationTimeUs}," +
                 "offset=${info.offset}," +
                 "flags=${info.flags})")

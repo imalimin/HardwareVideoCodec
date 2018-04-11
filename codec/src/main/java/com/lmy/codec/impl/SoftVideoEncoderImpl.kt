@@ -160,12 +160,21 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         mBufferInfo.size = size
         when (codec!!.getType()) {
             -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
-            1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME
+            1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
+            2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
             else -> mBufferInfo.flags = 0
         }
         debug_e("x264 frame size = $size, cost ${System.currentTimeMillis() - time}ms")
         codec!!.buffer!!.position(0)
         codec!!.buffer!!.limit(size)
+        if (2 == mFrameCount) {
+            mBufferInfo.size -= 31
+            val data = ByteArray(mBufferInfo.size)
+            codec!!.buffer!!.position(31)
+            codec!!.buffer!!.get(data, 0, data.size)
+            onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(data))
+            return
+        }
         onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, mBufferInfo.size))
     }
 
