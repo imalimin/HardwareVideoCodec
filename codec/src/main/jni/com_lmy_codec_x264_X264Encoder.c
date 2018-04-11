@@ -146,22 +146,22 @@ static int encode_headers(jbyte *outBuf) {
 
 JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
         (JNIEnv *env, jobject thiz, jbyteArray src, jint srcSize, jbyteArray out) {
-    jbyte *outBuf = (*env)->GetByteArrayElements(env, out, 0);
+    jbyte *buffer = (*env)->GetByteArrayElements(env, out, 0);
 
     int size = 0, i = 0;
     if (0 == hasNalHeader) {
         hasNalHeader = 1;
-        size = encode_headers(outBuf);
+        size = encode_headers(buffer);
         setType(env, thiz, X264_TYPE_HEADER);
-        (*env)->ReleaseByteArrayElements(env, out, outBuf, 0);
+        (*env)->ReleaseByteArrayElements(env, out, buffer, 0);
         return size;
     }
-    jbyte *buf = (*env)->GetByteArrayElements(env, src, 0);
+    jbyte *inBuffer = (*env)->GetByteArrayElements(env, src, 0);
 
     int nNal = -1;
     x264_picture_t pic_out;
 
-    memcpy(encoder->picture->img.plane[0], buf, srcSize);
+    memcpy(encoder->picture->img.plane[0], inBuffer, srcSize);
 
     encoder->picture->i_type = X264_TYPE_AUTO;
 
@@ -172,14 +172,14 @@ JNIEXPORT jint JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
 //    LOGE("x264 frame size = %d", encoder->nal[0].i_payload)
 //    createBuffer(env, thiz, size);
     for (i = 0; i < nNal; i++) {
-        memcpy(outBuf, encoder->nal[i].p_payload, encoder->nal[i].i_payload);
-        outBuf += encoder->nal[i].i_payload;
+        memcpy(buffer, encoder->nal[i].p_payload, encoder->nal[i].i_payload);
+        buffer += encoder->nal[i].i_payload;
         size += encoder->nal[i].i_payload;
     }
     setType(env, thiz, pic_out.i_type);
     LOGE("encode: %d", pic_out.i_type);
-    (*env)->ReleaseByteArrayElements(env, src, buf, 0);
-    (*env)->ReleaseByteArrayElements(env, out, outBuf, 0);
+    (*env)->ReleaseByteArrayElements(env, src, inBuffer, 0);
+    (*env)->ReleaseByteArrayElements(env, out, buffer, 0);
 //    (*env)->ReleaseByteArrayElements(env, bufferObj, buffer, 0);
     LOGE("encode: end");
 
