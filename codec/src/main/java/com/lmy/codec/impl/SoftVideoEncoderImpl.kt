@@ -1,5 +1,6 @@
 package com.lmy.codec.impl
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.SurfaceTexture
@@ -135,31 +136,11 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun encode() {
         ++mFrameCount
-//        if (1 == mFrameCount) {
-//            mBufferInfo.size = 31
-//            mBufferInfo.presentationTimeUs = 1
-//            mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
-//            val byteArray = ByteArray(mBufferInfo.size)
-//            HEADER.forEachIndexed { index, byte ->
-//                byteArray[index] = byte
-//            }
-//            onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(byteArray, 0, mBufferInfo.size))
-//        }
         pTimer.record()
         if (srcBuffer == null) return
         val time = System.currentTimeMillis()
-        srcBuffer?.position(0)
-        val data: ByteArray
-        if (srcBuffer!!.hasArray()) {
-            data = srcBuffer!!.array()
-        } else {
-            data = ByteArray(srcBuffer!!.capacity())
-            srcBuffer!!.get(data)
-        }
-//        if (0 == mFrameCount % 24) {
-//            shotScreen(data, parameter.video.width, parameter.video.height)
-//        }
-        val size = codec?.encode(data, srcBuffer!!.capacity())!!
+        val data = getPixelsData()
+        val size = codec?.encode(data, data.size)!!
         if (size <= 0) {
             debug_e("Encode failed. size = $size")
             return
@@ -184,6 +165,18 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
             return
         }
         onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, mBufferInfo.size))
+    }
+
+    private fun getPixelsData(): ByteArray {
+        val data: ByteArray
+        srcBuffer?.position(0)
+        if (srcBuffer!!.hasArray()) {
+            data = srcBuffer!!.array()
+        } else {
+            data = ByteArray(srcBuffer!!.capacity())
+            srcBuffer!!.get(data)
+        }
+        return data
     }
 
     private fun readPixels() {
@@ -270,6 +263,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     class SpecialData(var format: MediaFormat,
                       var parameter: Parameter,
+                      var pps: ByteArray? = null,
                       private var codec: MediaCodec? = null,
                       private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()) {
         init {
@@ -286,6 +280,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
             }
         }
 
+        @SuppressLint("SwitchIntDef")
         fun dequeueOutputFormat(listener: Encoder.OnSampleListener?) {
             codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             try {
@@ -297,14 +292,36 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                         MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                             debug_e("INFO_OUTPUT_FORMAT_CHANGED")
                             listener?.onFormatChanged(codec!!.outputFormat)
-                            stop()
-                            return
+                        }
+                        else -> {
+                            if (dequeuePPS(flag))
+                                return
                         }
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+
+        private fun dequeuePPS(flag: Int): Boolean {
+            debug_e("dequeuePPS: $flag")
+            if (flag < 0) return false
+            val data = codec!!.outputBuffers[flag]
+            if (null != data) {
+                val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
+                if (endOfStream == 0) {
+                    pps = kotlin.ByteArray(mBufferInfo.size)
+                    data.limit(pps!!.size)
+                    data.get(pps)
+                    debug_e("dequeuePPS success: ${mBufferInfo.size}")
+                }
+                // 一定要记得释放
+                codec!!.releaseOutputBuffer(flag, false)
+                stop()
+                return true
+            }
+            return false
         }
 
         private fun offerFrameBuffer() {
@@ -318,7 +335,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         }
 
         private fun stop() {
-            codec!!.signalEndOfInputStream()
             codec!!.stop()
             codec!!.release()
         }
