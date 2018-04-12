@@ -45,6 +45,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
     }
 
     override fun onFormatChanged(format: MediaFormat) {
+        muxer?.addVideoTrack(format)
         debug_e("Format(mime=${format.getString(MediaFormat.KEY_MIME)}," +
                 "width=${format.getInteger(MediaFormat.KEY_WIDTH)}," +
                 "height=${format.getInteger(MediaFormat.KEY_HEIGHT)}," +
@@ -83,7 +84,6 @@ class CameraPreviewPresenter(var parameter: Parameter,
 //                "trackId=${format.getInteger(MediaFormat.KEY_TRACK_ID)}," +
 //                "color=${format.getInteger(MediaFormat.KEY_COLOR_FORMAT)}" +
                 ")")
-        muxer?.addVideoTrack(format)
     }
 
     /**
