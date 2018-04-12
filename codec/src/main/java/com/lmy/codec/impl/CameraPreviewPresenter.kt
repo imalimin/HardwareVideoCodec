@@ -49,7 +49,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
                 "width=${format.getInteger(MediaFormat.KEY_WIDTH)}," +
                 "height=${format.getInteger(MediaFormat.KEY_HEIGHT)}," +
                 "bitrate=${format.getInteger(MediaFormat.KEY_BIT_RATE)}," +
-                "fps=${format.getInteger(MediaFormat.KEY_FRAME_RATE)}," +
+//                "fps=${format.getInteger(MediaFormat.KEY_FRAME_RATE)}," +
 //                "iFrame=${format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)}," +
 //                "captureRate=${format.getInteger(MediaFormat.KEY_CAPTURE_RATE)}," +
 //                "bitrateMode=${format.getInteger(MediaFormat.KEY_BITRATE_MODE)}," +
