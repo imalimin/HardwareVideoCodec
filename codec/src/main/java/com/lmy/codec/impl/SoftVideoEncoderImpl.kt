@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.opengl.GLES30
 import android.os.Build
@@ -14,6 +15,7 @@ import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.x264.X264Encoder
 import java.io.FileNotFoundException
@@ -26,6 +28,7 @@ import java.nio.ByteBuffer
 class SoftVideoEncoderImpl(var parameter: Parameter,
                            var cameraWrapper: CameraTextureWrapper,
                            var codec: X264Encoder? = null,
+                           private var specialData: SpecialData? = null,
                            private var pbos: IntArray = IntArray(PBO_COUNT),
                            private var format: MediaFormat = MediaFormat(),
                            private var srcBuffer: ByteBuffer? = null,
@@ -50,8 +53,10 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var mFrameCount = 0
+    //For PBO
     private var index = 0
     private var nextIndex = 1
+    private var inited = false
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -68,6 +73,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun initCodec() {
         CodecHelper.initFormat(format, parameter)
+        specialData = SpecialData(format, parameter)
         codec = X264Encoder(format)
         codec?.setProfile("high")
         codec?.setLevel(31)
@@ -107,7 +113,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                 when (msg.what) {
                     INIT -> {
                         pTimer.reset()
-                        onSampleListener?.onFormatChanged(getOutFormat())
+                        specialData!!.dequeueOutputFormat(onSampleListener)
+                        inited = true
                     }
                     ENCODE -> {
                         synchronized(mEncodingSyn) {
@@ -141,6 +148,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         pTimer.record()
         if (srcBuffer == null) return
         val time = System.currentTimeMillis()
+        srcBuffer?.position(0)
         val data: ByteArray
         if (srcBuffer!!.hasArray()) {
             data = srcBuffer!!.array()
@@ -252,15 +260,67 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
-            if (mEncoding) {
+            if (mEncoding && inited) {
                 readPixels()
-//                if (0 == mFrameCount) {//PBO第一帧为空
-//                    ++mFrameCount
-//                    return
-//                }
                 mHandler?.removeMessages(VideoEncoderImpl.ENCODE)
                 mHandler?.sendEmptyMessage(VideoEncoderImpl.ENCODE)
             }
+        }
+    }
+
+    class SpecialData(var format: MediaFormat,
+                      var parameter: Parameter,
+                      private var codec: MediaCodec? = null,
+                      private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()) {
+        init {
+            format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
+            debug_v("Create codec: ${format.getString(MediaFormat.KEY_MIME)}")
+            try {
+                codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME))
+            } catch (e: Exception) {
+                debug_e("Can not create codec")
+                e.printStackTrace()
+            } finally {
+                if (null == codec)
+                    debug_e("Can not create codec")
+            }
+        }
+
+        fun dequeueOutputFormat(listener: Encoder.OnSampleListener?) {
+            codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+            try {
+                codec!!.start()
+                offerFrameBuffer()
+                while (true) {
+                    val flag = codec!!.dequeueOutputBuffer(mBufferInfo, 10000L)
+                    when (flag) {
+                        MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                            debug_e("INFO_OUTPUT_FORMAT_CHANGED")
+                            listener?.onFormatChanged(codec!!.outputFormat)
+                            stop()
+                            return
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        private fun offerFrameBuffer() {
+            val inputBuffers = codec!!.inputBuffers
+            val bufferIndex = codec!!.dequeueInputBuffer(-1)
+            val size = parameter.video.width * parameter.video.height * 3 / 2
+            //提供一帧数据才能让mediaCodec生成outputFormat
+            inputBuffers[bufferIndex].clear()
+            inputBuffers[bufferIndex].put(ByteArray(size))
+            codec!!.queueInputBuffer(bufferIndex, 0, inputBuffers[bufferIndex].position(), 1, 0)
+        }
+
+        private fun stop() {
+            codec!!.signalEndOfInputStream()
+            codec!!.stop()
+            codec!!.release()
         }
     }
 }
