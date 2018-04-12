@@ -46,44 +46,44 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     override fun onFormatChanged(format: MediaFormat) {
         muxer?.addVideoTrack(format)
-        debug_e("Format(mime=${format.getString(MediaFormat.KEY_MIME)}," +
-                "width=${format.getInteger(MediaFormat.KEY_WIDTH)}," +
-                "height=${format.getInteger(MediaFormat.KEY_HEIGHT)}," +
-                "bitrate=${format.getInteger(MediaFormat.KEY_BIT_RATE)}," +
-//                "fps=${format.getInteger(MediaFormat.KEY_FRAME_RATE)}," +
-//                "iFrame=${format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)}," +
-//                "captureRate=${format.getInteger(MediaFormat.KEY_CAPTURE_RATE)}," +
-//                "bitrateMode=${format.getInteger(MediaFormat.KEY_BITRATE_MODE)}," +
-                "colorRange=${format.getInteger(MediaFormat.KEY_COLOR_RANGE)}," +
-                "colorStandard=${format.getInteger(MediaFormat.KEY_COLOR_STANDARD)}," +
-                "colorTransfer=${format.getInteger(MediaFormat.KEY_COLOR_TRANSFER)}," +
-//                "complexity=${format.getInteger(MediaFormat.KEY_COMPLEXITY)}," +
-//                "duration=${format.getInteger(MediaFormat.KEY_DURATION)}," +
-//                "hdrInfo=${format.getString(MediaFormat.KEY_HDR_STATIC_INFO)}," +
-//                "period=${format.getInteger(MediaFormat.KEY_INTRA_REFRESH_PERIOD)}," +
-//                "isDTS=${format.getInteger(MediaFormat.KEY_IS_ADTS)}," +
-//                "isAutoSelect=${format.getInteger(MediaFormat.KEY_IS_AUTOSELECT)}," +
-//                "isDefault=${format.getInteger(MediaFormat.KEY_IS_DEFAULT)}," +
-//                "isSubtitle=${format.getInteger(MediaFormat.KEY_IS_FORCED_SUBTITLE)}," +
-//                "language=${format.getString(MediaFormat.KEY_LANGUAGE)}," +
-//                "latency=${format.getInteger(MediaFormat.KEY_LATENCY)}," +
-//                "level=${format.getInteger(MediaFormat.KEY_LEVEL)}," +
-//                "maxWidth=${format.getInteger(MediaFormat.KEY_MAX_WIDTH)}," +
-//                "maxHeight=${format.getInteger(MediaFormat.KEY_MAX_HEIGHT)}," +
-//                "maxInputSize=${format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)}," +
-//                "operatingRate=${format.getInteger(MediaFormat.KEY_OPERATING_RATE)}," +
-//                "priority=${format.getInteger(MediaFormat.KEY_PRIORITY)}," +
-//                "profile=${format.getInteger(MediaFormat.KEY_PROFILE)}," +
-//                "onStop=${format.getInteger(MediaFormat.KEY_PUSH_BLANK_BUFFERS_ON_STOP)}," +
-//                "frameAfter=${format.getInteger(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER)}," +
-//                "rotation=${format.getInteger(MediaFormat.KEY_ROTATION)}," +
-//                "sampleRate=${format.getInteger(MediaFormat.KEY_SAMPLE_RATE)}," +
-//                "sliceHeight=${format.getInteger(MediaFormat.KEY_SLICE_HEIGHT)}," +
-//                "stride=${format.getInteger(MediaFormat.KEY_STRIDE)}," +
-//                "layering=${format.getInteger(MediaFormat.KEY_TEMPORAL_LAYERING)}," +
-//                "trackId=${format.getInteger(MediaFormat.KEY_TRACK_ID)}," +
-//                "color=${format.getInteger(MediaFormat.KEY_COLOR_FORMAT)}" +
-                ")")
+        /**debug_e("Format(mime=${format.getString(MediaFormat.KEY_MIME)}," +
+        "width=${format.getInteger(MediaFormat.KEY_WIDTH)}," +
+        "height=${format.getInteger(MediaFormat.KEY_HEIGHT)}," +
+        "bitrate=${format.getInteger(MediaFormat.KEY_BIT_RATE)}," +
+        //                "fps=${format.getInteger(MediaFormat.KEY_FRAME_RATE)}," +
+        //                "iFrame=${format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)}," +
+        //                "captureRate=${format.getInteger(MediaFormat.KEY_CAPTURE_RATE)}," +
+        //                "bitrateMode=${format.getInteger(MediaFormat.KEY_BITRATE_MODE)}," +
+        "colorRange=${format.getInteger(MediaFormat.KEY_COLOR_RANGE)}," +
+        "colorStandard=${format.getInteger(MediaFormat.KEY_COLOR_STANDARD)}," +
+        "colorTransfer=${format.getInteger(MediaFormat.KEY_COLOR_TRANSFER)}," +
+        //                "complexity=${format.getInteger(MediaFormat.KEY_COMPLEXITY)}," +
+        //                "duration=${format.getInteger(MediaFormat.KEY_DURATION)}," +
+        //                "hdrInfo=${format.getString(MediaFormat.KEY_HDR_STATIC_INFO)}," +
+        //                "period=${format.getInteger(MediaFormat.KEY_INTRA_REFRESH_PERIOD)}," +
+        //                "isDTS=${format.getInteger(MediaFormat.KEY_IS_ADTS)}," +
+        //                "isAutoSelect=${format.getInteger(MediaFormat.KEY_IS_AUTOSELECT)}," +
+        //                "isDefault=${format.getInteger(MediaFormat.KEY_IS_DEFAULT)}," +
+        //                "isSubtitle=${format.getInteger(MediaFormat.KEY_IS_FORCED_SUBTITLE)}," +
+        //                "language=${format.getString(MediaFormat.KEY_LANGUAGE)}," +
+        //                "latency=${format.getInteger(MediaFormat.KEY_LATENCY)}," +
+        //                "level=${format.getInteger(MediaFormat.KEY_LEVEL)}," +
+        //                "maxWidth=${format.getInteger(MediaFormat.KEY_MAX_WIDTH)}," +
+        //                "maxHeight=${format.getInteger(MediaFormat.KEY_MAX_HEIGHT)}," +
+        //                "maxInputSize=${format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)}," +
+        //                "operatingRate=${format.getInteger(MediaFormat.KEY_OPERATING_RATE)}," +
+        //                "priority=${format.getInteger(MediaFormat.KEY_PRIORITY)}," +
+        //                "profile=${format.getInteger(MediaFormat.KEY_PROFILE)}," +
+        //                "onStop=${format.getInteger(MediaFormat.KEY_PUSH_BLANK_BUFFERS_ON_STOP)}," +
+        //                "frameAfter=${format.getInteger(MediaFormat.KEY_REPEAT_PREVIOUS_FRAME_AFTER)}," +
+        //                "rotation=${format.getInteger(MediaFormat.KEY_ROTATION)}," +
+        //                "sampleRate=${format.getInteger(MediaFormat.KEY_SAMPLE_RATE)}," +
+        //                "sliceHeight=${format.getInteger(MediaFormat.KEY_SLICE_HEIGHT)}," +
+        //                "stride=${format.getInteger(MediaFormat.KEY_STRIDE)}," +
+        //                "layering=${format.getInteger(MediaFormat.KEY_TEMPORAL_LAYERING)}," +
+        //                "trackId=${format.getInteger(MediaFormat.KEY_TRACK_ID)}," +
+        //                "color=${format.getInteger(MediaFormat.KEY_COLOR_FORMAT)}" +
+        ")")**/
     }
 
     /**
