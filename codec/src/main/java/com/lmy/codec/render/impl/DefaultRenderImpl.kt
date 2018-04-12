@@ -100,7 +100,8 @@ class DefaultRenderImpl(var parameter: Parameter,
     override fun start(texture: SurfaceTexture, width: Int, height: Int, runnable: Runnable?) {
         updateScreenTexture(texture)
         initViewport(width, height)
-        mHandler?.sendMessage(mHandler!!.obtainMessage(INIT, runnable))
+        if (mHandlerThread.isAlive)
+            mHandler?.sendMessage(mHandler!!.obtainMessage(INIT, runnable))
     }
 
     private fun initViewport(width: Int, height: Int) {
@@ -152,7 +153,8 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     override fun onFrameAvailable(): Render {
         try {
-            mHandler?.sendEmptyMessage(RENDER)
+            if (mHandlerThread.isAlive)
+                mHandler?.sendEmptyMessage(RENDER)
         } catch (e: Exception) {
         }
         return this
