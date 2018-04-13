@@ -17,7 +17,7 @@ class X264Encoder(private var format: MediaFormat,
         init()
         setVideoSize(format.getInteger(MediaFormat.KEY_WIDTH), format.getInteger(MediaFormat.KEY_HEIGHT))
         setBitrate(format.getInteger(MediaFormat.KEY_BIT_RATE))
-        setFrameFormat(FrameFormat.X264_CSP_RGB)
+        setFrameFormat(FrameFormat.X264_CSP_I420)
         setFps(format.getInteger(MediaFormat.KEY_FRAME_RATE))
         buffer = ByteBuffer.allocate(720 * 480 * 3)
         buffer?.order(ByteOrder.nativeOrder())
