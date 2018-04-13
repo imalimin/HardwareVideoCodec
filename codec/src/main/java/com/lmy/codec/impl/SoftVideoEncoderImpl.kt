@@ -157,9 +157,9 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         codec!!.buffer!!.position(0)
         codec!!.buffer!!.limit(size)
         if (2 == mFrameCount) {
-            mBufferInfo.size -= 31
+            mBufferInfo.size -= 27
             val data = ByteArray(mBufferInfo.size)
-            codec!!.buffer!!.position(31)
+            codec!!.buffer!!.position(27)
             codec!!.buffer!!.get(data, 0, data.size)
             onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(data))
             return
