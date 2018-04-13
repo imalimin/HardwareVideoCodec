@@ -14,7 +14,7 @@ android {
 
         ndk {
             moduleName "codec"
-            abiFilters "armeabi"//输出指定abi体系结构下的so库
+            abiFilters "armeabi-v7a", "x86"//输出指定abi体系结构下的so库
         }
         sourceSets.main {
             jni.srcDirs = []
