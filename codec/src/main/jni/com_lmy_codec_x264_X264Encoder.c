@@ -11,6 +11,7 @@
 
 #include <jni.h>
 #include <x264.h>
+#include <libyuv.h>
 
 #define X264_TYPE_HEADER          -0x0001  /* Headers SPS/PPS */
 #define INVALID 0//未初始化
@@ -22,6 +23,14 @@
 #define LOGE(format, ...)  printf("JNI" format "\n", ##__VA_ARGS__)
 #define LOGI(format, ...)  printf("JNI" format "\n", ##__VA_ARGS__)
 #endif
+struct YuvFrame {
+    int width;
+    int height;
+    uint8_t *data;
+    uint8_t *y;
+    uint8_t *u;
+    uint8_t *v;
+};
 typedef struct {
     x264_param_t *param;
     x264_t *handle;
@@ -29,9 +38,32 @@ typedef struct {
     x264_nal_t *nal;
 } Encoder;
 Encoder *encoder = NULL;
+struct YuvFrame yuvBuffer;
 int state = INVALID;
 jmethodID setTypeMethod = 0;
 int hasNalHeader = 0;
+
+static void initYuvBuffer(int width, int height) {
+    int y_size = width * height;
+    yuvBuffer.width = width;
+    yuvBuffer.height = height;
+    yuvBuffer.data = (uint8_t *) malloc(y_size * 3 / 2);
+    yuvBuffer.y = yuvBuffer.data;
+    yuvBuffer.u = yuvBuffer.y + y_size;
+    yuvBuffer.v = yuvBuffer.u + y_size / 4;
+}
+
+static int convert(jbyte *rgb) {
+    int ret = ConvertToI420((const uint8 *) rgb, yuvBuffer.width * yuvBuffer.height,
+                            yuvBuffer.y, yuvBuffer.width,
+                            yuvBuffer.u, yuvBuffer.width / 2,
+                            yuvBuffer.v, yuvBuffer.width / 2,
+                            0, 0,
+                            yuvBuffer.width, yuvBuffer.height,
+                            yuvBuffer.width, yuvBuffer.height,
+                            kRotate180, FOURCC_NV21);
+    return ret;
+}
 
 static void setType(JNIEnv *env, jobject thiz, int type) {
     (*env)->CallVoidMethod(env, thiz, setTypeMethod, type);
@@ -82,7 +114,22 @@ static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *de
     x264_picture_t pic_out;
     int size = 0, i = 0;
 
-    memcpy(encoder->picture->img.plane[0], src, srcSize);
+    int ret=convert(src);
+    if(ret<0){
+        LOGE("Convert failed");
+        return size;
+    }
+
+    //memcpy(encoder->picture->img.plane[0], src, srcSize);
+
+    encoder->picture->img.i_csp = X264_CSP_I420;
+    encoder->picture->img.i_plane = 3;
+    encoder->picture->img.plane[0] = yuvBuffer.y;
+    encoder->picture->img.i_stride[0] = yuvBuffer.width;
+    encoder->picture->img.plane[1] = yuvBuffer.u;
+    encoder->picture->img.i_stride[1] = yuvBuffer.width / 2;
+    encoder->picture->img.plane[2] = yuvBuffer.v;
+    encoder->picture->img.i_stride[2] = yuvBuffer.width / 2;
 
     encoder->picture->i_type = X264_TYPE_AUTO;
 
@@ -146,7 +193,7 @@ static void start() {
         LOGI("Start failed. Invalid state");
         return;
     }
-
+    initYuvBuffer(encoder->param->i_width, encoder->param->i_height);
     if ((encoder->handle = x264_encoder_open(encoder->param)) == 0) {
         return;
     }
