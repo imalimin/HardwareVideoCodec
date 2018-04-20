@@ -7,6 +7,7 @@ import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
+import android.opengl.GLES20
 import android.opengl.GLES30
 import android.os.Build
 import android.os.Handler
@@ -15,6 +16,8 @@ import android.os.Message
 import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
+import com.lmy.codec.texture.impl.BaseFrameBufferTexture
+import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CameraTextureWrapper
@@ -52,6 +55,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         const val BUFFER_FLAG_PARTIAL_FRAME = 8
     }
 
+    private lateinit var mirrorTexture: BaseFrameBufferTexture
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
@@ -71,6 +75,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         initCodec()
         initThread()
         initPBOs()
+        mirrorTexture = MirrorTexture(parameter.video.width,
+                parameter.video.height, cameraWrapper.getFrameTexture())
         mHandler?.removeMessages(VideoEncoderImpl.INIT)
         mHandler?.sendEmptyMessage(VideoEncoderImpl.INIT)
     }
@@ -202,12 +208,14 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun readPixels() {
+        GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+        mirrorTexture.drawTexture(null)
 //        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
 //        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, cameraWrapper.getFrameTexture())
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, cameraWrapper.getFrameBuffer())
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mirrorTexture.frameBuffer!!)
 //        //用作纹理的颜色缓冲区，glReadPixels从这个颜色缓冲区中读取
         GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
-                GLES30.GL_TEXTURE_2D, cameraWrapper.getFrameTexture(), 0)
+                GLES30.GL_TEXTURE_2D, mirrorTexture.frameBufferTexture!!, 0)
 //        GLES30.glReadBuffer(GLES30.GL_FRONT)
         //绑定到第一个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos[index])
