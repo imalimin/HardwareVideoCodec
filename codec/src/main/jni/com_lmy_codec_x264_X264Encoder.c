@@ -61,7 +61,7 @@ static int convert(jbyte *rgb) {
                             0, 0,
                             yuvBuffer.width, yuvBuffer.height,
                             yuvBuffer.width, yuvBuffer.height,
-                            kRotate180, FOURCC_NV21);
+                            kRotate180, FOURCC_ABGR);
     return ret;
 }
 
@@ -94,11 +94,12 @@ static int encode_headers(jbyte *dest) {
             dest += nals[i].i_payload;
             size += nals[i].i_payload;
         }
-//        else if (nals[i].i_type == NAL_PPS) {
-//            LOGE("PPS---------------->i=%d,len=%d", i, nals[i].i_payload);
-//            memcpy(outBuf, nals[i].p_payload, nals[i].i_payload);
-//            size += nals[i].i_payload;
-//        }
+        else if (nals[i].i_type == NAL_PPS) {
+            LOGE("PPS---------------->i=%d,len=%d", i, nals[i].i_payload);
+            memcpy(dest, nals[i].p_payload, nals[i].i_payload);
+            dest += nals[i].i_payload;
+            size += nals[i].i_payload;
+        }
     }
     return size;
 }
@@ -120,8 +121,6 @@ static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *de
         return size;
     }
 
-    //memcpy(encoder->picture->img.plane[0], src, srcSize);
-
     encoder->picture->img.i_csp = X264_CSP_I420;
     encoder->picture->img.i_plane = 3;
     encoder->picture->img.plane[0] = yuvBuffer.y;
@@ -131,6 +130,7 @@ static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *de
     encoder->picture->img.plane[2] = yuvBuffer.v;
     encoder->picture->img.i_stride[2] = yuvBuffer.width / 2;
 
+//    memcpy(encoder->picture->img.plane[0], src, srcSize);
     encoder->picture->i_type = X264_TYPE_AUTO;
 
     if (x264_encoder_encode(encoder->handle, &(encoder->nal), &nNal, encoder->picture, &pic_out) <
