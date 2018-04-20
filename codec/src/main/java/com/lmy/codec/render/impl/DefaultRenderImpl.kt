@@ -62,7 +62,7 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     fun init() {
-        cameraWrapper.initEGL(width, height)
+        cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
         screenWrapper = ScreenTextureWrapper(screenTexture, cameraWrapper.egl!!.eglContext!!)
         screenWrapper?.setFilter(NormalTexture(cameraWrapper.getFrameTexture(), cameraWrapper.getDrawer()))
 //        (screenWrapper!!.texture as BeautyTexture).setParams(0f, -5f)//beauty: 0 - 2.5, tone: -5 - 5
@@ -87,7 +87,7 @@ class DefaultRenderImpl(var parameter: Parameter,
             cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
         cameraWrapper.egl?.makeCurrent("cameraWrapper")
-        GLES20.glViewport(0, 0, cameraWidth, cameraHeight)
+        GLES20.glViewport(0, 0, parameter.previewHeight, parameter.previewWidth)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         cameraWrapper.drawTexture(transformMatrix)
