@@ -29,14 +29,17 @@ import java.nio.ByteBuffer
 class SoftVideoEncoderImpl(var parameter: Parameter,
                            var cameraWrapper: CameraTextureWrapper,
                            var codec: X264Encoder? = null,
-                           private var specialData: SpecialData? = null,
+                           private var ppsLength: Int = 0,
                            private var pbos: IntArray = IntArray(PBO_COUNT),
                            private var format: MediaFormat = MediaFormat(),
+                           private var outFormat: MediaFormat? = null,
                            private var srcBuffer: ByteBuffer? = null,
                            private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                            private var pTimer: VideoEncoderImpl.PresentationTimer = VideoEncoderImpl.PresentationTimer(parameter.video.fps)) : Encoder {
 
     companion object {
+        private val CSD_0 = "csd-0"
+        private val CSD_1 = "csd-1"
         val PBO_COUNT = 2
         val HEADER: Array<Byte> = arrayOf(0, 0, 0, 1, 103, 100, 0, 30, -84, -46, 2, -48, -10, -102, -126, -125, 2, -125, 104, 80, -102, -128, 0, 0, 0, 1, 104, -18, 6, -30, -64)
         val INIT = 0x1
@@ -74,7 +77,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun initCodec() {
         CodecHelper.initFormat(format, parameter)
-        specialData = SpecialData(format, parameter)
+//        specialData = SpecialData(format, parameter)
         codec = X264Encoder(format)
         codec?.setProfile("high")
         codec?.setLevel(31)
@@ -93,18 +96,39 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         debug_e("initPBOs(" + pbos[0] + ", " + pbos[1] + ")")
     }
 
-    private fun getOutFormat(): MediaFormat {
-        val out = MediaFormat()
-        out.setString(MediaFormat.KEY_MIME, format.getString(MediaFormat.KEY_MIME))
-        out.setInteger(MediaFormat.KEY_WIDTH, format.getInteger(MediaFormat.KEY_WIDTH))
-        out.setInteger(MediaFormat.KEY_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT))
-        out.setInteger(MediaFormat.KEY_BIT_RATE, format.getInteger(MediaFormat.KEY_BIT_RATE))
+    private fun getOutFormat(info: MediaCodec.BufferInfo, data: ByteBuffer) {
+        data.position(0)
+        val specialData = ByteArray(info.size)
+        data.get(specialData, 0, specialData!!.size)
+        outFormat = MediaFormat()
+        outFormat?.setString(MediaFormat.KEY_MIME, format.getString(MediaFormat.KEY_MIME))
+        outFormat?.setInteger(MediaFormat.KEY_WIDTH, format.getInteger(MediaFormat.KEY_WIDTH))
+        outFormat?.setInteger(MediaFormat.KEY_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT))
+        outFormat?.setInteger(MediaFormat.KEY_BIT_RATE, format.getInteger(MediaFormat.KEY_BIT_RATE))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            out.setInteger(MediaFormat.KEY_COLOR_RANGE, 2)
-            out.setInteger(MediaFormat.KEY_COLOR_STANDARD, 4)
-            out.setInteger(MediaFormat.KEY_COLOR_TRANSFER, 3)
+            outFormat?.setInteger(MediaFormat.KEY_COLOR_RANGE, 2)
+            outFormat?.setInteger(MediaFormat.KEY_COLOR_STANDARD, 4)
+            outFormat?.setInteger(MediaFormat.KEY_COLOR_TRANSFER, 3)
         }
-        return out
+        val spsAndPps = parseSpecialData(specialData) ?: throw RuntimeException("Special data is empty")
+        ppsLength = spsAndPps[0].size
+        outFormat?.setByteBuffer(CSD_0, ByteBuffer.wrap(spsAndPps[0]))
+        outFormat?.setByteBuffer(CSD_1, ByteBuffer.wrap(spsAndPps[1]))
+    }
+
+    private fun parseSpecialData(specialData: ByteArray): Array<ByteArray>? {
+        val index = (4 until specialData.size - 4).firstOrNull { isFlag(specialData, it) }
+                ?: 0
+        if (0 == index) return null
+        return arrayOf(specialData.copyOfRange(0, index),
+                specialData.copyOfRange(index, specialData.size))
+    }
+
+    private fun isFlag(specialData: ByteArray, index: Int): Boolean {
+        return 0 == specialData[index].toInt()
+                && 0 == specialData[index + 1].toInt()
+                && 0 == specialData[index + 2].toInt()
+                && 1 == specialData[index + 3].toInt()
     }
 
     private fun initThread() {
@@ -114,7 +138,11 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                 when (msg.what) {
                     INIT -> {
                         pTimer.reset()
-                        specialData!!.dequeueOutputFormat(onSampleListener)
+                        //获取SPS，PPS
+                        val size = codec?.encode(ByteArray(1), 1)!!
+                        mBufferInfo.size = size
+                        getOutFormat(mBufferInfo, codec!!.buffer!!)
+                        onSampleListener?.onFormatChanged(outFormat!!)
                         inited = true
                     }
                     ENCODE -> {
@@ -139,6 +167,13 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         pTimer.record()
         if (srcBuffer == null) return
         val time = System.currentTimeMillis()
+        if (1 == mFrameCount) {
+            mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
+            val scd0 = outFormat!!.getByteBuffer(CSD_0)
+            mBufferInfo.size = scd0.capacity()
+            onSampleListener?.onSample(mBufferInfo, scd0)
+            return
+        }
         val data = getPixelsData()
         val size = codec?.encode(data, data.size)!!
         if (size <= 0) {
@@ -148,7 +183,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
         mBufferInfo.size = size
         when (codec!!.getType()) {
-            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
             1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
             2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
             else -> mBufferInfo.flags = 0
@@ -156,14 +190,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         debug_e("x264 frame size = $size, cost ${System.currentTimeMillis() - time}ms")
         codec!!.buffer!!.position(0)
         codec!!.buffer!!.limit(size)
-        if (2 == mFrameCount) {
-            mBufferInfo.size -= 27
-            val data = ByteArray(mBufferInfo.size)
-            codec!!.buffer!!.position(27)
-            codec!!.buffer!!.get(data, 0, data.size)
-            onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(data))
-            return
-        }
         onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, mBufferInfo.size))
     }
 
