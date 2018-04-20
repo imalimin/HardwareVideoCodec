@@ -5,6 +5,7 @@
 #include <com_lmy_codec_x264_X264Encoder.h>
 #include <malloc.h>
 #include <string.h>
+#include <sys/time.h>
 
 //Log
 #ifdef ANDROID
@@ -114,11 +115,16 @@ static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *de
     x264_picture_t pic_out;
     int size = 0, i = 0;
 
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     int ret = convert(src);
     if (ret < 0) {
         LOGE("Convert failed");
         return size;
     }
+    gettimeofday(&end, NULL);
+    int time = end.tv_usec - start.tv_usec;
+    gettimeofday(&start, NULL);
 
     encoder->picture->img.i_csp = X264_CSP_I420;
     encoder->picture->img.i_plane = 3;
@@ -144,7 +150,9 @@ static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *de
         size += encoder->nal[i].i_payload;
     }
     setType(env, thiz, pic_out.i_type);
-    LOGE("encode: %d", pic_out.i_type);
+    gettimeofday(&end, NULL);
+    LOGI("Encode type: %d, Yuv convert time: %ld, Encode time: %ld", pic_out.i_type, time,
+         (end.tv_usec - start.tv_usec));
     return size;
 }
 
