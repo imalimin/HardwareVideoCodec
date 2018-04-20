@@ -7,7 +7,12 @@ import android.opengl.GLES20
  * Created by lmyooyo@gmail.com on 2018/4/20.
  */
 class MirrorTexture(width: Int, height: Int,
-                    var inputTextureId: Int) : BaseFrameBufferTexture(width, height) {
+                    var inputTextureId: Int,
+                    private var direction: Direction = Direction.VERTICAL) : BaseFrameBufferTexture(width, height) {
+    enum class Direction {
+        VERTICAL, HORIZONTAL
+    }
+
     companion object {
         private val VERTEX_SHADER = "" +
                 "attribute vec4 aPosition;\n" +
@@ -30,6 +35,11 @@ class MirrorTexture(width: Int, height: Int,
                 0f, 1f,
                 1f, 1f,
                 1f, 0f)
+        private val VERTICES_HORIZONTAL = floatArrayOf(
+                1f, 1f,
+                1f, 0f,
+                0f, 0f,
+                0f, 1f)
     }
 
     private var aPositionLocation = 0
@@ -37,7 +47,9 @@ class MirrorTexture(width: Int, height: Int,
     private var aTextureCoordinateLocation = 0
 
     init {
-        verticesBuffer = createShapeVerticesBuffer(VERTICES_VERTICAL)
+        verticesBuffer = createShapeVerticesBuffer(
+                if (Direction.VERTICAL == direction) VERTICES_VERTICAL
+                else VERTICES_HORIZONTAL)
 
         createProgram()
         initFrameBuffer()
