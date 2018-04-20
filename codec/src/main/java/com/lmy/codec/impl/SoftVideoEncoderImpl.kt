@@ -138,11 +138,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                 when (msg.what) {
                     INIT -> {
                         pTimer.reset()
-                        //获取SPS，PPS
-                        val size = codec?.encode(ByteArray(1), 1)!!
-                        mBufferInfo.size = size
-                        getOutFormat(mBufferInfo, codec!!.buffer!!)
-                        onSampleListener?.onFormatChanged(outFormat!!)
                         inited = true
                     }
                     ENCODE -> {
@@ -167,13 +162,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         pTimer.record()
         if (srcBuffer == null) return
         val time = System.currentTimeMillis()
-        if (1 == mFrameCount) {
-            mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
-            val scd0 = outFormat!!.getByteBuffer(CSD_0)
-            mBufferInfo.size = scd0.capacity()
-            onSampleListener?.onSample(mBufferInfo, scd0)
-            return
-        }
         val data = getPixelsData()
         val size = codec?.encode(data, data.size)!!
         if (size <= 0) {
@@ -183,11 +171,19 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
         mBufferInfo.size = size
         when (codec!!.getType()) {
+            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
             1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
             2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
             else -> mBufferInfo.flags = 0
         }
         debug_e("x264 frame size = $size, cost ${System.currentTimeMillis() - time}ms")
+        if (BUFFER_FLAG_CODEC_CONFIG == mBufferInfo.flags) {
+            //获取SPS，PPS
+            mBufferInfo.size = size
+            getOutFormat(mBufferInfo, codec!!.buffer!!)
+            onSampleListener?.onFormatChanged(outFormat!!)
+            return
+        }
         codec!!.buffer!!.position(0)
         codec!!.buffer!!.limit(size)
         onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, mBufferInfo.size))
