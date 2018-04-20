@@ -1,11 +1,9 @@
 package com.lmy.codec.impl
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
-import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.opengl.GLES20
 import android.opengl.GLES30
@@ -19,7 +17,6 @@ import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.x264.X264Encoder
 import java.io.FileNotFoundException
@@ -55,7 +52,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         const val BUFFER_FLAG_PARTIAL_FRAME = 8
     }
 
-    private lateinit var mirrorTexture: BaseFrameBufferTexture
+    private var mirrorTexture: BaseFrameBufferTexture
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
@@ -83,7 +80,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun initCodec() {
         CodecHelper.initFormat(format, parameter)
-//        specialData = SpecialData(format, parameter)
         codec = X264Encoder(format)
         codec?.setProfile("high")
         codec?.setLevel(31)
@@ -293,85 +289,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                 mHandler?.removeMessages(VideoEncoderImpl.ENCODE)
                 mHandler?.sendEmptyMessage(VideoEncoderImpl.ENCODE)
             }
-        }
-    }
-
-    class SpecialData(var format: MediaFormat,
-                      var parameter: Parameter,
-                      var pps: ByteArray? = null,
-                      private var codec: MediaCodec? = null,
-                      private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()) {
-        init {
-            format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-            debug_v("Create codec: ${format.getString(MediaFormat.KEY_MIME)}")
-            try {
-                codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME))
-            } catch (e: Exception) {
-                debug_e("Can not create codec")
-                e.printStackTrace()
-            } finally {
-                if (null == codec)
-                    debug_e("Can not create codec")
-            }
-        }
-
-        @SuppressLint("SwitchIntDef")
-        fun dequeueOutputFormat(listener: Encoder.OnSampleListener?) {
-            codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-            try {
-                codec!!.start()
-                offerFrameBuffer()
-                while (true) {
-                    val flag = codec!!.dequeueOutputBuffer(mBufferInfo, 10000L)
-                    when (flag) {
-                        MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
-                            debug_e("INFO_OUTPUT_FORMAT_CHANGED")
-                            listener?.onFormatChanged(codec!!.outputFormat)
-                        }
-                        else -> {
-                            if (dequeuePPS(flag))
-                                return
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
-        private fun dequeuePPS(flag: Int): Boolean {
-            debug_e("dequeuePPS: $flag")
-            if (flag < 0) return false
-            val data = codec!!.outputBuffers[flag]
-            if (null != data) {
-                val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
-                if (endOfStream == 0) {
-                    pps = kotlin.ByteArray(mBufferInfo.size)
-                    data.limit(pps!!.size)
-                    data.get(pps)
-                    debug_e("dequeuePPS success: ${mBufferInfo.size}")
-                }
-                // 一定要记得释放
-                codec!!.releaseOutputBuffer(flag, false)
-                stop()
-                return true
-            }
-            return false
-        }
-
-        private fun offerFrameBuffer() {
-            val inputBuffers = codec!!.inputBuffers
-            val bufferIndex = codec!!.dequeueInputBuffer(-1)
-            val size = parameter.video.width * parameter.video.height * 3 / 2
-            //提供一帧数据才能让mediaCodec生成outputFormat
-            inputBuffers[bufferIndex].clear()
-            inputBuffers[bufferIndex].put(ByteArray(size))
-            codec!!.queueInputBuffer(bufferIndex, 0, inputBuffers[bufferIndex].position(), 1, 0)
-        }
-
-        private fun stop() {
-            codec!!.stop()
-            codec!!.release()
         }
     }
 }
