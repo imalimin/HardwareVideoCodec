@@ -202,12 +202,17 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun readPixels() {
-//        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, cameraWrapper.getFrameBuffer())
-//        GLES30.glReadBuffer(GLES30.GL_FRONT);
+//        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, cameraWrapper.getFrameTexture())
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, cameraWrapper.getFrameBuffer())
+//        //用作纹理的颜色缓冲区，glReadPixels从这个颜色缓冲区中读取
+        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
+                GLES30.GL_TEXTURE_2D, cameraWrapper.getFrameTexture(), 0)
+//        GLES30.glReadBuffer(GLES30.GL_FRONT)
         //绑定到第一个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos[index])
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            GLES30.glReadPixels(0, 576, parameter.video.width, parameter.video.height,
+            GLES30.glReadPixels(0, 0, parameter.video.width, parameter.video.height,
                     GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, 0)
         }
         //绑定到第二个PBO
