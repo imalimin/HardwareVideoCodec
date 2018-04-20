@@ -105,6 +105,10 @@ static int encode_headers(jbyte *dest) {
 }
 
 static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *dest) {
+    if (START != state) {
+        LOGI("Start failed. Invalid state, encoder is not start");
+        return 0;
+    }
     if (0 == hasNalHeader) {
         hasNalHeader = 1;
         setType(env, thiz, X264_TYPE_HEADER);
@@ -197,9 +201,10 @@ static void init(JNIEnv *env) {
 
 static void start() {
     if (INVALID != state) {
-        LOGI("Start failed. Invalid state");
+        LOGI("Start failed. Invalid state, encoder is not invalid");
         return;
     }
+    state = START;
     initYuvBuffer(encoder->param->i_width, encoder->param->i_height);
     if ((encoder->handle = x264_encoder_open(encoder->param)) == 0) {
         return;
@@ -212,9 +217,10 @@ static void start() {
 
 static void stop() {
     if (START != state) {
-        LOGI("Stop failed. Invalid state");
+        LOGI("Stop failed. Invalid state, encoder is not start");
         return;
     }
+    state = STOP;
     if (encoder->picture) {
         x264_picture_clean(encoder->picture);
         free(encoder->picture);
