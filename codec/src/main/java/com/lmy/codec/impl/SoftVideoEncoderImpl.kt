@@ -41,7 +41,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         private val CSD_0 = "csd-0"
         private val CSD_1 = "csd-1"
         val PBO_COUNT = 2
-        val HEADER: Array<Byte> = arrayOf(0, 0, 0, 1, 103, 100, 0, 30, -84, -46, 2, -48, -10, -102, -126, -125, 2, -125, 104, 80, -102, -128, 0, 0, 0, 1, 104, -18, 6, -30, -64)
         val INIT = 0x1
         val ENCODE = 0x2
         val STOP = 0x3
