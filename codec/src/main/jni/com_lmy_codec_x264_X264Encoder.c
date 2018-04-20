@@ -61,7 +61,7 @@ static int convert(jbyte *rgb) {
                             0, 0,
                             yuvBuffer.width, yuvBuffer.height,
                             yuvBuffer.width, yuvBuffer.height,
-                            kRotate180, FOURCC_ABGR);
+                            kRotate0, FOURCC_ABGR);
     return ret;
 }
 
@@ -93,8 +93,7 @@ static int encode_headers(jbyte *dest) {
             memcpy(dest, nals[i].p_payload, nals[i].i_payload);
             dest += nals[i].i_payload;
             size += nals[i].i_payload;
-        }
-        else if (nals[i].i_type == NAL_PPS) {
+        } else if (nals[i].i_type == NAL_PPS) {
             LOGE("PPS---------------->i=%d,len=%d", i, nals[i].i_payload);
             memcpy(dest, nals[i].p_payload, nals[i].i_payload);
             dest += nals[i].i_payload;
@@ -115,8 +114,8 @@ static int encode(JNIEnv *env, jobject thiz, jbyte *src, jint srcSize, jbyte *de
     x264_picture_t pic_out;
     int size = 0, i = 0;
 
-    int ret=convert(src);
-    if(ret<0){
+    int ret = convert(src);
+    if (ret < 0) {
         LOGE("Convert failed");
         return size;
     }
