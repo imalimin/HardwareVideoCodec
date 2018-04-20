@@ -187,15 +187,69 @@ static void setLevel(int level) {
     encoder->param->i_level_idc = level;// 11 12 13 20 for CIF;31 for 720P
 }
 
+
+static void fast() {
+    /**
+     * 设置放置 B 帧决策算法。控制 x264 如何在 P 或 B 帧之间抉择。
+     * 0.关闭。总是选择 B 帧。与老的 no-b-adapt 选项相同。
+     * 1. 快速算法，较快的，当 --b-frames 值较大时速度会略微加快。采用这种模式时，基本都会使用 --bframes 16。
+     * 2.最优算法，较慢的，当 --b-frames 值较大时速度会大幅度降低。
+     */
+    encoder->param->i_bframe = 0;
+    encoder->param->i_bframe_adaptive = X264_B_ADAPT_FAST;
+    /**
+     * 在亮度和色度两个位面进行运动预测。本选项关闭色度运动预测并能略微提高编码速度。
+     */
+    encoder->param->analyse.b_chroma_me = 0;
+    /**
+     * DCT Decimation 将去除中被认为不重要的 DCT 块。这样做可以提高编码效率， 并有些微的质量损失。
+     */
+    //encoder->param->analyse.b_dct_decimate = 1;
+}
+
+static void quality() {
+    /**
+     * 控制去块滤波器是否打开，推荐打开
+     */
+    encoder->param->b_deblocking_filter = 1;
+    /**
+     * alpha去块滤波器，取值范围 -6 ~ 6 数字越大效果越强
+     */
+    encoder->param->i_deblocking_filter_alphac0 = 6;
+    /**
+     * beta去块滤波器，取值范围 -6 ~ 6 数字越大效果越强
+     */
+    encoder->param->i_deblocking_filter_beta = 6;
+    /**
+     * Open-GOP 是一种提高压缩率的编码技术。有三种模式：
+     * none: 关闭
+     * normal: 启用
+     * bluray: 启用。一个较低效率版本的 Open-GOP，当压制蓝光时 normal 模式不能工作。
+     * 一些解码器不完全支持Open-GOP 流，这就是为什么默认是关闭的。你需要测试播放视频流的解码器，
+     * 或者等到Open-GOP 被普遍支持。
+     */
+    encoder->param->b_open_gop = 1;
+    /**
+     * weightp=2
+     * 在 P 帧中开启加权预测用于提高压缩率。同时提高淡入淡出场景质量。值越大越慢。
+     */
+    encoder->param->analyse.i_weighted_pred = X264_WEIGHTP_SMART;
+    encoder->param->analyse.b_weighted_bipred = X264_WEIGHTP_SMART;
+}
+
 static void init(JNIEnv *env) {
     initSetTypeMethod(env);
     encoder = (Encoder *) malloc(sizeof(Encoder));
     encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
     encoder->picture = (x264_param_t *) malloc(sizeof(x264_picture_t));
     //开启多帧并行编码
-    //encoder->param->b_sliced_threads = 0;
-    //encoder->param->i_threads = 8;
+    encoder->param->b_sliced_threads = 0;
+    encoder->param->i_threads = X264_THREADS_AUTO;
     encoder->param->b_repeat_headers = 0;
+    //恒定质量
+    encoder->param->rc.i_rc_method = X264_RC_CRF;
+    fast();
+    quality();
     x264_param_default_preset(encoder->param, "veryfast", "zerolatency");
 }
 
