@@ -6,8 +6,7 @@ import android.opengl.GLES20
  * 无滤镜效果
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class NormalTexture(var inputTextureId: Int,
-                    var drawer: BaseFrameBufferTexture.GLDrawer) : BaseTexture() {
+class NormalTexture(var inputTextureId: Int) : BaseTexture() {
 
     companion object {
         private val VERTEX_SHADER = "" +

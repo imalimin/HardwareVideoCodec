@@ -6,8 +6,7 @@ import android.opengl.GLES20
  * 黑白滤镜
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class GreyTexture(var inputTextureId: Int,
-                  var drawer: BaseFrameBufferTexture.GLDrawer) : BaseTexture() {
+class GreyTexture(var inputTextureId: Int) : BaseTexture() {
 
     companion object {
         private val VERTEX_SHADER = "" +

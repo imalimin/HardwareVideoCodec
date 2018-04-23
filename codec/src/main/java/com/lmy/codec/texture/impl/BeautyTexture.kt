@@ -7,8 +7,7 @@ import java.nio.FloatBuffer
  * 美颜滤镜
  * Created by lmyooyo@gmail.com on 2018/3/30.
  */
-class BeautyTexture(var inputTextureId: Int,
-                    var drawer: BaseFrameBufferTexture.GLDrawer) : BaseTexture() {
+class BeautyTexture(var inputTextureId: Int) : BaseTexture() {
 
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0

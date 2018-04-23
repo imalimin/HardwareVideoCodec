@@ -5,16 +5,19 @@ import com.lmy.codec.texture.Texture
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import java.nio.ShortBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 abstract class BaseTexture(var buffer: FloatBuffer? = null,
                            var verticesBuffer: FloatBuffer? = null,
-                           var shaderProgram: Int? = null) : Texture {
+                           var shaderProgram: Int? = null,
+                           var drawer: GLDrawer = GLDrawer()) : Texture {
     companion object {
         var COORDS_PER_VERTEX = 2
         var TEXTURE_COORDS_PER_VERTEX = 2
+        private val DRAW_INDICES = shortArrayOf(0, 1, 2, 0, 2, 3)
         //每行前两个值为顶点坐标，后两个为纹理坐标
         val VERTICES_SQUARE = floatArrayOf(
                 -1.0f, 1.0f,
@@ -96,5 +99,20 @@ abstract class BaseTexture(var buffer: FloatBuffer? = null,
     fun release() {
         if (null != shaderProgram)
             GLES20.glDeleteProgram(shaderProgram!!)
+    }
+
+    class GLDrawer(var drawIndecesBuffer: ShortBuffer? = null) {
+        init {
+            drawIndecesBuffer = ByteBuffer.allocateDirect(2 * DRAW_INDICES.size).order(ByteOrder.nativeOrder()).asShortBuffer()
+            drawIndecesBuffer?.put(DRAW_INDICES)
+            drawIndecesBuffer?.position(0)
+        }
+
+        fun draw() {
+            GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawIndecesBuffer!!.limit(),
+                    GLES20.GL_UNSIGNED_SHORT, drawIndecesBuffer)
+        }
     }
 }
