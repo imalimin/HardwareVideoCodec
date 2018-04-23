@@ -9,7 +9,7 @@ import com.lmy.codec.entity.Parameter
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.NormalTexture
-import com.lmy.codec.texture.impl.filter.GreyTextureFilter
+import com.lmy.codec.texture.impl.filter.NormalTextureFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
@@ -66,7 +66,7 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     fun init() {
         cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
-        filter = GreyTextureFilter(parameter.video.width, parameter.video.height)
+        filter = NormalTextureFilter(parameter.video.width, parameter.video.height)
         filter.textureId = cameraWrapper.getFrameBufferTexture()
         screenWrapper = ScreenTextureWrapper(screenTexture, cameraWrapper.egl!!.eglContext!!)
         screenWrapper?.setFilter(NormalTexture(filter.frameBufferTexture!!))
