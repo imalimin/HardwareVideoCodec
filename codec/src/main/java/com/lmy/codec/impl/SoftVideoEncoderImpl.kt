@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.opengl.GLES30
 import android.os.Build
@@ -17,7 +18,6 @@ import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.x264.X264Encoder
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -27,7 +27,8 @@ import java.nio.ByteBuffer
  * Created by lmyooyo@gmail.com on 2018/4/3.
  */
 class SoftVideoEncoderImpl(var parameter: Parameter,
-                           var cameraWrapper: CameraTextureWrapper,
+                           textureId: Int,
+                           private var eglContext: EGLContext,
                            var codec: X264Encoder? = null,
                            private var ppsLength: Int = 0,
                            private var pbos: IntArray = IntArray(PBO_COUNT),
@@ -72,7 +73,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         initThread()
         initPBOs()
         mirrorTexture = MirrorTexture(parameter.video.width,
-                parameter.video.height, cameraWrapper.getFrameTexture())
+                parameter.video.height, textureId)
         mHandler?.removeMessages(VideoEncoderImpl.INIT)
         mHandler?.sendEmptyMessage(VideoEncoderImpl.INIT)
     }

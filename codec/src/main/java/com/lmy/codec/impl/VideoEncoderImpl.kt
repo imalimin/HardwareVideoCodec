@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.os.Handler
 import android.os.HandlerThread
@@ -16,7 +17,6 @@ import com.lmy.codec.texture.impl.BaseTexture
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CodecTextureWrapper
 
 
@@ -24,7 +24,8 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 class VideoEncoderImpl(var parameter: Parameter,
-                       var cameraWrapper: CameraTextureWrapper,
+                       private var textureId: Int,
+                       private var eglContext: EGLContext,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
                        private var filter: BaseTexture? = null,
@@ -116,8 +117,8 @@ class VideoEncoderImpl(var parameter: Parameter,
         }
         pTimer.reset()
         codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), cameraWrapper.egl!!.eglContext)
-        filter = NormalTexture(cameraWrapper.getFrameTexture(), cameraWrapper.getDrawer())
+        codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), eglContext)
+        filter = NormalTexture(textureId)
         codecWrapper?.setFilter(filter!!)
         codecWrapper?.egl?.makeCurrent()
         codec!!.start()
