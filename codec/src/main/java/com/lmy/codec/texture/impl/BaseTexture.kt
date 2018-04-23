@@ -10,7 +10,8 @@ import java.nio.ShortBuffer
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-abstract class BaseTexture(var buffer: FloatBuffer? = null,
+abstract class BaseTexture(var textureId: Int,
+                           var buffer: FloatBuffer? = null,
                            var verticesBuffer: FloatBuffer? = null,
                            var shaderProgram: Int? = null,
                            var drawer: GLDrawer = GLDrawer()) : Texture {

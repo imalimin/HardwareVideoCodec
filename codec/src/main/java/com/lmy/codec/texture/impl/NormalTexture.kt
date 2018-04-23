@@ -6,7 +6,7 @@ import android.opengl.GLES20
  * 无滤镜效果
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class NormalTexture(var inputTextureId: Int) : BaseTexture() {
+class NormalTexture(textureId: Int) : BaseTexture(textureId) {
 
     companion object {
         private val VERTEX_SHADER = "" +
@@ -51,7 +51,7 @@ class NormalTexture(var inputTextureId: Int) : BaseTexture() {
     override fun drawTexture(transformMatrix: FloatArray?) {
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureId)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
 
