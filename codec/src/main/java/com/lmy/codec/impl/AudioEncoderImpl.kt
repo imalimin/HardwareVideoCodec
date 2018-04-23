@@ -10,6 +10,7 @@ import android.os.Message
 import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
+import com.lmy.codec.loge
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.AudioRecordWrapper
@@ -22,7 +23,6 @@ import java.nio.ByteBuffer
  */
 class AudioEncoderImpl(var parameter: Parameter,
                        private var codec: MediaCodec? = null,
-                       private var format: MediaFormat = MediaFormat(),
                        var inputBuffers: Array<ByteBuffer>? = null,
                        var outputBuffers: Array<ByteBuffer>? = null,
                        private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
@@ -37,6 +37,7 @@ class AudioEncoderImpl(var parameter: Parameter,
         val STOP = 0x3
     }
 
+    private lateinit var format: MediaFormat
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
@@ -51,7 +52,12 @@ class AudioEncoderImpl(var parameter: Parameter,
     }
 
     private fun initCodec() {
-        CodecHelper.initAudioFormat(format, parameter)
+        val f = CodecHelper.createAudioFormat(parameter)
+        if (null == f) {
+            loge("Unsupport codec type")
+            return
+        }
+        format = f!!
         debug_v("create codec: ${format.getString(MediaFormat.KEY_MIME)}")
         try {
             codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME))

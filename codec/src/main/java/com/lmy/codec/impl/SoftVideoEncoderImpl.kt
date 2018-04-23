@@ -31,7 +31,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                            var codec: X264Encoder? = null,
                            private var ppsLength: Int = 0,
                            private var pbos: IntArray = IntArray(PBO_COUNT),
-                           private var format: MediaFormat = MediaFormat(),
                            private var outFormat: MediaFormat? = null,
                            private var srcBuffer: ByteBuffer? = null,
                            private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
@@ -51,6 +50,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         const val BUFFER_FLAG_PARTIAL_FRAME = 8
     }
 
+    private lateinit var format: MediaFormat
     private var mirrorTexture: BaseFrameBufferTexture
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
@@ -78,7 +78,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun initCodec() {
-        CodecHelper.initFormat(format, parameter)
+        format = CodecHelper.createVideoFormat(parameter, true)!!
         codec = X264Encoder(format)
         codec?.setProfile("high")
         codec?.setLevel(31)

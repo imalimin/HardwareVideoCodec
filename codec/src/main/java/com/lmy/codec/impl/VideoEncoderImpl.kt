@@ -11,6 +11,7 @@ import android.os.Message
 import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
+import com.lmy.codec.loge
 import com.lmy.codec.texture.impl.BaseTexture
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
@@ -26,7 +27,6 @@ class VideoEncoderImpl(var parameter: Parameter,
                        var cameraWrapper: CameraTextureWrapper,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
-                       private var format: MediaFormat = MediaFormat(),
                        private var filter: BaseTexture? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
@@ -39,6 +39,8 @@ class VideoEncoderImpl(var parameter: Parameter,
         val STOP = 0x3
     }
 
+    private lateinit var format: MediaFormat
+    private var supportCodec = true
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
@@ -57,7 +59,12 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun initCodec() {
-        CodecHelper.initFormat(format, parameter)
+        val f = CodecHelper.createVideoFormat(parameter)
+        if (null == f) {
+            loge("Unsupport codec type")
+            return
+        }
+        format = f!!
         debug_v("create codec: ${format.getString(MediaFormat.KEY_MIME)}")
         try {
             codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME))
