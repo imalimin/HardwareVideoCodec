@@ -9,6 +9,7 @@ import com.lmy.codec.entity.Parameter
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
+import com.lmy.codec.texture.impl.filter.GreyTextureFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
@@ -42,6 +43,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
         render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper as CameraTextureWrapper)
+//        render?.setFilter(GreyTextureFilter(parameter.video.width, parameter.video.height))
     }
 
     override fun onFormatChanged(format: MediaFormat) {

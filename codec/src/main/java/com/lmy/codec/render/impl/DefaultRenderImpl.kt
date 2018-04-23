@@ -9,6 +9,7 @@ import com.lmy.codec.entity.Parameter
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.NormalTexture
+import com.lmy.codec.texture.impl.filter.GreyTextureFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
@@ -27,8 +28,7 @@ class DefaultRenderImpl(var parameter: Parameter,
                         private var viewportX: Int = 0,
                         private var viewportY: Int = 0,
                         var cameraWidth: Int = 0,
-                        var cameraHeight: Int = 0,
-                        private var filter: BaseFrameBufferTexture? = null)
+                        var cameraHeight: Int = 0)
     : Render {
 
     companion object {
@@ -37,6 +37,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         val STOP = 0x3
     }
 
+    private lateinit var filter: BaseFrameBufferTexture
     private var mHandlerThread = HandlerThread("Renderer_Thread")
     private var mHandler: Handler? = null
 
@@ -65,8 +66,10 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     fun init() {
         cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
+        filter = GreyTextureFilter(parameter.video.width, parameter.video.height)
+        filter.textureId = cameraWrapper.getFrameBufferTexture()
         screenWrapper = ScreenTextureWrapper(screenTexture, cameraWrapper.egl!!.eglContext!!)
-        screenWrapper?.setFilter(NormalTexture(cameraWrapper.getFrameBufferTexture()))
+        screenWrapper?.setFilter(NormalTexture(filter.frameBufferTexture!!))
 //        (screenWrapper!!.texture as BeautyTexture).setParams(0f, -5f)//beauty: 0 - 2.5, tone: -5 - 5
 //        (screenWrapper!!.texture as BeautyTexture).setBrightLevel(0f)//0 - 1
 //        (screenWrapper!!.texture as BeautyTexture).setTexelOffset(-10f)//-10 - 10
@@ -74,6 +77,7 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     override fun draw() {
         drawCamera()
+        drawFilter()
         screenWrapper?.egl?.makeCurrent()
         GLES20.glViewport(viewportX, viewportY, width, height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
@@ -81,6 +85,12 @@ class DefaultRenderImpl(var parameter: Parameter,
         screenWrapper?.drawTexture(transformMatrix)
         screenWrapper?.egl?.swapBuffers()
         runnable?.run()
+    }
+
+    private fun drawFilter() {
+        GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        filter.drawTexture(null)
     }
 
     private fun drawCamera() {
