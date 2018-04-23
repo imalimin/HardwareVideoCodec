@@ -7,6 +7,7 @@ import android.os.HandlerThread
 import android.os.Message
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.render.Render
+import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
@@ -26,7 +27,8 @@ class DefaultRenderImpl(var parameter: Parameter,
                         private var viewportX: Int = 0,
                         private var viewportY: Int = 0,
                         var cameraWidth: Int = 0,
-                        var cameraHeight: Int = 0)
+                        var cameraHeight: Int = 0,
+                        private var filter: BaseFrameBufferTexture? = null)
     : Render {
 
     companion object {
@@ -64,7 +66,7 @@ class DefaultRenderImpl(var parameter: Parameter,
     fun init() {
         cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
         screenWrapper = ScreenTextureWrapper(screenTexture, cameraWrapper.egl!!.eglContext!!)
-        screenWrapper?.setFilter(NormalTexture(cameraWrapper.getFrameTexture(), cameraWrapper.getDrawer()))
+        screenWrapper?.setFilter(NormalTexture(cameraWrapper.getFrameBufferTexture()))
 //        (screenWrapper!!.texture as BeautyTexture).setParams(0f, -5f)//beauty: 0 - 2.5, tone: -5 - 5
 //        (screenWrapper!!.texture as BeautyTexture).setBrightLevel(0f)//0 - 1
 //        (screenWrapper!!.texture as BeautyTexture).setTexelOffset(-10f)//-10 - 10
@@ -166,5 +168,19 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     override fun afterRender(runnable: Runnable) {
         this.runnable = runnable
+    }
+
+    override fun setFilter(filter: BaseFrameBufferTexture) {
+        this.filter = filter
+    }
+
+    override fun getFrameBuffer(): Int {
+        if (null != filter) return filter!!.frameBuffer!!
+        return cameraWrapper.getFrameBuffer()
+    }
+
+    override fun getFrameBufferTexture(): Int {
+        if (null != filter) return filter!!.frameBufferTexture!!
+        return cameraWrapper.getFrameBufferTexture()
     }
 }
