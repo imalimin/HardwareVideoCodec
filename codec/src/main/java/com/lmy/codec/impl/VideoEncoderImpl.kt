@@ -19,8 +19,6 @@ import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
-import com.lmy.codec.texture.impl.BaseTexture
-import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CodecTextureWrapper
@@ -34,7 +32,6 @@ class VideoEncoderImpl(var parameter: Parameter,
                        private var eglContext: EGLContext,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
-                       private var filter: BaseTexture? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
     : Encoder {
@@ -123,9 +120,7 @@ class VideoEncoderImpl(var parameter: Parameter,
         }
         pTimer.reset()
         codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), eglContext)
-        filter = NormalTexture(textureId)
-        codecWrapper?.setFilter(filter!!)
+        codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), textureId, eglContext)
         codecWrapper?.egl?.makeCurrent()
         codec!!.start()
     }
