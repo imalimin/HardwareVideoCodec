@@ -44,7 +44,6 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     private lateinit var format: MediaFormat
-    private var supportCodec = true
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
