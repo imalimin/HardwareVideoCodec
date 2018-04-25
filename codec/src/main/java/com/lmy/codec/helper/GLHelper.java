@@ -9,6 +9,8 @@ import android.content.pm.ConfigurationInfo;
  */
 
 public class GLHelper {
+    private final static int PBO_SUPPORT_VERSION = 0x30000;
+
     public static native void glReadPixels(int x,
                                            int y,
                                            int width,
@@ -25,5 +27,9 @@ public class GLHelper {
         ConfigurationInfo info = am.getDeviceConfigurationInfo();
         if (null == info) return 0;
         return info.reqGlEsVersion;
+    }
+
+    public static boolean isSupportPBO(Context context) {
+        return GLHelper.glVersion(context) > PBO_SUPPORT_VERSION;
     }
 }
