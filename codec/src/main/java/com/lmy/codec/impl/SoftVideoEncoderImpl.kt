@@ -15,6 +15,7 @@ import android.os.Message
 import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
+import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
@@ -224,10 +225,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 //        GLES30.glReadBuffer(GLES30.GL_FRONT)
         //绑定到第一个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos[index])
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            GLES30.glReadPixels(0, 0, parameter.video.width, parameter.video.height,
-                    GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, 0)
-        }
+        GLHelper.glReadPixels(0, 0, parameter.video.width, parameter.video.height,
+                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE)
         //绑定到第二个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos[nextIndex])
         //glMapBufferRange会等待DMA传输完成，所以需要交替使用pbo
