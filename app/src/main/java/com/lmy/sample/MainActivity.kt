@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     private fun initView() {
         mTextureView.keepScreenOn = true
         mTextureView.surfaceTextureListener = this
-        mRecordBtn.setOnTouchListener { v, event ->
+        mTextureView.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     mPresenter.encoder?.start()
