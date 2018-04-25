@@ -216,9 +216,9 @@ class VideoEncoderImpl(var parameter: Parameter,
         }
 
         fun record() {
-            val timeTmp = System.currentTimeMillis()
+            val timeTmp = System.nanoTime()
             presentationTimeUs += if (0L != timestamp)
-                (timeTmp - timestamp) * 1000
+                (timeTmp - timestamp) / 1000
             else
                 1000000L / fps
             timestamp = timeTmp
