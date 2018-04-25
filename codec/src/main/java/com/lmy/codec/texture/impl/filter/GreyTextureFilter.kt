@@ -8,13 +8,14 @@ package com.lmy.codec.texture.impl.filter
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
-import com.lmy.codec.texture.impl.BaseFrameBufferTexture
+import com.lmy.codec.texture.impl.BaseTextureFilter
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/23.
  */
-class GreyTextureFilter(width: Int, height: Int,
-                        textureId: Int = -1) : BaseFrameBufferTexture(width, height, textureId) {
+class GreyTextureFilter(width: Int = 0,
+                        height: Int = 0,
+                        textureId: Int = -1) : BaseTextureFilter(width, height, textureId) {
 
     companion object {
         private val VERTEX_SHADER = "" +
@@ -51,9 +52,8 @@ class GreyTextureFilter(width: Int, height: Int,
     private var uTextureLocation = 0
     private var aTextureCoordinateLocation = 0
 
-    init {
+    override fun init() {
         verticesBuffer = createShapeVerticesBuffer(VERTICES_SCREEN)
-
         createProgram()
         initFrameBuffer()
     }
@@ -78,7 +78,7 @@ class GreyTextureFilter(width: Int, height: Int,
         GLES20.glFinish()
         GLES20.glDisableVertexAttribArray(aPositionLocation)
         GLES20.glDisableVertexAttribArray(aTextureCoordinateLocation)
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NONE)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
     }
