@@ -36,13 +36,13 @@ LOCAL_CFLAGS += -std=c99 -g -mfloat-abi=softfp -mfpu=neon -march=armv7-a -mtune=
 endif
 
 LOCAL_MODULE := codec
-LOCAL_SRC_FILES =: com_lmy_codec_x264_X264Encoder.c
+LOCAL_SRC_FILES =: com_lmy_codec_x264_X264Encoder.c com_lmy_codec_helper_GLHelper.c
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
 # 采用NEON优化技术
 LOCAL_ARM_NEON := true
 endif
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_LDLIBS := -llog -lz -ljnigraphics -landroid -lm -pthread
+LOCAL_LDLIBS := -llog -lz -ljnigraphics -landroid -lm -pthread -lGLESv2
 LOCAL_SHARED_LIBRARIES := libyuv libx264
 include $(BUILD_SHARED_LIBRARY)
