@@ -50,7 +50,6 @@ class CameraPreviewPresenter(var parameter: Parameter,
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
         render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper as CameraTextureWrapper)
-//        render?.setFilter(GreyTextureFilter(parameter.video.width, parameter.video.height))
     }
 
     override fun onFormatChanged(format: MediaFormat) {
