@@ -91,17 +91,17 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun initPixelsCache() {
+        val size = parameter.video.width * parameter.video.height * 4
         isSupportPbo = GLHelper.isSupportPBO(parameter.context)
         if (isSupportPbo) {
-            initPBOs()
+            initPBOs(size)
         } else {
-            srcBuffer = ByteBuffer.allocate(parameter.video.width * parameter.video.height * 4)
+            srcBuffer = ByteBuffer.allocate(size)
             srcBuffer?.order(ByteOrder.nativeOrder())
         }
     }
 
-    private fun initPBOs() {
-        val size = parameter.video.width * parameter.video.height * 4
+    private fun initPBOs(size: Int) {
         pbos = IntArray(PBO_COUNT)
         GLES30.glGenBuffers(PBO_COUNT, pbos, 0)
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos[0])
