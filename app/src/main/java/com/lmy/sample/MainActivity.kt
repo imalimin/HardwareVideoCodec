@@ -12,7 +12,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
 import android.view.TextureView
 import com.lmy.codec.entity.Parameter
-import com.lmy.codec.impl.CameraPreviewPresenter
+import com.lmy.codec.CameraPreviewPresenter
 import com.lmy.codec.util.debug_v
 import kotlinx.android.synthetic.main.activity_main.*
 
