@@ -1,7 +1,9 @@
-//
-// Created by nonolive66 on 2018/4/3.
-//
-
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 #include <com_lmy_codec_x264_X264Encoder.h>
 #include <malloc.h>
 #include <string.h>
