@@ -23,6 +23,7 @@ import com.lmy.codec.x264.X264Encoder
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/3.
@@ -64,6 +65,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     private var index = 0
     private var nextIndex = 1
     private var inited = false
+    private var isSupportPbo = true
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -73,7 +75,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     init {
         initCodec()
         initThread()
-        initPBOs()
+        initPixelsCache()
         mirrorTexture = MirrorTexture(parameter.video.width,
                 parameter.video.height, textureId)
         mHandler?.removeMessages(VideoEncoderImpl.INIT)
@@ -86,6 +88,16 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         codec?.setProfile("high")
         codec?.setLevel(31)
         codec?.start()
+    }
+
+    private fun initPixelsCache() {
+        isSupportPbo = GLHelper.isSupportPBO(parameter.context)
+        if (isSupportPbo) {
+            initPBOs()
+        } else {
+            srcBuffer = ByteBuffer.allocate(parameter.video.width * parameter.video.height * 4)
+            srcBuffer?.order(ByteOrder.nativeOrder())
+        }
     }
 
     private fun initPBOs() {
@@ -214,8 +226,17 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun readPixels() {
-        GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
-        mirrorTexture.drawTexture(null)
+        srcBuffer!!.clear()
+        srcBuffer!!.position(0)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mirrorTexture.frameBuffer!!)
+        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
+                GLES30.GL_TEXTURE_2D, mirrorTexture.frameBufferTexture!!, 0)
+        GLES20.glReadPixels(0, 0, parameter.video.width, parameter.video.height, GLES20.GL_RGBA,
+                GLES20.GL_UNSIGNED_BYTE, srcBuffer!!)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+    }
+
+    private fun readPixelsByPbo() {
 //        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
 //        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, cameraWrapper.getFrameTexture())
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mirrorTexture.frameBuffer!!)
@@ -237,8 +258,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         //解除映射
         GLES30.glUnmapBuffer(GLES30.GL_PIXEL_PACK_BUFFER)
         //解除绑定PBO
-        GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, 0)
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+        GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, GLES20.GL_NONE)
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, GLES20.GL_NONE)
         //交换索引
         index = (index + 1) % 2
         nextIndex = (nextIndex + 1) % 2
@@ -247,6 +268,13 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
             return
         }
 //        debug_e("buffer[${srcBuffer!![2000]}, ${srcBuffer!![2001]}, ${srcBuffer!![2002]}, ${srcBuffer!![2003]}]")
+    }
+
+    private fun readPixels(pbo: Boolean) {
+        GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+        mirrorTexture.drawTexture(null)
+        if (pbo) readPixelsByPbo()
+        else readPixels()
     }
 
 
@@ -293,7 +321,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
             if (mEncoding && inited) {
-                readPixels()
+                readPixels(isSupportPbo)
                 mHandler?.removeMessages(VideoEncoderImpl.ENCODE)
                 mHandler?.sendEmptyMessage(VideoEncoderImpl.ENCODE)
             }
