@@ -72,13 +72,8 @@ class CameraTextureWrapper : TextureWrapper() {
         return (texture as BaseFrameBufferTexture).frameBuffer!!
     }
 
-    fun getFrameTexture(): Int {
+    fun getFrameBufferTexture(): Int {
         checkTexture()
         return (texture as BaseFrameBufferTexture).frameBufferTexture!!
-    }
-
-    fun getDrawer(): BaseFrameBufferTexture.GLDrawer {
-        checkTexture()
-        return (texture as BaseFrameBufferTexture).drawer!!
     }
 }

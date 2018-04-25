@@ -6,8 +6,7 @@ import android.opengl.GLES20
  * 黑白滤镜
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class GreyTexture(var inputTextureId: Int,
-                  var drawer: BaseFrameBufferTexture.GLDrawer) : BaseTexture() {
+class GreyTexture(textureId: Int) : BaseTexture(textureId) {
 
     companion object {
         private val VERTEX_SHADER = "" +
@@ -59,7 +58,7 @@ class GreyTexture(var inputTextureId: Int,
     override fun drawTexture(transformMatrix: FloatArray?) {
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureId)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
 

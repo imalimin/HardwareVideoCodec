@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.opengl.GLES30
 import android.os.Build
@@ -14,24 +15,25 @@ import android.os.Message
 import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
+import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.x264.X264Encoder
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/3.
  */
 class SoftVideoEncoderImpl(var parameter: Parameter,
-                           var cameraWrapper: CameraTextureWrapper,
+                           textureId: Int,
+                           private var eglContext: EGLContext,
                            var codec: X264Encoder? = null,
                            private var ppsLength: Int = 0,
                            private var pbos: IntArray = IntArray(PBO_COUNT),
-                           private var format: MediaFormat = MediaFormat(),
                            private var outFormat: MediaFormat? = null,
                            private var srcBuffer: ByteBuffer? = null,
                            private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
@@ -51,16 +53,19 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         const val BUFFER_FLAG_PARTIAL_FRAME = 8
     }
 
+    private lateinit var format: MediaFormat
     private var mirrorTexture: BaseFrameBufferTexture
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var mFrameCount = 0
+    private var mTotalCost = 0L
     //For PBO
     private var index = 0
     private var nextIndex = 1
     private var inited = false
+    private var isSupportPbo = true
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -70,23 +75,33 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     init {
         initCodec()
         initThread()
-        initPBOs()
+        initPixelsCache()
         mirrorTexture = MirrorTexture(parameter.video.width,
-                parameter.video.height, cameraWrapper.getFrameTexture())
+                parameter.video.height, textureId)
         mHandler?.removeMessages(VideoEncoderImpl.INIT)
         mHandler?.sendEmptyMessage(VideoEncoderImpl.INIT)
     }
 
     private fun initCodec() {
-        CodecHelper.initFormat(format, parameter)
+        format = CodecHelper.createVideoFormat(parameter, true)!!
         codec = X264Encoder(format)
         codec?.setProfile("high")
         codec?.setLevel(31)
         codec?.start()
     }
 
-    private fun initPBOs() {
+    private fun initPixelsCache() {
         val size = parameter.video.width * parameter.video.height * 4
+        isSupportPbo = GLHelper.isSupportPBO(parameter.context)
+        if (isSupportPbo) {
+            initPBOs(size)
+        } else {
+            srcBuffer = ByteBuffer.allocate(size)
+            srcBuffer?.order(ByteOrder.nativeOrder())
+        }
+    }
+
+    private fun initPBOs(size: Int) {
         pbos = IntArray(PBO_COUNT)
         GLES30.glGenBuffers(PBO_COUNT, pbos, 0)
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos[0])
@@ -160,7 +175,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun encode() {
         ++mFrameCount
-        pTimer.record()
         if (srcBuffer == null) return
         val time = System.currentTimeMillis()
         val data = getPixelsData()
@@ -169,18 +183,14 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
             debug_e("Encode failed. size = $size")
             return
         }
-        mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-        mBufferInfo.size = size
-        when (codec!!.getType()) {
-            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
-            1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
-            2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
-            else -> mBufferInfo.flags = 0
-        }
-        debug_e("x264 frame size = $size, cost ${System.currentTimeMillis() - time}ms")
+        wrapBufferInfo(size)
+        val cost = System.currentTimeMillis() - time
+        mTotalCost += cost
+//        debug_v("timestamp ${mBufferInfo.presentationTimeUs}")
+        if (0 == mFrameCount % parameter.video.fps)
+            debug_e("x264 frame size = $size, cost ${cost}ms, arg cost ${mTotalCost / mFrameCount}ms")
         if (BUFFER_FLAG_CODEC_CONFIG == mBufferInfo.flags) {
             //获取SPS，PPS
-            mBufferInfo.size = size
             getOutFormat(mBufferInfo, codec!!.buffer!!)
             onSampleListener?.onFormatChanged(outFormat!!)
             return
@@ -188,6 +198,19 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         codec!!.buffer!!.position(0)
         codec!!.buffer!!.limit(size)
         onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, mBufferInfo.size))
+    }
+
+    private fun wrapBufferInfo(size: Int) {
+        when (codec!!.getType()) {
+            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
+            1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
+            2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
+            else -> mBufferInfo.flags = 0
+        }
+        if (BUFFER_FLAG_CODEC_CONFIG != mBufferInfo.flags)
+            pTimer.record()
+        mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
+        mBufferInfo.size = size
     }
 
     private fun getPixelsData(): ByteArray {
@@ -203,8 +226,17 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun readPixels() {
-        GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
-        mirrorTexture.drawTexture(null)
+        srcBuffer!!.clear()
+        srcBuffer!!.position(0)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mirrorTexture.frameBuffer!!)
+        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
+                GLES30.GL_TEXTURE_2D, mirrorTexture.frameBufferTexture!!, 0)
+        GLES20.glReadPixels(0, 0, parameter.video.width, parameter.video.height, GLES20.GL_RGBA,
+                GLES20.GL_UNSIGNED_BYTE, srcBuffer!!)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+    }
+
+    private fun readPixelsByPbo() {
 //        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
 //        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, cameraWrapper.getFrameTexture())
         GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, mirrorTexture.frameBuffer!!)
@@ -214,10 +246,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 //        GLES30.glReadBuffer(GLES30.GL_FRONT)
         //绑定到第一个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos[index])
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            GLES30.glReadPixels(0, 0, parameter.video.width, parameter.video.height,
-                    GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, 0)
-        }
+        GLHelper.glReadPixels(0, 0, parameter.video.width, parameter.video.height,
+                GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE)
         //绑定到第二个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos[nextIndex])
         //glMapBufferRange会等待DMA传输完成，所以需要交替使用pbo
@@ -228,8 +258,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         //解除映射
         GLES30.glUnmapBuffer(GLES30.GL_PIXEL_PACK_BUFFER)
         //解除绑定PBO
-        GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, 0)
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, 0)
+        GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, GLES20.GL_NONE)
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, GLES20.GL_NONE)
         //交换索引
         index = (index + 1) % 2
         nextIndex = (nextIndex + 1) % 2
@@ -237,7 +267,14 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
             debug_e("PBO is null(${pbos[0]}, ${pbos[1]})")
             return
         }
-        debug_e("buffer[${srcBuffer!![2000]}, ${srcBuffer!![2001]}, ${srcBuffer!![2002]}, ${srcBuffer!![2003]}]")
+//        debug_e("buffer[${srcBuffer!![2000]}, ${srcBuffer!![2001]}, ${srcBuffer!![2002]}, ${srcBuffer!![2003]}]")
+    }
+
+    private fun readPixels(pbo: Boolean) {
+        GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+        mirrorTexture.drawTexture(null)
+        if (pbo) readPixelsByPbo()
+        else readPixels()
     }
 
 
@@ -284,7 +321,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
             if (mEncoding && inited) {
-                readPixels()
+                readPixels(isSupportPbo)
                 mHandler?.removeMessages(VideoEncoderImpl.ENCODE)
                 mHandler?.sendEmptyMessage(VideoEncoderImpl.ENCODE)
             }

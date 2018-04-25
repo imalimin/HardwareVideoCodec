@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
-        (JNIEnv *, jobject);
+        (JNIEnv *, jobject, jstring, jstring);
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
         (JNIEnv *, jobject);

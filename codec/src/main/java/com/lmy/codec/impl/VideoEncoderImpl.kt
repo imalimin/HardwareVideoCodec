@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.os.Handler
 import android.os.HandlerThread
@@ -11,11 +12,11 @@ import android.os.Message
 import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
+import com.lmy.codec.loge
 import com.lmy.codec.texture.impl.BaseTexture
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CodecTextureWrapper
 
 
@@ -23,10 +24,10 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 class VideoEncoderImpl(var parameter: Parameter,
-                       var cameraWrapper: CameraTextureWrapper,
+                       private var textureId: Int,
+                       private var eglContext: EGLContext,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
-                       private var format: MediaFormat = MediaFormat(),
                        private var filter: BaseTexture? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
@@ -39,6 +40,8 @@ class VideoEncoderImpl(var parameter: Parameter,
         val STOP = 0x3
     }
 
+    private lateinit var format: MediaFormat
+    private var supportCodec = true
     private var mHandlerThread = HandlerThread("Encode_Thread")
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
@@ -57,7 +60,12 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun initCodec() {
-        CodecHelper.initFormat(format, parameter)
+        val f = CodecHelper.createVideoFormat(parameter)
+        if (null == f) {
+            loge("Unsupport codec type")
+            return
+        }
+        format = f!!
         debug_v("create codec: ${format.getString(MediaFormat.KEY_MIME)}")
         try {
             codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME))
@@ -109,8 +117,8 @@ class VideoEncoderImpl(var parameter: Parameter,
         }
         pTimer.reset()
         codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), cameraWrapper.egl!!.eglContext)
-        filter = NormalTexture(cameraWrapper.getFrameTexture(), cameraWrapper.getDrawer())
+        codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), eglContext)
+        filter = NormalTexture(textureId)
         codecWrapper?.setFilter(filter!!)
         codecWrapper?.egl?.makeCurrent()
         codec!!.start()
@@ -208,9 +216,9 @@ class VideoEncoderImpl(var parameter: Parameter,
         }
 
         fun record() {
-            val timeTmp = System.currentTimeMillis()
+            val timeTmp = System.nanoTime()
             presentationTimeUs += if (0L != timestamp)
-                (timeTmp - timestamp) * 1000
+                (timeTmp - timestamp) / 1000
             else
                 1000000L / fps
             timestamp = timeTmp

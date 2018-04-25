@@ -127,8 +127,8 @@ class MuxerImpl(var path: String,
 
     private fun writeSample(track: Int, sample: Sample) {
         try {
-            debug_e("write${if (videoTrack == track) "Video" else "Audio"}" +
-                    "Sample($mFrameCount, ${sample.bufferInfo.presentationTimeUs}): ${sample.bufferInfo.size}")
+//            debug_e("write${if (videoTrack == track) "Video" else "Audio"}" +
+//                    "Sample($mFrameCount, ${sample.bufferInfo.presentationTimeUs}): ${sample.bufferInfo.size}")
             muxer?.writeSampleData(track, sample.sample, sample.bufferInfo)
         } catch (e: Exception) {
             e.printStackTrace()

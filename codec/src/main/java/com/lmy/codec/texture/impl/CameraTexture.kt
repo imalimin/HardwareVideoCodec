@@ -7,7 +7,7 @@ import android.opengl.GLES20
  * Created by lmyooyo@gmail.com on 2018/3/29.
  */
 class CameraTexture(width: Int, height: Int,
-                    var inputTextureId: Int) : BaseFrameBufferTexture(width, height) {
+                    textureId: Int) : BaseFrameBufferTexture(width, height, textureId) {
 
     companion object {
         private val VERTEX_SHADER = "" +
@@ -61,7 +61,7 @@ class CameraTexture(width: Int, height: Int,
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, inputTextureId)
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId)
         GLES20.glUniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
         GLES20.glUniformMatrix4fv(uTextureMatrix, 1, false, transformMatrix, 0)

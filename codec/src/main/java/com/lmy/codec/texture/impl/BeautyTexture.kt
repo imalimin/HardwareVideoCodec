@@ -7,8 +7,7 @@ import java.nio.FloatBuffer
  * 美颜滤镜
  * Created by lmyooyo@gmail.com on 2018/3/30.
  */
-class BeautyTexture(var inputTextureId: Int,
-                    var drawer: BaseFrameBufferTexture.GLDrawer) : BaseTexture() {
+class BeautyTexture(textureId: Int) : BaseTexture(textureId) {
 
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0
@@ -47,7 +46,7 @@ class BeautyTexture(var inputTextureId: Int,
         setTexelOffset(texelWidthOffset)
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureId)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
 
