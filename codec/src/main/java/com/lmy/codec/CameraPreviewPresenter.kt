@@ -5,16 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-package com.lmy.codec.impl
+package com.lmy.codec
 
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
-import com.lmy.codec.Encoder
-import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.helper.CodecFactory
+import com.lmy.codec.impl.AudioEncoderImpl
+import com.lmy.codec.impl.MuxerImpl
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.util.debug_e
