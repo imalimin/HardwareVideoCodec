@@ -9,7 +9,7 @@ package com.lmy.codec.wrapper
 import android.graphics.SurfaceTexture
 import android.opengl.EGLContext
 import com.lmy.codec.entity.Egl
-import com.lmy.codec.texture.impl.BaseTexture
+import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
 
 
@@ -17,19 +17,19 @@ import com.lmy.codec.util.debug_e
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
 class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
+                           override var textureId: Int?,
                            var eglContext: EGLContext? = null) : TextureWrapper() {
     init {
         if (null != surfaceTexture) {
             egl = Egl()
             egl!!.initEGL(surfaceTexture!!, eglContext)
             egl!!.makeCurrent()
+            if (null == textureId)
+                throw RuntimeException("textureId can not be null")
+            texture = NormalTexture(textureId!!)
         } else {
             debug_e("Egl create failed")
         }
-    }
-
-    fun setFilter(texture: BaseTexture) {
-        this.texture = texture
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
