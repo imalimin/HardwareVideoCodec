@@ -18,4 +18,4 @@ HardwareVideoCodec is an efficient video encoding library for Android.
 * More features.
 
 ## License
-HardwareVideoCodec is [MIT-licensed](https://github.com/lmylr/HardwareVideoCodec/tree/master/LICENSE).
+HardwareVideoCodec is [GPL-licensed](https://github.com/lmylr/HardwareVideoCodec/tree/master/LICENSE).
