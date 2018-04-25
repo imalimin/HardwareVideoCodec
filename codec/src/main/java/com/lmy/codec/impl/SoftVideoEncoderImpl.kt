@@ -162,7 +162,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun encode() {
         ++mFrameCount
-        pTimer.record()
         if (srcBuffer == null) return
         val time = System.currentTimeMillis()
         val data = getPixelsData()
@@ -171,21 +170,14 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
             debug_e("Encode failed. size = $size")
             return
         }
-        mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-        mBufferInfo.size = size
-        when (codec!!.getType()) {
-            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
-            1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
-            2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
-            else -> mBufferInfo.flags = 0
-        }
+        wrapBufferInfo(size)
         val cost = System.currentTimeMillis() - time
         mTotalCost += cost
+//        debug_v("timestamp ${mBufferInfo.presentationTimeUs}")
         if (0 == mFrameCount % parameter.video.fps)
             debug_e("x264 frame size = $size, cost ${cost}ms, arg cost ${mTotalCost / mFrameCount}ms")
         if (BUFFER_FLAG_CODEC_CONFIG == mBufferInfo.flags) {
             //获取SPS，PPS
-            mBufferInfo.size = size
             getOutFormat(mBufferInfo, codec!!.buffer!!)
             onSampleListener?.onFormatChanged(outFormat!!)
             return
@@ -193,6 +185,19 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         codec!!.buffer!!.position(0)
         codec!!.buffer!!.limit(size)
         onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, mBufferInfo.size))
+    }
+
+    private fun wrapBufferInfo(size: Int) {
+        when (codec!!.getType()) {
+            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
+            1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
+            2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
+            else -> mBufferInfo.flags = 0
+        }
+        if (BUFFER_FLAG_CODEC_CONFIG != mBufferInfo.flags)
+            pTimer.record()
+        mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
+        mBufferInfo.size = size
     }
 
     private fun getPixelsData(): ByteArray {
