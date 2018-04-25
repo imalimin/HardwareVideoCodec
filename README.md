@@ -2,8 +2,9 @@
 HardwareVideoCodec is an efficient video encoding library for Android.
 
 ## Latest release
-[V1.2](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.2)
+[V1.2.1](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.2.1)
 
+* Fix createAudioFormat method select a wrong parameter
 * Optimized x264. Faster.
 * Optimized glReadPixels.
 * Supported special effects.
