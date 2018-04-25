@@ -55,21 +55,21 @@ class CameraPreviewPresenter(var parameter: Parameter,
      * For VideoEncoderImpl
      */
     override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
-        debug_e("BufferInfo[${data[0]},${data[1]},${data[2]},${data[3]},${data[4]}," +
-                "${data[5]},${data[6]},${data[7]},${data[8]}," +
-                "${data[9]},${data[10]},${data[11]},${data[12]}," +
-                "${data[13]},${data[14]},${data[15]},${data[16]},]" +
-                "(size=${info.size}, " +
-                "timestamp=${info.presentationTimeUs}," +
-                "offset=${info.offset}," +
-                "flags=${info.flags})")
-        if (info.flags == 2) {
-            var msg = ""
-            for (i in 0 until info.size) {
-                msg += "${data[i]}, "
-            }
-            debug_e(msg)
-        }
+//        debug_e("BufferInfo[${data[0]},${data[1]},${data[2]},${data[3]},${data[4]}," +
+//                "${data[5]},${data[6]},${data[7]},${data[8]}," +
+//                "${data[9]},${data[10]},${data[11]},${data[12]}," +
+//                "${data[13]},${data[14]},${data[15]},${data[16]},]" +
+//                "(size=${info.size}, " +
+//                "timestamp=${info.presentationTimeUs}," +
+//                "offset=${info.offset}," +
+//                "flags=${info.flags})")
+//        if (info.flags == 2) {
+//            var msg = ""
+//            for (i in 0 until info.size) {
+//                msg += "${data[i]}, "
+//            }
+//            debug_e(msg)
+//        }
         muxer?.writeVideoSample(Sample.wrap(info, data))
     }
 
@@ -87,7 +87,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
         synchronized(syncOp) {
             cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height, Runnable {
-                encoder = VideoEncoderImpl(parameter, render!!.getFrameBufferTexture(),
+                encoder = SoftVideoEncoderImpl(parameter, render!!.getFrameBufferTexture(),
                         cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
                 encoder!!.setOnSampleListener(this@CameraPreviewPresenter)
                 audioEncoder = AudioEncoderImpl(parameter)

@@ -58,6 +58,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var mFrameCount = 0
+    private var mTotalCost = 0L
     //For PBO
     private var index = 0
     private var nextIndex = 1
@@ -178,7 +179,10 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
             2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
             else -> mBufferInfo.flags = 0
         }
-        debug_e("x264 frame size = $size, cost ${System.currentTimeMillis() - time}ms")
+        val cost = System.currentTimeMillis() - time
+        mTotalCost += cost
+        if (0 == mFrameCount % parameter.video.fps)
+            debug_e("x264 frame size = $size, cost ${cost}ms, arg cost ${mTotalCost / mFrameCount}ms")
         if (BUFFER_FLAG_CODEC_CONFIG == mBufferInfo.flags) {
             //获取SPS，PPS
             mBufferInfo.size = size
@@ -238,7 +242,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
             debug_e("PBO is null(${pbos[0]}, ${pbos[1]})")
             return
         }
-        debug_e("buffer[${srcBuffer!![2000]}, ${srcBuffer!![2001]}, ${srcBuffer!![2002]}, ${srcBuffer!![2003]}]")
+//        debug_e("buffer[${srcBuffer!![2000]}, ${srcBuffer!![2001]}, ${srcBuffer!![2002]}, ${srcBuffer!![2003]}]")
     }
 
 
