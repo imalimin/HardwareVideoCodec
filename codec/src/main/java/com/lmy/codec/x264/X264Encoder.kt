@@ -11,10 +11,15 @@ import java.nio.ByteOrder
 class X264Encoder(private var format: MediaFormat,
                   var buffer: ByteBuffer? = null,
                   private var type: Int = -1) {
+    companion object {
+        private const val PRESET = "veryfast"
+        private const val TUNE = "zerolatency"
+    }
+
     init {
         System.loadLibrary("x264")
         System.loadLibrary("codec")
-        init("veryfast", "zerolatency")
+        init(PRESET, TUNE)
         setVideoSize(format.getInteger(MediaFormat.KEY_WIDTH), format.getInteger(MediaFormat.KEY_HEIGHT))
         setBitrate(format.getInteger(MediaFormat.KEY_BIT_RATE))
         setFrameFormat(FrameFormat.X264_CSP_I420)
