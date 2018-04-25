@@ -14,7 +14,7 @@ class X264Encoder(private var format: MediaFormat,
     init {
         System.loadLibrary("x264")
         System.loadLibrary("codec")
-        init()
+        init("veryfast", "zerolatency")
         setVideoSize(format.getInteger(MediaFormat.KEY_WIDTH), format.getInteger(MediaFormat.KEY_HEIGHT))
         setBitrate(format.getInteger(MediaFormat.KEY_BIT_RATE))
         setFrameFormat(FrameFormat.X264_CSP_I420)
@@ -43,7 +43,7 @@ class X264Encoder(private var format: MediaFormat,
         return encode(src, srcSize, buffer!!.array())
     }
 
-    private external fun init()
+    private external fun init(preset: String, tune: String)
     external fun start()
     external fun stop()
     external fun encode(src: ByteArray, srcSize: Int, out: ByteArray): Int

@@ -237,7 +237,7 @@ static void quality() {
     encoder->param->analyse.b_weighted_bipred = X264_WEIGHTP_SMART;
 }
 
-static void init(JNIEnv *env) {
+static void init(JNIEnv *env, char *preset, char *tune) {
     initSetTypeMethod(env);
     encoder = (Encoder *) malloc(sizeof(Encoder));
     encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
@@ -285,7 +285,7 @@ static void init(JNIEnv *env) {
     encoder->param->b_cpu_independent = 0;
     fast();
     quality();
-    x264_param_default_preset(encoder->param, "veryfast", "zerolatency");
+    x264_param_default_preset(encoder->param, preset, tune);
 }
 
 static void start() {
@@ -327,8 +327,12 @@ static void stop() {
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
-        (JNIEnv *env, jobject thiz) {
-    init(env);
+        (JNIEnv *env, jobject thiz, jstring preset, jstring tune) {
+    char *presetTmp = (char *) (*env)->GetStringUTFChars(env, preset, NULL);
+    char *tuneTmp = (char *) (*env)->GetStringUTFChars(env, tune, NULL);
+    init(env, presetTmp, tuneTmp);
+    (*env)->ReleaseStringUTFChars(env, preset, presetTmp);
+    (*env)->ReleaseStringUTFChars(env, tune, tuneTmp);
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
