@@ -36,7 +36,7 @@ class CodecHelper {
         }
 
         fun createAudioFormat(parameter: Parameter, ignoreDevice: Boolean = false): MediaFormat? {
-            val codecInfo = getCodecInfo(parameter.video.mime, true)
+            val codecInfo = getCodecInfo(parameter.audio.mime, true)
             if (!ignoreDevice && null == codecInfo) {//Unsupport codec type
                 return null
             }
