@@ -19,12 +19,20 @@ class X264Encoder(private var format: MediaFormat,
     init {
         System.loadLibrary("x264")
         System.loadLibrary("codec")
+        initCacheBuffer()
         init(PRESET, TUNE)
-        setVideoSize(format.getInteger(MediaFormat.KEY_WIDTH), format.getInteger(MediaFormat.KEY_HEIGHT))
+        setVideoSize(getWidth(), getHeight())
         setBitrate(format.getInteger(MediaFormat.KEY_BIT_RATE))
         setFrameFormat(FrameFormat.X264_CSP_I420)
         setFps(format.getInteger(MediaFormat.KEY_FRAME_RATE))
-        buffer = ByteBuffer.allocate(720 * 480 * 3)
+    }
+
+    /**
+     * 初始化缓存，大小为width*height
+     * 如果是别的编码格式，缓存大小可能需要增大
+     */
+    private fun initCacheBuffer() {
+        buffer = ByteBuffer.allocate(getWidth() * getHeight())
         buffer?.order(ByteOrder.nativeOrder())
     }
 
@@ -46,6 +54,14 @@ class X264Encoder(private var format: MediaFormat,
         buffer?.clear()
         buffer?.position(0)
         return encode(src, srcSize, buffer!!.array())
+    }
+
+    fun getWidth(): Int {
+        return format.getInteger(MediaFormat.KEY_WIDTH)
+    }
+
+    fun getHeight(): Int {
+        return format.getInteger(MediaFormat.KEY_HEIGHT)
     }
 
     private external fun init(preset: String, tune: String)
