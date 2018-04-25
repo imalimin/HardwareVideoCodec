@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
 
-    private val mPresenter: CameraPreviewPresenter = CameraPreviewPresenter(Parameter())
+    private val mPresenter: CameraPreviewPresenter = CameraPreviewPresenter(Parameter(this))
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
