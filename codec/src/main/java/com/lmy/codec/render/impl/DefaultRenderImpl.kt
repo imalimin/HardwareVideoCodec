@@ -14,7 +14,7 @@ import android.os.Message
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.BaseTextureFilter
-import com.lmy.codec.texture.impl.filter.GreyTextureFilter
+import com.lmy.codec.texture.impl.filter.NormalTextureFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
@@ -82,7 +82,7 @@ class DefaultRenderImpl(var parameter: Parameter,
     fun init() {
         cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
         //INIT filter
-        filter = GreyTextureFilter(parameter.video.width, parameter.video.height,
+        filter = NormalTextureFilter(parameter.video.width, parameter.video.height,
                 cameraWrapper.getFrameBufferTexture())
         filter?.init()
         screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
