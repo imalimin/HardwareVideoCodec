@@ -244,10 +244,45 @@ static void init(JNIEnv *env) {
     encoder->picture = (x264_param_t *) malloc(sizeof(x264_picture_t));
     //开启多帧并行编码
     encoder->param->b_sliced_threads = 0;
-    encoder->param->i_threads = X264_THREADS_AUTO;
+    encoder->param->i_threads = 4;
+    /**
+     * 是否复制sps和pps放在每个关键帧的前面
+     */
     encoder->param->b_repeat_headers = 0;
-    //恒定质量
-    encoder->param->rc.i_rc_method = X264_RC_CRF;
+    /**
+     * 恒定质量
+     * ABR（平均码率）/CQP（恒定质量）/CRF（恒定码率）
+     * ABR模式下调整i_bitrate
+     * CQP下调整i_qp_constant调整QP值，太细致了人眼也分辨不出来，为了增加编码速度降低数据量还是设大些好
+     * CRF下调整f_rf_constant和f_rf_constant_max影响编码速度和图像质量（数据量），码率和图像效果参数失效
+     */
+    encoder->param->rc.i_rc_method = X264_RC_CQP;
+    /**
+     * 范围0~51，值越大图像越模糊，默认23
+     */
+    //encoder->param->rc.i_qp_constant = 51;
+    /**
+     * inter，取值范围1~32
+     * 值越大数据量相应越少，占用带宽越低
+     */
+    encoder->param->analyse.i_luma_deadzone[0] = 32;
+    /**
+     * intra，取值范围1~32
+     * 值越大数据量相应越少，占用带宽越低
+     */
+    encoder->param->analyse.i_luma_deadzone[1] = 32;
+    /**
+     * 快速P帧跳过检测
+     */
+    encoder->param->analyse.b_fast_pskip = 1;
+    /**
+     * 是否允许非确定性时线程优化
+     */
+    encoder->param->b_deterministic = 0;
+    /**
+     * 强制采用典型行为，而不是采用独立于cpu的优化算法
+     */
+    encoder->param->b_cpu_independent = 0;
     fast();
     quality();
     x264_param_default_preset(encoder->param, "veryfast", "zerolatency");
