@@ -21,6 +21,7 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
     abstract fun drawTexture(transformMatrix: FloatArray?)
 
     open fun release() {
+        egl?.release()
         if (null != surfaceTexture) {
             surfaceTexture!!.release()
             surfaceTexture = null
