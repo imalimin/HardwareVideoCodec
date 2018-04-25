@@ -35,12 +35,12 @@ data class Parameter(var context: Context,
     data class Video(var mime: String = "video/avc",
                      var width: Int = 720,
                      var height: Int = 480,
-                     var fps: Int = 24,
-                     var bitrate: Int = width * height * 3,
+                     var fps: Int = 24,//If not support, select the lowest fps
+                     var bitrate: Int = width * height * 3 * fps / 24,
                      var iFrameInterval: Int = 2,
                      var bitrateMode: Int = 1,//if support, default VBR
-                     var profile: Int = 0x08,//if support, default High
-                     var level: Int = 0x200//if support, default level 31
+                     var profile: Int = 0x08,//if support, default High. It will be change by CodecHelper#createVideoFormat
+                     var level: Int = 0x200//if support, default level 31. It will be change by CodecHelper#createVideoFormat
     )
 
     data class Audio(var mime: String = "audio/mp4a-latm",
