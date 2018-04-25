@@ -13,9 +13,8 @@ import android.os.HandlerThread
 import android.os.Message
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.render.Render
-import com.lmy.codec.texture.impl.BaseFrameBufferTexture
-import com.lmy.codec.texture.impl.NormalTexture
-import com.lmy.codec.texture.impl.filter.NormalTextureFilter
+import com.lmy.codec.texture.impl.BaseTextureFilter
+import com.lmy.codec.texture.impl.filter.GreyTextureFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
@@ -41,11 +40,13 @@ class DefaultRenderImpl(var parameter: Parameter,
         val INIT = 0x1
         val RENDER = 0x2
         val STOP = 0x3
+        val FILTER = 0x4
     }
 
-    private lateinit var filter: BaseFrameBufferTexture
+    private var filter: BaseTextureFilter? = null
     private var mHandlerThread = HandlerThread("Renderer_Thread")
     private var mHandler: Handler? = null
+    private var afterRunnable: Runnable? = null
 
     init {
         mHandlerThread.start()
@@ -54,9 +55,7 @@ class DefaultRenderImpl(var parameter: Parameter,
                 when (msg.what) {
                     INIT -> {
                         init()
-                        if (null != msg.obj) {
-                            (msg.obj as Runnable).run()
-                        }
+                        runAfter()
                     }
                     RENDER -> {
                         draw()
@@ -65,20 +64,49 @@ class DefaultRenderImpl(var parameter: Parameter,
                         mHandlerThread.quitSafely()
                         screenWrapper?.release()
                     }
+                    FILTER -> {
+                        initFilter(msg.obj as Class<*>)
+                    }
                 }
             }
         }
     }
 
+    private fun runAfter() {
+        if (null != afterRunnable) {
+            afterRunnable?.run()
+            afterRunnable = null
+        }
+    }
+
     fun init() {
         cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
-        filter = NormalTextureFilter(parameter.video.width, parameter.video.height)
-        filter.textureId = cameraWrapper.getFrameBufferTexture()
-        screenWrapper = ScreenTextureWrapper(screenTexture, cameraWrapper.egl!!.eglContext!!)
-        screenWrapper?.setFilter(NormalTexture(filter.frameBufferTexture!!))
+        //INIT filter
+        filter = GreyTextureFilter(parameter.video.width, parameter.video.height,
+                cameraWrapper.getFrameBufferTexture())
+        filter?.init()
+        screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
+                cameraWrapper.egl!!.eglContext!!)
+//        setFilter(GreyTextureFilter::class.java)
 //        (screenWrapper!!.texture as BeautyTexture).setParams(0f, -5f)//beauty: 0 - 2.5, tone: -5 - 5
 //        (screenWrapper!!.texture as BeautyTexture).setBrightLevel(0f)//0 - 1
 //        (screenWrapper!!.texture as BeautyTexture).setTexelOffset(-10f)//-10 - 10
+    }
+
+    fun initFilter(clazz: Class<*>) {
+        try {
+            filter = clazz.newInstance() as BaseTextureFilter
+        } catch (e: Exception) {
+            debug_e("Filter must extend BaseTextureFilter")
+            return
+        }
+        filter!!.width = parameter.video.width
+        filter!!.height = parameter.video.height
+        filter!!.textureId = cameraWrapper.getFrameBufferTexture()
+        filter!!.init()
+        if (null != screenWrapper) screenWrapper?.release()
+        screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
+                cameraWrapper.egl!!.eglContext!!)
     }
 
     override fun draw() {
@@ -94,9 +122,10 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     private fun drawFilter() {
+        if (null == filter) return
         GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-        filter.drawTexture(null)
+        filter?.drawTexture(null)
     }
 
     private fun drawCamera() {
@@ -116,10 +145,11 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int, runnable: Runnable?) {
+        afterRunnable = runnable
         updateScreenTexture(texture)
         initViewport(width, height)
         if (mHandlerThread.isAlive)
-            mHandler?.sendMessage(mHandler!!.obtainMessage(INIT, runnable))
+            mHandler?.sendEmptyMessage(INIT)
     }
 
     private fun initViewport(width: Int, height: Int) {
@@ -186,8 +216,9 @@ class DefaultRenderImpl(var parameter: Parameter,
         this.runnable = runnable
     }
 
-    override fun setFilter(filter: BaseFrameBufferTexture) {
-        this.filter = filter
+    override fun setFilter(filter: Class<*>) {
+        mHandler?.removeMessages(FILTER)
+        mHandler?.sendMessage(mHandler?.obtainMessage(FILTER, filter))
     }
 
     override fun getFrameBuffer(): Int {
