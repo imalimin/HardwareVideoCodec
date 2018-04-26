@@ -45,8 +45,15 @@ data class Parameter(var context: Context,
                      var bitrate: Int = width * height * MEDIUM * fps / 24,
                      var iFrameInterval: Int = 2,
                      var bitrateMode: Int = 1,//if support, default VBR
-                     var profile: Int = 0x08,//if support, default High. It will be change by CodecHelper#createVideoFormat
-                     var level: Int = 0x200//if support, default level 31. It will be change by CodecHelper#createVideoFormat
+                     /**
+                      * if support, default High. It will be change by CodecHelper#createVideoFormat
+                      * {@link MediaCodecInfo.CodecProfileLevel}
+                      */
+                     var profile: Int = 0x08,
+                     /**
+                      * if support, default level 31. It will be change by CodecHelper#createVideoFormat
+                      */
+                     var level: Int = 0x200
     ) {
         companion object {
             const val HIGH = 5
