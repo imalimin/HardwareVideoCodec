@@ -8,17 +8,21 @@ package com.lmy.sample
 
 import android.graphics.SurfaceTexture
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
 import android.view.TextureView
-import com.lmy.codec.entity.Parameter
+import android.widget.FrameLayout
 import com.lmy.codec.CameraPreviewPresenter
+import com.lmy.codec.loge
 import com.lmy.codec.util.debug_v
+import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
+
 
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
 
-    private val mPresenter: CameraPreviewPresenter = CameraPreviewPresenter(Parameter(this))
+    private lateinit var mPresenter: CameraPreviewPresenter
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -26,6 +30,13 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     }
 
     private fun initView() {
+        loge("Permission: " + !PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
+        if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
+            return
+        mPresenter = CameraPreviewPresenter(com.lmy.codec.entity.Parameter(this))
+        val mTextureView = TextureView(this)
+        mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT))
         mTextureView.keepScreenOn = true
         mTextureView.surfaceTextureListener = this
         mTextureView.setOnTouchListener { v, event ->
@@ -59,5 +70,29 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
         if (null != p0)
             mPresenter.startPreview(p0, p1, p2)
         debug_v("onSurfaceTextureAvailable")
+    }
+
+    private fun showPermissionsDialog() {
+        AlertDialog.Builder(this)
+                .setMessage("Please grant permission in the permission settings")
+                .setNegativeButton("cancel", { dialog, which -> finish() })
+                .setPositiveButton("enter", { dialog, which ->
+                    PermissionHelper.gotoPermissionManager(this@MainActivity)
+                    finish()
+                })
+                .show()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            PermissionHelper.REQUEST_MY -> {
+                if (PermissionHelper.checkGrantResults(grantResults)) {
+                    initView()
+                } else {
+                    showPermissionsDialog()
+                }
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
     }
 }

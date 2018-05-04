@@ -5,8 +5,8 @@
     android:layout_height="match_parent"
     tools:context="com.lmy.sample.MainActivity">
 
-    <TextureView
-        android:id="@+id/mTextureView"
+    <FrameLayout
+        android:id="@+id/mTextureContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
