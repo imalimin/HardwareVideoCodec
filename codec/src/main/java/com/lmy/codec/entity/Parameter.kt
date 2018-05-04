@@ -41,7 +41,7 @@ data class Parameter(var context: Context,
     data class Video(var mime: String = "video/avc",
                      var width: Int = 720,
                      var height: Int = 480,
-                     var fps: Int = 24,//If not support, select the lowest fps
+                     var fps: Int = 30,//If not support, select the lowest fps
                      var bitrate: Int = width * height * MEDIUM * fps / 24,
                      var iFrameInterval: Int = 2,
                      var bitrateMode: Int = 1,//if support, default VBR
