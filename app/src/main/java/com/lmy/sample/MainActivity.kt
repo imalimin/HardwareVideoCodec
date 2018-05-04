@@ -84,6 +84,8 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (null == grantResults || grantResults.isEmpty()) return
         when (requestCode) {
             PermissionHelper.REQUEST_MY -> {
                 if (PermissionHelper.checkGrantResults(grantResults)) {
@@ -92,7 +94,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
                     showPermissionsDialog()
                 }
             }
-            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 }

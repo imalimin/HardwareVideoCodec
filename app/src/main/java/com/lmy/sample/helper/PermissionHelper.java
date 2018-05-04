@@ -31,7 +31,9 @@ public class PermissionHelper {
     public final static int REQUEST_MY = 0x0102;
     public final static String[] PERMISSIONS_BASE = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE};
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO};
 
     public static boolean requestPermissions(@NonNull Activity activity, @NonNull String[] permissions) {
         if (shouldShowRequestPermissionRationale(activity, permissions))
