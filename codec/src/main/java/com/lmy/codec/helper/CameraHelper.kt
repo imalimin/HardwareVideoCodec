@@ -58,12 +58,7 @@ class CameraHelper {
             val fpsRanges = cameraParam.supportedPreviewFpsRange
             var fps = fpsRanges[0]
             fpsRanges.forEach {
-                if (it[0] == it[1] && it[0] == videoParam.video.fps * 1000) {
-                    fps = it
-                    return@forEach
-                }
-                if (videoParam.video.fps * 1000 >= it[0] && videoParam.video.fps * 1000 <= it[1]
-                        && (it[0] > fps[0] || it[1] < fps[1]))
+                if (videoParam.video.fps * 1000 >= it[0] && it[0] > fps[0])
                     fps = it
             }
             cameraParam.setPreviewFpsRange(fps[0], fps[1])
