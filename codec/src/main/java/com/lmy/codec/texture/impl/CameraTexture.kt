@@ -8,6 +8,8 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
+import com.lmy.codec.BaseApplication
+import com.lmy.codec.helper.AssetsHelper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/29.
@@ -16,24 +18,6 @@ class CameraTexture(width: Int, height: Int,
                     textureId: Int) : BaseFrameBufferTexture(width, height, textureId) {
 
     companion object {
-        private val VERTEX_SHADER = "" +
-                "attribute vec4 aPosition;\n" +
-                "attribute vec4 aTextureCoord;\n" +
-                "uniform mat4 uTextureMatrix;\n" +
-                "varying vec2 vTextureCoord;\n" +
-                "void main(){\n" +
-                "    gl_Position= aPosition;\n" +
-                "    vTextureCoord = (uTextureMatrix * aTextureCoord).xy;\n" +
-                "}"
-        private val FRAGMENT_SHADER = "" +
-                "#extension GL_OES_EGL_image_external : require\n" +
-                "precision mediump float;\n" +
-                "varying mediump vec2 vTextureCoord;\n" +
-                "uniform samplerExternalOES uTexture;\n" +
-                "void main(){\n" +
-                "    vec4  color = texture2D(uTexture, vTextureCoord);\n" +
-                "    gl_FragColor = color;\n" +
-                "}"
         private val CAMERA_TEXTURE_VERTICES = floatArrayOf(
                 0.0f, 1.0f,
                 0.0f, 0.0f,
@@ -54,7 +38,8 @@ class CameraTexture(width: Int, height: Int,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
+        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_camera.sh"),
+                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_camera.sh"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

@@ -1,6 +1,8 @@
 package com.lmy.codec.texture.impl.filter
 
 import android.opengl.GLES20
+import com.lmy.codec.BaseApplication
+import com.lmy.codec.helper.AssetsHelper
 import com.lmy.codec.texture.impl.BaseTextureFilter
 
 /**
@@ -10,26 +12,6 @@ class HDRTextureFilter(width: Int, height: Int,
                        textureId: Int = -1) : BaseTextureFilter(width, height, textureId) {
 
     companion object {
-        private val VERTEX_SHADER = "" +
-                "attribute vec4 aPosition;\n" +
-                "attribute vec2 aTextureCoord;\n" +
-                "varying vec2 vTextureCoord;\n" +
-                "void main(){\n" +
-                "    gl_Position= aPosition;\n" +
-                "    vTextureCoord = aTextureCoord;\n" +
-                "}"
-        private val FRAGMENT_SHADER = "" +
-                "precision mediump float;\n" +
-                "varying mediump vec2 vTextureCoord;\n" +
-                "uniform sampler2D uTexture;\n" +
-                "void main(){\n" +
-                "    const float gamma = 1.0;\n" +
-                "    const float exposure = 1.5;\n" +
-                "    vec3 hdrColor = texture2D(uTexture, vTextureCoord).rgb;\n" +
-                "    vec3 mapped = vec3(1.0) - exp(-hdrColor * exposure);\n" +
-                "    //mapped = pow(mapped, vec3(1.0 / gamma));\n" +
-                "    gl_FragColor = vec4(mapped, 1.0);\n" +
-                "}"
         private val VERTICES_SCREEN = floatArrayOf(
                 0.0f, 1.0f,
                 0.0f, 0.0f,
@@ -48,7 +30,8 @@ class HDRTextureFilter(width: Int, height: Int,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
+        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_hdr.sh"),
+                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_hdr.sh"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

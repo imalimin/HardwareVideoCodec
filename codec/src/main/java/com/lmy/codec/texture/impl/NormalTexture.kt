@@ -7,6 +7,8 @@
 package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
+import com.lmy.codec.BaseApplication
+import com.lmy.codec.helper.AssetsHelper
 
 /**
  * 无滤镜效果
@@ -15,22 +17,6 @@ import android.opengl.GLES20
 class NormalTexture(textureId: Int) : BaseTexture(textureId) {
 
     companion object {
-        private val VERTEX_SHADER = "" +
-                "attribute vec4 aPosition;\n" +
-                "attribute vec2 aTextureCoord;\n" +
-                "varying vec2 vTextureCoord;\n" +
-                "void main(){\n" +
-                "    gl_Position= aPosition;\n" +
-                "    vTextureCoord = aTextureCoord;\n" +
-                "}"
-        private val FRAGMENT_SHADER = "" +
-                "precision mediump float;\n" +
-                "varying mediump vec2 vTextureCoord;\n" +
-                "uniform sampler2D uTexture;\n" +
-                "void main(){\n" +
-                "    vec4  color = texture2D(uTexture, vTextureCoord);\n" +
-                "    gl_FragColor = color;\n" +
-                "}"
         private val VERTICES_SCREEN = floatArrayOf(
                 0.0f, 1.0f,
                 0.0f, 0.0f,
@@ -48,7 +34,8 @@ class NormalTexture(textureId: Int) : BaseTexture(textureId) {
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
+        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_normal.sh"),
+                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_normal.sh"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
