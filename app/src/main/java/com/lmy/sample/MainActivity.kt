@@ -12,7 +12,9 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
 import android.view.TextureView
+import android.view.View
 import android.widget.FrameLayout
+import android.widget.SeekBar
 import com.lmy.codec.CameraPreviewPresenter
 import com.lmy.codec.loge
 import com.lmy.codec.texture.impl.filter.BeautyTextureFilter
@@ -23,7 +25,7 @@ import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
+class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, SeekBar.OnSeekBarChangeListener {
 
     private lateinit var mPresenter: CameraPreviewPresenter
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +35,10 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     }
 
     private fun initView() {
+        beautyBar.setOnSeekBarChangeListener(this)
+        toneBar.setOnSeekBarChangeListener(this)
+        brightBar.setOnSeekBarChangeListener(this)
+        texelBar.setOnSeekBarChangeListener(this)
         loge("Permission: " + !PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
@@ -64,10 +70,17 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
         AlertDialog.Builder(this).apply {
             setTitle("Change filter")
             setItems(arrayOf("Normal", "Grey", "Beauty")) { dialog, which ->
+                beautyLayout.visibility = if (2 == which) View.VISIBLE else View.GONE
                 when (which) {
                     0 -> mPresenter.setFilter(NormalTextureFilter::class.java)
                     1 -> mPresenter.setFilter(GreyTextureFilter::class.java)
-                    2 -> mPresenter.setFilter(BeautyTextureFilter::class.java)
+                    2 -> {
+                        mPresenter.setFilter(BeautyTextureFilter::class.java)
+                        beautyBar.progress = 0
+                        toneBar.progress = 50
+                        brightBar.progress = 0
+                        texelBar.progress = 50
+                    }
                 }
                 dialog.dismiss()
             }
@@ -101,6 +114,30 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
                     finish()
                 })
                 .show()
+    }
+
+    override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+        val filter = mPresenter.getFilter()
+        if (filter is BeautyTextureFilter) {
+            when (seekBar.id) {
+                R.id.beautyBar -> filter.setParams(beautyBar.progress / 100f * 2.5f,
+                        (toneBar.progress - 50) / 100f * 10)
+                R.id.toneBar -> filter.setParams(beautyBar.progress / 100f * 2.5f,
+                        (toneBar.progress - 50) / 100f * 10)
+                R.id.brightBar ->
+                    filter.setBrightLevel(seekBar.progress / 100f)
+                R.id.texelBar ->
+                    filter.setBrightLevel((seekBar.progress - 50) / 100f * 2)
+            }
+        }
+    }
+
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+    }
+
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {

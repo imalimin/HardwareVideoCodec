@@ -19,11 +19,64 @@
         android:text="长按录制"
         android:textColor="#ffffff" />
 
-    <Button
-        android:id="@+id/changeBtn"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:text="CHANGE" />
+        android:gravity="right"
+        android:orientation="vertical"
+        android:padding="4dp">
+
+        <Button
+            android:id="@+id/changeBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:text="CHANGE" />
+
+        <LinearLayout
+            android:id="@+id/beautyLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <SeekBar
+                android:id="@+id/beautyBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:progress="0" />
+
+            <SeekBar
+                android:id="@+id/toneBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:progress="0" />
+
+            <SeekBar
+                android:id="@+id/brightBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:progress="0" />
+
+            <SeekBar
+                android:id="@+id/texelBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:progress="0" />
+        </LinearLayout>
+    </LinearLayout>
 </RelativeLayout>
