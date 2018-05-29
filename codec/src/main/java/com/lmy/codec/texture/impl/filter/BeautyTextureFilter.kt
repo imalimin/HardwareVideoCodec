@@ -58,12 +58,13 @@ class BeautyTextureFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
+        GLES20.glUseProgram(shaderProgram!!)
+
         setParams(beautyLevel, toneLevel)
         setBrightLevel(brightLevel)
         setTexelOffset(texelWidthOffset)
 
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
-        GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(uTextureLocation, 0)
@@ -80,19 +81,10 @@ class BeautyTextureFilter(width: Int = 0,
     }
 
     private var texelHeightOffset = 0f
-    private var texelWidthOffset = -10f
-    private var toneLevel = -5f
+    private var texelWidthOffset = 0f
+    private var toneLevel = 0f
     private var beautyLevel = 0f
     private var brightLevel = 0f
-    /**
-     * -10 - 10
-     */
-    fun setTexelOffset(texelOffset: Float) {
-        texelHeightOffset = texelOffset
-        texelWidthOffset = texelHeightOffset
-        setFloat(texelWidthLocation, texelOffset / 1440)
-        setFloat(texelHeightLocation, texelOffset / 2100)
-    }
 
     private fun setToneLevel(toneLeve: Float) {
         this.toneLevel = toneLeve
@@ -102,6 +94,16 @@ class BeautyTextureFilter(width: Int = 0,
     private fun setBeautyLevel(beautyLeve: Float) {
         this.beautyLevel = beautyLeve
         setParams(beautyLevel, toneLevel)
+    }
+
+    /**
+     * -1 - 1
+     */
+    fun setTexelOffset(texelOffset: Float) {
+        texelHeightOffset = texelOffset
+        texelWidthOffset = texelHeightOffset
+        setFloat(texelWidthLocation, texelOffset / 1440)
+        setFloat(texelHeightLocation, texelOffset / 2100)
     }
 
     /**
