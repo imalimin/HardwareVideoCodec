@@ -4,18 +4,28 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec.texture.impl
+package com.lmy.codec.texture.impl.filter
 
 import android.opengl.GLES20
 import com.lmy.codec.BaseApplication
 import com.lmy.codec.helper.AssetsHelper
+import com.lmy.codec.texture.impl.BaseTextureFilter
 import java.nio.FloatBuffer
 
 /**
- * 美颜滤镜
- * Created by lmyooyo@gmail.com on 2018/3/30.
+ * Created by lmyooyo@gmail.com on 2018/5/29.
  */
-class BeautyTexture(textureId: Int) : BaseTexture(textureId) {
+class BeautyTextureFilter(width: Int = 0,
+                          height: Int = 0,
+                          textureId: Int = -1) : BaseTextureFilter(width, height, textureId) {
+
+    companion object {
+        private val VERTICES_SCREEN = floatArrayOf(
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f)
+    }
 
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0
@@ -27,9 +37,10 @@ class BeautyTexture(textureId: Int) : BaseTexture(textureId) {
     private var texelWidthLocation = 0
     private var texelHeightLocation = 0
 
-    init {
+    override fun init() {
         verticesBuffer = createShapeVerticesBuffer(VERTICES_SCREEN)
         createProgram()
+        initFrameBuffer()
     }
 
     private fun createProgram() {
@@ -44,16 +55,15 @@ class BeautyTexture(textureId: Int) : BaseTexture(textureId) {
         singleStepOffsetLocation = getUniformLocation("singleStepOffset")
         texelWidthLocation = getUniformLocation("texelWidthOffset")
         texelHeightLocation = getUniformLocation("texelHeightOffset")
-
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        GLES20.glUseProgram(shaderProgram!!)
-
         setParams(beautyLevel, toneLevel)
         setBrightLevel(brightLevel)
         setTexelOffset(texelWidthOffset)
 
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
+        GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(uTextureLocation, 0)
@@ -66,14 +76,17 @@ class BeautyTexture(textureId: Int) : BaseTexture(textureId) {
         GLES20.glDisableVertexAttribArray(aTextureCoordinateLocation)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
     }
 
     private var texelHeightOffset = 0f
-    private var texelWidthOffset = 0f
-    private var toneLevel = 0f
+    private var texelWidthOffset = -10f
+    private var toneLevel = -5f
     private var beautyLevel = 0f
     private var brightLevel = 0f
-
+    /**
+     * -10 - 10
+     */
     fun setTexelOffset(texelOffset: Float) {
         texelHeightOffset = texelOffset
         texelWidthOffset = texelHeightOffset
@@ -91,11 +104,17 @@ class BeautyTexture(textureId: Int) : BaseTexture(textureId) {
         setParams(beautyLevel, toneLevel)
     }
 
+    /**
+     * 0 - 1
+     */
     fun setBrightLevel(brightLevel: Float) {
         this.brightLevel = brightLevel
         setFloat(brightnessLocation, 0.6f * (-0.5f + brightLevel))
     }
 
+    /**
+     * beauty: 0 - 2.5, tone: -5 - 5
+     */
     fun setParams(beauty: Float, tone: Float) {
         this.beautyLevel = beauty
         this.toneLevel = tone
@@ -126,13 +145,5 @@ class BeautyTexture(textureId: Int) : BaseTexture(textureId) {
 
     private fun setFloatVec4(location: Int, arrayValue: FloatArray) {
         GLES20.glUniform4fv(location, 1, FloatBuffer.wrap(arrayValue))
-    }
-
-    companion object {
-        private val VERTICES_SCREEN = floatArrayOf(
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f)
     }
 }
