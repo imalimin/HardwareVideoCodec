@@ -15,6 +15,8 @@ import android.view.TextureView
 import android.widget.FrameLayout
 import com.lmy.codec.CameraPreviewPresenter
 import com.lmy.codec.loge
+import com.lmy.codec.texture.impl.filter.GreyTextureFilter
+import com.lmy.codec.texture.impl.filter.NormalTextureFilter
 import com.lmy.codec.util.debug_v
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
@@ -52,6 +54,9 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
             }
             return@setOnTouchListener true
         }
+        changeBtn.setOnClickListener({
+            mPresenter.setFilter(if (changeBtn.isChecked) GreyTextureFilter::class.java else NormalTextureFilter::class.java)
+        })
     }
 
     override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {

@@ -14,7 +14,8 @@ import com.lmy.codec.texture.impl.BaseTextureFilter
 /**
  * Created by lmyooyo@gmail.com on 2018/4/23.
  */
-class NormalTextureFilter(width: Int, height: Int,
+class NormalTextureFilter(width: Int = 0,
+                          height: Int = 0,
                           textureId: Int = -1) : BaseTextureFilter(width, height, textureId) {
 
     companion object {

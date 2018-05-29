@@ -103,7 +103,7 @@ abstract class BaseTexture(var textureId: Int,
         return GLES20.glGetUniformLocation(shaderProgram!!, name)
     }
 
-    fun release() {
+    open fun release() {
         if (null != shaderProgram)
             GLES20.glDeleteProgram(shaderProgram!!)
     }

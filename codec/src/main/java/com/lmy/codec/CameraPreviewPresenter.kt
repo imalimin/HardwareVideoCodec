@@ -56,6 +56,10 @@ class CameraPreviewPresenter(var parameter: Parameter,
         muxer?.addVideoTrack(format)
     }
 
+    fun setFilter(filter: Class<*>) {
+        render?.setFilter(filter)
+    }
+
     /**
      * 编码后的帧数据
      * For VideoEncoderImpl

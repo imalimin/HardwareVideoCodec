@@ -18,7 +18,7 @@ abstract class BaseFrameBufferTexture(var width: Int,
                                       var frameBuffer: Int? = null,
                                       var frameBufferTexture: Int? = null) : BaseTexture(textureId) {
 
-    fun initFrameBuffer() {
+    open fun initFrameBuffer() {
         val frameBuffer = IntArray(1)
         val frameBufferTex = IntArray(1)
         GLES20.glGenFramebuffers(1, frameBuffer, 0)
@@ -46,5 +46,13 @@ abstract class BaseFrameBufferTexture(var width: Int,
         this.frameBuffer = frameBuffer[0]
         this.frameBufferTexture = frameBufferTex[0]
         debug_e("enable frame buffer: ${this.frameBuffer}, ${this.frameBufferTexture}")
+    }
+
+    override fun release() {
+        super.release()
+        if (null != frameBuffer)
+            GLES20.glDeleteFramebuffers(1, intArrayOf(frameBuffer!!), 0)
+        if (null != frameBufferTexture)
+            GLES20.glDeleteTextures(1, intArrayOf(frameBufferTexture!!), 0)
     }
 }

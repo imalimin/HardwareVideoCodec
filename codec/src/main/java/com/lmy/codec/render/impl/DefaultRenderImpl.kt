@@ -43,6 +43,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         val FILTER = 0x4
     }
 
+    private val filterLock = Any()
     private var filter: BaseTextureFilter? = null
     private var mHandlerThread = HandlerThread("Renderer_Thread")
     private var mHandler: Handler? = null
@@ -63,6 +64,7 @@ class DefaultRenderImpl(var parameter: Parameter,
                     STOP -> {
                         mHandlerThread.quitSafely()
                         screenWrapper?.release()
+                        filter?.release()
                     }
                     FILTER -> {
                         initFilter(msg.obj as Class<*>)
@@ -82,31 +84,34 @@ class DefaultRenderImpl(var parameter: Parameter,
     fun init() {
         cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
         //INIT filter
-        filter = NormalTextureFilter(parameter.video.width, parameter.video.height,
-                cameraWrapper.getFrameBufferTexture())
-        filter?.init()
-        screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
-                cameraWrapper.egl!!.eglContext!!)
-//        setFilter(GreyTextureFilter::class.java)
+        initFilter(NormalTextureFilter::class.java)
 //        (screenWrapper!!.texture as BeautyTexture).setParams(0f, -5f)//beauty: 0 - 2.5, tone: -5 - 5
 //        (screenWrapper!!.texture as BeautyTexture).setBrightLevel(0f)//0 - 1
 //        (screenWrapper!!.texture as BeautyTexture).setTexelOffset(-10f)//-10 - 10
     }
 
     fun initFilter(clazz: Class<*>) {
-        try {
-            filter = clazz.newInstance() as BaseTextureFilter
-        } catch (e: Exception) {
-            debug_e("Filter must extend BaseTextureFilter")
-            return
+        synchronized(filterLock) {
+            try {
+                filter = clazz.newInstance() as BaseTextureFilter
+            } catch (e: Exception) {
+                e.printStackTrace()
+                initScreen()
+                return
+            }
+            filter!!.width = parameter.video.width
+            filter!!.height = parameter.video.height
+            filter!!.textureId = cameraWrapper.getFrameBufferTexture()
+            filter!!.init()
         }
-        filter!!.width = parameter.video.width
-        filter!!.height = parameter.video.height
-        filter!!.textureId = cameraWrapper.getFrameBufferTexture()
-        filter!!.init()
-        if (null != screenWrapper) screenWrapper?.release()
-        screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
-                cameraWrapper.egl!!.eglContext!!)
+        initScreen()
+    }
+
+    private fun initScreen() {
+        if (null == screenWrapper) {
+            screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
+                    cameraWrapper.egl!!.eglContext!!)
+        }
     }
 
     override fun draw() {
@@ -122,10 +127,12 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     private fun drawFilter() {
-        if (null == filter) return
-        GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-        filter?.drawTexture(null)
+        synchronized(filterLock) {
+            if (null == filter) return
+            GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            filter?.drawTexture(null)
+        }
     }
 
     private fun drawCamera() {
@@ -222,12 +229,17 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     override fun getFrameBuffer(): Int {
-        if (null != filter) return filter!!.frameBuffer!!
+        synchronized(filterLock) {
+            if (null != filter) return filter!!.frameBuffer!!
+        }
         return cameraWrapper.getFrameBuffer()
+
     }
 
     override fun getFrameBufferTexture(): Int {
-        if (null != filter) return filter!!.frameBufferTexture!!
+        synchronized(filterLock) {
+            if (null != filter) return filter!!.frameBufferTexture!!
+        }
         return cameraWrapper.getFrameBufferTexture()
     }
 }
