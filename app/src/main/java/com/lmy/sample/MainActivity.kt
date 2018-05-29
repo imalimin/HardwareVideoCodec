@@ -15,6 +15,7 @@ import android.view.TextureView
 import android.widget.FrameLayout
 import com.lmy.codec.CameraPreviewPresenter
 import com.lmy.codec.loge
+import com.lmy.codec.texture.impl.filter.BeautyTextureFilter
 import com.lmy.codec.texture.impl.filter.GreyTextureFilter
 import com.lmy.codec.texture.impl.filter.NormalTextureFilter
 import com.lmy.codec.util.debug_v
@@ -55,8 +56,22 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
             return@setOnTouchListener true
         }
         changeBtn.setOnClickListener({
-            mPresenter.setFilter(if (changeBtn.isChecked) GreyTextureFilter::class.java else NormalTextureFilter::class.java)
+            showFilterDialog()
         })
+    }
+
+    private fun showFilterDialog() {
+        AlertDialog.Builder(this).apply {
+            setTitle("Change filter")
+            setItems(arrayOf("Normal", "Grey", "Beauty")) { dialog, which ->
+                when (which) {
+                    0 -> mPresenter.setFilter(NormalTextureFilter::class.java)
+                    1 -> mPresenter.setFilter(GreyTextureFilter::class.java)
+                    2 -> mPresenter.setFilter(BeautyTextureFilter::class.java)
+                }
+                dialog.dismiss()
+            }
+        }.show()
     }
 
     override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
