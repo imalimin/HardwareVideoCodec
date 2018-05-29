@@ -83,11 +83,7 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     fun init() {
         cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
-        //INIT filter
         initFilter(NormalTextureFilter::class.java)
-//        (screenWrapper!!.texture as BeautyTexture).setParams(0f, -5f)//beauty: 0 - 2.5, tone: -5 - 5
-//        (screenWrapper!!.texture as BeautyTexture).setBrightLevel(0f)//0 - 1
-//        (screenWrapper!!.texture as BeautyTexture).setTexelOffset(-10f)//-10 - 10
     }
 
     fun initFilter(clazz: Class<*>) {
