@@ -44,7 +44,7 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     private val filterLock = Any()
-    private var filter: BaseTextureFilter? = null
+    private lateinit var filter: BaseTextureFilter
     private var mHandlerThread = HandlerThread("Renderer_Thread")
     private var mHandler: Handler? = null
     private var afterRunnable: Runnable? = null
@@ -222,6 +222,12 @@ class DefaultRenderImpl(var parameter: Parameter,
     override fun setFilter(filter: Class<*>) {
         mHandler?.removeMessages(FILTER)
         mHandler?.sendMessage(mHandler?.obtainMessage(FILTER, filter))
+    }
+
+    override fun getFilter(): BaseTextureFilter {
+        synchronized(filterLock) {
+            return filter
+        }
     }
 
     override fun getFrameBuffer(): Int {

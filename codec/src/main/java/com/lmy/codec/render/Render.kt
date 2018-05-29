@@ -7,6 +7,7 @@
 package com.lmy.codec.render
 
 import android.graphics.SurfaceTexture
+import com.lmy.codec.texture.impl.BaseTextureFilter
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
@@ -24,6 +25,7 @@ interface Render {
     fun afterRender(runnable: Runnable)
 
     fun setFilter(filter: Class<*>)
+    fun getFilter(): BaseTextureFilter
     fun getFrameBuffer(): Int
     fun getFrameBufferTexture(): Int
 }
