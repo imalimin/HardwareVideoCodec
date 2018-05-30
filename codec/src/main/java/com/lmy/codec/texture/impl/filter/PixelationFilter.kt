@@ -69,7 +69,9 @@ class PixelationFilter(width: Int = 0,
     private var valueWidthFactor = 1f / width
     private var valueHeightFactor = 1f / height
     private var valuePixel = 1f
-
+    /**
+     * 0 == index: valuePixel
+     */
     private fun setValue(value: Float) {
         this.valuePixel = if (value < 1)
             1f

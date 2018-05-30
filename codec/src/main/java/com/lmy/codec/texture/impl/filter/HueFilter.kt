@@ -42,6 +42,9 @@ class HueFilter(width: Int = 0,
 
     private var hue = 0f
     private var hueAdjust = 0f
+    /**
+     * 0 == index: hue
+     */
     override fun setValue(index: Int, value: Int) {
         when (index) {
             0 -> {
