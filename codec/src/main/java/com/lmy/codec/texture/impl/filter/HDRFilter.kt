@@ -1,22 +1,14 @@
-/*
- * Copyright (c) 2018-present, lmyooyo@gmail.com.
- *
- * This source code is licensed under the GPL license found in the
- * LICENSE file in the root directory of this source tree.
- */
 package com.lmy.codec.texture.impl.filter
 
 import android.opengl.GLES20
 import com.lmy.codec.BaseApplication
 import com.lmy.codec.helper.AssetsHelper
-import com.lmy.codec.texture.impl.BaseTextureFilter
 
 /**
- * Created by lmyooyo@gmail.com on 2018/4/23.
+ * Created by lmyooyo@gmail.com on 2018/4/28.
  */
-class GreyTextureFilter(width: Int = 0,
-                        height: Int = 0,
-                        textureId: Int = -1) : BaseTextureFilter(width, height, textureId) {
+class HDRFilter(width: Int, height: Int,
+                textureId: Int = -1) : BaseFilter(width, height, textureId) {
 
     companion object {
         private val VERTICES_SCREEN = floatArrayOf(
@@ -37,8 +29,8 @@ class GreyTextureFilter(width: Int = 0,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_grey.sh"),
-                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_grey.sh"))
+        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_hdr.sh"),
+                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_hdr.sh"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

@@ -9,15 +9,14 @@ package com.lmy.codec.texture.impl.filter
 import android.opengl.GLES20
 import com.lmy.codec.BaseApplication
 import com.lmy.codec.helper.AssetsHelper
-import com.lmy.codec.texture.impl.BaseTextureFilter
 import java.nio.FloatBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/5/29.
  */
-class BeautyTextureFilter(width: Int = 0,
-                          height: Int = 0,
-                          textureId: Int = -1) : BaseTextureFilter(width, height, textureId) {
+class BeautyFilter(width: Int = 0,
+                   height: Int = 0,
+                   textureId: Int = -1) : BaseFilter(width, height, textureId) {
 
     companion object {
         private val VERTICES_SCREEN = floatArrayOf(

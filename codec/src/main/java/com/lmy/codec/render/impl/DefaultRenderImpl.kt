@@ -13,8 +13,8 @@ import android.os.HandlerThread
 import android.os.Message
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.render.Render
-import com.lmy.codec.texture.impl.BaseTextureFilter
-import com.lmy.codec.texture.impl.filter.NormalTextureFilter
+import com.lmy.codec.texture.impl.filter.BaseFilter
+import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
@@ -44,7 +44,7 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     private val filterLock = Any()
-    private lateinit var filter: BaseTextureFilter
+    private lateinit var filter: BaseFilter
     private var mHandlerThread = HandlerThread("Renderer_Thread")
     private var mHandler: Handler? = null
     private var afterRunnable: Runnable? = null
@@ -83,13 +83,13 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     fun init() {
         cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
-        initFilter(NormalTextureFilter::class.java)
+        initFilter(NormalFilter::class.java)
     }
 
     fun initFilter(clazz: Class<*>) {
         synchronized(filterLock) {
             try {
-                filter = clazz.newInstance() as BaseTextureFilter
+                filter = clazz.newInstance() as BaseFilter
             } catch (e: Exception) {
                 e.printStackTrace()
                 initScreen()
@@ -224,7 +224,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         mHandler?.sendMessage(mHandler?.obtainMessage(FILTER, filter))
     }
 
-    override fun getFilter(): BaseTextureFilter {
+    override fun getFilter(): BaseFilter {
         synchronized(filterLock) {
             return filter
         }

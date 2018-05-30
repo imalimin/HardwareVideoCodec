@@ -17,7 +17,7 @@ import com.lmy.codec.impl.AudioEncoderImpl
 import com.lmy.codec.impl.MuxerImpl
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
-import com.lmy.codec.texture.impl.BaseTextureFilter
+import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
@@ -61,7 +61,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
         render?.setFilter(filter)
     }
 
-    fun getFilter(): BaseTextureFilter? {
+    fun getFilter(): BaseFilter? {
         return render?.getFilter()
     }
 

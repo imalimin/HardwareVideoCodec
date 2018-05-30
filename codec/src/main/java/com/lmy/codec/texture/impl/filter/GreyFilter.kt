@@ -9,14 +9,13 @@ package com.lmy.codec.texture.impl.filter
 import android.opengl.GLES20
 import com.lmy.codec.BaseApplication
 import com.lmy.codec.helper.AssetsHelper
-import com.lmy.codec.texture.impl.BaseTextureFilter
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/23.
  */
-class NormalTextureFilter(width: Int = 0,
-                          height: Int = 0,
-                          textureId: Int = -1) : BaseTextureFilter(width, height, textureId) {
+class GreyFilter(width: Int = 0,
+                 height: Int = 0,
+                 textureId: Int = -1) : BaseFilter(width, height, textureId) {
 
     companion object {
         private val VERTICES_SCREEN = floatArrayOf(
@@ -37,8 +36,8 @@ class NormalTextureFilter(width: Int = 0,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_normal.sh"),
-                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_normal.sh"))
+        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_grey.sh"),
+                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_grey.sh"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
