@@ -7,6 +7,7 @@
 package com.lmy.codec.texture.impl.filter
 
 /**
+ * 像素化滤镜
  * Created by lmyooyo@gmail.com on 2018/5/30.
  */
 class PixelationFilter(width: Int = 0,
@@ -67,7 +68,7 @@ class PixelationFilter(width: Int = 0,
 
     private var valueWidthFactor = 1f / width
     private var valueHeightFactor = 1f / height
-    private var valuePixel = 50f
+    private var valuePixel = 1f
 
     private fun setValue(value: Float) {
         this.valuePixel = if (value < 1)
