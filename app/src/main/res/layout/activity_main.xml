@@ -36,47 +36,50 @@
             android:text="CHANGE" />
 
         <LinearLayout
-            android:id="@+id/beautyLayout"
+            android:id="@+id/progressLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
+            android:orientation="vertical">
 
             <SeekBar
-                android:id="@+id/beautyBar"
+                android:id="@+id/oneBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:max="100"
                 android:paddingBottom="4dp"
                 android:paddingTop="4dp"
-                android:progress="0" />
+                android:progress="0"
+                android:visibility="gone" />
 
             <SeekBar
-                android:id="@+id/toneBar"
+                android:id="@+id/twoBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:max="100"
                 android:paddingBottom="4dp"
                 android:paddingTop="4dp"
-                android:progress="0" />
+                android:progress="0"
+                android:visibility="gone" />
 
             <SeekBar
-                android:id="@+id/brightBar"
+                android:id="@+id/thBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:max="100"
                 android:paddingBottom="4dp"
                 android:paddingTop="4dp"
-                android:progress="0" />
+                android:progress="0"
+                android:visibility="gone" />
 
             <SeekBar
-                android:id="@+id/texelBar"
+                android:id="@+id/fBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:max="100"
                 android:paddingBottom="4dp"
                 android:paddingTop="4dp"
-                android:progress="0" />
+                android:progress="0"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

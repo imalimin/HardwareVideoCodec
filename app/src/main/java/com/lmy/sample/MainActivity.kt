@@ -20,6 +20,7 @@ import com.lmy.codec.loge
 import com.lmy.codec.texture.impl.filter.BeautyFilter
 import com.lmy.codec.texture.impl.filter.GreyFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
+import com.lmy.codec.texture.impl.filter.PixelationFilter
 import com.lmy.codec.util.debug_v
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
@@ -35,10 +36,10 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
     }
 
     private fun initView() {
-        beautyBar.setOnSeekBarChangeListener(this)
-        toneBar.setOnSeekBarChangeListener(this)
-        brightBar.setOnSeekBarChangeListener(this)
-        texelBar.setOnSeekBarChangeListener(this)
+        oneBar.setOnSeekBarChangeListener(this)
+        twoBar.setOnSeekBarChangeListener(this)
+        thBar.setOnSeekBarChangeListener(this)
+        fBar.setOnSeekBarChangeListener(this)
         loge("Permission: " + !PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
@@ -69,17 +70,27 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
     private fun showFilterDialog() {
         AlertDialog.Builder(this).apply {
             setTitle("Change filter")
-            setItems(arrayOf("Normal", "Grey", "Beauty")) { dialog, which ->
-                beautyLayout.visibility = if (2 == which) View.VISIBLE else View.GONE
+            setItems(arrayOf("Normal", "Grey", "Beauty", "Pixelation")) { dialog, which ->
                 when (which) {
-                    0 -> mPresenter.setFilter(NormalFilter::class.java)
-                    1 -> mPresenter.setFilter(GreyFilter::class.java)
+                    0 -> {
+                        mPresenter.setFilter(NormalFilter::class.java)
+                        show(0)
+                    }
+                    1 -> {
+                        mPresenter.setFilter(GreyFilter::class.java)
+                        show(0)
+                    }
                     2 -> {
                         mPresenter.setFilter(BeautyFilter::class.java)
-                        beautyBar.progress = 0
-                        toneBar.progress = 50
-                        brightBar.progress = 0
-                        texelBar.progress = 50
+                        show(4)
+                        oneBar.progress = 0
+                        twoBar.progress = 50
+                        thBar.progress = 0
+                        fBar.progress = 50
+                    }
+                    3 -> {
+                        mPresenter.setFilter(PixelationFilter::class.java)
+                        show(1)
                     }
                 }
                 dialog.dismiss()
@@ -117,19 +128,14 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        val filter = mPresenter.getFilter()
-        if (filter is BeautyFilter) {
-            when (seekBar.id) {
-                R.id.beautyBar -> filter.setParams(beautyBar.progress / 100f * 2.5f,
-                        (toneBar.progress - 50) / 100f * 10)
-                R.id.toneBar -> filter.setParams(beautyBar.progress / 100f * 2.5f,
-                        (toneBar.progress - 50) / 100f * 10)
-                R.id.brightBar ->
-                    filter.setBrightLevel(seekBar.progress / 100f)
-                R.id.texelBar ->
-                    filter.setBrightLevel((seekBar.progress - 50) / 100f * 2)
-            }
-        }
+        mPresenter.getFilter()?.setValue(progressLayout.indexOfChild(seekBar), progress)
+    }
+
+    private fun show(count: Int) {
+        oneBar.visibility = if (count > 0) View.VISIBLE else View.GONE
+        twoBar.visibility = if (count > 1) View.VISIBLE else View.GONE
+        thBar.visibility = if (count > 2) View.VISIBLE else View.GONE
+        fBar.visibility = if (count > 3) View.VISIBLE else View.GONE
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
