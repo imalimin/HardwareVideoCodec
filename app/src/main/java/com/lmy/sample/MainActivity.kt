@@ -17,9 +17,9 @@ import android.widget.FrameLayout
 import android.widget.SeekBar
 import com.lmy.codec.CameraPreviewPresenter
 import com.lmy.codec.loge
-import com.lmy.codec.texture.impl.filter.BeautyTextureFilter
-import com.lmy.codec.texture.impl.filter.GreyTextureFilter
-import com.lmy.codec.texture.impl.filter.NormalTextureFilter
+import com.lmy.codec.texture.impl.filter.BeautyFilter
+import com.lmy.codec.texture.impl.filter.GreyFilter
+import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_v
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
@@ -72,10 +72,10 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
             setItems(arrayOf("Normal", "Grey", "Beauty")) { dialog, which ->
                 beautyLayout.visibility = if (2 == which) View.VISIBLE else View.GONE
                 when (which) {
-                    0 -> mPresenter.setFilter(NormalTextureFilter::class.java)
-                    1 -> mPresenter.setFilter(GreyTextureFilter::class.java)
+                    0 -> mPresenter.setFilter(NormalFilter::class.java)
+                    1 -> mPresenter.setFilter(GreyFilter::class.java)
                     2 -> {
-                        mPresenter.setFilter(BeautyTextureFilter::class.java)
+                        mPresenter.setFilter(BeautyFilter::class.java)
                         beautyBar.progress = 0
                         toneBar.progress = 50
                         brightBar.progress = 0
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
         val filter = mPresenter.getFilter()
-        if (filter is BeautyTextureFilter) {
+        if (filter is BeautyFilter) {
             when (seekBar.id) {
                 R.id.beautyBar -> filter.setParams(beautyBar.progress / 100f * 2.5f,
                         (toneBar.progress - 50) / 100f * 10)
