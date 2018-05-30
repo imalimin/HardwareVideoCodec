@@ -17,14 +17,10 @@ import android.widget.FrameLayout
 import android.widget.SeekBar
 import com.lmy.codec.CameraPreviewPresenter
 import com.lmy.codec.loge
-import com.lmy.codec.texture.impl.filter.BeautyFilter
-import com.lmy.codec.texture.impl.filter.GreyFilter
-import com.lmy.codec.texture.impl.filter.NormalFilter
-import com.lmy.codec.texture.impl.filter.PixelationFilter
+import com.lmy.codec.texture.impl.filter.*
 import com.lmy.codec.util.debug_v
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
-
 
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, SeekBar.OnSeekBarChangeListener {
 
@@ -70,32 +66,58 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
     private fun showFilterDialog() {
         AlertDialog.Builder(this).apply {
             setTitle("Change filter")
-            setItems(arrayOf("Normal", "Grey", "Beauty", "Pixelation")) { dialog, which ->
-                when (which) {
-                    0 -> {
-                        mPresenter.setFilter(NormalFilter::class.java)
-                        show(0)
-                    }
-                    1 -> {
-                        mPresenter.setFilter(GreyFilter::class.java)
-                        show(0)
-                    }
-                    2 -> {
-                        mPresenter.setFilter(BeautyFilter::class.java)
-                        show(4)
-                        oneBar.progress = 0
-                        twoBar.progress = 50
-                        thBar.progress = 0
-                        fBar.progress = 50
-                    }
-                    3 -> {
-                        mPresenter.setFilter(PixelationFilter::class.java)
-                        show(1)
-                    }
-                }
+            setItems(arrayOf("Normal", "Grey", "Beauty", "Pixelation", "Hue",
+                    "Gamma", "Brightness", "Sepia")) { dialog, which ->
+                choose(which)
                 dialog.dismiss()
             }
         }.show()
+    }
+
+    private fun choose(which: Int) {
+        when (which) {
+            0 -> {
+                mPresenter.setFilter(NormalFilter::class.java)
+                show(0)
+            }
+            1 -> {
+                mPresenter.setFilter(GreyFilter::class.java)
+                show(0)
+            }
+            2 -> {
+                mPresenter.setFilter(BeautyFilter::class.java)
+                show(4)
+                oneBar.progress = 0
+                twoBar.progress = 50
+                thBar.progress = 0
+                fBar.progress = 50
+            }
+            3 -> {
+                mPresenter.setFilter(PixelationFilter::class.java)
+                show(1)
+                oneBar.progress = 0
+            }
+            4 -> {
+                mPresenter.setFilter(HueFilter::class.java)
+                show(1)
+                oneBar.progress = 0
+            }
+            5 -> {
+                mPresenter.setFilter(GammaFilter::class.java)
+                show(1)
+                oneBar.progress = 33
+            }
+            6 -> {
+                mPresenter.setFilter(BrightnessFilter::class.java)
+                show(1)
+                oneBar.progress = 50
+            }
+            7 -> {
+                mPresenter.setFilter(SepiaFilter::class.java)
+                show(1)
+                oneBar.progress = 0
+            }
+        }
     }
 
     override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
