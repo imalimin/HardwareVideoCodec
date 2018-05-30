@@ -1,8 +1,11 @@
 package com.lmy.codec.texture.impl.filter
 
 import android.opengl.GLES20
+import com.lmy.codec.BaseApplication
+import com.lmy.codec.helper.AssetsHelper
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.util.debug_e
+import java.nio.FloatBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/25.
@@ -10,7 +13,13 @@ import com.lmy.codec.util.debug_e
 abstract class BaseFilter(width: Int = 0,
                           height: Int = 0,
                           textureId: Int = -1) : BaseFrameBufferTexture(width, height, textureId) {
-    abstract fun init()
+    open fun init() {
+        verticesBuffer = createShapeVerticesBuffer(getVerticesBuffer())
+        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), getVertex()),
+                AssetsHelper.read(BaseApplication.assetManager(), getFragment()))
+        initFrameBuffer()
+    }
+
     override fun initFrameBuffer() {
         if (null != shareFrameBuffer && null != shareFrameBufferTexture) {
             this.frameBuffer = shareFrameBuffer
@@ -49,8 +58,73 @@ abstract class BaseFilter(width: Int = 0,
         debug_e("enable frame buffer: ${this.frameBuffer}, ${this.frameBufferTexture}")
     }
 
+    fun active() {
+        GLES20.glUseProgram(shaderProgram!!)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+    }
+
+    fun uniform1i(uniform: Int, x: Int) {
+        GLES20.glUniform1i(uniform, x)
+    }
+
+    fun enableVertex(position: Int, coordinate: Int) {
+        enableVertex(position, coordinate, buffer!!, verticesBuffer!!)
+    }
+
+    fun draw() {
+        drawer.draw()
+        GLES20.glFinish()
+    }
+
+    fun disableVertex(position: Int, coordinate: Int) {
+        GLES20.glDisableVertexAttribArray(position)
+        GLES20.glDisableVertexAttribArray(coordinate)
+    }
+
+    fun inactive() {
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
+        GLES20.glUseProgram(GLES20.GL_NONE)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+    }
+
+
+    fun getVerticesBuffer(): FloatArray {
+        return VERTICES
+    }
+
+    open fun setValue(index: Int, value: Int) {
+
+    }
+
+    abstract fun getVertex(): String
+    abstract fun getFragment(): String
+
+
+    fun setFloat(location: Int, floatValue: Float) {
+        GLES20.glUniform1f(location, floatValue)
+    }
+
+    fun setFloatVec2(location: Int, arrayValue: FloatArray) {
+        GLES20.glUniform2fv(location, 1, FloatBuffer.wrap(arrayValue))
+    }
+
+    fun setFloatVec3(location: Int, arrayValue: FloatArray) {
+        GLES20.glUniform3fv(location, 1, FloatBuffer.wrap(arrayValue))
+    }
+
+    fun setFloatVec4(location: Int, arrayValue: FloatArray) {
+        GLES20.glUniform4fv(location, 1, FloatBuffer.wrap(arrayValue))
+    }
+
     companion object {
         private var shareFrameBuffer: Int? = null
         private var shareFrameBufferTexture: Int? = null
+        private val VERTICES = floatArrayOf(
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f)
     }
 }
