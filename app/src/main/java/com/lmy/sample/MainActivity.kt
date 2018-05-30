@@ -63,11 +63,24 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         })
     }
 
+    override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
+        mPresenter.updatePreview(p1, p2)
+    }
+
+    override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
+    }
+
+    override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
+        mPresenter.stopPreview()
+        return true
+    }
+
     private fun showFilterDialog() {
         AlertDialog.Builder(this).apply {
             setTitle("Change filter")
             setItems(arrayOf("Normal", "Grey", "Beauty", "Pixelation", "Hue",
-                    "Gamma", "Brightness", "Sepia")) { dialog, which ->
+                    "Gamma", "Brightness", "Sepia", "Sharpness", "Saturation",
+                    "Exposure", "Highlight Shadow", "Monochrome", "White Balance")) { dialog, which ->
                 choose(which)
                 dialog.dismiss()
             }
@@ -117,19 +130,42 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
                 show(1)
                 oneBar.progress = 0
             }
+            8 -> {
+                mPresenter.setFilter(SharpnessFilter::class.java)
+                show(1)
+                oneBar.progress = 50
+            }
+            9 -> {
+                mPresenter.setFilter(SaturationFilter::class.java)
+                show(1)
+                oneBar.progress = 50
+            }
+            10 -> {
+                mPresenter.setFilter(ExposureFilter::class.java)
+                show(1)
+                oneBar.progress = 50
+            }
+            11 -> {
+                mPresenter.setFilter(HighlightShadowFilter::class.java)
+                show(2)
+                oneBar.progress = 0
+                twoBar.progress = 0
+            }
+            12 -> {
+                mPresenter.setFilter(MonochromeFilter::class.java)
+                show(4)
+                oneBar.progress = 0
+                twoBar.progress = 60
+                thBar.progress = 45
+                fBar.progress = 30
+            }
+            13 -> {
+                mPresenter.setFilter(WhiteBalanceFilter::class.java)
+                show(2)
+                oneBar.progress = 50
+                twoBar.progress = 0
+            }
         }
-    }
-
-    override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
-        mPresenter.updatePreview(p1, p2)
-    }
-
-    override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
-    }
-
-    override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
-        mPresenter.stopPreview()
-        return true
     }
 
     override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
