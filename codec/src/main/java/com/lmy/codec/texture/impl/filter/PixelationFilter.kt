@@ -37,9 +37,9 @@ class PixelationFilter(width: Int = 0,
 
     override fun drawTexture(transformMatrix: FloatArray?) {
         active()
-        setFloat(imageWidthFactor, valueWidthFactor)
-        setFloat(imageHeightFactor, valueHeightFactor)
-        setFloat(pixel, valuePixel)
+        setUniform1f(imageWidthFactor, valueWidthFactor)
+        setUniform1f(imageHeightFactor, valueHeightFactor)
+        setUniform1f(pixel, valuePixel)
         uniform1i(uTexture, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()

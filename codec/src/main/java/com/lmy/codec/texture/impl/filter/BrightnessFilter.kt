@@ -25,7 +25,7 @@ class BrightnessFilter(width: Int = 0,
 
     override fun drawTexture(transformMatrix: FloatArray?) {
         active()
-        setFloat(mBrightnessLocation, brightness)
+        setUniform1f(mBrightnessLocation, brightness)
         uniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()

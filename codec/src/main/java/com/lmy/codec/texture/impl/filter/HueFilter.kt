@@ -24,7 +24,7 @@ class HueFilter(width: Int = 0,
 
     override fun drawTexture(transformMatrix: FloatArray?) {
         active()
-        setFloat(mHueLocation, hueAdjust)
+        setUniform1f(mHueLocation, hueAdjust)
         uniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()

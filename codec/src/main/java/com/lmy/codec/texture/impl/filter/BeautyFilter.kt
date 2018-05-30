@@ -102,15 +102,15 @@ class BeautyFilter(width: Int = 0,
      * -1 - 1
      */
     private fun setTexelOffset(texelOffset: Float) {
-        setFloat(texelWidthLocation, texelOffset / 1440)
-        setFloat(texelHeightLocation, texelOffset / 2100)
+        setUniform1f(texelWidthLocation, texelOffset / 1440)
+        setUniform1f(texelHeightLocation, texelOffset / 2100)
     }
 
     /**
      * 0 - 1
      */
     private fun setBrightLevel(brightLevel: Float) {
-        setFloat(brightnessLocation, 0.6f * (-0.5f + brightLevel))
+        setUniform1f(brightnessLocation, 0.6f * (-0.5f + brightLevel))
     }
 
     /**
@@ -122,10 +122,10 @@ class BeautyFilter(width: Int = 0,
         vector[1] = 1.0f - 0.3f * beauty
         vector[2] = 0.1f + 0.3f * tone
         vector[3] = 0.1f + 0.3f * tone
-        setFloatVec4(paramsLocation, vector)
+        setUniform4fv(paramsLocation, vector)
     }
 
     private fun setTexelSize(w: Float, h: Float) {
-        setFloatVec2(singleStepOffsetLocation, floatArrayOf(2.0f / w, 2.0f / h))
+        setUniform2fv(singleStepOffsetLocation, floatArrayOf(2.0f / w, 2.0f / h))
     }
 }

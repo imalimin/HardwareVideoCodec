@@ -23,7 +23,7 @@ class GammaFilter(width: Int = 0,
 
     override fun drawTexture(transformMatrix: FloatArray?) {
         active()
-        setFloat(mGammaLocation, gamma)
+        setUniform1f(mGammaLocation, gamma)
         uniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()

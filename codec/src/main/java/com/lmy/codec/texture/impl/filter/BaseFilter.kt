@@ -102,20 +102,24 @@ abstract class BaseFilter(width: Int = 0,
     abstract fun getFragment(): String
 
 
-    fun setFloat(location: Int, floatValue: Float) {
+    fun setUniform1f(location: Int, floatValue: Float) {
         GLES20.glUniform1f(location, floatValue)
     }
 
-    fun setFloatVec2(location: Int, arrayValue: FloatArray) {
+    fun setUniform2fv(location: Int, arrayValue: FloatArray) {
         GLES20.glUniform2fv(location, 1, FloatBuffer.wrap(arrayValue))
     }
 
-    fun setFloatVec3(location: Int, arrayValue: FloatArray) {
+    fun setUniform3fv(location: Int, arrayValue: FloatArray) {
         GLES20.glUniform3fv(location, 1, FloatBuffer.wrap(arrayValue))
     }
 
-    fun setFloatVec4(location: Int, arrayValue: FloatArray) {
+    fun setUniform4fv(location: Int, arrayValue: FloatArray) {
         GLES20.glUniform4fv(location, 1, FloatBuffer.wrap(arrayValue))
+    }
+
+    fun setUniformMatrix4fv(location: Int, arrayValue: FloatArray) {
+        GLES20.glUniformMatrix4fv(location, 1, false, FloatBuffer.wrap(arrayValue))
     }
 
     companion object {
