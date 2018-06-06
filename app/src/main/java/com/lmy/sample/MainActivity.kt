@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
             setItems(arrayOf("Normal", "Grey", "Beauty", "Pixelation", "Hue",
                     "Gamma", "Brightness", "Sepia", "Sharpness", "Saturation",
                     "Exposure", "Highlight Shadow", "Monochrome", "White Balance", "Vignette",
-                    "Crosshatch", "Smooth", "Sketch")) { dialog, which ->
+                    "Crosshatch", "Smooth", "Sketch", "Halftone", "Haze")) { dialog, which ->
                 choose(which)
                 dialog.dismiss()
             }
@@ -189,6 +189,18 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
                 mPresenter.setFilter(SketchFilter::class.java)
                 show(1)
                 oneBar.progress = 30
+            }
+            18 -> {
+                mPresenter.setFilter(HalftoneFilter::class.java)
+                show(2)
+                oneBar.progress = 30
+                twoBar.progress = 10
+            }
+            19 -> {
+                mPresenter.setFilter(HazeFilter::class.java)
+                show(2)
+                oneBar.progress = 50
+                twoBar.progress = 50
             }
             else -> {
                 mPresenter.setFilter(NormalFilter::class.java)
