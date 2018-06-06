@@ -30,7 +30,7 @@ class CameraWrapper(private var parameter: Parameter,
         }
     }
 
-    private var mHandlerThread = HandlerThread("Renderer_Thread")
+    private var mHandlerThread = HandlerThread("Camera_Thread")
     private var mHandler: Handler? = null
     private var mCamera: Camera? = null
     private var mCameras = 0
@@ -129,8 +129,6 @@ class CameraWrapper(private var parameter: Parameter,
         if (null == mCamera) return
         stopPreview()
         releaseTexture()
-        mCamera!!.release()
-        mCamera = null
     }
 
     fun startPreview(): Boolean {
@@ -154,6 +152,8 @@ class CameraWrapper(private var parameter: Parameter,
         if (null == mCamera) return
         try {
             mCamera!!.stopPreview()
+            mCamera!!.release()
+            mCamera = null
         } catch (e: Exception) {
             debug_e("Stop preview failed")
             e.printStackTrace()

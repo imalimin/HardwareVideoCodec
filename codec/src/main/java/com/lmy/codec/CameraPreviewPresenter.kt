@@ -34,7 +34,6 @@ class CameraPreviewPresenter(var parameter: Parameter,
                              private var muxer: Muxer? = MuxerImpl("/storage/emulated/0/test.mp4"))
     : SurfaceTexture.OnFrameAvailableListener, Encoder.OnSampleListener {
 
-    private val syncOp = Any()
     private var onStateListener: OnStateListener? = null
     private val onAudioSampleListener: Encoder.OnSampleListener = object : Encoder.OnSampleListener {
         override fun onFormatChanged(format: MediaFormat) {
@@ -99,16 +98,14 @@ class CameraPreviewPresenter(var parameter: Parameter,
     }
 
     fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
-        synchronized(syncOp) {
-            cameraWrapper!!.startPreview()
-            render?.start(screenTexture, width, height, Runnable {
-                encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
-                        cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
-                encoder!!.setOnSampleListener(this@CameraPreviewPresenter)
-                audioEncoder = AudioEncoderImpl(parameter)
-                audioEncoder!!.setOnSampleListener(onAudioSampleListener)
-            })
-        }
+        cameraWrapper!!.startPreview()
+        render?.start(screenTexture, width, height, Runnable {
+            encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
+                    cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+            encoder!!.setOnSampleListener(this@CameraPreviewPresenter)
+            audioEncoder = AudioEncoderImpl(parameter)
+            audioEncoder!!.setOnSampleListener(onAudioSampleListener)
+        })
     }
 
     fun updatePreview(width: Int, height: Int) {
@@ -116,27 +113,22 @@ class CameraPreviewPresenter(var parameter: Parameter,
     }
 
     fun stopPreview() {
-        synchronized(syncOp) {
-            release()
-        }
+        release()
     }
 
     private fun release() {
-        synchronized(syncOp) {
-            try {
-                render?.stop()
-                render?.release()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            try {
-                cameraWrapper?.release()
-                cameraWrapper = null
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
         stopEncoder()
+        try {
+            render?.release()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        try {
+            cameraWrapper?.release()
+            cameraWrapper = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun stopEncoder() {
