@@ -66,7 +66,7 @@ abstract class BaseFilter(width: Int = 0,
     }
 
     fun uniform1i(uniform: Int, x: Int) {
-        GLES20.glUniform1i(uniform, x)
+        setUniform1i(uniform, x)
     }
 
     fun enableVertex(position: Int, coordinate: Int) {
@@ -101,6 +101,9 @@ abstract class BaseFilter(width: Int = 0,
     abstract fun getVertex(): String
     abstract fun getFragment(): String
 
+    fun setUniform1i(location: Int, value: Int) {
+        GLES20.glUniform1i(location, value)
+    }
 
     fun setUniform1f(location: Int, floatValue: Float) {
         GLES20.glUniform1f(location, floatValue)

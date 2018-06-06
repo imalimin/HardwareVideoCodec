@@ -80,7 +80,8 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
             setTitle("Change filter")
             setItems(arrayOf("Normal", "Grey", "Beauty", "Pixelation", "Hue",
                     "Gamma", "Brightness", "Sepia", "Sharpness", "Saturation",
-                    "Exposure", "Highlight Shadow", "Monochrome", "White Balance")) { dialog, which ->
+                    "Exposure", "Highlight Shadow", "Monochrome", "White Balance", "Vignette",
+                    "Crosshatch", "Smooth", "Sketch")) { dialog, which ->
                 choose(which)
                 dialog.dismiss()
             }
@@ -164,6 +165,34 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
                 show(2)
                 oneBar.progress = 50
                 twoBar.progress = 0
+            }
+            14 -> {
+                mPresenter.setFilter(VignetteFilter::class.java)
+                show(4)
+                oneBar.progress = 50
+                twoBar.progress = 50
+                thBar.progress = 50
+                fBar.progress = 100
+            }
+            15 -> {
+                mPresenter.setFilter(CrosshatchFilter::class.java)
+                show(2)
+                oneBar.progress = 30
+                twoBar.progress = 30
+            }
+            16 -> {
+                mPresenter.setFilter(SmoothFilter::class.java)
+                show(1)
+                oneBar.progress = 30
+            }
+            17 -> {
+                mPresenter.setFilter(SketchFilter::class.java)
+                show(1)
+                oneBar.progress = 30
+            }
+            else -> {
+                mPresenter.setFilter(NormalFilter::class.java)
+                show(0)
             }
         }
     }
