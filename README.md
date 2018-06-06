@@ -2,18 +2,15 @@
 HardwareVideoCodec is an efficient video encoding library for Android.
 
 ## Latest release
-[V1.3.0](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.3.0)
+[V1.4.0](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.4.0)
 
-* Fix createAudioFormat method select a wrong parameter
-* Optimized x264. Faster.
-* Optimized glReadPixels.
-* Supported special effects.
-* Optimized hard encoder parameter selection.
+* Supports 20 filters
 
 ## Features
 * Support hard & soft encode.
 * Record video & audio. Pack mp4 through MediaMuxer.
-* Use OpenGL to render and support special effects.
+* Use OpenGL to render and support filter.
+* Supports 20 filters
 * Support beauty filter.
 * Optimize glReadPixels.
 * More features.
