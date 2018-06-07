@@ -22,6 +22,7 @@ class X264Encoder(private var format: MediaFormat,
                   private var ppsLength: Int = 0,
                   private var outFormat: MediaFormat? = null,
                   private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()) : X264 {
+
     companion object {
         private const val PRESET = "veryfast"
         private const val TUNE = "zerolatency"
@@ -162,6 +163,12 @@ class X264Encoder(private var format: MediaFormat,
 
     override fun getHeight(): Int {
         return format.getInteger(MediaFormat.KEY_HEIGHT)
+    }
+
+    override fun release() {
+        stop()
+        buffer = null
+        outFormat = null
     }
 
     private external fun init(preset: String, tune: String)

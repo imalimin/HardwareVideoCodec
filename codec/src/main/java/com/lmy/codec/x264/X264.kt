@@ -10,4 +10,5 @@ interface X264 {
     fun getWidth(): Int
     fun getHeight(): Int
     fun stop()
+    fun release()
 }

@@ -37,7 +37,13 @@ class CacheX264Encoder(frameSize: Int,
     }
 
     override fun stop() {
+        mEncodeThread.interrupt()
         codec.stop()
+    }
+
+    override fun release() {
+        mEncodeThread.interrupt()
+        codec.release()
         cache?.release()
     }
 
@@ -47,6 +53,7 @@ class CacheX264Encoder(frameSize: Int,
             try {
                 data = cache!!.take()
             } catch (e: InterruptedException) {
+                e.printStackTrace()
                 break
             }
             val bufferInfo = encode(data, data.size) ?: continue
@@ -57,7 +64,6 @@ class CacheX264Encoder(frameSize: Int,
                 onSampleListener?.onSample(bufferInfo, codec.getOutBuffer())
             }
         }
-        stop()
     }
 
     override fun getWidth(): Int = codec.getWidth()

@@ -134,6 +134,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                     }
                     STOP -> {
                         mHandlerThread.quitSafely()
+                        codec?.release()
                         val listener = msg.obj
                         if (null != listener)
                             (listener as Encoder.OnStopListener).onStop()
