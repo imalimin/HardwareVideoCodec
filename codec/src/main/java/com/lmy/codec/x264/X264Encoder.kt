@@ -6,7 +6,9 @@
  */
 package com.lmy.codec.x264
 
+import android.media.MediaCodec
 import android.media.MediaFormat
+import android.os.Build
 import com.lmy.codec.util.debug_e
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -16,11 +18,25 @@ import java.nio.ByteOrder
  */
 class X264Encoder(private var format: MediaFormat,
                   var buffer: ByteBuffer? = null,
-                  private var type: Int = -1) {
+                  private var type: Int = -1,
+                  private var ppsLength: Int = 0,
+                  private var outFormat: MediaFormat? = null,
+                  private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()) : X264 {
     companion object {
         private const val PRESET = "veryfast"
         private const val TUNE = "zerolatency"
+
+        private val CSD_0 = "csd-0"
+        private val CSD_1 = "csd-1"
+
+        const val BUFFER_FLAG_KEY_FRAME = 1
+        const val BUFFER_FLAG_CODEC_CONFIG = 2
+        const val BUFFER_FLAG_END_OF_STREAM = 4
+        const val BUFFER_FLAG_PARTIAL_FRAME = 8
     }
+
+    private var mTotalCost = 0L
+    private var mFrameCount = 0
 
     init {
         System.loadLibrary("x264")
@@ -33,6 +49,85 @@ class X264Encoder(private var format: MediaFormat,
         setFps(format.getInteger(MediaFormat.KEY_FRAME_RATE))
     }
 
+    private fun wrapBufferInfo(size: Int) {
+        when (getType()) {
+            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
+            1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
+            2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
+            else -> mBufferInfo.flags = 0
+        }
+        mBufferInfo.size = size
+    }
+
+    private fun getOutFormat(info: MediaCodec.BufferInfo, data: ByteBuffer) {
+        data.position(0)
+        val specialData = ByteArray(info.size)
+        data.get(specialData, 0, specialData!!.size)
+        outFormat = MediaFormat()
+        outFormat?.setString(MediaFormat.KEY_MIME, format.getString(MediaFormat.KEY_MIME))
+        outFormat?.setInteger(MediaFormat.KEY_WIDTH, format.getInteger(MediaFormat.KEY_WIDTH))
+        outFormat?.setInteger(MediaFormat.KEY_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT))
+        outFormat?.setInteger(MediaFormat.KEY_BIT_RATE, format.getInteger(MediaFormat.KEY_BIT_RATE))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            outFormat?.setInteger(MediaFormat.KEY_COLOR_RANGE, 2)
+            outFormat?.setInteger(MediaFormat.KEY_COLOR_STANDARD, 4)
+            outFormat?.setInteger(MediaFormat.KEY_COLOR_TRANSFER, 3)
+        }
+        val spsAndPps = parseSpecialData(specialData) ?: throw RuntimeException("Special data is empty")
+        ppsLength = spsAndPps[0].size
+        outFormat?.setByteBuffer(CSD_0, ByteBuffer.wrap(spsAndPps[0]))
+        outFormat?.setByteBuffer(CSD_1, ByteBuffer.wrap(spsAndPps[1]))
+    }
+
+    private fun parseSpecialData(specialData: ByteArray): Array<ByteArray>? {
+        val index = (4 until specialData.size - 4).firstOrNull { isFlag(specialData, it) }
+                ?: 0
+        if (0 == index) return null
+        return arrayOf(specialData.copyOfRange(0, index),
+                specialData.copyOfRange(index, specialData.size))
+    }
+
+    private fun isFlag(specialData: ByteArray, index: Int): Boolean {
+        return 0 == specialData[index].toInt()
+                && 0 == specialData[index + 1].toInt()
+                && 0 == specialData[index + 2].toInt()
+                && 1 == specialData[index + 3].toInt()
+    }
+
+    override fun encode(src: ByteArray, srcSize: Int): MediaCodec.BufferInfo? {
+        val time = System.currentTimeMillis()
+        ++mFrameCount
+        buffer?.clear()
+        buffer?.position(0)
+        val size = encode(src, srcSize, buffer!!.array())
+        if (size <= 0) {
+            debug_e("Encode failed. size = $size")
+            return null
+        }
+        val cost = System.currentTimeMillis() - time
+        mTotalCost += cost
+        if (0 == mFrameCount % 20)
+            debug_e("x264 frame size = $size, cost ${cost}ms, arg cost ${mTotalCost / mFrameCount}ms")
+        wrapBufferInfo(size)
+        if (BUFFER_FLAG_CODEC_CONFIG == mBufferInfo.flags) {
+            //获取SPS，PPS
+            getOutFormat(mBufferInfo, buffer!!)
+            return mBufferInfo
+        } else {
+            buffer!!.position(0)
+            buffer!!.limit(size)
+            return mBufferInfo
+        }
+    }
+
+    fun getOutFormat(): MediaFormat {
+        return outFormat!!
+    }
+
+    fun getOutBuffer(): ByteBuffer {
+        return ByteBuffer.wrap(buffer!!.array(), 0, mBufferInfo.size)
+    }
+
     /**
      * 初始化缓存，大小为width*height
      * 如果是别的编码格式，缓存大小可能需要增大
@@ -42,37 +137,36 @@ class X264Encoder(private var format: MediaFormat,
         buffer?.order(ByteOrder.nativeOrder())
     }
 
+    /**
+     * Call by jni
+     */
     private fun createBuffer(size: Int): ByteArray {
         debug_e("Create buffer($size)")
         return buffer!!.array()
     }
 
+    /**
+     * Call by jni
+     */
     private fun setType(type: Int) {
-//        debug_e("setType($type)")
         this.type = type
     }
 
-    fun getType(): Int {
+    private fun getType(): Int {
         return this.type
     }
 
-    fun encode(src: ByteArray, srcSize: Int): Int {
-        buffer?.clear()
-        buffer?.position(0)
-        return encode(src, srcSize, buffer!!.array())
-    }
-
-    fun getWidth(): Int {
+    override fun getWidth(): Int {
         return format.getInteger(MediaFormat.KEY_WIDTH)
     }
 
-    fun getHeight(): Int {
+    override fun getHeight(): Int {
         return format.getInteger(MediaFormat.KEY_HEIGHT)
     }
 
     private external fun init(preset: String, tune: String)
     external fun start()
-    external fun stop()
+    override external fun stop()
     external fun encode(src: ByteArray, srcSize: Int, out: ByteArray): Int
     external fun setVideoSize(width: Int, height: Int)
     external fun setBitrate(bitrate: Int)
