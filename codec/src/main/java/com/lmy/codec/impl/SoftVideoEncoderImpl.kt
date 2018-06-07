@@ -14,7 +14,6 @@ import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.opengl.GLES30
-import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
@@ -25,6 +24,7 @@ import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.x264.CacheX264Encoder
 import com.lmy.codec.x264.X264Encoder
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -37,26 +37,26 @@ import java.nio.ByteOrder
 class SoftVideoEncoderImpl(var parameter: Parameter,
                            textureId: Int,
                            private var eglContext: EGLContext,
-                           var codec: X264Encoder? = null,
-                           private var ppsLength: Int = 0,
+                           var codec: CacheX264Encoder? = null,
                            private var pbos: IntArray = IntArray(PBO_COUNT),
-                           private var outFormat: MediaFormat? = null,
                            private var srcBuffer: ByteBuffer? = null,
-                           private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
-                           private var pTimer: VideoEncoderImpl.PresentationTimer = VideoEncoderImpl.PresentationTimer(parameter.video.fps)) : Encoder {
+                           private var pTimer: VideoEncoderImpl.PresentationTimer = VideoEncoderImpl.PresentationTimer(parameter.video.fps))
+    : Encoder, Encoder.OnSampleListener {
+    override fun onFormatChanged(format: MediaFormat) {
+        onSampleListener?.onFormatChanged(format)
+    }
+
+    override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
+        pTimer.record()
+        info.presentationTimeUs = pTimer.presentationTimeUs
+        onSampleListener?.onSample(info, data)
+    }
 
     companion object {
-        private val CSD_0 = "csd-0"
-        private val CSD_1 = "csd-1"
         val PBO_COUNT = 2
         val INIT = 0x1
         val ENCODE = 0x2
         val STOP = 0x3
-
-        const val BUFFER_FLAG_KEY_FRAME = 1
-        const val BUFFER_FLAG_CODEC_CONFIG = 2
-        const val BUFFER_FLAG_END_OF_STREAM = 4
-        const val BUFFER_FLAG_PARTIAL_FRAME = 8
     }
 
     private lateinit var format: MediaFormat
@@ -65,8 +65,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     private var mHandler: Handler? = null
     private val mEncodingSyn = Any()
     private var mEncoding = false
-    private var mFrameCount = 0
-    private var mTotalCost = 0L
     //For PBO
     private var index = 0
     private var nextIndex = 1
@@ -80,8 +78,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     init {
         initCodec()
-        initThread()
         initPixelsCache()
+        initThread()
         mirrorTexture = MirrorTexture(parameter.video.width,
                 parameter.video.height, textureId)
         mHandler?.removeMessages(VideoEncoderImpl.INIT)
@@ -90,10 +88,11 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun initCodec() {
         format = CodecHelper.createVideoFormat(parameter, true)!!
-        codec = X264Encoder(format)
-        codec?.setProfile("high")
+        val c = X264Encoder(format)
+        c.setProfile("high")
 //        codec?.setLevel(31)
-        codec?.start()
+        codec = CacheX264Encoder(parameter.video.width * parameter.video.height * 4, c)
+        codec?.onSampleListener = this
     }
 
     private fun initPixelsCache() {
@@ -116,41 +115,6 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         GLES30.glBufferData(GLES30.GL_PIXEL_PACK_BUFFER, size, null, GLES30.GL_DYNAMIC_READ)
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, 0)
         debug_e("initPBOs(" + pbos[0] + ", " + pbos[1] + ")")
-    }
-
-    private fun getOutFormat(info: MediaCodec.BufferInfo, data: ByteBuffer) {
-        data.position(0)
-        val specialData = ByteArray(info.size)
-        data.get(specialData, 0, specialData!!.size)
-        outFormat = MediaFormat()
-        outFormat?.setString(MediaFormat.KEY_MIME, format.getString(MediaFormat.KEY_MIME))
-        outFormat?.setInteger(MediaFormat.KEY_WIDTH, format.getInteger(MediaFormat.KEY_WIDTH))
-        outFormat?.setInteger(MediaFormat.KEY_HEIGHT, format.getInteger(MediaFormat.KEY_HEIGHT))
-        outFormat?.setInteger(MediaFormat.KEY_BIT_RATE, format.getInteger(MediaFormat.KEY_BIT_RATE))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            outFormat?.setInteger(MediaFormat.KEY_COLOR_RANGE, 2)
-            outFormat?.setInteger(MediaFormat.KEY_COLOR_STANDARD, 4)
-            outFormat?.setInteger(MediaFormat.KEY_COLOR_TRANSFER, 3)
-        }
-        val spsAndPps = parseSpecialData(specialData) ?: throw RuntimeException("Special data is empty")
-        ppsLength = spsAndPps[0].size
-        outFormat?.setByteBuffer(CSD_0, ByteBuffer.wrap(spsAndPps[0]))
-        outFormat?.setByteBuffer(CSD_1, ByteBuffer.wrap(spsAndPps[1]))
-    }
-
-    private fun parseSpecialData(specialData: ByteArray): Array<ByteArray>? {
-        val index = (4 until specialData.size - 4).firstOrNull { isFlag(specialData, it) }
-                ?: 0
-        if (0 == index) return null
-        return arrayOf(specialData.copyOfRange(0, index),
-                specialData.copyOfRange(index, specialData.size))
-    }
-
-    private fun isFlag(specialData: ByteArray, index: Int): Boolean {
-        return 0 == specialData[index].toInt()
-                && 0 == specialData[index + 1].toInt()
-                && 0 == specialData[index + 2].toInt()
-                && 1 == specialData[index + 3].toInt()
     }
 
     private fun initThread() {
@@ -180,55 +144,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun encode() {
-        ++mFrameCount
         if (srcBuffer == null) return
-        val time = System.currentTimeMillis()
-        val data = getPixelsData()
-        val size = codec?.encode(data, data.size)!!
-        if (size <= 0) {
-            debug_e("Encode failed. size = $size")
-            return
-        }
-        wrapBufferInfo(size)
-        val cost = System.currentTimeMillis() - time
-        mTotalCost += cost
-//        debug_v("timestamp ${mBufferInfo.presentationTimeUs}")
-        if (0 == mFrameCount % parameter.video.fps)
-            debug_e("x264 frame size = $size, cost ${cost}ms, arg cost ${mTotalCost / mFrameCount}ms")
-        if (BUFFER_FLAG_CODEC_CONFIG == mBufferInfo.flags) {
-            //获取SPS，PPS
-            getOutFormat(mBufferInfo, codec!!.buffer!!)
-            onSampleListener?.onFormatChanged(outFormat!!)
-            return
-        }
-        codec!!.buffer!!.position(0)
-        codec!!.buffer!!.limit(size)
-        onSampleListener?.onSample(mBufferInfo, ByteBuffer.wrap(codec!!.buffer!!.array(), 0, mBufferInfo.size))
-    }
-
-    private fun wrapBufferInfo(size: Int) {
-        when (codec!!.getType()) {
-            -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
-            1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
-            2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
-            else -> mBufferInfo.flags = 0
-        }
-        if (BUFFER_FLAG_CODEC_CONFIG != mBufferInfo.flags)
-            pTimer.record()
-        mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-        mBufferInfo.size = size
-    }
-
-    private fun getPixelsData(): ByteArray {
-        val data: ByteArray
-        srcBuffer?.position(0)
-        if (srcBuffer!!.hasArray()) {
-            data = srcBuffer!!.array()
-        } else {
-            data = ByteArray(srcBuffer!!.capacity())
-            srcBuffer!!.get(data)
-        }
-        return data
+        codec?.encode(srcBuffer!!)
     }
 
     private fun readPixels() {
