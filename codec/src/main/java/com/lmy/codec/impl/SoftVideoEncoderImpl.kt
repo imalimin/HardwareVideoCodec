@@ -92,7 +92,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         format = CodecHelper.createVideoFormat(parameter, true)!!
         codec = X264Encoder(format)
         codec?.setProfile("high")
-        codec?.setLevel(31)
+//        codec?.setLevel(31)
         codec?.start()
     }
 

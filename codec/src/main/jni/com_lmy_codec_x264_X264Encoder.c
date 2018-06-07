@@ -207,6 +207,11 @@ static void fast() {
      * DCT Decimation 将去除中被认为不重要的 DCT 块。这样做可以提高编码效率， 并有些微的质量损失。
      */
     //encoder->param->analyse.b_dct_decimate = 1;
+    /**
+     * 运动估计算法
+     */
+//    encoder->param->analyse.i_me_method = X264_ME_HEX;
+//    encoder->param->analyse.i_me_range = 16;
 }
 
 static void quality() {
