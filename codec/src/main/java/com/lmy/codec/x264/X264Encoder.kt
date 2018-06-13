@@ -95,12 +95,12 @@ class X264Encoder(private var format: MediaFormat,
                 && 1 == specialData[index + 3].toInt()
     }
 
-    override fun encode(src: ByteArray, srcSize: Int): MediaCodec.BufferInfo? {
+    override fun encode(src: ByteArray): MediaCodec.BufferInfo? {
         val time = System.currentTimeMillis()
         ++mFrameCount
         buffer?.clear()
         buffer?.position(0)
-        val size = encode(src, srcSize, buffer!!.array())
+        val size = encode(src, 0, buffer!!.array())
         if (size <= 0) {
             debug_e("Encode failed. size = $size")
             return null
@@ -136,14 +136,6 @@ class X264Encoder(private var format: MediaFormat,
     private fun initCacheBuffer() {
         buffer = ByteBuffer.allocate(getWidth() * getHeight())
         buffer?.order(ByteOrder.nativeOrder())
-    }
-
-    /**
-     * Call by jni
-     */
-    private fun createBuffer(size: Int): ByteArray {
-        debug_e("Create buffer($size)")
-        return buffer!!.array()
     }
 
     /**
