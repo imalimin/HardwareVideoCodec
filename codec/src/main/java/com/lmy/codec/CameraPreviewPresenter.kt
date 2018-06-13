@@ -10,6 +10,7 @@ package com.lmy.codec
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.os.Environment
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.helper.CodecFactory
@@ -31,7 +32,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
                              var audioEncoder: Encoder? = null,
                              private var cameraWrapper: CameraWrapper? = null,
                              private var render: Render? = null,
-                             private var muxer: Muxer? = MuxerImpl("/storage/emulated/0/test.mp4"))
+                             private var muxer: Muxer? = MuxerImpl("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"))
     : SurfaceTexture.OnFrameAvailableListener, Encoder.OnSampleListener {
 
     private var onStateListener: OnStateListener? = null
