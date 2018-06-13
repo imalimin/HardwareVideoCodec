@@ -52,10 +52,10 @@ endif
 
 LOCAL_MODULE := codec
 LOCAL_SRC_FILES := com_lmy_codec_helper_GLHelper.c \
-#    JNI_X265Encoder.cpp \
-#    X265Encoder.cpp \
     JNI_X264Encoder.cpp \
     X264Encoder.cpp \
+#    JNI_X265Encoder.cpp \
+#    X265Encoder.cpp \
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     # 采用NEON优化技术
