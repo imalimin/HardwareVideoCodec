@@ -21,7 +21,7 @@ data class Parameter(var context: Context,
                      var previewWidth: Int = 1280,//以水平分辨率为准
                      var previewHeight: Int = 720,//以水平分辨率为准
                      var orientation: Int = 90,
-                     var codecType: CodecType = CodecType.HARD) {
+                     var codecType: CodecType = CodecType.SOFT) {
     fun check() {
         if (!isHorizontal() && !isVertical())
             throw RuntimeException("Orientation must be 0, 90, 180 or 270")
