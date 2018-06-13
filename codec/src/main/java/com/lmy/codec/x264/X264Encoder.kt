@@ -18,6 +18,7 @@ import java.nio.ByteOrder
  */
 class X264Encoder(private var format: MediaFormat,
                   var buffer: ByteBuffer? = null,
+                  private var size: Int = 0,
                   private var type: Int = -1,
                   private var ppsLength: Int = 0,
                   private var outFormat: MediaFormat? = null,
@@ -43,7 +44,7 @@ class X264Encoder(private var format: MediaFormat,
         System.loadLibrary("x264")
         System.loadLibrary("codec")
         initCacheBuffer()
-        init(PRESET, TUNE)
+        init()
         setVideoSize(getWidth(), getHeight())
         setBitrate(format.getInteger(MediaFormat.KEY_BIT_RATE))
         setFrameFormat(FrameFormat.X264_CSP_I420)
@@ -51,7 +52,7 @@ class X264Encoder(private var format: MediaFormat,
     }
 
     private fun wrapBufferInfo(size: Int) {
-        when (getType()) {
+        when (type) {
             -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
             1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
             2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
@@ -74,7 +75,8 @@ class X264Encoder(private var format: MediaFormat,
             outFormat?.setInteger(MediaFormat.KEY_COLOR_STANDARD, 4)
             outFormat?.setInteger(MediaFormat.KEY_COLOR_TRANSFER, 3)
         }
-        val spsAndPps = parseSpecialData(specialData) ?: throw RuntimeException("Special data is empty")
+        val spsAndPps = parseSpecialData(specialData)
+                ?: throw RuntimeException("Special data is empty")
         ppsLength = spsAndPps[0].size
         outFormat?.setByteBuffer(CSD_0, ByteBuffer.wrap(spsAndPps[0]))
         outFormat?.setByteBuffer(CSD_1, ByteBuffer.wrap(spsAndPps[1]))
@@ -100,8 +102,8 @@ class X264Encoder(private var format: MediaFormat,
         ++mFrameCount
         buffer?.clear()
         buffer?.position(0)
-        val size = encode(src, 0, buffer!!.array())
-        if (size <= 0) {
+        val result = encode(src, buffer!!.array(), size, type)
+        if (!result) {
             debug_e("Encode failed. size = $size")
             return null
         }
@@ -138,17 +140,6 @@ class X264Encoder(private var format: MediaFormat,
         buffer?.order(ByteOrder.nativeOrder())
     }
 
-    /**
-     * Call by jni
-     */
-    private fun setType(type: Int) {
-        this.type = type
-    }
-
-    private fun getType(): Int {
-        return this.type
-    }
-
     override fun getWidth(): Int {
         return format.getInteger(MediaFormat.KEY_WIDTH)
     }
@@ -163,10 +154,10 @@ class X264Encoder(private var format: MediaFormat,
         outFormat = null
     }
 
-    private external fun init(preset: String, tune: String)
+    private external fun init()
     external fun start()
     override external fun stop()
-    external fun encode(src: ByteArray, srcSize: Int, out: ByteArray): Int
+    external fun encode(src: ByteArray, dest: ByteArray, size: Int, type: Int): Boolean
     external fun setVideoSize(width: Int, height: Int)
     external fun setBitrate(bitrate: Int)
     external fun setFrameFormat(format: Int)
