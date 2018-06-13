@@ -35,9 +35,6 @@ void Java_com_lmy_codec_x265_X265Encoder_setFrameFormat
 void Java_com_lmy_codec_x265_X265Encoder_setFps
         (JNIEnv *, jobject, jint);
 
-jint Java_com_lmy_codec_x265_X265Encoder_getType
-        (JNIEnv *, jobject);
-
 #ifdef __cplusplus
 }
 #endif

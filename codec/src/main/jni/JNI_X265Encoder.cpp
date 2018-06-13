@@ -64,9 +64,9 @@ void Java_com_lmy_codec_x265_X265Encoder_setFps
 }
 
 static JNINativeMethod methods[] = {
-        {"init",           "(V)V",      (void *) Java_com_lmy_codec_x265_X265Encoder_init},
-        {"start",          "(V)V",      (void *) Java_com_lmy_codec_x265_X265Encoder_start},
-        {"stop",           "(V)V",      (void *) Java_com_lmy_codec_x265_X265Encoder_stop},
+        {"init",           "()V",      (void *) Java_com_lmy_codec_x265_X265Encoder_init},
+        {"start",          "()V",      (void *) Java_com_lmy_codec_x265_X265Encoder_start},
+        {"stop",           "()V",      (void *) Java_com_lmy_codec_x265_X265Encoder_stop},
         {"encode",         "([B[BII)Z", (void *) Java_com_lmy_codec_x265_X265Encoder_encode},
         {"setVideoSize",   "(II)V",     (void *) Java_com_lmy_codec_x265_X265Encoder_setVideoSize},
         {"setBitrate",     "(I)V",      (void *) Java_com_lmy_codec_x265_X265Encoder_setBitrate},
@@ -108,27 +108,27 @@ typedef union {
 } UnionJNIEnvToVoid;
 
 /* This function will be call when the library first be loaded */
-jint JNI_OnLoad(JavaVM *vm, void *reserved) {
-    UnionJNIEnvToVoid uenv;
-    JNIEnv *env = NULL;
-    //LOGI("JNI_OnLoad!");
-
-    if (vm->GetEnv((void **) &uenv.venv, JNI_VERSION_1_4) != JNI_OK) {
-        //LOGE("ERROR: GetEnv failed");
-        return -1;
-    }
-
-    env = uenv.env;;
-
-    //jniRegisterNativeMethods(env, "whf/jnitest/Person", methods, sizeof(methods) / sizeof(methods[0]));
-
-    if (registerNatives(env) != JNI_TRUE) {
-        //LOGE("ERROR: registerNatives failed");
-        return -1;
-    }
-
-    return JNI_VERSION_1_4;
-}
+//jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+//    UnionJNIEnvToVoid uenv;
+//    JNIEnv *env = NULL;
+//    //LOGI("JNI_OnLoad!");
+//
+//    if (vm->GetEnv((void **) &uenv.venv, JNI_VERSION_1_4) != JNI_OK) {
+//        //LOGE("ERROR: GetEnv failed");
+//        return -1;
+//    }
+//
+//    env = uenv.env;;
+//
+//    //jniRegisterNativeMethods(env, "whf/jnitest/Person", methods, sizeof(methods) / sizeof(methods[0]));
+//
+//    if (registerNatives(env) != JNI_TRUE) {
+//        //LOGE("ERROR: registerNatives failed");
+//        return -1;
+//    }
+//
+//    return JNI_VERSION_1_4;
+//}
 
 #ifdef __cplusplus
 }
