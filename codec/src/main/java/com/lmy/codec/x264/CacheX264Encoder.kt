@@ -32,8 +32,8 @@ class CacheX264Encoder(frameSize: Int,
         cache?.offer(data)
     }
 
-    override fun encode(src: ByteArray, srcSize: Int): MediaCodec.BufferInfo? {
-        return codec.encode(src, srcSize)
+    override fun encode(src: ByteArray): MediaCodec.BufferInfo? {
+        return codec.encode(src)
     }
 
     override fun stop() {
@@ -56,7 +56,7 @@ class CacheX264Encoder(frameSize: Int,
                 e.printStackTrace()
                 break
             }
-            val bufferInfo = encode(data, data.size) ?: continue
+            val bufferInfo = encode(data) ?: continue
             cache!!.recycle(data)
             if (X264Encoder.BUFFER_FLAG_CODEC_CONFIG == bufferInfo.flags) {
                 onSampleListener?.onFormatChanged(codec.getOutFormat())
