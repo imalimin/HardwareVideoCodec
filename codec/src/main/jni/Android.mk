@@ -23,6 +23,11 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_MODULE := libx264
     LOCAL_SRC_FILES := lib/armeabi-v7a/libx264.so
     include $(PREBUILT_SHARED_LIBRARY)
+
+    include $(CLEAR_VARS)
+    LOCAL_MODULE := libx265
+    LOCAL_SRC_FILES := lib/armeabi-v7a/libx265.so
+    include $(PREBUILT_SHARED_LIBRARY)
 endif
 
 ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), x86 x86_64))
@@ -38,6 +43,8 @@ ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), x86 x86_64))
 endif
 
 include $(CLEAR_VARS)
+# allow missing dependencies
+APP_ALLOW_MISSING_DEPS :=true
 LOCAL_LDFLAGS += -fPIC
 LOCAL_LDLIBS    := -lm -llog
 # -g 后面的一系列附加项目添加了才能使用 arm_neon.h 头文件
@@ -54,8 +61,8 @@ LOCAL_MODULE := codec
 LOCAL_SRC_FILES := com_lmy_codec_helper_GLHelper.c \
     JNI_X264Encoder.cpp \
     X264Encoder.cpp \
-#    JNI_X265Encoder.cpp \
-#    X265Encoder.cpp \
+    JNI_X265Encoder.cpp \
+    X265Encoder.cpp \
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     # 采用NEON优化技术
@@ -68,5 +75,5 @@ endif
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_LDLIBS := -llog -lz -ljnigraphics -landroid -lm -pthread -lGLESv2
-LOCAL_SHARED_LIBRARIES := libyuv libx264
+LOCAL_SHARED_LIBRARIES := libyuv libx264 libx265
 include $(BUILD_SHARED_LIBRARY)
