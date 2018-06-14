@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Copyright (C) 2013 x265 project
+ * Copyright (C) 2013-2017 MulticoreWare, Inc
  *
  * Authors: Steve Borho <steve@borho.org>
  *          Min Chen <chenm003@163.com>
@@ -24,10 +24,9 @@
 
 #ifndef X265_H
 #define X265_H
-
 #include <stdint.h>
+#include <stdio.h>
 #include "x265_config.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -98,7 +97,9 @@ typedef struct x265_analysis_data
     uint32_t         sliceType;
     uint32_t         numCUsInFrame;
     uint32_t         numPartitions;
+    uint32_t         depthBytes;
     int              bScenecut;
+    void*            wt;
     void*            interData;
     void*            intraData;
 } x265_analysis_data;
@@ -114,6 +115,28 @@ typedef struct x265_cu_stats
 
     /* All the above values will add up to 100%. */
 } x265_cu_stats;
+
+
+/* pu statistics */
+typedef struct x265_pu_stats
+{
+    double      percentSkipPu[4];               // Percentage of skip cu in all depths
+    double      percentIntraPu[4];              // Percentage of intra modes in all depths
+    double      percentAmpPu[4];                // Percentage of amp modes in all depths
+    double      percentInterPu[4][3];           // Percentage of inter 2nx2n, 2nxn and nx2n in all depths
+    double      percentMergePu[4][3];           // Percentage of merge 2nx2n, 2nxn and nx2n in all depth
+    double      percentNxN;
+
+    /* All the above values will add up to 100%. */
+} x265_pu_stats;
+
+
+typedef struct x265_analysis_2Pass
+{
+    uint32_t      poc;
+    uint32_t      frameRecordSize;
+    void*         analysisFramedata;
+}x265_analysis_2Pass;
 
 /* Frame level statistics */
 typedef struct x265_frame_stats
@@ -137,6 +160,7 @@ typedef struct x265_frame_stats
     double           avgPsyEnergy;
     double           avgResEnergy;
     double           avgLumaLevel;
+    double           bufferFill;
     uint64_t         bits;
     int              encoderOrder;
     int              poc;
@@ -144,16 +168,45 @@ typedef struct x265_frame_stats
     int              list0POC[16];
     int              list1POC[16];
     uint16_t         maxLumaLevel;
+    uint16_t         minLumaLevel;
+
+    uint16_t         maxChromaULevel;
+    uint16_t         minChromaULevel;
+    double           avgChromaULevel;
+
+
+    uint16_t         maxChromaVLevel;
+    uint16_t         minChromaVLevel;
+    double           avgChromaVLevel;
+
     char             sliceType;
     int              bScenecut;
+    double           ipCostRatio;
     int              frameLatency;
     x265_cu_stats    cuStats;
+    x265_pu_stats    puStats;
+    double           totalFrameTime;
 } x265_frame_stats;
 
+typedef struct x265_ctu_info_t
+{
+    int32_t ctuAddress;
+    int32_t ctuPartitions[64];
+    void*    ctuInfo;
+} x265_ctu_info_t;
+
+typedef enum
+{
+    NO_CTU_INFO = 0,
+    HAS_CTU_INFO = 1,
+    CTU_INFO_CHANGE = 2,
+}CTUInfo;
+
+
 /* Arbitrary User SEI
- * Payload size is in bytes and the payload pointer must be non-NULL. 
+ * Payload size is in bytes and the payload pointer must be non-NULL.
  * Payload types and syntax can be found in Annex D of the H.265 Specification.
- * SEI Payload Alignment bits as described in Annex D must be included at the 
+ * SEI Payload Alignment bits as described in Annex D must be included at the
  * end of the payload if needed. The payload should not be NAL-encapsulated.
  * Payloads are written in the order of input */
 
@@ -247,15 +300,15 @@ typedef struct x265_picture
      * to allow the encoder to determine base QP */
     int     forceqp;
 
-    /* If param.analysisMode is X265_ANALYSIS_OFF this field is ignored on input
+    /* If param.analysisReuseMode is X265_ANALYSIS_OFF this field is ignored on input
      * and output. Else the user must call x265_alloc_analysis_data() to
      * allocate analysis buffers for every picture passed to the encoder.
      *
-     * On input when param.analysisMode is X265_ANALYSIS_LOAD and analysisData
+     * On input when param.analysisReuseMode is X265_ANALYSIS_LOAD and analysisData
      * member pointers are valid, the encoder will use the data stored here to
      * reduce encoder work.
      *
-     * On output when param.analysisMode is X265_ANALYSIS_SAVE and analysisData
+     * On output when param.analysisReuseMode is X265_ANALYSIS_SAVE and analysisData
      * member pointers are valid, the encoder will write output analysis into
      * this data structure */
     x265_analysis_data analysisData;
@@ -274,13 +327,15 @@ typedef struct x265_picture
     x265_sei         userSEI;
 
     /* Ratecontrol statistics for collecting the ratecontrol information.
-     * It is not used for collecting the last pass ratecontrol data in 
+     * It is not used for collecting the last pass ratecontrol data in
      * multi pass ratecontrol mode. */
     void*  rcData;
 
     uint64_t framesize;
 
     int    height;
+
+    x265_analysis_2Pass analysis2Pass;
 } x265_picture;
 
 typedef enum
@@ -289,6 +344,7 @@ typedef enum
     X265_HEX_SEARCH,
     X265_UMH_SEARCH,
     X265_STAR_SEARCH,
+    X265_SEA,
     X265_FULL_SEARCH
 } X265_ME_METHODS;
 
@@ -334,6 +390,9 @@ typedef enum
 #define X265_CPU_NEON            0x0000002  /* ARM NEON */
 #define X265_CPU_FAST_NEON_MRC   0x0000004  /* Transfer from NEON to ARM register is fast (Cortex-A9) */
 
+/* IBM Power8 */
+#define X265_CPU_ALTIVEC         0x0000001
+
 #define X265_MAX_SUBPEL_LEVEL   7
 
 /* Log level */
@@ -350,6 +409,10 @@ typedef enum
 
 #define X265_REF_LIMIT_DEPTH    1
 #define X265_REF_LIMIT_CU       2
+
+#define X265_TU_LIMIT_BFS       1
+#define X265_TU_LIMIT_DFS       2
+#define X265_TU_LIMIT_NEIGH     4
 
 #define X265_BFRAME_MAX         16
 #define X265_MAX_FRAME_THREADS  16
@@ -369,6 +432,8 @@ typedef enum
 #define X265_AQ_VARIANCE             1
 #define X265_AQ_AUTO_VARIANCE        2
 #define X265_AQ_AUTO_VARIANCE_BIASED 3
+
+#define x265_ADAPT_RD_STRENGTH   4
 
 /* NOTE! For this release only X265_CSP_I420 and X265_CSP_I444 are supported */
 
@@ -405,14 +470,14 @@ typedef struct x265_cli_csp
 } x265_cli_csp;
 
 static const x265_cli_csp x265_cli_csps[] =
-{
-    { 1, { 0, 0, 0 }, { 0, 0, 0 } }, /* i400 */
-    { 3, { 0, 1, 1 }, { 0, 1, 1 } }, /* i420 */
-    { 3, { 0, 1, 1 }, { 0, 0, 0 } }, /* i422 */
-    { 3, { 0, 0, 0 }, { 0, 0, 0 } }, /* i444 */
-    { 2, { 0, 0 },    { 0, 1 } },    /* nv12 */
-    { 2, { 0, 0 },    { 0, 0 } },    /* nv16 */
-};
+        {
+                { 1, { 0, 0, 0 }, { 0, 0, 0 } }, /* i400 */
+                { 3, { 0, 1, 1 }, { 0, 1, 1 } }, /* i420 */
+                { 3, { 0, 1, 1 }, { 0, 0, 0 } }, /* i422 */
+                { 3, { 0, 0, 0 }, { 0, 0, 0 } }, /* i444 */
+                { 2, { 0, 0 },    { 0, 1 } },    /* nv12 */
+                { 2, { 0, 0 },    { 0, 0 } },    /* nv16 */
+        };
 
 /* rate tolerance method */
 typedef enum
@@ -456,7 +521,7 @@ typedef struct x265_stats
 } x265_stats;
 
 /* String values accepted by x265_param_parse() (and CLI) for various parameters */
-static const char * const x265_motion_est_names[] = { "dia", "hex", "umh", "star", "full", 0 };
+static const char * const x265_motion_est_names[] = { "dia", "hex", "umh", "star", "sea", "full", 0 };
 static const char * const x265_source_csp_names[] = { "i400", "i420", "i422", "i444", "nv12", "nv16", 0 };
 static const char * const x265_video_format_names[] = { "component", "pal", "ntsc", "secam", "mac", "undef", 0 };
 static const char * const x265_fullrange_names[] = { "limited", "full", 0 };
@@ -480,7 +545,7 @@ typedef struct x265_zone
     int   qp;
     float bitrateFactor;
 } x265_zone;
-    
+
 /* x265 input parameters
  *
  * For version safety you may use x265_param_alloc/free() to manage the
@@ -589,7 +654,14 @@ typedef struct x265_param
      * X265_LOG_FULL, default is X265_LOG_INFO */
     int       logLevel;
 
-    /* Filename of CSV log. Now deprecated */
+    /* Level of csv logging. 0 is summary, 1 is frame level logging,
+     * 2 is frame level logging with performance statistics */
+    int       csvLogLevel;
+
+    /* filename of CSV log. If csvLogLevel is non-zero, the encoder will emit
+     * per-slice statistics to this log file in encode order. Otherwise the
+     * encoder will emit per-stream statistics into the log file when
+     * x265_encoder_log is called (presumably at the end of the encode) */
     const char* csvfn;
 
     /*== Internal Picture Specification ==*/
@@ -648,7 +720,7 @@ typedef struct x265_param
     int       bHighTier;
 
     /* Enable UHD Blu-ray compatibility support. If specified, the encoder will
-     * attempt to modify/set the encode specifications. If the encoder is unable 
+     * attempt to modify/set the encode specifications. If the encoder is unable
      * to do so, this option will be turned OFF. */
     int       uhdBluray;
 
@@ -823,6 +895,10 @@ typedef struct x265_param
      * compressed by the DCT transforms, at the expense of much more compute */
     uint32_t  tuQTMaxIntraDepth;
 
+    /* Enable early exit decisions for inter coded blocks to avoid recursing to
+     * higher TU depths. Default: 0 */
+    uint32_t  limitTU;
+
     /* Set the amount of rate-distortion analysis to use within quant. 0 implies
      * no rate-distortion optimization. At level 1 rate-distortion cost is used to
      * find optimal rounding values for each level (and allows psy-rdoq to be
@@ -898,9 +974,9 @@ typedef struct x265_param
     /* Limit modes analyzed for each CU using cost metrics from the 4 sub-CUs */
     uint32_t limitModes;
 
-    /* ME search method (DIA, HEX, UMH, STAR, FULL). The search patterns
+    /* ME search method (DIA, HEX, UMH, STAR, SEA, FULL). The search patterns
      * (methods) are sorted in increasing complexity, with diamond being the
-     * simplest and fastest and full being the slowest.  DIA, HEX, and UMH were
+     * simplest and fastest and full being the slowest.  DIA, HEX, UMH and SEA were
      * adapted from x264 directly. STAR is an adaption of the HEVC reference
      * encoder's three step search, while full is a naive exhaustive search. The
      * default is the star search, it has a good balance of performance and
@@ -934,12 +1010,9 @@ typedef struct x265_param
 
     /* Enable weighted prediction in B slices. Default is disabled */
     int       bEnableWeightedBiPred;
-
     /* Enable source pixels in motion estimation. Default is disabled */
-    int      bSourceReferenceEstimation;
-
+    int       bSourceReferenceEstimation;
     /*== Loop Filters ==*/
-
     /* Enable the deblocking loop filter, which improves visual quality by
      * reducing blocking effects at block edges, particularly at lower bitrates
      * or higher QP. When enabled it adds another CU row of reference lag,
@@ -971,9 +1044,9 @@ typedef struct x265_param
 
     /*== Analysis tools ==*/
 
-    /* A value between 1 and 6 (both inclusive) which determines the level of 
+    /* A value between 1 and 6 (both inclusive) which determines the level of
      * rate distortion optimizations to perform during mode and depth decisions.
-     * The more RDO the better the compression efficiency at a major cost of 
+     * The more RDO the better the compression efficiency at a major cost of
      * performance. Default is 3 */
     int       rdLevel;
 
@@ -981,7 +1054,7 @@ typedef struct x265_param
      * skip blocks. Default is disabled */
     int       bEnableEarlySkip;
 
-    /* Enable early CU size decisions to avoid recursing to higher depths. 
+    /* Enable early CU size decisions to avoid recursing to higher depths.
      * Default is enabled */
     int bEnableRecursionSkip;
 
@@ -1019,7 +1092,7 @@ typedef struct x265_param
     double    psyRd;
 
     /* Strength of psycho-visual optimizations in quantization. Only has an
-     * effect when RDOQ is enabled (presets slow, slower and veryslow). The 
+     * effect when RDOQ is enabled (presets slow, slower and veryslow). The
      * value must be between 0 and 50, 1.0 is typical. Default 0 */
     double    psyRdoq;
 
@@ -1033,10 +1106,10 @@ typedef struct x265_param
      * buffers.  if X265_ANALYSIS_LOAD, read analysis information into analysis
      * buffer and use this analysis information to reduce the amount of work
      * the encoder must perform. Default X265_ANALYSIS_OFF */
-    int       analysisMode;
+    int       analysisReuseMode;
 
-    /* Filename for analysisMode save/load. Default name is "x265_analysis.dat" */
-    const char* analysisFileName;
+    /* Filename for analysisReuseMode save/load. Default name is "x265_analysis.dat" */
+    const char* analysisReuseFileName;
 
     /*== Rate Control ==*/
 
@@ -1170,6 +1243,9 @@ typedef struct x265_param
 
         /* sets a hard lower limit on QP */
         int      qpMin;
+
+        /* internally enable if tune grain is set */
+        int      bEnableConstVbv;
     } rc;
 
     /*== Video Usability Information ==*/
@@ -1300,15 +1376,109 @@ typedef struct x265_param
     /* Maximum of the picture order count */
     int log2MaxPocLsb;
 
-    /* Dicard SEI messages when printing */
-    int bDiscardSEI;
-    
-    /* Control removing optional vui information (timing, HRD info) to get low bitrate */
-    int       bDiscardOptionalVUI;
+    /* Emit VUI Timing info, an optional VUI field */
+    int bEmitVUITimingInfo;
+
+    /* Emit HRD Timing info */
+    int bEmitVUIHRDInfo;
 
     /* Maximum count of Slices of picture, the value range is [1, maximum rows] */
     unsigned int maxSlices;
 
+    /* Optimize QP in PPS based on statistics from prevvious GOP*/
+    int bOptQpPPS;
+
+    /* Opitmize ref list length in PPS based on stats from previous GOP*/
+    int bOptRefListLengthPPS;
+
+    /* Enable storing commonly RPS in SPS in multi pass mode */
+    int       bMultiPassOptRPS;
+    /* This value represents the percentage difference between the inter cost and
+    * intra cost of a frame used in scenecut detection. Default 5. */
+    double    scenecutBias;
+    /* Use multiple worker threads dedicated to doing only lookahead instead of sharing
+    * the worker threads with Frame Encoders. A dedicated lookahead threadpool is created with the
+    * specified number of worker threads. This can range from 0 upto half the
+    * hardware threads available for encoding. Using too many threads for lookahead can starve
+    * resources for frame Encoder and can harm performance. Default is 0 - disabled. */
+    int       lookaheadThreads;
+    /* Optimize CU level QPs to signal consistent deltaQPs in frame for rd level > 4 */
+    int       bOptCUDeltaQP;
+    /* Refine analysis in multipass ratecontrol based on analysis information stored */
+    int       analysisMultiPassRefine;
+    /* Refine analysis in multipass ratecontrol based on distortion data stored */
+    int       analysisMultiPassDistortion;
+    /* Adaptive Quantization based on relative motion */
+    int       bAQMotion;
+    /* SSIM based RDO, based on residual divisive normalization scheme. Used for mode
+    * selection during analysis of CTUs, can achieve significant gain in terms of
+    * objective quality metrics SSIM and PSNR */
+    int       bSsimRd;
+
+    /* Increase RD at points where bitrate drops due to vbv. Default 0 */
+    double    dynamicRd;
+
+    /* Enables the emitting of HDR SEI packets which contains HDR-specific params.
+     * Auto-enabled when max-cll, max-fall, or mastering display info is specified.
+     * Default is disabled */
+    int       bEmitHDRSEI;
+
+    /* Enable luma and chroma offsets for HDR/WCG content.
+     * Default is disabled */
+    int       bHDROpt;
+
+    /* A value between 1 and 10 (both inclusive) determines the level of
+    * information stored/reused in save/load analysis-reuse-mode. Higher the refine
+    * level higher the information stored/reused. Default is 5 */
+    int       analysisReuseLevel;
+
+    /* Limit Sample Adaptive Offset filter computation by early terminating SAO
+    * process based on inter prediction mode, CTU spatial-domain correlations,
+    * and relations between luma and chroma */
+    int       bLimitSAO;
+
+    /* File containing the tone mapping information */
+    const char*     toneMapFile;
+
+    /* Insert tone mapping information only for IDR frames and when the
+     * tone mapping information changes. */
+    int       bDhdr10opt;
+
+    /* Determine how x265 react to the content information recieved through the API */
+    int       bCTUInfo;
+
+    /* Use ratecontrol statistics from pic_in, if available*/
+    int       bUseRcStats;
+
+    /* Factor by which input video is scaled down for analysis save mode. Default is 0 */
+    int       scaleFactor;
+
+    /* Enable intra refinement in load mode*/
+    int       intraRefine;
+
+    /* Enable inter refinement in load mode*/
+    int       interRefine;
+
+    /* Enable motion vector refinement in load mode*/
+    int       mvRefine;
+
+    /* Log of maximum CTU size */
+    uint32_t  maxLog2CUSize;
+
+    /* Actual CU depth with respect to config depth */
+    uint32_t  maxCUDepth;
+
+    /* CU depth with respect to maximum transform size */
+    uint32_t  unitSizeDepth;
+
+    /* Number of 4x4 units in maximum CU size */
+    uint32_t  num4x4Partitions;
+
+    /* Specify if analysis mode uses file for data reuse */
+    int       bUseAnalysisFile;
+
+    /* File pointer for csv log */
+    FILE*     csvfpt;
 } x265_param;
 
 /* x265_param_alloc:
@@ -1338,22 +1508,22 @@ void x265_param_default(x265_param *param);
 int x265_param_parse(x265_param *p, const char *name, const char *value);
 
 static const char * const x265_profile_names[] = {
-    /* HEVC v1 */
-    "main", "main10", "mainstillpicture", /* alias */ "msp",
+        /* HEVC v1 */
+        "main", "main10", "mainstillpicture", /* alias */ "msp",
 
-    /* HEVC v2 (Range Extensions) */
-    "main-intra", "main10-intra",
-    "main444-8",  "main444-intra", "main444-stillpicture",
+        /* HEVC v2 (Range Extensions) */
+        "main-intra", "main10-intra",
+        "main444-8",  "main444-intra", "main444-stillpicture",
 
-    "main422-10", "main422-10-intra",
-    "main444-10", "main444-10-intra",
+        "main422-10", "main422-10-intra",
+        "main444-10", "main444-10-intra",
 
-    "main12",     "main12-intra",
-    "main422-12", "main422-12-intra",
-    "main444-12", "main444-12-intra",
+        "main12",     "main12-intra",
+        "main422-12", "main422-12-intra",
+        "main444-12", "main444-12-intra",
 
-    "main444-16-intra", "main444-16-stillpicture", /* Not Supported! */
-    0
+        "main444-16-intra", "main444-16-stillpicture", /* Not Supported! */
+        0
 };
 
 /* x265_param_apply_profile:
@@ -1477,7 +1647,8 @@ int x265_encoder_reconfig(x265_encoder *, x265_param *);
 void x265_encoder_get_stats(x265_encoder *encoder, x265_stats *, uint32_t statsSizeBytes);
 
 /* x265_encoder_log:
- *       This function is deprecated */
+ *       write a line to the configured CSV file.  If a CSV filename was not
+ *       configured, or file open failed, this function will perform no write. */
 void x265_encoder_log(x265_encoder *encoder, int argc, char **argv);
 
 /* x265_encoder_close:
@@ -1500,6 +1671,12 @@ void x265_encoder_close(x265_encoder *);
 
 int x265_encoder_intra_refresh(x265_encoder *);
 
+/* x265_encoder_ctu_info:
+ *    Copy CTU information such as ctu address and ctu partition structure of all
+ *    CTUs in each frame. The function is invoked only if "--ctu-info" is enabled and
+ *    the encoder will wait for this copy to complete if enabled.
+ */
+int x265_encoder_ctu_info(x265_encoder *, int poc, x265_ctu_info_t** ctu);
 /* x265_cleanup:
  *       release library static allocations, reset configured CTU size */
 void x265_cleanup(void);
@@ -1548,6 +1725,7 @@ typedef struct x265_api
 
     int           sizeof_frame_stats;   /* sizeof(x265_frame_stats) */
     int           (*encoder_intra_refresh)(x265_encoder*);
+    int           (*encoder_ctu_info)(x265_encoder*, int, x265_ctu_info_t**);
     /* add new pointers to the end, or increment X265_MAJOR_VERSION */
 } x265_api;
 
@@ -1602,11 +1780,11 @@ const x265_api* x265_api_query(int bitDepth, int apiVersion, int* err);
 #define X265_API_QUERY_ERR_WRONG_BITDEPTH 4 /* libx265_main10 not 10bit, for ex */
 
 static const char * const x265_api_query_errnames[] = {
-    "api queried from libx265",
-    "libx265 version is not compatible with this application",
-    "unable to bind a libx265 with requested bit depth",
-    "unable to bind x265_api_query from libx265",
-    "libx265 has an invalid bitdepth"
+        "api queried from libx265",
+        "libx265 version is not compatible with this application",
+        "unable to bind a libx265 with requested bit depth",
+        "unable to bind x265_api_query from libx265",
+        "libx265 has an invalid bitdepth"
 };
 
 #ifdef __cplusplus
