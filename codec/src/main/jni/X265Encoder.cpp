@@ -38,8 +38,8 @@ bool X265Encoder::encodeHeader(char *dest, int *size, int *type) {
             destSize += pNals[i].sizeBytes;
         }
     }
-    *size = destSize;
-    *type = X265_TYPE_HEADER;
+    size[0] = destSize;
+    type[0] = X265_TYPE_HEADER;
     return true;
 }
 
@@ -75,8 +75,8 @@ bool X265Encoder::encode(char *src, char *dest, int *size, int *type) {
         dest += pNals[i].sizeBytes;
         destSize += pNals[i].sizeBytes;
     }
-    *size = destSize;
-    *type = 0;
+    size[0] = destSize;
+    type[0] = pNals->type;
     return true;
 }
 
@@ -145,8 +145,8 @@ bool X265Encoder::flush(char *dest, int *size, int *type) {
         dest += pNals[i].sizeBytes;
         destSize += pNals[i].sizeBytes;
     }
-    *size = destSize;
-    *type = 0;
+    size[0] = destSize;
+    type[0] = pNals->type;
     return true;
 }
 
