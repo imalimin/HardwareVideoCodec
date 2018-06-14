@@ -25,7 +25,7 @@ import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.x264.CacheX264Encoder
-import com.lmy.codec.x264.X264Encoder
+import com.lmy.codec.x265.X265Encoder
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
@@ -88,8 +88,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private fun initCodec() {
         format = CodecHelper.createVideoFormat(parameter, true)!!
-        val c = X264Encoder(format)
-        c.setProfile("high")
+        val c = X265Encoder(format)
+//        c.setProfile("high")
 //        codec?.setLevel(31)
         codec = CacheX264Encoder(parameter.video.width * parameter.video.height * 4, c)
         codec?.onSampleListener = this
