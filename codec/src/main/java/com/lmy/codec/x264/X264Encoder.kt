@@ -18,8 +18,8 @@ import java.nio.ByteOrder
  */
 class X264Encoder(private var format: MediaFormat,
                   var buffer: ByteBuffer? = null,
-                  private var size: Int = 0,
-                  private var type: Int = -1,
+                  private var size: IntArray = IntArray(1),
+                  private var type: IntArray = IntArray(1),
                   private var ppsLength: Int = 0,
                   private var outFormat: MediaFormat? = null,
                   private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()) : X264 {
@@ -51,14 +51,24 @@ class X264Encoder(private var format: MediaFormat,
         setFps(format.getInteger(MediaFormat.KEY_FRAME_RATE))
     }
 
-    private fun wrapBufferInfo(size: Int) {
-        when (type) {
+    private fun wrapBufferInfo(size: Int): MediaCodec.BufferInfo? {
+        when (type[0]) {
             -1 -> mBufferInfo.flags = BUFFER_FLAG_CODEC_CONFIG
             1 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_IDR
             2 -> mBufferInfo.flags = BUFFER_FLAG_KEY_FRAME//X264_TYPE_I
             else -> mBufferInfo.flags = 0
         }
         mBufferInfo.size = size
+
+        if (BUFFER_FLAG_CODEC_CONFIG == mBufferInfo.flags) {
+            //获取SPS，PPS
+            getOutFormat(mBufferInfo, buffer!!)
+            return mBufferInfo
+        } else {
+            buffer!!.position(0)
+            buffer!!.limit(size)
+            return mBufferInfo
+        }
     }
 
     private fun getOutFormat(info: MediaCodec.BufferInfo, data: ByteBuffer) {
@@ -104,23 +114,14 @@ class X264Encoder(private var format: MediaFormat,
         buffer?.position(0)
         val result = encode(src, buffer!!.array(), size, type)
         if (!result) {
-            debug_e("Encode failed. size = $size")
+            debug_e("Encode failed. size = ${size[0]}")
             return null
         }
         val cost = System.currentTimeMillis() - time
         mTotalCost += cost
         if (0 == mFrameCount % 20)
-            debug_e("x264 frame size = $size, cost ${cost}ms, arg cost ${mTotalCost / mFrameCount}ms")
-        wrapBufferInfo(size)
-        if (BUFFER_FLAG_CODEC_CONFIG == mBufferInfo.flags) {
-            //获取SPS，PPS
-            getOutFormat(mBufferInfo, buffer!!)
-            return mBufferInfo
-        } else {
-            buffer!!.position(0)
-            buffer!!.limit(size)
-            return mBufferInfo
-        }
+            debug_e("x264 frame size = ${size[0]}, cost ${cost}ms, arg cost ${mTotalCost / mFrameCount}ms")
+        return wrapBufferInfo(size[0])
     }
 
     fun getOutFormat(): MediaFormat {
@@ -157,7 +158,7 @@ class X264Encoder(private var format: MediaFormat,
     private external fun init()
     external fun start()
     override external fun stop()
-    external fun encode(src: ByteArray, dest: ByteArray, size: Int, type: Int): Boolean
+    external fun encode(src: ByteArray, dest: ByteArray, size: IntArray, type: IntArray): Boolean
     external fun setVideoSize(width: Int, height: Int)
     external fun setBitrate(bitrate: Int)
     external fun setFrameFormat(format: Int)

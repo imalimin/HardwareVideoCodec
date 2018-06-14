@@ -68,24 +68,7 @@ static void quality() {
     encoder->param->analyse.b_weighted_bipred = X264_WEIGHTP_SMART;
 }
 
-X264Encoder::X264Encoder() {
-    LOGE("X264Encoder");
-    reset();
-    encoder = (Encoder *) malloc(sizeof(Encoder));
-    encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
-    encoder->picture = (x264_picture_t *) malloc(sizeof(x264_picture_t));
-}
-
-X264Encoder::~X264Encoder() {
-    reset();
-}
-
-bool X264Encoder::start() {
-    if (INVALID != state) {
-        LOGI("Start failed. Invalid state, encoder is not invalid");
-        return false;
-    }
-    state = START;
+static void config() {
     x264_param_default_preset(encoder->param, "veryfast", "zerolatency");
     //开启多帧并行编码
     encoder->param->b_sliced_threads = 0;
@@ -101,7 +84,7 @@ bool X264Encoder::start() {
      * CQP下调整i_qp_constant调整QP值，太细致了人眼也分辨不出来，为了增加编码速度降低数据量还是设大些好
      * CRF下调整f_rf_constant和f_rf_constant_max影响编码速度和图像质量（数据量），码率和图像效果参数失效
      */
-    encoder->param->rc.i_rc_method = X264_RC_CQP;
+    encoder->param->rc.i_rc_method = X264_RC_ABR;
     /**
      * 范围0~51，值越大图像越模糊，默认23
      */
@@ -130,18 +113,36 @@ bool X264Encoder::start() {
     encoder->param->b_cpu_independent = 0;
     fast();
     quality();
-    LOGE("start ");
+}
+
+X264Encoder::X264Encoder() {
+    LOGE("X264Encoder");
+    reset();
+    encoder = (Encoder *) malloc(sizeof(Encoder));
+    encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
+    encoder->picture = (x264_picture_t *) malloc(sizeof(x264_picture_t));
+    config();
+}
+
+X264Encoder::~X264Encoder() {
+    reset();
+}
+
+bool X264Encoder::start() {
+    if (INVALID != state) {
+        LOGI("Start failed. Invalid state, encoder is not invalid");
+        return false;
+    }
+    state = START;
     if ((encoder->handle = x264_encoder_open(encoder->param)) == NULL) {
         reset();
         return false;
     }
-    LOGE("start 1");
     x264_picture_alloc(encoder->picture, encoder->param->i_csp, encoder->param->i_width,
                        encoder->param->i_height);
 
     int y_size = encoder->param->i_width * encoder->param->i_height;
     uint8_t *buff = (uint8_t *) malloc(y_size * 3 / 2);
-    encoder->picture->i_type = X264_TYPE_AUTO;
     encoder->picture->img.i_csp = X264_CSP_I420;
     encoder->picture->img.i_plane = 3;
     encoder->picture->img.plane[0] = buff;//Y
@@ -150,7 +151,6 @@ bool X264Encoder::start() {
     encoder->picture->img.i_stride[0] = encoder->param->i_width;
     encoder->picture->img.i_stride[1] = encoder->param->i_width / 2;
     encoder->picture->img.i_stride[2] = encoder->param->i_width / 2;
-    LOGE("start end");
     return true;
 }
 
@@ -161,14 +161,13 @@ void X264Encoder::stop() {
     }
     state = STOP;
     if (encoder->picture) {
-        free(encoder->picture->img.plane[0]);
         x264_picture_clean(encoder->picture);
         free(encoder->picture);
-        encoder->picture = 0;
+        encoder->picture = NULL;
     }
     if (encoder->param) {
         free(encoder->param);
-        encoder->param = 0;
+        encoder->param = NULL;
     }
     if (encoder->handle) {
         x264_encoder_close(encoder->handle);
@@ -182,11 +181,13 @@ bool X264Encoder::encode(char *src, char *dest, int *s, int *type) {
         LOGI("Start failed. Invalid state, encoder is not start");
         return 0;
     }
+    s[0] = 0;
     if (!hasNalHeader) {
         hasNalHeader = true;
         return encodeHeader(dest, s, type);
     }
 
+    encoder->picture->i_type = X264_TYPE_AUTO;
     int nNal = -1;
     x264_picture_t pic_out;
     int size = 0, i = 0;
@@ -203,7 +204,7 @@ bool X264Encoder::encode(char *src, char *dest, int *s, int *type) {
 
     if (x264_encoder_encode(encoder->handle, &(encoder->nal), &nNal, encoder->picture, &pic_out) <
         0) {
-        return -1;
+        return false;
     }
 //    LOGE("x264 frame size = %d", encoder->nal[0].i_payload)
 //    createBuffer(env, thiz, size);
@@ -212,8 +213,8 @@ bool X264Encoder::encode(char *src, char *dest, int *s, int *type) {
         dest += encoder->nal[i].i_payload;
         size += encoder->nal[i].i_payload;
     }
-    *s = size;
-    *type = pic_out.i_type;
+    s[0] = size;
+    type[0] = pic_out.i_type;
     gettimeofday(&end, NULL);
     LOGI("Encode type: %d, Yuv convert time: %d, Encode time: %ld", pic_out.i_type, time,
          (end.tv_usec - start.tv_usec));
@@ -230,7 +231,7 @@ void X264Encoder::setVideoSize(int width, int height) {
 }
 
 void X264Encoder::setBitrate(int bitrate) {
-    encoder->param->rc.i_bitrate = bitrate;
+    encoder->param->rc.i_bitrate = bitrate / 1000;
 }
 
 void X264Encoder::setFrameFormat(int format) {
@@ -251,16 +252,17 @@ void X264Encoder::setLevel(int level) {
 }
 
 bool X264Encoder::fillSrc(char *argb) {
-    int ret = libyuv::ConvertToI420((const uint8 *) argb,
-                                    encoder->param->i_width * encoder->param->i_height,
-                                    encoder->picture->img.plane[0], encoder->param->i_width,
-                                    encoder->picture->img.plane[1], encoder->param->i_width / 2,
-                                    encoder->picture->img.plane[2], encoder->param->i_width / 2,
+    int width = encoder->param->i_width;
+    int height = encoder->param->i_height;
+    int ret = libyuv::ConvertToI420((const uint8 *) argb, width * height,
+                                    encoder->picture->img.plane[0], width,
+                                    encoder->picture->img.plane[1], width / 2,
+                                    encoder->picture->img.plane[2], width / 2,
                                     0, 0,
-                                    encoder->param->i_width, encoder->param->i_height,
-                                    encoder->param->i_width, encoder->param->i_height,
+                                    width, height,
+                                    width, height,
                                     libyuv::kRotate0, libyuv::FOURCC_ABGR);
-    return ret > 0;
+    return ret >= 0;
 }
 
 bool X264Encoder::encodeHeader(char *dest, int *s, int *type) {
@@ -280,8 +282,8 @@ bool X264Encoder::encodeHeader(char *dest, int *s, int *type) {
             size += nals[i].i_payload;
         }
     }
-    *s = size;
-    *type = X264_TYPE_HEADER;
+    s[0] = size;
+    type[0] = X264_TYPE_HEADER;
     return true;
 }
 

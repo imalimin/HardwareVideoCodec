@@ -12,8 +12,9 @@ static X264Encoder *encoder;
 extern "C" {
 #endif
 
-static bool encode(jbyte *src, jbyte *dest, jint size, jint type) {
-    return encoder->encode((char *) src, (char *) dest, &size, &type);
+static bool encode(jbyte *src, jbyte *dest, int *size, int *type) {
+    bool result = encoder->encode((char *) src, (char *) dest, size, type);
+    return result;
 }
 
 void Java_com_lmy_codec_x264_X264Encoder_init
@@ -24,7 +25,7 @@ void Java_com_lmy_codec_x264_X264Encoder_init
 void Java_com_lmy_codec_x264_X264Encoder_start
         (JNIEnv *env, jobject thiz) {
     if (!encoder->start()) {
-        LOGE("Start failed!");
+        LOGE("X264Encoder start failed!");
     }
 }
 
@@ -36,12 +37,17 @@ void Java_com_lmy_codec_x264_X264Encoder_stop
 }
 
 jboolean Java_com_lmy_codec_x264_X264Encoder_encode
-        (JNIEnv *env, jobject thiz, jbyteArray src, jbyteArray dest, jint size, jint type) {
-    jbyte *srcBuffer = env->GetByteArrayElements(src, 0);
-    jbyte *destBuffer = env->GetByteArrayElements(dest, 0);
-    bool result = encode(srcBuffer, destBuffer, size, type);
-    env->ReleaseByteArrayElements(src, srcBuffer, 0);
-    env->ReleaseByteArrayElements(dest, destBuffer, 0);
+        (JNIEnv *env, jobject thiz, jbyteArray src, jbyteArray dest, jintArray size,
+         jintArray type) {
+    jbyte *srcBuffer = env->GetByteArrayElements(src, JNI_FALSE);
+    jbyte *destBuffer = env->GetByteArrayElements(dest, JNI_FALSE);
+    jint *pSize = env->GetIntArrayElements(size, JNI_FALSE);
+    jint *pType = env->GetIntArrayElements(type, JNI_FALSE);
+    bool result = encode(srcBuffer, destBuffer, pSize, pType);
+    env->ReleaseByteArrayElements(src, srcBuffer, JNI_FALSE);
+    env->ReleaseByteArrayElements(dest, destBuffer, JNI_FALSE);
+    env->ReleaseIntArrayElements(size, pSize, JNI_FALSE);
+    env->ReleaseIntArrayElements(type, pType, JNI_FALSE);
     return (jboolean) result;
 }
 
@@ -83,7 +89,7 @@ static JNINativeMethod methods[] = {
         {"init",           "()V",                   (void *) Java_com_lmy_codec_x264_X264Encoder_init},
         {"start",          "()V",                   (void *) Java_com_lmy_codec_x264_X264Encoder_start},
         {"stop",           "()V",                   (void *) Java_com_lmy_codec_x264_X264Encoder_stop},
-        {"encode",         "([B[BII)Z",             (void *) Java_com_lmy_codec_x264_X264Encoder_encode},
+        {"encode",         "([B[B[I[I)Z",           (void *) Java_com_lmy_codec_x264_X264Encoder_encode},
         {"setVideoSize",   "(II)V",                 (void *) Java_com_lmy_codec_x264_X264Encoder_setVideoSize},
         {"setBitrate",     "(I)V",                  (void *) Java_com_lmy_codec_x264_X264Encoder_setBitrate},
         {"setFrameFormat", "(I)V",                  (void *) Java_com_lmy_codec_x264_X264Encoder_setFrameFormat},

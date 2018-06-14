@@ -26,7 +26,7 @@ void Java_com_lmy_codec_x264_X264Encoder_stop
         (JNIEnv *, jobject);
 
 jboolean Java_com_lmy_codec_x264_X264Encoder_encode
-        (JNIEnv *, jobject, jbyteArray, jbyteArray, jint, jint);
+        (JNIEnv *, jobject, jbyteArray, jbyteArray, jintArray , jintArray);
 
 void Java_com_lmy_codec_x264_X264Encoder_setVideoSize
         (JNIEnv *, jobject, jint, jint);
