@@ -144,32 +144,43 @@ class VideoEncoderImpl(var parameter: Parameter,
         dequeue()
     }
 
+    /**
+     * 通过OpenGL来控制数据输入，省去了直接控制输入缓冲区的步骤，所以这里直接操控输出缓冲区即可
+     */
     @SuppressLint("WrongConstant")
     private fun dequeue(): Boolean {
         try {
+            /**
+             * 从输出缓冲区取出一个Buffer，返回一个状态
+             * 这是一个同步操作，所以我们需要给定最大等待时间WAIT_TIME，一般设置为10000ms
+             */
             val flag = codec!!.dequeueOutputBuffer(mBufferInfo, WAIT_TIME)
             when (flag) {
-                MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
+                MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {//输出缓冲区改变，通常忽略
                     debug_v("INFO_OUTPUT_BUFFERS_CHANGED")
                 }
-                MediaCodec.INFO_TRY_AGAIN_LATER -> {
+                MediaCodec.INFO_TRY_AGAIN_LATER -> {//等待超时，需要再次等待，通常忽略
 //                    debug_v("INFO_TRY_AGAIN_LATER")
                     return false
                 }
+            /**
+             * 输出格式改变，很重要
+             * 这里必须把outputFormat设置给MediaMuxer，而不能不能用inputFormat代替，它们时不一样的，不然无法正确生成mp4文件
+             */
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("INFO_OUTPUT_FORMAT_CHANGED")
                     onSampleListener?.onFormatChanged(codec!!.outputFormat)
                 }
                 else -> {
-                    if (flag < 0) return@dequeue false
-                    val data = codec!!.outputBuffers[flag]
+                    if (flag < 0) return@dequeue false//如果小于零，则跳过
+                    val data = codec!!.outputBuffers[flag]//否则代表编码成功，可以从输出缓冲区队列取出数据
                     if (null != data) {
                         val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
-                        if (endOfStream == 0) {
+                        if (endOfStream == 0) {//如果没有收到BUFFER_FLAG_END_OF_STREAM信号，则代表输出数据时有效的
                             mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
                             onSampleListener?.onSample(mBufferInfo, data)
                         }
-                        // 一定要记得释放
+                        //缓冲区使用完后必须把它还给MediaCodec，以便再次使用，至此一个流程结束，再次循环
                         codec!!.releaseOutputBuffer(flag, false)
 //                        if (endOfStream == MediaCodec.BUFFER_FLAG_END_OF_STREAM) {
 //                            return true
