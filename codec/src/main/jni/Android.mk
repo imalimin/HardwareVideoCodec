@@ -23,11 +23,6 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_MODULE := libx264
     LOCAL_SRC_FILES := lib/armeabi-v7a/libx264.so
     include $(PREBUILT_SHARED_LIBRARY)
-
-    include $(CLEAR_VARS)
-    LOCAL_MODULE := libx265
-    LOCAL_SRC_FILES := lib/armeabi-v7a/libx265.so
-    include $(PREBUILT_SHARED_LIBRARY)
 endif
 
 ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), x86 x86_64))
@@ -59,10 +54,10 @@ endif
 
 LOCAL_MODULE := codec
 LOCAL_SRC_FILES := com_lmy_codec_helper_GLHelper.c \
-    JNI_X264Encoder.cpp \
+    Java_com_lmy_codec_x264_X264Encoder.cpp \
     X264Encoder.cpp \
-    JNI_X265Encoder.cpp \
-    X265Encoder.cpp \
+#    JNI_X265Encoder.cpp \
+#    X265Encoder.cpp \
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     # 采用NEON优化技术
@@ -75,5 +70,5 @@ endif
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_LDLIBS := -llog -lz -ljnigraphics -landroid -lm -pthread -lGLESv2
-LOCAL_SHARED_LIBRARIES := libyuv libx264 libx265
+LOCAL_SHARED_LIBRARIES := libyuv libx264
 include $(BUILD_SHARED_LIBRARY)

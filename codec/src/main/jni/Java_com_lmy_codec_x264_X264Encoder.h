@@ -16,34 +16,34 @@
 extern "C" {
 #endif
 
-void Java_com_lmy_codec_x264_X264Encoder_init
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
         (JNIEnv *, jobject);
 
-void Java_com_lmy_codec_x264_X264Encoder_start
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
         (JNIEnv *, jobject);
 
-void Java_com_lmy_codec_x264_X264Encoder_stop
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_stop
         (JNIEnv *, jobject);
 
-jboolean Java_com_lmy_codec_x264_X264Encoder_encode
+JNIEXPORT jboolean JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
         (JNIEnv *, jobject, jbyteArray, jbyteArray, jintArray , jintArray);
 
-void Java_com_lmy_codec_x264_X264Encoder_setVideoSize
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setVideoSize
         (JNIEnv *, jobject, jint, jint);
 
-void Java_com_lmy_codec_x264_X264Encoder_setBitrate
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setBitrate
         (JNIEnv *, jobject, jint);
 
-void Java_com_lmy_codec_x264_X264Encoder_setFrameFormat
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setFrameFormat
         (JNIEnv *, jobject, jint);
 
-void Java_com_lmy_codec_x264_X264Encoder_setFps
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setFps
         (JNIEnv *, jobject, jint);
 
-void Java_com_lmy_codec_x264_X264Encoder_setProfile
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setProfile
         (JNIEnv *, jobject, jstring);
 
-void Java_com_lmy_codec_x264_X264Encoder_setLevel
+JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setLevel
         (JNIEnv *, jobject, jint);
 
 #ifdef __cplusplus
