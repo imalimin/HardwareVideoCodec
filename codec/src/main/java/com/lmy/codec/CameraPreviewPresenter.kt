@@ -58,7 +58,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
         cameraWrapper!!.startPreview()
         render?.start(screenTexture, width, height, Runnable {
             encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
-                    cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+                    cameraWrapper!!.textureWrapper?.egl!!.eglContext!!)
             audioEncoder = AudioEncoderImpl(parameter)
             if (null != muxer) {
                 encoder!!.setOnSampleListener(muxer!!)

@@ -7,7 +7,9 @@
 package com.lmy.codec.wrapper
 
 import android.graphics.SurfaceTexture
+import android.opengl.GLES20
 import com.lmy.codec.entity.Egl
+import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.texture.impl.BaseTexture
 
 /**
@@ -19,6 +21,19 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
                               var egl: Egl? = null) {
 
     abstract fun drawTexture(transformMatrix: FloatArray?)
+
+    fun createTexture(target: Int): Int {
+        val texture = IntArray(1)
+        GLES20.glGenTextures(1, texture, 0)
+        val textureId = texture[0]
+        GLES20.glBindTexture(target, textureId)
+        GLES20.glTexParameterf(target, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR.toFloat())
+        GLES20.glTexParameterf(target, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat())
+        GLES20.glTexParameterf(target, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE.toFloat())
+        GLES20.glTexParameterf(target, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
+        GLHelper.checkNoGLES2Error("createTexture")
+        return textureId
+    }
 
     open fun release() {
         egl?.release()

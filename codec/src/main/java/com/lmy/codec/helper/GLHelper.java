@@ -9,6 +9,7 @@ package com.lmy.codec.helper;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
+import android.opengl.GLES20;
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/25.
@@ -37,5 +38,12 @@ public class GLHelper {
 
     public static boolean isSupportPBO(Context context) {
         return GLHelper.glVersion(context) > PBO_SUPPORT_VERSION;
+    }
+
+    public static void checkNoGLES2Error(String msg) {
+        int error = GLES20.glGetError();
+        if (error != GLES20.GL_NO_ERROR) {
+            throw new RuntimeException(msg + ": GLES20 error: " + error);
+        }
     }
 }
