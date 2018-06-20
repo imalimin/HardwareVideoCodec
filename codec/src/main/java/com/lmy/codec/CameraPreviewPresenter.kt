@@ -36,25 +36,10 @@ class CameraPreviewPresenter(var parameter: Parameter,
     : SurfaceTexture.OnFrameAvailableListener, Encoder.OnSampleListener {
 
     private var onStateListener: OnStateListener? = null
-    private val onAudioSampleListener: Encoder.OnSampleListener = object : Encoder.OnSampleListener {
-        override fun onFormatChanged(format: MediaFormat) {
-            debug_e("Add audio track")
-            muxer?.addAudioTrack(format)
-        }
-
-        override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
-//            debug_e("audio sample(${info.size})")
-            muxer?.writeAudioSample(Sample.wrap(info, data))
-        }
-    }
 
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
         render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper as CameraTextureWrapper)
-    }
-
-    override fun onFormatChanged(format: MediaFormat) {
-        muxer?.addVideoTrack(format)
     }
 
     fun setFilter(filter: Class<*>) {
@@ -65,11 +50,20 @@ class CameraPreviewPresenter(var parameter: Parameter,
         return render?.getFilter()
     }
 
+    override fun onFormatChanged(encoder: Encoder, format: MediaFormat) {
+        if (encoder is AudioEncoderImpl) {
+            debug_e("Add audio track")
+            muxer?.addAudioTrack(format)
+        } else {
+            muxer?.addVideoTrack(format)
+        }
+    }
+
     /**
      * 编码后的帧数据
      * For VideoEncoderImpl
      */
-    override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
+    override fun onSample(encoder: Encoder, info: MediaCodec.BufferInfo, data: ByteBuffer) {
 //        debug_e("BufferInfo[${data[0]},${data[1]},${data[2]},${data[3]},${data[4]}," +
 //                "${data[5]},${data[6]},${data[7]},${data[8]}," +
 //                "${data[9]},${data[10]},${data[11]},${data[12]}," +
@@ -85,7 +79,11 @@ class CameraPreviewPresenter(var parameter: Parameter,
 //            }
 //            debug_e(msg)
 //        }
-        muxer?.writeVideoSample(Sample.wrap(info, data))
+        if (encoder is AudioEncoderImpl) {
+            muxer?.writeAudioSample(Sample.wrap(info, data))
+        } else {
+            muxer?.writeVideoSample(Sample.wrap(info, data))
+        }
     }
 
     /**
@@ -105,7 +103,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
                     cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
             encoder!!.setOnSampleListener(this@CameraPreviewPresenter)
             audioEncoder = AudioEncoderImpl(parameter)
-            audioEncoder!!.setOnSampleListener(onAudioSampleListener)
+            audioEncoder!!.setOnSampleListener(this@CameraPreviewPresenter)
         })
     }
 

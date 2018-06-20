@@ -1,7 +1,7 @@
 package com.lmy.codec.x264
 
 import android.media.MediaCodec
-import com.lmy.codec.Encoder
+import android.media.MediaFormat
 import com.lmy.codec.entity.RecycleQueue
 import java.nio.ByteBuffer
 
@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 class CacheX264Encoder(frameSize: Int,
                        private val codec: X264Encoder,
                        private var cache: Cache? = null,
-                       var onSampleListener: Encoder.OnSampleListener? = null) : X264, Runnable {
+                       var onSampleListener: OnSampleListener? = null) : X264, Runnable {
 
     private var mEncodeThread = Thread(this).apply { name = "CacheX264Encoder" }
 
@@ -79,5 +79,10 @@ class CacheX264Encoder(frameSize: Int,
         override fun newCacheEntry(): ByteArray {
             return ByteArray(size)
         }
+    }
+
+    interface OnSampleListener {
+        abstract fun onFormatChanged(format: MediaFormat)
+        abstract fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer)
     }
 }

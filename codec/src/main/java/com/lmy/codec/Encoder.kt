@@ -22,8 +22,8 @@ interface Encoder : SurfaceTexture.OnFrameAvailableListener {
     fun setOnSampleListener(listener: OnSampleListener)
 
     interface OnSampleListener {
-        fun onFormatChanged(format: MediaFormat)
-        fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer)
+        fun onFormatChanged(encoder: Encoder, format: MediaFormat)
+        fun onSample(encoder: Encoder, info: MediaCodec.BufferInfo, data: ByteBuffer)
     }
 
     interface OnStopListener {

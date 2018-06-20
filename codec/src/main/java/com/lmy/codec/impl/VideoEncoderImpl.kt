@@ -169,7 +169,7 @@ class VideoEncoderImpl(var parameter: Parameter,
              */
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("INFO_OUTPUT_FORMAT_CHANGED")
-                    onSampleListener?.onFormatChanged(codec!!.outputFormat)
+                    onSampleListener?.onFormatChanged(this, codec!!.outputFormat)
                 }
                 else -> {
                     if (flag < 0) return@dequeue false//如果小于零，则跳过
@@ -178,7 +178,7 @@ class VideoEncoderImpl(var parameter: Parameter,
                         val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
                         if (endOfStream == 0) {//如果没有收到BUFFER_FLAG_END_OF_STREAM信号，则代表输出数据时有效的
                             mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-                            onSampleListener?.onSample(mBufferInfo, data)
+                            onSampleListener?.onSample(this, mBufferInfo, data)
                         }
                         //缓冲区使用完后必须把它还给MediaCodec，以便再次使用，至此一个流程结束，再次循环
                         codec!!.releaseOutputBuffer(flag, false)

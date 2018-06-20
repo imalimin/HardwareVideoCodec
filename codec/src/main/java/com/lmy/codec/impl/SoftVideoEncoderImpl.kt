@@ -41,15 +41,15 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
                            private var pbos: IntArray = IntArray(PBO_COUNT),
                            private var srcBuffer: ByteBuffer? = null,
                            private var pTimer: VideoEncoderImpl.PresentationTimer = VideoEncoderImpl.PresentationTimer(parameter.video.fps))
-    : Encoder, Encoder.OnSampleListener {
+    : Encoder, CacheX264Encoder.OnSampleListener {
     override fun onFormatChanged(format: MediaFormat) {
-        onSampleListener?.onFormatChanged(format)
+        onSampleListener?.onFormatChanged(this, format)
     }
 
     override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
         pTimer.record()
         info.presentationTimeUs = pTimer.presentationTimeUs
-        onSampleListener?.onSample(info, data)
+        onSampleListener?.onSample(this, info, data)
     }
 
     companion object {

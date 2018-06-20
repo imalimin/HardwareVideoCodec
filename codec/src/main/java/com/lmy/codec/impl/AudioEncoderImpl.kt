@@ -148,7 +148,7 @@ class AudioEncoderImpl(var parameter: Parameter,
                 }
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("AUDIO INFO_OUTPUT_FORMAT_CHANGED")
-                    onSampleListener?.onFormatChanged(codec!!.outputFormat)
+                    onSampleListener?.onFormatChanged(this, codec!!.outputFormat)
                 }
                 else -> {
                     if (flag < 0) return@dequeue false
@@ -162,7 +162,7 @@ class AudioEncoderImpl(var parameter: Parameter,
 //                            timestamp += 29023
 //                            bufferInfo.presentationTimeUs = timestamp
                             bufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-                            onSampleListener?.onSample(bufferInfo, data)
+                            onSampleListener?.onSample(this, bufferInfo, data)
                         }
                         // 一定要记得释放
                         codec!!.releaseOutputBuffer(flag, false)
