@@ -11,7 +11,8 @@ import java.nio.ByteBuffer
 class CacheX264Encoder(frameSize: Int,
                        private val codec: X264Encoder,
                        private var cache: Cache? = null,
-                       var onSampleListener: OnSampleListener? = null) : X264, Runnable {
+                       var onSampleListener: OnSampleListener? = null,
+                       private var running: Boolean = true) : X264, Runnable {
 
     private var mEncodeThread = Thread(this).apply { name = "CacheX264Encoder" }
 
@@ -42,13 +43,13 @@ class CacheX264Encoder(frameSize: Int,
     }
 
     override fun release() {
+        if (!running) return
+        running = false
         mEncodeThread.interrupt()
-        codec.release()
-        cache?.release()
     }
 
     override fun run() {
-        while (true) {
+        while (running) {
             var data: ByteArray?
             try {
                 data = cache!!.take()
@@ -64,6 +65,8 @@ class CacheX264Encoder(frameSize: Int,
                 onSampleListener?.onSample(bufferInfo, codec.getOutBuffer())
             }
         }
+        codec.release()
+        cache?.release()
     }
 
     override fun getWidth(): Int = codec.getWidth()

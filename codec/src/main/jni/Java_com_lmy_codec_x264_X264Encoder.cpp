@@ -32,7 +32,9 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_stop
         (JNIEnv *env, jobject thiz) {
     encoder->stop();
-    delete encoder;
+    if (NULL != encoder) {
+        delete encoder;
+    }
     encoder = NULL;
 }
 
