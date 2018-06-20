@@ -3,14 +3,13 @@ package com.lmy.codec.x264
 import android.media.MediaCodec
 import com.lmy.codec.Encoder
 import com.lmy.codec.entity.RecycleQueue
-import com.lmy.codec.x265.X265Encoder
 import java.nio.ByteBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/6/7.
  */
 class CacheX264Encoder(frameSize: Int,
-                       private val codec: X265Encoder,
+                       private val codec: X264Encoder,
                        private var cache: Cache? = null,
                        var onSampleListener: Encoder.OnSampleListener? = null) : X264, Runnable {
 
