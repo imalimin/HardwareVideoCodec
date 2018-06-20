@@ -21,7 +21,7 @@ import com.lmy.codec.util.debug_v
  */
 class CameraWrapper(private var parameter: Parameter,
                     private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener,
-                    var textureWrapper: TextureWrapper = CameraTextureWrapper()) {
+                    var textureWrapper: CameraTextureWrapper = CameraTextureWrapper()) {
     companion object {
         private val PREPARE = 0x1
         fun open(param: Parameter, onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener)

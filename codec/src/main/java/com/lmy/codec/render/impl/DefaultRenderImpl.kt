@@ -95,10 +95,10 @@ class DefaultRenderImpl(var parameter: Parameter,
                 initScreen()
                 return
             }
-            filter!!.width = parameter.video.width
-            filter!!.height = parameter.video.height
-            filter!!.textureId = cameraWrapper.getFrameBufferTexture()
-            filter!!.init()
+            filter.width = parameter.video.width
+            filter.height = parameter.video.height
+            filter.textureId = cameraWrapper.getFrameBufferTexture()
+            filter.init()
         }
         initScreen()
     }

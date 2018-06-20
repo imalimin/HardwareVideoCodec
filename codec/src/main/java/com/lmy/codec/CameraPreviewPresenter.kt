@@ -16,7 +16,6 @@ import com.lmy.codec.impl.MuxerImpl
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
-import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
 
 /**
@@ -34,7 +33,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     init {
         cameraWrapper = CameraWrapper.open(parameter, this)
-        render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper as CameraTextureWrapper)
+        render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper)
     }
 
     fun setFilter(filter: Class<*>) {
