@@ -12,7 +12,7 @@ import com.lmy.codec.entity.Sample
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
-interface Muxer {
+interface Muxer : Encoder.OnSampleListener {
     fun addVideoTrack(format: MediaFormat)
     fun addAudioTrack(format: MediaFormat)
     fun writeVideoSample(sample: Sample)

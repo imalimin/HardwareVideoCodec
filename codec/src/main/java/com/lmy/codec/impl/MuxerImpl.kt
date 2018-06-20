@@ -6,15 +6,18 @@
  */
 package com.lmy.codec.impl
 
+import android.media.MediaCodec
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
+import com.lmy.codec.Encoder
 import com.lmy.codec.Muxer
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.util.debug_e
 import java.io.File
+import java.nio.ByteBuffer
 import java.util.*
 
 /**
@@ -46,6 +49,27 @@ class MuxerImpl(var path: String,
         if (file.exists()) file.delete()
         muxer = MediaMuxer(path, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
         initThread()
+    }
+
+    override fun onFormatChanged(encoder: Encoder, format: MediaFormat) {
+        if (encoder is AudioEncoderImpl) {
+            debug_e("Add audio track")
+            addAudioTrack(format)
+        } else {
+            addVideoTrack(format)
+        }
+    }
+
+    /**
+     * 编码后的帧数据
+     * For VideoEncoderImpl
+     */
+    override fun onSample(encoder: Encoder, info: MediaCodec.BufferInfo, data: ByteBuffer) {
+        if (encoder is AudioEncoderImpl) {
+            writeAudioSample(Sample.wrap(info, data))
+        } else {
+            writeVideoSample(Sample.wrap(info, data))
+        }
     }
 
     private fun ready() {

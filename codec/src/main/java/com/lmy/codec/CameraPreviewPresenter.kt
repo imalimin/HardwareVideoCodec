@@ -8,21 +8,16 @@
 package com.lmy.codec
 
 import android.graphics.SurfaceTexture
-import android.media.MediaCodec
-import android.media.MediaFormat
 import android.os.Environment
 import com.lmy.codec.entity.Parameter
-import com.lmy.codec.entity.Sample
 import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.impl.AudioEncoderImpl
 import com.lmy.codec.impl.MuxerImpl
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
-import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.CameraWrapper
-import java.nio.ByteBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
@@ -33,7 +28,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
                              private var cameraWrapper: CameraWrapper? = null,
                              private var render: Render? = null,
                              private var muxer: Muxer? = MuxerImpl("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"))
-    : SurfaceTexture.OnFrameAvailableListener, Encoder.OnSampleListener {
+    : SurfaceTexture.OnFrameAvailableListener {
 
     private var onStateListener: OnStateListener? = null
 
@@ -48,42 +43,6 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     fun getFilter(): BaseFilter? {
         return render?.getFilter()
-    }
-
-    override fun onFormatChanged(encoder: Encoder, format: MediaFormat) {
-        if (encoder is AudioEncoderImpl) {
-            debug_e("Add audio track")
-            muxer?.addAudioTrack(format)
-        } else {
-            muxer?.addVideoTrack(format)
-        }
-    }
-
-    /**
-     * 编码后的帧数据
-     * For VideoEncoderImpl
-     */
-    override fun onSample(encoder: Encoder, info: MediaCodec.BufferInfo, data: ByteBuffer) {
-//        debug_e("BufferInfo[${data[0]},${data[1]},${data[2]},${data[3]},${data[4]}," +
-//                "${data[5]},${data[6]},${data[7]},${data[8]}," +
-//                "${data[9]},${data[10]},${data[11]},${data[12]}," +
-//                "${data[13]},${data[14]},${data[15]},${data[16]},]" +
-//                "(size=${info.size}, " +
-//                "timestamp=${info.presentationTimeUs}," +
-//                "offset=${info.offset}," +
-//                "flags=${info.flags})")
-//        if (info.flags == 2) {
-//            var msg = ""
-//            for (i in 0 until info.size) {
-//                msg += "${data[i]}, "
-//            }
-//            debug_e(msg)
-//        }
-        if (encoder is AudioEncoderImpl) {
-            muxer?.writeAudioSample(Sample.wrap(info, data))
-        } else {
-            muxer?.writeVideoSample(Sample.wrap(info, data))
-        }
     }
 
     /**
@@ -101,9 +60,11 @@ class CameraPreviewPresenter(var parameter: Parameter,
         render?.start(screenTexture, width, height, Runnable {
             encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
                     cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
-            encoder!!.setOnSampleListener(this@CameraPreviewPresenter)
             audioEncoder = AudioEncoderImpl(parameter)
-            audioEncoder!!.setOnSampleListener(this@CameraPreviewPresenter)
+            if (null != muxer) {
+                encoder!!.setOnSampleListener(muxer!!)
+                audioEncoder!!.setOnSampleListener(muxer!!)
+            }
         })
     }
 
