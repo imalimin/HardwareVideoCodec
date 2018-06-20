@@ -1,18 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 # include $(call all-subdir-makefiles)
 
-ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
-    include $(CLEAR_VARS)
-    LOCAL_MODULE := libyuv
-    LOCAL_SRC_FILES := lib/arm64-v8a/libyuv.so
-    include $(PREBUILT_SHARED_LIBRARY)
-
-    include $(CLEAR_VARS)
-    LOCAL_MODULE := libx264
-    LOCAL_SRC_FILES := lib/arm64-v8a/libx264.so
-    include $(PREBUILT_SHARED_LIBRARY)
-endif
-
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     include $(CLEAR_VARS)
     LOCAL_MODULE := libyuv
@@ -56,8 +44,6 @@ LOCAL_MODULE := codec
 LOCAL_SRC_FILES := com_lmy_codec_helper_GLHelper.c \
     Java_com_lmy_codec_x264_X264Encoder.cpp \
     X264Encoder.cpp \
-#    JNI_X265Encoder.cpp \
-#    X265Encoder.cpp \
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     # 采用NEON优化技术
