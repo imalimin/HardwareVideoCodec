@@ -8,9 +8,7 @@ package com.lmy.codec.wrapper
 
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Message
+import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CameraHelper
 import com.lmy.codec.util.debug_e
@@ -20,8 +18,7 @@ import com.lmy.codec.util.debug_v
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
 class CameraWrapper(private var parameter: Parameter,
-                    private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener,
-                    var textureWrapper: CameraTextureWrapper = CameraTextureWrapper()) {
+                    private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener) {
     companion object {
         private val PREPARE = 0x1
         fun open(param: Parameter, onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener)
@@ -30,33 +27,25 @@ class CameraWrapper(private var parameter: Parameter,
         }
     }
 
-    private var mHandlerThread = HandlerThread("Camera_Thread")
-    private var mHandler: Handler? = null
     private var mCamera: Camera? = null
     private var mCameras = 0
     private var mCameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK
+    lateinit var textureWrapper: CameraTextureWrapper
 
     private var mPrepare = false
     private var mRequestPreview = false
 
     init {
         mCameras = CameraHelper.getNumberOfCameras()
-        initThread()
-        mHandler?.removeMessages(PREPARE)
-        mHandler?.sendEmptyMessage(PREPARE)
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            textureWrapper = CameraTextureWrapper(parameter.video.width, parameter.video.height)
+        })
+        SingleEventPipeline.instance.queueEvent(Runnable { prepare() })
     }
 
-    private fun initThread() {
-        mHandlerThread.start()
-        mHandler = object : Handler(mHandlerThread.looper) {
-            override fun handleMessage(msg: Message) {
-                when (msg.what) {
-                    PREPARE -> {
-                        prepare()
-                    }
-                }
-            }
-        }
+    fun after(runnable: Runnable): CameraWrapper {
+        SingleEventPipeline.instance.queueEvent(runnable)
+        return this
     }
 
     private fun prepare() {
@@ -158,7 +147,6 @@ class CameraWrapper(private var parameter: Parameter,
             debug_e("Stop preview failed")
             e.printStackTrace()
         }
-        mHandlerThread.quitSafely()
     }
 
     private fun releaseTexture() {

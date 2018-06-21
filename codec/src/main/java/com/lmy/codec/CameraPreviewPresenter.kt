@@ -13,6 +13,7 @@ import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.impl.AudioEncoderImpl
 import com.lmy.codec.impl.MuxerImpl
+import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -32,8 +33,11 @@ class CameraPreviewPresenter(var parameter: Parameter,
     private var onStateListener: OnStateListener? = null
 
     init {
+        SingleEventPipeline.instance.start()
         cameraWrapper = CameraWrapper.open(parameter, this)
-        render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper)
+                .after(Runnable {
+                    render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper)
+                })
     }
 
     fun setFilter(filter: Class<*>) {
@@ -73,6 +77,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     fun stopPreview() {
         release()
+        SingleEventPipeline.instance.quit()
     }
 
     private fun release() {

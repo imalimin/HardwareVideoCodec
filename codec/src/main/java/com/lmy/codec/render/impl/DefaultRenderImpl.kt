@@ -8,9 +8,7 @@ package com.lmy.codec.render.impl
 
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Message
+import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -36,53 +34,10 @@ class DefaultRenderImpl(var parameter: Parameter,
                         var cameraHeight: Int = 0)
     : Render {
 
-    companion object {
-        val INIT = 0x1
-        val RENDER = 0x2
-        val STOP = 0x3
-        val FILTER = 0x4
-    }
-
     private val filterLock = Any()
     private lateinit var filter: BaseFilter
-    private var mHandlerThread = HandlerThread("Renderer_Thread")
-    private var mHandler: Handler? = null
-    private var afterRunnable: Runnable? = null
-
-    init {
-        mHandlerThread.start()
-        mHandler = object : Handler(mHandlerThread.looper) {
-            override fun handleMessage(msg: Message) {
-                when (msg.what) {
-                    INIT -> {
-                        init()
-                        runAfter()
-                    }
-                    RENDER -> {
-                        draw()
-                    }
-                    STOP -> {
-                        mHandlerThread.quitSafely()
-                        screenWrapper?.release()
-                        filter?.release()
-                    }
-                    FILTER -> {
-                        initFilter(msg.obj as Class<*>)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun runAfter() {
-        if (null != afterRunnable) {
-            afterRunnable?.run()
-            afterRunnable = null
-        }
-    }
 
     fun init() {
-        cameraWrapper.initEGL(parameter.video.width, parameter.video.height)
         initFilter(NormalFilter::class.java)
     }
 
@@ -111,6 +66,7 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     override fun draw() {
+        if (null == screenWrapper) return
         drawCamera()
         drawFilter()
         screenWrapper?.egl?.makeCurrent()
@@ -124,10 +80,9 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     private fun drawFilter() {
         synchronized(filterLock) {
-            if (null == filter) return
             GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-            filter?.drawTexture(null)
+            filter.drawTexture(null)
         }
     }
 
@@ -148,11 +103,11 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int, runnable: Runnable?) {
-        afterRunnable = runnable
         updateScreenTexture(texture)
         initViewport(width, height)
-        if (mHandlerThread.isAlive)
-            mHandler?.sendEmptyMessage(INIT)
+        SingleEventPipeline.instance.queueEvent(Runnable { init() })
+        if (null != runnable)
+            SingleEventPipeline.instance.queueEvent(runnable)
     }
 
     private fun initViewport(width: Int, height: Int) {
@@ -191,11 +146,11 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     override fun stop() {
-        try {
-            if (mHandlerThread.isAlive)
-                mHandler?.sendEmptyMessage(STOP)
-        } catch (e: Exception) {
-        }
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            screenWrapper?.release()
+            filter.release()
+            screenWrapper = null
+        })
     }
 
     override fun release() {
@@ -203,11 +158,7 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     override fun onFrameAvailable(): Render {
-        try {
-            if (mHandlerThread.isAlive)
-                mHandler?.sendEmptyMessage(RENDER)
-        } catch (e: Exception) {
-        }
+        SingleEventPipeline.instance.queueEvent(Runnable { draw() })
         return this
     }
 
@@ -220,8 +171,9 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     override fun setFilter(filter: Class<*>) {
-        mHandler?.removeMessages(FILTER)
-        mHandler?.sendMessage(mHandler?.obtainMessage(FILTER, filter))
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            initFilter(filter)
+        })
     }
 
     override fun getFilter(): BaseFilter {
