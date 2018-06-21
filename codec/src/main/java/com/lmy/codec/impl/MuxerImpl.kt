@@ -136,7 +136,11 @@ class MuxerImpl(var path: String,
         mHandlerThread.quitSafely()
         mAudioThread.quitSafely()
         if (mStart) {
-            muxer?.stop()
+            try {
+                muxer?.stop()
+            } catch (e: IllegalStateException) {
+                e.printStackTrace()
+            }
         }
         muxer?.release()
     }
