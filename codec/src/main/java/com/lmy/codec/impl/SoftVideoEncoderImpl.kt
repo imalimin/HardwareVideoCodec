@@ -14,13 +14,11 @@ import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.opengl.GLES30
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Message
 import com.lmy.codec.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.helper.GLHelper
+import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
@@ -54,15 +52,12 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     companion object {
         val PBO_COUNT = 2
-        val INIT = 0x1
-        val ENCODE = 0x2
         val STOP = 0x3
     }
 
     private lateinit var format: MediaFormat
     private var mirrorTexture: BaseFrameBufferTexture
-    private var mHandlerThread = HandlerThread("Encode_Thread")
-    private var mHandler: Handler? = null
+    private var mPipeline = EventPipeline.create("EncodePipeline")
     private val mEncodingSyn = Any()
     private var mEncoding = false
     //For PBO
@@ -79,11 +74,12 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     init {
         initCodec()
         initPixelsCache()
-        initThread()
         mirrorTexture = MirrorTexture(parameter.video.width,
                 parameter.video.height, textureId)
-        mHandler?.removeMessages(VideoEncoderImpl.INIT)
-        mHandler?.sendEmptyMessage(VideoEncoderImpl.INIT)
+        mPipeline.queueEvent(Runnable {
+            pTimer.reset()
+            inited = true
+        })
     }
 
     private fun initCodec() {
@@ -117,36 +113,11 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
         debug_e("initPBOs(" + pbos[0] + ", " + pbos[1] + ")")
     }
 
-    private fun initThread() {
-        mHandlerThread.start()
-        mHandler = object : Handler(mHandlerThread.looper) {
-            override fun handleMessage(msg: Message) {
-                when (msg.what) {
-                    INIT -> {
-                        pTimer.reset()
-                        inited = true
-                    }
-                    ENCODE -> {
-                        synchronized(mEncodingSyn) {
-                            if (mEncoding)
-                                encode()
-                        }
-                    }
-                    STOP -> {
-                        mHandlerThread.quitSafely()
-                        codec?.release()
-                        val listener = msg.obj
-                        if (null != listener)
-                            (listener as Encoder.OnStopListener).onStop()
-                    }
-                }
-            }
-        }
-    }
-
     private fun encode() {
-        if (srcBuffer == null) return
-        codec?.encode(srcBuffer!!)
+        synchronized(mEncodingSyn) {
+            if (srcBuffer == null || !mEncoding) return
+            codec?.encode(srcBuffer!!)
+        }
     }
 
     private fun readPixels() {
@@ -238,16 +209,18 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     override fun stop(listener: Encoder.OnStopListener?) {
         pause()
-        mHandler?.removeMessages(VideoEncoderImpl.STOP)
-        mHandler?.sendMessage(mHandler!!.obtainMessage(VideoEncoderImpl.STOP, listener))
+        mPipeline.queueEvent(Runnable {
+            codec?.release()
+            listener?.onStop()
+        })
+        mPipeline.quit()
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
             if (mEncoding && inited) {
                 readPixels(isSupportPbo)
-                mHandler?.removeMessages(VideoEncoderImpl.ENCODE)
-                mHandler?.sendEmptyMessage(VideoEncoderImpl.ENCODE)
+                mPipeline.queueEvent(Runnable { encode() })
             }
         }
     }
