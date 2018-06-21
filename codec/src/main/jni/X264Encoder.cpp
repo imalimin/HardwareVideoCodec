@@ -125,7 +125,10 @@ X264Encoder::X264Encoder() {
 }
 
 X264Encoder::~X264Encoder() {
-    reset();
+    if (encoder) {
+        free(encoder);
+        encoder = NULL;
+    }
 }
 
 bool X264Encoder::start() {
@@ -172,7 +175,6 @@ void X264Encoder::stop() {
     if (encoder->handle) {
         x264_encoder_close(encoder->handle);
     }
-    free(encoder);
     LOGI("X264Encoder stop");
 }
 
@@ -290,8 +292,4 @@ bool X264Encoder::encodeHeader(char *dest, int *s, int *type) {
 void X264Encoder::reset() {
     state = INVALID;
     hasNalHeader = false;
-    if (encoder) {
-        free(encoder);
-        encoder = NULL;
-    }
 }
