@@ -8,6 +8,7 @@ package com.lmy.codec.wrapper
 
 import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
+import android.opengl.GLES11Ext
 import com.lmy.codec.entity.Egl
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.CameraTexture
@@ -17,28 +18,23 @@ import com.lmy.codec.util.debug_e
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class CameraTextureWrapper : TextureWrapper() {
+class CameraTextureWrapper(width: Int,
+                           height: Int) : TextureWrapper() {
 
     init {
-        /**
-         * 使用createTexture()会一直返回0，导致一些错误
-         */
-        textureId = 10
-        intTexture()
-    }
-
-    fun initEGL(width: Int, height: Int) {
         egl = Egl()
         egl!!.initEGL()
         egl!!.makeCurrent()
+        textureId = createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES)
         texture = CameraTexture(width, height, textureId!!)
-        debug_e("camera textureId: $textureId")
+        intTexture()
     }
 
     @SuppressLint("Recycle")
     private fun intTexture() {
         if (null != textureId)
             surfaceTexture = SurfaceTexture(textureId!!)
+        debug_e("camera textureId: $textureId")
     }
 
     private fun checkTexture() {
