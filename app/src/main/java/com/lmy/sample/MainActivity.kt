@@ -18,7 +18,7 @@ import android.widget.SeekBar
 import com.lmy.codec.CameraPreviewPresenter
 import com.lmy.codec.loge
 import com.lmy.codec.texture.impl.filter.*
-import com.lmy.codec.util.debug_v
+import com.lmy.codec.util.debug_e
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         twoBar.setOnSeekBarChangeListener(this)
         thBar.setOnSeekBarChangeListener(this)
         fBar.setOnSeekBarChangeListener(this)
-        loge("Permission: " + !PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
+        loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
         mPresenter = CameraPreviewPresenter(com.lmy.codec.entity.Parameter(this))
@@ -73,6 +73,12 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
     override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
         mPresenter.stopPreview()
         return true
+    }
+
+    override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
+        if (null != p0)
+            mPresenter.startPreview(p0, p1, p2)
+        debug_e("onSurfaceTextureAvailable")
     }
 
     private fun showFilterDialog() {
@@ -209,12 +215,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         }
     }
 
-    override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
-        if (null != p0)
-            mPresenter.startPreview(p0, p1, p2)
-        debug_v("onSurfaceTextureAvailable")
-    }
-
     private fun showPermissionsDialog() {
         AlertDialog.Builder(this)
                 .setMessage("Please grant permission in the permission settings")
@@ -257,5 +257,10 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        debug_e("onDestroy")
     }
 }
