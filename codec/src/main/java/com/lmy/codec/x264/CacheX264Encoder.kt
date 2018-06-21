@@ -38,14 +38,13 @@ class CacheX264Encoder(frameSize: Int,
     }
 
     override fun stop() {
-        mEncodeThread.interrupt()
-        codec.stop()
-    }
-
-    override fun release() {
         if (!running) return
         running = false
         mEncodeThread.interrupt()
+    }
+
+    override fun release() {
+        stop()
     }
 
     override fun run() {

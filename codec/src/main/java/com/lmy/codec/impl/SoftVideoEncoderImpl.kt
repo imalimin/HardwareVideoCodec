@@ -209,10 +209,8 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     override fun stop(listener: Encoder.OnStopListener?) {
         pause()
-        mPipeline.queueEvent(Runnable {
-            codec?.release()
-            listener?.onStop()
-        })
+        codec?.release()
+        listener?.onStop()
         mPipeline.quit()
     }
 

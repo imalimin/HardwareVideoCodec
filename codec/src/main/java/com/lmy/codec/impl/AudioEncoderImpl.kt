@@ -40,7 +40,6 @@ class AudioEncoderImpl(var parameter: Parameter,
         private val WAIT_TIME = 10000L
         val INIT = 0x1
         val ENCODE = 0x2
-        val STOP = 0x3
     }
 
     private lateinit var format: MediaFormat
@@ -85,18 +84,6 @@ class AudioEncoderImpl(var parameter: Parameter,
                     }
                     ENCODE -> {
                         encode(msg.obj as ByteArray)
-                    }
-                    STOP -> {
-                        while (dequeue()) {//取出编码器中剩余的帧
-                        }
-                        debug_e("Audio encoder stop")
-                        codec!!.stop()
-                        codec!!.release()
-                        audioWrapper?.stop()
-                        mHandlerThread.quitSafely()
-                        val listener = msg.obj
-                        if (null != listener)
-                            (listener as Encoder.OnStopListener).onStop()
                     }
                 }
             }
@@ -198,8 +185,14 @@ class AudioEncoderImpl(var parameter: Parameter,
 
     override fun stop(listener: Encoder.OnStopListener?) {
         pause()
-        mHandler?.removeMessages(STOP)
-        mHandler?.sendMessage(mHandler!!.obtainMessage(STOP, listener))
+        debug_e("Audio encoder dequeue")
+        while (dequeue()) {//取出编码器中剩余的帧
+        }
+        codec!!.stop()
+        codec!!.release()
+        audioWrapper?.stop()
+        mHandlerThread.quitSafely()
+        listener?.onStop()
     }
 
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
