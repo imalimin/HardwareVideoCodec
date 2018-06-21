@@ -8,8 +8,8 @@ package com.lmy.codec.render.impl
 
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
-import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.entity.Parameter
+import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
@@ -25,7 +25,6 @@ class DefaultRenderImpl(var parameter: Parameter,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
-                        private var runnable: Runnable? = null,
                         var width: Int = 1,
                         var height: Int = 1,
                         private var viewportX: Int = 0,
@@ -41,7 +40,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         initFilter(NormalFilter::class.java)
     }
 
-    fun initFilter(clazz: Class<*>) {
+    private fun initFilter(clazz: Class<*>) {
         synchronized(filterLock) {
             try {
                 filter = clazz.newInstance() as BaseFilter
@@ -75,7 +74,6 @@ class DefaultRenderImpl(var parameter: Parameter,
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         screenWrapper?.drawTexture(transformMatrix)
         screenWrapper?.egl?.swapBuffers()
-        runnable?.run()
     }
 
     private fun drawFilter() {
@@ -99,15 +97,9 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {
-        start(texture, width, height, null)
-    }
-
-    override fun start(texture: SurfaceTexture, width: Int, height: Int, runnable: Runnable?) {
         updateScreenTexture(texture)
         initViewport(width, height)
         SingleEventPipeline.instance.queueEvent(Runnable { init() })
-        if (null != runnable)
-            SingleEventPipeline.instance.queueEvent(runnable)
     }
 
     private fun initViewport(width: Int, height: Int) {
@@ -157,17 +149,16 @@ class DefaultRenderImpl(var parameter: Parameter,
         stop()
     }
 
-    override fun onFrameAvailable(): Render {
+    override fun onFrameAvailable() {
         SingleEventPipeline.instance.queueEvent(Runnable { draw() })
-        return this
     }
 
     fun updateScreenTexture(texture: SurfaceTexture?) {
         screenTexture = texture
     }
 
-    override fun afterRender(runnable: Runnable) {
-        this.runnable = runnable
+    override fun post(runnable: Runnable) {
+        SingleEventPipeline.instance.queueEvent(runnable)
     }
 
     override fun setFilter(filter: Class<*>) {

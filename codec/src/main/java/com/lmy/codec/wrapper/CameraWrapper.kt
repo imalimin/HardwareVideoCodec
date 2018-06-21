@@ -8,9 +8,9 @@ package com.lmy.codec.wrapper
 
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
-import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CameraHelper
+import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 
@@ -32,18 +32,16 @@ class CameraWrapper(private var parameter: Parameter,
     private var mCameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK
     lateinit var textureWrapper: CameraTextureWrapper
 
-    private var mPrepare = false
-    private var mRequestPreview = false
-
     init {
         mCameras = CameraHelper.getNumberOfCameras()
         SingleEventPipeline.instance.queueEvent(Runnable {
             textureWrapper = CameraTextureWrapper(parameter.video.width, parameter.video.height)
+            textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
         })
         SingleEventPipeline.instance.queueEvent(Runnable { prepare() })
     }
 
-    fun after(runnable: Runnable): CameraWrapper {
+    fun post(runnable: Runnable): CameraWrapper {
         SingleEventPipeline.instance.queueEvent(runnable)
         return this
     }
@@ -61,7 +59,10 @@ class CameraWrapper(private var parameter: Parameter,
         val time = System.currentTimeMillis()
         mCamera = openCamera(mCameraIndex)
         debug_e("open time: ${System.currentTimeMillis() - time}")
-        if (null == mCamera) return
+        if (null == mCamera) {
+            debug_e("mCamera is null!")
+            return
+        }
         val cameraParam = mCamera!!.parameters
         CameraHelper.setPreviewSize(cameraParam, parameter)
         CameraHelper.setColorFormat(cameraParam, parameter)
@@ -85,14 +86,9 @@ class CameraWrapper(private var parameter: Parameter,
                 "VideoStabilization(${cameraParam.videoStabilization})")
         try {
             mCamera!!.parameters = cameraParam
-            mPrepare = true
-            if (mRequestPreview) {
-                startPreview()
-                mRequestPreview = false
-                mPrepare = false
-            }
+            debug_e("Camera config")
         } catch (e: Exception) {
-            mCamera!!.release()
+            mCamera?.release()
             debug_e("Camera $mCameraIndex open failed. Please check parameters")
         }
     }
@@ -115,25 +111,22 @@ class CameraWrapper(private var parameter: Parameter,
     }
 
     fun release() {
-        if (null == mCamera) return
         stopPreview()
         releaseTexture()
     }
 
-    fun startPreview(): Boolean {
-        mRequestPreview = true
-        if (!mPrepare) return false
-        if (null == mCamera) return false
-        textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
-        return try {
+    fun startPreview() {
+        if (null == mCamera) {
+            debug_e("Start preview failed, mCamera is null")
+            return
+        }
+        try {
             mCamera!!.setPreviewTexture(textureWrapper.surfaceTexture)
             mCamera!!.startPreview()
-            true
         } catch (e: Exception) {
             release()
             debug_e("Start preview failed")
             e.printStackTrace()
-            false
         }
     }
 

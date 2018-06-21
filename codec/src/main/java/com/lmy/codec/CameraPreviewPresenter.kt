@@ -35,7 +35,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
     init {
         SingleEventPipeline.instance.start()
         cameraWrapper = CameraWrapper.open(parameter, this)
-                .after(Runnable {
+                .post(Runnable {
                     render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper)
                 })
     }
@@ -53,21 +53,25 @@ class CameraPreviewPresenter(var parameter: Parameter,
      * For CameraWrapper
      */
     override fun onFrameAvailable(cameraTexture: SurfaceTexture?) {
-        render?.onFrameAvailable()?.afterRender(Runnable {
+        render?.onFrameAvailable()
+        render?.post(Runnable {
             encoder?.onFrameAvailable(cameraTexture)
         })
     }
 
     fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
-        cameraWrapper!!.startPreview()
-        render?.start(screenTexture, width, height, Runnable {
-            encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
-                    cameraWrapper!!.textureWrapper?.egl!!.eglContext!!)
-            audioEncoder = AudioEncoderImpl(parameter)
-            if (null != muxer) {
-                encoder!!.setOnSampleListener(muxer!!)
-                audioEncoder!!.setOnSampleListener(muxer!!)
-            }
+        cameraWrapper?.post(Runnable {
+            cameraWrapper!!.startPreview()
+            render?.start(screenTexture, width, height)
+            render?.post(Runnable {
+                encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
+                        cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+                audioEncoder = AudioEncoderImpl(parameter)
+                if (null != muxer) {
+                    encoder!!.setOnSampleListener(muxer!!)
+                    audioEncoder!!.setOnSampleListener(muxer!!)
+                }
+            })
         })
     }
 
@@ -96,15 +100,11 @@ class CameraPreviewPresenter(var parameter: Parameter,
     }
 
     private fun stopEncoder() {
-        encoder?.stop(object : Encoder.OnStopListener {
-            override fun onStop() {
-                audioEncoder?.stop(object : Encoder.OnStopListener {
-                    override fun onStop() {
-                        muxer?.release()
-                        onStateListener?.onStop()
-                    }
-                })
-            }
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            encoder?.stop()
+            audioEncoder?.stop()
+            muxer?.release()
+            onStateListener?.onStop()
         })
     }
 
