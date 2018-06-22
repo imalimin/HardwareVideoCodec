@@ -22,7 +22,7 @@ class CameraTextureWrapper(width: Int,
                            height: Int) : TextureWrapper() {
 
     init {
-        egl = Egl()
+        egl = Egl("Camera")
         egl!!.initEGL()
         egl!!.makeCurrent()
         textureId = createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES)

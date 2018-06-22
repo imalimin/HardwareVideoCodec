@@ -10,11 +10,11 @@ package com.lmy.codec
 import android.graphics.SurfaceTexture
 import android.os.Environment
 import com.lmy.codec.encoder.Encoder
+import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecFactory
-import com.lmy.codec.encoder.impl.AudioEncoderImpl
-import com.lmy.codec.muxer.impl.MuxerImpl
 import com.lmy.codec.muxer.Muxer
+import com.lmy.codec.muxer.impl.MuxerImpl
 import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
@@ -89,13 +89,10 @@ class CameraPreviewPresenter(var parameter: Parameter,
     private fun release() {
         stopEncoder()
         try {
-            render?.release()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        try {
             cameraWrapper?.release()
             cameraWrapper = null
+            render?.release()
+            render = null
         } catch (e: Exception) {
             e.printStackTrace()
         }

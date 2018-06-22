@@ -89,7 +89,7 @@ class DefaultRenderImpl(var parameter: Parameter,
             cameraWrapper.surfaceTexture?.updateTexImage()
             cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
-        cameraWrapper.egl?.makeCurrent("cameraWrapper")
+        cameraWrapper.egl?.makeCurrent()
         GLES20.glViewport(0, 0, parameter.previewHeight, parameter.previewWidth)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
@@ -140,8 +140,8 @@ class DefaultRenderImpl(var parameter: Parameter,
     override fun stop() {
         SingleEventPipeline.instance.queueEvent(Runnable {
             screenWrapper?.release()
-            filter.release()
             screenWrapper = null
+            filter.release()
         })
     }
 

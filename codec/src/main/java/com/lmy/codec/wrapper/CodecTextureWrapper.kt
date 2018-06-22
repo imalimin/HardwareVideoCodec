@@ -19,7 +19,7 @@ class CodecTextureWrapper(var surface: Surface,
                           override var textureId: Int?,
                           var eglContext: EGLContext? = null) : TextureWrapper() {
     init {
-        egl = Egl()
+        egl = Egl("Codec")
         egl!!.initEGL(surface, eglContext)
         egl!!.makeCurrent()
         if (null == textureId)

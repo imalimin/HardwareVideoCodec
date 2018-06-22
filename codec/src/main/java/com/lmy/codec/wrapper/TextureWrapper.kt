@@ -37,9 +37,12 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
 
     open fun release() {
         egl?.release()
-        if (null != surfaceTexture) {
-            surfaceTexture!!.release()
-            surfaceTexture = null
-        }
+        egl = null
+        texture?.release()
+        texture = null
+        surfaceTexture?.release()
+        surfaceTexture = null
+        if (null != textureId)
+            GLES20.glDeleteTextures(1, intArrayOf(textureId!!), 0)
     }
 }

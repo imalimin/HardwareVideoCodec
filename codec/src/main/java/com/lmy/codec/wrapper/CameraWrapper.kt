@@ -111,8 +111,10 @@ class CameraWrapper(private var parameter: Parameter,
     }
 
     fun release() {
-        stopPreview()
-        releaseTexture()
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            stopPreview()
+            releaseTexture()
+        })
     }
 
     fun startPreview() {
@@ -133,6 +135,8 @@ class CameraWrapper(private var parameter: Parameter,
     private fun stopPreview() {
         if (null == mCamera) return
         try {
+            mCamera!!.setPreviewTexture(null)
+            mCamera!!.setPreviewCallback(null)
             mCamera!!.stopPreview()
             mCamera!!.release()
             mCamera = null

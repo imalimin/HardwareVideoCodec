@@ -21,7 +21,7 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
                            var eglContext: EGLContext? = null) : TextureWrapper() {
     init {
         if (null != surfaceTexture) {
-            egl = Egl()
+            egl = Egl("Screen")
             egl!!.initEGL(surfaceTexture!!, eglContext)
             egl!!.makeCurrent()
             if (null == textureId)

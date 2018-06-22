@@ -174,7 +174,10 @@ class VideoEncoderImpl(var parameter: Parameter,
         codec!!.signalEndOfInputStream()
         codec!!.stop()
         codec!!.release()
-        codecWrapper?.release()
+        mPipeline.queueEvent(Runnable {
+            codecWrapper?.release()
+            codecWrapper = null
+        })
         mPipeline.quit()
     }
 
