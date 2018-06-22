@@ -4,7 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec
+package com.lmy.codec.encoder
 
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
@@ -18,7 +18,6 @@ interface Encoder : SurfaceTexture.OnFrameAvailableListener {
     fun start()
     fun pause()
     fun stop()
-    fun stop(listener: OnStopListener?)
     fun setOnSampleListener(listener: OnSampleListener)
 
     interface OnSampleListener {

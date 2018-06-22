@@ -7,10 +7,10 @@
 package com.lmy.codec.helper
 
 import android.opengl.EGLContext
-import com.lmy.codec.Encoder
+import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.Parameter
-import com.lmy.codec.impl.SoftVideoEncoderImpl
-import com.lmy.codec.impl.VideoEncoderImpl
+import com.lmy.codec.encoder.impl.SoftVideoEncoderImpl
+import com.lmy.codec.encoder.impl.VideoEncoderImpl
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/25.
