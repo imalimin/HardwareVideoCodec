@@ -16,7 +16,8 @@ import javax.microedition.khronos.egl.EGL10
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class Egl(var eglDisplay: EGLDisplay? = null,
+class Egl(private val name: String,
+          var eglDisplay: EGLDisplay? = null,
           var eglConfig: EGLConfig? = null,
           var eglSurface: EGLSurface? = null,
           var eglContext: EGLContext? = null) {
@@ -182,18 +183,15 @@ class Egl(var eglDisplay: EGLDisplay? = null,
     }
 
     fun makeCurrent() {
-        makeCurrent(null)
-    }
-    fun makeCurrent(tag:String?) {
         if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
             //            throw new RuntimeException("eglMakeCurrent,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
-            debug_e("eglMakeCurrent,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError())+", $tag")
+            debug_e("$name makeCurrent failed: ${GLUtils.getEGLErrorString(EGL14.eglGetError())}")
         }
     }
 
     fun swapBuffers() {
         if (!EGL14.eglSwapBuffers(eglDisplay, eglSurface)) {
-            debug_e("eglSwapBuffers,failed!")
+            debug_e("$name swapBuffers,failed!")
         }
     }
 
