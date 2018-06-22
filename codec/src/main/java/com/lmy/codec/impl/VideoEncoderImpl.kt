@@ -12,13 +12,11 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Message
-import com.lmy.codec.Encoder
+import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
+import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CodecTextureWrapper
@@ -38,14 +36,10 @@ class VideoEncoderImpl(var parameter: Parameter,
 
     companion object {
         private val WAIT_TIME = 10000L
-        val INIT = 0x1
-        val ENCODE = 0x2
-        val STOP = 0x3
     }
 
     private lateinit var format: MediaFormat
-    private var mHandlerThread = HandlerThread("Encode_Thread")
-    private var mHandler: Handler? = null
+    private var mPipeline = EventPipeline.create("VideoEncodePipeline")
     private val mEncodingSyn = Any()
     private var mEncoding = false
 
@@ -56,9 +50,7 @@ class VideoEncoderImpl(var parameter: Parameter,
 
     init {
         initCodec()
-        initThread()
-        mHandler?.removeMessages(INIT)
-        mHandler?.sendEmptyMessage(INIT)
+        mPipeline.queueEvent(Runnable { init() })
     }
 
     private fun initCodec() {
@@ -79,39 +71,6 @@ class VideoEncoderImpl(var parameter: Parameter,
         }
     }
 
-    private fun initThread() {
-        mHandlerThread.start()
-        mHandler = object : Handler(mHandlerThread.looper) {
-            override fun handleMessage(msg: Message) {
-                when (msg.what) {
-                    INIT -> {
-                        init()
-                    }
-                    ENCODE -> {
-                        synchronized(mEncodingSyn) {
-                            if (mEncoding)
-                                encode()
-                        }
-                    }
-                    STOP -> {
-                        while (dequeue()) {//取出编码器中剩余的帧
-                        }
-                        debug_e("Video encoder stop")
-                        //编码结束，发送结束信号，让surface不在提供数据
-                        codec!!.signalEndOfInputStream()
-                        codec!!.stop()
-                        codec!!.release()
-                        codecWrapper?.release()
-                        mHandlerThread.quitSafely()
-                        val listener = msg.obj
-                        if (null != listener)
-                            (listener as Encoder.OnStopListener).onStop()
-                    }
-                }
-            }
-        }
-    }
-
     private fun init() {
         if (null == codec) {
             debug_e("codec is null")
@@ -125,23 +84,21 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
-        synchronized(mEncodingSyn) {
-            if (mEncoding) {
-                mHandler?.removeMessages(ENCODE)
-                mHandler?.sendEmptyMessage(ENCODE)
-            }
-        }
+        if (!mEncoding) return
+        mPipeline.queueEvent(Runnable { encode() })
     }
 
     private fun encode() {
-        pTimer.record()
-        codecWrapper?.egl?.makeCurrent()
-        GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-        GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        codecWrapper?.drawTexture(null)
-        codecWrapper?.egl?.swapBuffers()
-        dequeue()
+        synchronized(mEncodingSyn) {
+            pTimer.record()
+            codecWrapper?.egl?.makeCurrent()
+            GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
+            codecWrapper?.drawTexture(null)
+            codecWrapper?.egl?.swapBuffers()
+            dequeue()
+        }
     }
 
     /**
@@ -209,13 +166,16 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     override fun stop() {
-        stop(null)
-    }
-
-    override fun stop(listener: Encoder.OnStopListener?) {
         pause()
-        mHandler?.removeMessages(STOP)
-        mHandler?.sendMessage(mHandler!!.obtainMessage(STOP, listener))
+        while (dequeue()) {//取出编码器中剩余的帧
+        }
+        debug_e("Video encoder stop")
+        //编码结束，发送结束信号，让surface不在提供数据
+        codec!!.signalEndOfInputStream()
+        codec!!.stop()
+        codec!!.release()
+        codecWrapper?.release()
+        mPipeline.quit()
     }
 
     class PresentationTimer(var fps: Int,

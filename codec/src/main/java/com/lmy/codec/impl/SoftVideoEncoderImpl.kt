@@ -14,7 +14,7 @@ import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.opengl.GLES30
-import com.lmy.codec.Encoder
+import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.helper.GLHelper
@@ -57,7 +57,7 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
 
     private lateinit var format: MediaFormat
     private var mirrorTexture: BaseFrameBufferTexture
-    private var mPipeline = EventPipeline.create("EncodePipeline")
+    private var mPipeline = EventPipeline.create("VideoEncodePipeline")
     private val mEncodingSyn = Any()
     private var mEncoding = false
     //For PBO
@@ -204,14 +204,11 @@ class SoftVideoEncoderImpl(var parameter: Parameter,
     }
 
     override fun stop() {
-        stop(null)
-    }
-
-    override fun stop(listener: Encoder.OnStopListener?) {
         pause()
+        debug_e("Video encoder stopping")
         codec?.release()
-        listener?.onStop()
         mPipeline.quit()
+        debug_e("Video encoder stop")
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {

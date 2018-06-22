@@ -10,13 +10,11 @@ import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Message
-import com.lmy.codec.Encoder
+import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
+import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.AudioRecordWrapper
@@ -38,22 +36,17 @@ class AudioEncoderImpl(var parameter: Parameter,
 
     companion object {
         private val WAIT_TIME = 10000L
-        val INIT = 0x1
-        val ENCODE = 0x2
     }
 
     private lateinit var format: MediaFormat
-    private var mHandlerThread = HandlerThread("Encode_Thread")
-    private var mHandler: Handler? = null
+    private var mPipeline = EventPipeline.create("AudioEncodePipeline")
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var onSampleListener: Encoder.OnSampleListener? = null
 
     init {
         initCodec()
-        initThread()
-        mHandler?.removeMessages(INIT)
-        mHandler?.sendEmptyMessage(INIT)
+        mPipeline.queueEvent(Runnable { init() })
     }
 
     private fun initCodec() {
@@ -74,22 +67,6 @@ class AudioEncoderImpl(var parameter: Parameter,
         }
     }
 
-    private fun initThread() {
-        mHandlerThread.start()
-        mHandler = object : Handler(mHandlerThread.looper) {
-            override fun handleMessage(msg: Message) {
-                when (msg.what) {
-                    INIT -> {
-                        init()
-                    }
-                    ENCODE -> {
-                        encode(msg.obj as ByteArray)
-                    }
-                }
-            }
-        }
-    }
-
     private fun init() {
         pTimer.reset()
         codec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
@@ -99,30 +76,28 @@ class AudioEncoderImpl(var parameter: Parameter,
     }
 
     private fun encode(buffer: ByteArray) {
-        try {
-            pTimer.record()
-            inputBuffers = codec!!.inputBuffers
-            outputBuffers = codec!!.outputBuffers
-            val inputBufferIndex = codec!!.dequeueInputBuffer(WAIT_TIME)
-            if (inputBufferIndex >= 0) {
-                val inputBuffer = inputBuffers!![inputBufferIndex]
-                inputBuffer.clear()
-                inputBuffer.put(buffer)
-                codec!!.queueInputBuffer(inputBufferIndex, 0, buffer.size, 0, 0)
+        synchronized(mEncodingSyn) {
+            try {
+                pTimer.record()
+                inputBuffers = codec!!.inputBuffers
+                outputBuffers = codec!!.outputBuffers
+                val inputBufferIndex = codec!!.dequeueInputBuffer(WAIT_TIME)
+                if (inputBufferIndex >= 0) {
+                    val inputBuffer = inputBuffers!![inputBufferIndex]
+                    inputBuffer.clear()
+                    inputBuffer.put(buffer)
+                    codec!!.queueInputBuffer(inputBufferIndex, 0, buffer.size, 0, 0)
+                }
+                dequeue()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-            dequeue()
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
     override fun onPCMSample(buffer: ByteArray) {
-        synchronized(mEncodingSyn) {
-            if (mEncoding) {
-                mHandler?.removeMessages(ENCODE)
-                mHandler?.sendMessage(mHandler!!.obtainMessage(ENCODE, buffer))
-            }
-        }
+        if (!mEncoding) return
+        mPipeline.queueEvent(Runnable { encode(buffer) })
     }
 
     @SuppressLint("WrongConstant", "SwitchIntDef")
@@ -180,19 +155,14 @@ class AudioEncoderImpl(var parameter: Parameter,
     }
 
     override fun stop() {
-        stop(null)
-    }
-
-    override fun stop(listener: Encoder.OnStopListener?) {
         pause()
-        debug_e("Audio encoder dequeue")
         while (dequeue()) {//取出编码器中剩余的帧
         }
         codec!!.stop()
         codec!!.release()
         audioWrapper?.stop()
-        mHandlerThread.quitSafely()
-        listener?.onStop()
+        mPipeline.quit()
+        debug_e("Audio encoder stop")
     }
 
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
