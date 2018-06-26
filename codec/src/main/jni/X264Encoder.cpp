@@ -34,8 +34,8 @@ static void fast() {
     /**
      * 运动估计算法
      */
-//    encoder->param->analyse.i_me_method = X264_ME_HEX;
-//    encoder->param->analyse.i_me_range = 16;
+    encoder->param->analyse.i_me_method = X264_ME_UMH;
+    encoder->param->analyse.i_me_range = 16;
 }
 
 static void quality() {
@@ -72,7 +72,7 @@ static void config() {
     x264_param_default_preset(encoder->param, "veryfast", "zerolatency");
     //开启多帧并行编码
     encoder->param->b_sliced_threads = 0;
-    encoder->param->i_threads = 4;
+    encoder->param->i_threads = X264_THREADS_AUTO;
     /**
      * 是否复制sps和pps放在每个关键帧的前面
      */
