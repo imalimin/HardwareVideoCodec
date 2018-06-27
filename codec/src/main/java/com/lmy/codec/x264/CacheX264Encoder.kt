@@ -23,13 +23,9 @@ class CacheX264Encoder(frameSize: Int,
     }
 
     fun encode(buffer: ByteBuffer) {
-        var data = cache?.pollCache() ?: return
+        val data = cache?.pollCache() ?: return
         buffer.position(0)
-        if (buffer.hasArray()) {
-            data = buffer.array()
-        } else {
-            buffer.get(data)
-        }
+        buffer.get(data)
         cache?.offer(data)
     }
 
