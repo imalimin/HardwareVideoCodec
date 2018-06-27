@@ -21,8 +21,8 @@ import com.lmy.codec.util.debug_e
 class AudioRecordWrapper(var parameter: Parameter,
                          private var bufferSize: Int = 0,
                          private var record: AudioRecord? = null,
-                         private var thread: Thread? = null,
-                         private var buffer: ByteArray? = null) : Runnable {
+                         private var thread: Thread? = null) : Runnable {
+    private var buffer: ByteArray
     private val mStartSyn = Any()
     private var mStart = true
     private var onPCMListener: OnPCMListener? = null
@@ -30,12 +30,9 @@ class AudioRecordWrapper(var parameter: Parameter,
     init {
         val minBufferSize = AudioRecord.getMinBufferSize(parameter.audio.sampleRateInHz,
                 AudioFormat.CHANNEL_IN_MONO, parameter.audio.pcm)
-        bufferSize = parameter.audio.samplePerFrame * parameter.video.fps
-        if (bufferSize < minBufferSize)
-            bufferSize = (minBufferSize / parameter.audio.samplePerFrame + 1) * parameter.audio.samplePerFrame * 2
-
+        bufferSize = minBufferSize
         debug_e("bufferSize: $bufferSize")
-        buffer = ByteArray(parameter.audio.samplePerFrame)
+        buffer = ByteArray(bufferSize)
         record = AudioRecord(MediaRecorder.AudioSource.MIC, parameter.audio.sampleRateInHz,
                 AudioFormat.CHANNEL_IN_MONO, parameter.audio.pcm, bufferSize)
         record?.startRecording()
@@ -44,8 +41,8 @@ class AudioRecordWrapper(var parameter: Parameter,
     }
 
     private fun read() {
-        val bufferReadResult = record!!.read(buffer, 0, parameter.audio.samplePerFrame)
-        onPCMListener?.onPCMSample(buffer!!)
+        val bufferReadResult = record!!.read(buffer, 0, buffer.size)
+        onPCMListener?.onPCMSample(buffer)
     }
 
     override fun run() {
