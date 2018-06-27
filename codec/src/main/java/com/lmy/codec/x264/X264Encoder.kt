@@ -128,8 +128,20 @@ class X264Encoder(private var format: MediaFormat,
         return outFormat!!
     }
 
+    /**
+     * 注意：返回一个与buffer共享内存的子buffer，子buffer的array()将返回整个buffer的内存空间。
+     *
+     * NOTE: Returns a subbuffer that shares memory with the buffer.
+     * The subarray's array() will return the entire buffer's memory space.
+     */
     fun getOutBuffer(): ByteBuffer {
-        return ByteBuffer.wrap(buffer!!.array(), 0, mBufferInfo.size)
+        if (null == buffer) {
+            throw RuntimeException("Please init buffer!")
+        }
+        buffer!!.position(0)
+        buffer!!.limit(mBufferInfo.size)
+        return buffer!!.slice()
+//        return ByteBuffer.wrap(buffer!!.array(), 0, mBufferInfo.size)
     }
 
     /**
