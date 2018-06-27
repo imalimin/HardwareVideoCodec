@@ -84,7 +84,7 @@ class CacheX264Encoder(frameSize: Int,
     }
 
     interface OnSampleListener {
-        abstract fun onFormatChanged(format: MediaFormat)
-        abstract fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer)
+        fun onFormatChanged(format: MediaFormat)
+        fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer)
     }
 }
