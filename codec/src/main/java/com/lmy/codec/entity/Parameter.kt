@@ -21,7 +21,7 @@ data class Parameter(var context: Context,
                      var previewWidth: Int = 1280,//以水平分辨率为准
                      var previewHeight: Int = 720,//以水平分辨率为准
                      var orientation: Int = 90,
-                     var codecType: CodecType = CodecType.SOFT) {
+                     var codecType: CodecType = CodecType.HARD) {
     fun check() {
         if (!isHorizontal() && !isVertical())
             throw RuntimeException("Orientation must be 0, 90, 180 or 270")
@@ -65,7 +65,7 @@ data class Parameter(var context: Context,
     data class Audio(var mime: String = "audio/mp4a-latm",
                      var channel: Int = 1,
                      var sampleRateInHz: Int = 44100,
-                     var bitrate: Int = 32 * 1024,
+                     var bitrate: Int = sampleRateInHz * 16,
                      var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
                      var pcm: Int = AudioFormat.ENCODING_PCM_16BIT)
 
