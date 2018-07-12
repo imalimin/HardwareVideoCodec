@@ -97,7 +97,7 @@ class AudioEncoderImpl(var parameter: Parameter,
 
     override fun onPCMSample(buffer: ByteArray) {
         if (!mEncoding) return
-        mPipeline.queueEvent(Runnable { encode(buffer) })
+        mPipeline.queueEvent(Runnable { encode(buffer.clone()) })
     }
 
     @SuppressLint("WrongConstant", "SwitchIntDef")
