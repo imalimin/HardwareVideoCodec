@@ -20,6 +20,9 @@ import com.lmy.codec.loge
  */
 class CodecHelper {
     companion object {
+        /**
+         * @param ignoreDevice 忽略设备兼容性检测
+         */
         fun createVideoFormat(parameter: Parameter, ignoreDevice: Boolean = false): MediaFormat? {
             val codecInfo = getCodecInfo(parameter.video.mime, true)
             if (!ignoreDevice && null == codecInfo) {//Unsupport codec type
