@@ -16,6 +16,7 @@ interface Render {
     fun onFrameAvailable()
     fun draw()
     fun start(texture: SurfaceTexture, width: Int, height: Int)
+    fun updateSize(width: Int, height: Int)
     fun stop()
     fun release()
     fun post(runnable: Runnable)

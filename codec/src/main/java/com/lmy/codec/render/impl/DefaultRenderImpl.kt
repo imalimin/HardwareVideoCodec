@@ -95,41 +95,18 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {
         updateScreenTexture(texture)
-        initViewport(width, height)
+        viewport.setViewSize(width, height)
+        viewport.reset(parameter)
         SingleEventPipeline.instance.queueEvent(Runnable { init() })
     }
 
-    private fun initViewport(width: Int, height: Int) {
-//        initCameraViewport(width, height)
-        debug_e("initViewport($width, $height): before")
-        val videoRatio = parameter.video.width / parameter.video.height.toFloat()
-        val viewRatio = width / height.toFloat()
-        if (videoRatio > viewRatio) {//以View的宽为准
-            viewport.size.width = width
-            viewport.size.height = (width / videoRatio).toInt()
-        } else {//以View的高为准
-            viewport.size.width = (height * videoRatio).toInt()
-            viewport.size.height = height
-        }
-        viewport.point.x = (width - viewport.size.width) / 2
-        viewport.point.y = (height - viewport.size.height) / 2
-        debug_e("initViewport(${this.viewport.point.x}, ${this.viewport.point.y})(${viewport.size.width}, ${viewport.size.height}): after")
-    }
-
-    private fun initCameraViewport(width: Int, height: Int) {
-        viewport.cameraSize.width = width
-        viewport.cameraSize.height = height
-        //摄像头宽高以横屏为准
-        val cameraRatio = parameter.previewHeight / parameter.previewWidth.toFloat()
-        val viewRatio = width / height.toFloat()
-        if (cameraRatio < viewRatio) {//高度被压缩了，以View的宽为准
-            viewport.cameraSize.width = width
-            viewport.cameraSize.height = (width / cameraRatio).toInt()
-        } else {
-            viewport.cameraSize.width = (height * cameraRatio).toInt()
-            viewport.cameraSize.height = height
-        }
-        debug_e("initCameraViewport(${viewport.cameraSize.width}, ${viewport.cameraSize.height})")
+    override fun updateSize(width: Int, height: Int) {
+        parameter.video.width = width
+        parameter.video.height = height
+        viewport.reset(parameter)
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            initFilter(NormalFilter::class.java)
+        })
     }
 
     override fun stop() {
@@ -186,5 +163,54 @@ class DefaultRenderImpl(var parameter: Parameter,
     class Viewport(
             var point: Point = Point(0, 0),
             var size: Size = Size(0, 0),
-            var cameraSize: Size = Size(0, 0))
+            var viewSize: Size = Size(0, 0),
+            var cameraSize: Size = Size(0, 0)) {
+        private fun check() {
+            if (viewSize.width < 1 || viewSize.height < 1)
+                throw RuntimeException("You must set view size before reset!")
+        }
+
+        fun setViewSize(width: Int, height: Int) {
+            viewSize.width = width
+            viewSize.height = height
+        }
+
+        fun reset(parameter: Parameter) {
+            check()
+            reset(parameter, viewSize.width, viewSize.height)
+        }
+
+        private fun reset(parameter: Parameter, width: Int, height: Int) {
+            initCameraViewport(parameter, width, height)
+            debug_e("initViewport($width, $height): before")
+            val videoRatio = parameter.video.width / parameter.video.height.toFloat()
+            val viewRatio = width / height.toFloat()
+            if (videoRatio > viewRatio) {//以View的宽为准
+                size.width = width
+                size.height = (width / videoRatio).toInt()
+            } else {//以View的高为准
+                size.width = (height * videoRatio).toInt()
+                size.height = height
+            }
+            point.x = (width - size.width) / 2
+            point.y = (height - size.height) / 2
+            debug_e("initViewport(${point.x}, ${point.y})(${size.width}, ${size.height}): after")
+        }
+
+        private fun initCameraViewport(parameter: Parameter, width: Int, height: Int) {
+            cameraSize.width = width
+            cameraSize.height = height
+            //摄像头宽高以横屏为准
+            val cameraRatio = parameter.previewHeight / parameter.previewWidth.toFloat()
+            val viewRatio = width / height.toFloat()
+            if (cameraRatio < viewRatio) {//高度被压缩了，以View的宽为准
+                cameraSize.width = width
+                cameraSize.height = (width / cameraRatio).toInt()
+            } else {
+                cameraSize.width = (height * cameraRatio).toInt()
+                cameraSize.height = height
+            }
+            debug_e("initCameraViewport(${cameraSize.width}, ${cameraSize.height})")
+        }
+    }
 }
