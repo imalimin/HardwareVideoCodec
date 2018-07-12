@@ -23,7 +23,7 @@ class CodecHelper {
         /**
          * MediaCodec兼容性问题：
          * 1. 部分7.0以上机型开启high效果不明显，如LG G6
-         * 2. 部分机型开启high会导致BufferInfo.presentationTimeUs乱序，具体表现为0, 50000, 150000, 100000，如小米NOTE PRO
+         * 2. 部分机型开启high会导致BufferInfo.presentationTimeUs乱序，具体表现为0, 100000, 50000, 150000，如小米NOTE PRO
          * @param ignoreDevice 忽略设备兼容性检测
          */
         fun createVideoFormat(parameter: Parameter, ignoreDevice: Boolean = false): MediaFormat? {
