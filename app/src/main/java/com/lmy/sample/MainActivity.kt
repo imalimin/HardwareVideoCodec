@@ -16,6 +16,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import com.lmy.codec.CameraPreviewPresenter
+import com.lmy.codec.entity.Parameter
 import com.lmy.codec.loge
 import com.lmy.codec.texture.impl.filter.*
 import com.lmy.codec.util.debug_e
@@ -25,6 +26,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, SeekBar.OnSeekBarChangeListener {
 
     private lateinit var mPresenter: CameraPreviewPresenter
+    private var defaultVideoWidth = 0
+    private var defaultVideoHeight = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,10 +39,13 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         twoBar.setOnSeekBarChangeListener(this)
         thBar.setOnSeekBarChangeListener(this)
         fBar.setOnSeekBarChangeListener(this)
+        heightBar.setOnSeekBarChangeListener(this)
         loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
-        mPresenter = CameraPreviewPresenter(com.lmy.codec.entity.Parameter(this))
+        mPresenter = CameraPreviewPresenter(Parameter(this))
+        defaultVideoWidth = mPresenter.parameter.video.width
+        defaultVideoHeight = mPresenter.parameter.video.height
         val mTextureView = TextureView(this)
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
@@ -227,6 +233,13 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+        if (seekBar.id == R.id.heightBar) {
+            val p = if (progress < 1) 1 else progress
+            val width = mPresenter.parameter.video.width
+            val height = (p / seekBar.max.toFloat() * defaultVideoHeight).toInt()
+            mPresenter.updateSize(width, height)
+            return
+        }
         mPresenter.getFilter()?.setValue(progressLayout.indexOfChild(seekBar), progress)
     }
 

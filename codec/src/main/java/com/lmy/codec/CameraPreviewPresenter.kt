@@ -81,6 +81,10 @@ class CameraPreviewPresenter(var parameter: Parameter,
 //        mRender?.updatePreview(width, height)
     }
 
+    fun updateSize(width: Int, height: Int) {
+        render?.updateSize(width, height)
+    }
+
     fun stopPreview() {
         release()
         SingleEventPipeline.instance.quit()
