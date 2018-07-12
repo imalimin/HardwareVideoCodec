@@ -6,9 +6,11 @@
  */
 package com.lmy.codec.render.impl
 
+import android.graphics.Point
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
 import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.Size
 import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -25,12 +27,7 @@ class DefaultRenderImpl(var parameter: Parameter,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
-                        var width: Int = 1,
-                        var height: Int = 1,
-                        private var viewportX: Int = 0,
-                        private var viewportY: Int = 0,
-                        var cameraWidth: Int = 0,
-                        var cameraHeight: Int = 0)
+                        private var viewport: Viewport = Viewport())
     : Render {
 
     private val filterLock = Any()
@@ -69,7 +66,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         drawCamera()
         drawFilter()
         screenWrapper?.egl?.makeCurrent()
-        GLES20.glViewport(viewportX, viewportY, width, height)
+        GLES20.glViewport(viewport.point.x, viewport.point.y, viewport.size.width, viewport.size.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         screenWrapper?.drawTexture(transformMatrix)
@@ -103,38 +100,36 @@ class DefaultRenderImpl(var parameter: Parameter,
     }
 
     private fun initViewport(width: Int, height: Int) {
-//        this.width = width
-//        this.height = height
-        initCameraViewport(width, height)
+//        initCameraViewport(width, height)
         debug_e("initViewport($width, $height): before")
         val videoRatio = parameter.video.width / parameter.video.height.toFloat()
         val viewRatio = width / height.toFloat()
         if (videoRatio > viewRatio) {//以View的宽为准
-            this.width = width
-            this.height = (width / videoRatio).toInt()
+            viewport.size.width = width
+            viewport.size.height = (width / videoRatio).toInt()
         } else {//以View的高为准
-            this.width = (height * videoRatio).toInt()
-            this.height = height
+            viewport.size.width = (height * videoRatio).toInt()
+            viewport.size.height = height
         }
-        viewportX = (width - this.width) / 2
-        viewportY = (height - this.height) / 2
-        debug_e("initViewport(${this.viewportX}, ${this.viewportY})(${this.width}, ${this.height}): after")
+        viewport.point.x = (width - viewport.size.width) / 2
+        viewport.point.y = (height - viewport.size.height) / 2
+        debug_e("initViewport(${this.viewport.point.x}, ${this.viewport.point.y})(${viewport.size.width}, ${viewport.size.height}): after")
     }
 
     private fun initCameraViewport(width: Int, height: Int) {
-        cameraWidth = width
-        cameraHeight = height
+        viewport.cameraSize.width = width
+        viewport.cameraSize.height = height
         //摄像头宽高以横屏为准
         val cameraRatio = parameter.previewHeight / parameter.previewWidth.toFloat()
         val viewRatio = width / height.toFloat()
         if (cameraRatio < viewRatio) {//高度被压缩了，以View的宽为准
-            this.cameraWidth = width
-            this.cameraHeight = (width / cameraRatio).toInt()
+            viewport.cameraSize.width = width
+            viewport.cameraSize.height = (width / cameraRatio).toInt()
         } else {
-            this.cameraWidth = (height * cameraRatio).toInt()
-            this.cameraHeight = height
+            viewport.cameraSize.width = (height * cameraRatio).toInt()
+            viewport.cameraSize.height = height
         }
-        debug_e("initCameraViewport(${this.cameraWidth}, ${this.cameraHeight})")
+        debug_e("initCameraViewport(${viewport.cameraSize.width}, ${viewport.cameraSize.height})")
     }
 
     override fun stop() {
@@ -187,4 +182,9 @@ class DefaultRenderImpl(var parameter: Parameter,
         }
         return cameraWrapper.getFrameBufferTexture()
     }
+
+    class Viewport(
+            var point: Point = Point(0, 0),
+            var size: Size = Size(0, 0),
+            var cameraSize: Size = Size(0, 0))
 }
