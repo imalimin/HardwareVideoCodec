@@ -9,8 +9,13 @@ package com.lmy.codec.wrapper
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Environment
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.util.debug_e
+import java.io.File
+import java.io.IOException
+import java.io.RandomAccessFile
+import java.lang.Short.reverseBytes
 
 
 /**
@@ -26,8 +31,11 @@ class AudioRecordWrapper(var parameter: Parameter,
     private val mStartSyn = Any()
     private var mStart = true
     private var onPCMListener: OnPCMListener? = null
+    private lateinit var dos: RandomAccessFile
+    private var pcmSize = 0
 
     init {
+        initPcmFile()
         buffer = ByteArray(getBufferSize())
 
         val minBufferSize = AudioRecord.getMinBufferSize(parameter.audio.sampleRateInHz,
@@ -37,22 +45,48 @@ class AudioRecordWrapper(var parameter: Parameter,
         debug_e("bufferSize: $bufferSize, buffer`s size: ${buffer!!.size}")
         record = AudioRecord(MediaRecorder.AudioSource.MIC, parameter.audio.sampleRateInHz,
                 AudioFormat.CHANNEL_IN_MONO, parameter.audio.pcm, bufferSize)
-        record?.startRecording()
+        if (AudioRecord.STATE_INITIALIZED != record!!.state) {
+            debug_e("AudioRecord initialize failed!")
+        }
         thread = Thread(this)
+        thread?.name = "AudioRecorder"
         thread?.start()
     }
 
+    private fun initPcmFile() {
+        val pcmFile = File(Environment.getExternalStorageDirectory().absolutePath + "/test.pcm")
+        if (pcmFile.exists())
+            pcmFile.delete()
+        dos = RandomAccessFile(pcmFile, "rw")
+        dos.setLength(0)
+//        writeWavHeader()
+    }
+
+    private fun write(data: ByteArray) {
+        dos.write(data, 0, data.size)
+    }
+
     private fun read() {
-        val bufferReadResult = record!!.read(buffer, 0, buffer!!.size)
-        if (bufferReadResult > 0) {
+        val size = record!!.read(buffer, 0, buffer!!.size)
+        if (size > 0) {
+            pcmSize += size
+//            debug_e("pcmSize: $pcmSize, size: $size")
+            write(buffer!!)
             onPCMListener?.onPCMSample(buffer!!)
         }
     }
 
     override fun run() {
+        pcmSize = 0
+        record?.startRecording()
         while (mStart) {
             read()
         }
+//        dos.seek(4)
+//        dos.write(Integer.reverseBytes(44 + pcmSize))
+//        dos.seek(40)
+//        dos.write(Integer.reverseBytes(pcmSize))
+        dos.close()
     }
 
     fun stop() {
@@ -75,6 +109,26 @@ class AudioRecordWrapper(var parameter: Parameter,
 
     interface OnPCMListener {
         fun onPCMSample(buffer: ByteArray)
+    }
+
+    private fun writeWavHeader() {
+        try {
+            dos.writeBytes("RIFF")
+            dos.writeInt(0)
+            dos.writeBytes("WAVE")
+            dos.writeBytes("fmt ")
+            dos.writeInt(Integer.reverseBytes(16)) // Sub-chunk size, 16 for PCM
+            dos.writeShort(reverseBytes(1).toInt()) // AudioFormat, 1 for PCM
+            dos.writeShort(reverseBytes(parameter.audio.channel.toShort()).toInt())// Number of channels, 1 for mono, 2 for stereo
+            dos.writeInt(Integer.reverseBytes(parameter.audio.sampleRateInHz)) // Sample rate
+            dos.writeInt(Integer.reverseBytes(parameter.audio.sampleRateInHz * 16 * parameter.audio.channel / 8)) // Byte rate, SampleRate*NumberOfChannels*BitsPerSample/8
+            dos.writeShort(reverseBytes((parameter.audio.channel * 16 / 8).toShort()).toInt()) // Block align, NumberOfChannels*BitsPerSample/8
+            dos.writeShort(reverseBytes(16).toInt()) // Bits per sample
+            dos.writeBytes("data")
+            dos.writeInt(0) // Data chunk size not known yet, write 0
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     companion object {
