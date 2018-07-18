@@ -67,7 +67,7 @@ data class Parameter(var context: Context,
                      var sampleRateInHz: Int = 44100,
                      var bitrate: Int = 32 * 1024,
                      var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
-                     var pcm: Int = AudioFormat.ENCODING_PCM_16BIT)
+                     var sampleBits: Int = AudioFormat.ENCODING_PCM_16BIT)
 
     enum class CodecType {
         HARD, SOFT
