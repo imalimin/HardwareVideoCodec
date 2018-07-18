@@ -35,16 +35,16 @@ class AudioRecordWrapper(var parameter: Parameter,
     private var pcmSize = 0
 
     init {
-        initPcmFile()
+//        initPcmFile()
         buffer = ByteArray(getBufferSize())
 
         val minBufferSize = AudioRecord.getMinBufferSize(parameter.audio.sampleRateInHz,
-                AudioFormat.CHANNEL_IN_MONO, parameter.audio.pcm)
+                AudioFormat.CHANNEL_IN_MONO, parameter.audio.sampleBits)
         val bufferSize = Math.max(BUFFER_SIZE_FACTOR * minBufferSize, buffer!!.size)
 
         debug_e("bufferSize: $bufferSize, buffer`s size: ${buffer!!.size}")
         record = AudioRecord(MediaRecorder.AudioSource.MIC, parameter.audio.sampleRateInHz,
-                AudioFormat.CHANNEL_IN_MONO, parameter.audio.pcm, bufferSize)
+                AudioFormat.CHANNEL_IN_MONO, parameter.audio.sampleBits, bufferSize)
         if (AudioRecord.STATE_INITIALIZED != record!!.state) {
             debug_e("AudioRecord initialize failed!")
         }
@@ -71,7 +71,7 @@ class AudioRecordWrapper(var parameter: Parameter,
         if (size > 0) {
             pcmSize += size
 //            debug_e("pcmSize: $pcmSize, size: $size")
-            write(buffer!!)
+//            write(buffer!!)
             onPCMListener?.onPCMSample(buffer!!)
         }
     }
@@ -86,7 +86,7 @@ class AudioRecordWrapper(var parameter: Parameter,
 //        dos.write(Integer.reverseBytes(44 + pcmSize))
 //        dos.seek(40)
 //        dos.write(Integer.reverseBytes(pcmSize))
-        dos.close()
+//        dos.close()
     }
 
     fun stop() {
@@ -98,9 +98,17 @@ class AudioRecordWrapper(var parameter: Parameter,
     }
 
 
-    public fun getBufferSize(): Int {
-        val bytesPerFrame = parameter.audio.channel * (BITS_PER_SAMPLE / 8)
+    fun getBufferSize(): Int {
+        val bytesPerFrame = parameter.audio.channel * (getSampleBits() / 8)
         return bytesPerFrame * parameter.audio.sampleRateInHz / BUFFERS_PER_SECOND
+    }
+
+    private fun getSampleBits(): Int {
+        return when (parameter.audio.sampleBits) {
+            AudioFormat.ENCODING_PCM_16BIT -> 16
+            AudioFormat.ENCODING_PCM_8BIT -> 8
+            else -> 8
+        }
     }
 
     fun setOnPCMListener(listener: OnPCMListener) {
