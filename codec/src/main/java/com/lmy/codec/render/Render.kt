@@ -22,7 +22,7 @@ interface Render {
     fun post(runnable: Runnable)
 
     fun setFilter(filter: Class<*>)
-    fun getFilter(): BaseFilter
+    fun getFilter(): BaseFilter?
     fun getFrameBuffer(): Int
     fun getFrameBufferTexture(): Int
 }

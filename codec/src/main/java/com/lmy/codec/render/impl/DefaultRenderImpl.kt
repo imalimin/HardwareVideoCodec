@@ -31,7 +31,7 @@ class DefaultRenderImpl(var parameter: Parameter,
     : Render {
 
     private val filterLock = Any()
-    private lateinit var filter: BaseFilter
+    private var filter: BaseFilter? = null
 
     fun init() {
         initFilter(NormalFilter::class.java)
@@ -46,10 +46,10 @@ class DefaultRenderImpl(var parameter: Parameter,
                 initScreen()
                 return
             }
-            filter.width = parameter.video.width
-            filter.height = parameter.video.height
-            filter.textureId = cameraWrapper.getFrameBufferTexture()
-            filter.init()
+            filter?.width = parameter.video.width
+            filter?.height = parameter.video.height
+            filter?.textureId = cameraWrapper.getFrameBufferTexture()
+            filter?.init()
         }
         initScreen()
     }
@@ -77,7 +77,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         synchronized(filterLock) {
             GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-            filter.drawTexture(null)
+            filter?.drawTexture(null)
         }
     }
 
@@ -113,7 +113,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         SingleEventPipeline.instance.queueEvent(Runnable {
             screenWrapper?.release()
             screenWrapper = null
-            filter.release()
+            filter?.release()
         })
     }
 
@@ -139,7 +139,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         })
     }
 
-    override fun getFilter(): BaseFilter {
+    override fun getFilter(): BaseFilter? {
         synchronized(filterLock) {
             return filter
         }
