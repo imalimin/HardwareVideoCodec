@@ -42,6 +42,7 @@ class VideoEncoderImpl(var parameter: Parameter,
     private var mPipeline = EventPipeline.create("VideoEncodePipeline")
     private val mEncodingSyn = Any()
     private var mEncoding = false
+    private var mFrameCount = 0
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -134,6 +135,7 @@ class VideoEncoderImpl(var parameter: Parameter,
                     if (null != data) {
                         val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
                         if (endOfStream == 0) {//如果没有收到BUFFER_FLAG_END_OF_STREAM信号，则代表输出数据时有效的
+                            ++mFrameCount
                             mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
                             onSampleListener?.onSample(this, mBufferInfo, data)
                         }
@@ -166,12 +168,15 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     override fun stop() {
-        pause()
-        while (dequeue()) {//取出编码器中剩余的帧
-        }
         debug_e("Video encoder stop")
-        //编码结束，发送结束信号，让surface不在提供数据
-        codec!!.signalEndOfInputStream()
+        pause()
+        if (mFrameCount > 0) {
+            while (dequeue()) {//取出编码器中剩余的帧
+            }
+            //编码结束，发送结束信号，让surface不在提供数据
+            codec!!.signalEndOfInputStream()
+        }
+        mFrameCount = 0
         codec!!.stop()
         codec!!.release()
         mPipeline.queueEvent(Runnable {
