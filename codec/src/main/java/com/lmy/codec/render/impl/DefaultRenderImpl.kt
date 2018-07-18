@@ -76,7 +76,7 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     private fun drawFilter() {
         synchronized(filterLock) {
-            GLES20.glViewport(0, 180, parameter.video.width, parameter.video.height)
+            GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             filter?.drawTexture(null)
         }
