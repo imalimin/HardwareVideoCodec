@@ -236,7 +236,10 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         if (seekBar.id == R.id.heightBar) {
             val p = if (progress < 1) 1 else progress
             val width = mPresenter.parameter.video.width
-            val height = (p / seekBar.max.toFloat() * defaultVideoHeight).toInt()
+            var height = (p / seekBar.max.toFloat() * defaultVideoHeight).toInt()
+            if (0 != height % 2) {
+                ++height
+            }
             mPresenter.updateSize(width, height)
             return
         }
