@@ -45,7 +45,7 @@ abstract class RecycleQueue<T>(val capacity: Int) {
         return queue!!.take()
     }
 
-    fun pollCache(): T {
+    fun pollCache(): T? {
         return cache!!.poll()
     }
 
