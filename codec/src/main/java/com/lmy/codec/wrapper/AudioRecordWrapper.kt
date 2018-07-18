@@ -98,7 +98,7 @@ class AudioRecordWrapper(var parameter: Parameter,
     }
 
 
-    private fun getBufferSize(): Int {
+    public fun getBufferSize(): Int {
         val bytesPerFrame = parameter.audio.channel * (BITS_PER_SAMPLE / 8)
         return bytesPerFrame * parameter.audio.sampleRateInHz / BUFFERS_PER_SECOND
     }
