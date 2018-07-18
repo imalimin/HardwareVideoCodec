@@ -13,6 +13,7 @@ import android.media.MediaFormat
 import android.os.Build
 import com.lmy.codec.entity.Parameter
 import com.lmy.codec.loge
+import com.lmy.codec.logi
 
 
 /**
@@ -68,7 +69,7 @@ class CodecHelper {
                         .filter { it.isEncoder == isEncode }
                         .forEach { info ->
                             info.supportedTypes.forEach {
-                                loge(it)
+                                logi(it)
                                 if (it.equals(mime, ignoreCase = true)) {
                                     return info
                                 }
@@ -81,7 +82,7 @@ class CodecHelper {
                         .filter { it.isEncoder == isEncode }
                         .forEach { info ->
                             info.supportedTypes.forEach {
-                                loge(it)
+                                logi(it)
                                 if (it.equals(mime, ignoreCase = true)) {
                                     return info
                                 }
@@ -102,7 +103,7 @@ class CodecHelper {
             selected.level = -1
             //查找支持的最佳配置
             for (p in profileLevels) {
-                loge("profile item: " + p.profile + ", " + p.level)
+                logi("profile item: " + p.profile + ", " + p.level)
                 if (supportsProfileLevel(p.profile, p.level, profileLevels, mime)) {
                     if (MediaCodecInfo.CodecProfileLevel.AVCProfileHigh == p.profile
                             && p.profile > selected.profile
