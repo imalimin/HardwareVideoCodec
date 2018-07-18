@@ -12,6 +12,7 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
 import com.lmy.codec.pipeline.EventPipeline
@@ -43,6 +44,7 @@ class AudioEncoderImpl(var parameter: Parameter,
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var onSampleListener: Encoder.OnSampleListener? = null
+    private var mCache: Cache? = null
 
     init {
         initCodec()
@@ -73,6 +75,22 @@ class AudioEncoderImpl(var parameter: Parameter,
         codec?.start()
         audioWrapper = AudioRecordWrapper(parameter)
         audioWrapper?.setOnPCMListener(this)
+        mCache = Cache(5, audioWrapper!!.getBufferSize())
+        mCache?.ready()
+    }
+
+    override fun onPCMSample(buffer: ByteArray) {
+        if (!mEncoding || null == mCache) return
+        val cache = mCache!!.pollCache() ?: return
+        System.arraycopy(buffer, 0, cache, 0, buffer.size)
+        mCache!!.offer(cache)
+        mPipeline.queueEvent(Runnable { encode() })
+    }
+
+    private fun encode() {
+        val cache = mCache!!.take()
+        encode(cache)
+        mCache!!.recycle(cache)
     }
 
     private fun encode(buffer: ByteArray) {
@@ -93,11 +111,6 @@ class AudioEncoderImpl(var parameter: Parameter,
                 e.printStackTrace()
             }
         }
-    }
-
-    override fun onPCMSample(buffer: ByteArray) {
-        if (!mEncoding) return
-        mPipeline.queueEvent(Runnable { encode(buffer.clone()) })
     }
 
     @SuppressLint("WrongConstant", "SwitchIntDef")
@@ -161,6 +174,7 @@ class AudioEncoderImpl(var parameter: Parameter,
         codec!!.stop()
         codec!!.release()
         audioWrapper?.stop()
+        mCache?.release()
         mPipeline.quit()
         debug_e("Audio encoder stop")
     }
@@ -194,5 +208,12 @@ class AudioEncoderImpl(var parameter: Parameter,
             presentationTimeUs = 0
             timestamp = 0
         }
+    }
+
+    private class Cache(capacity: Int, private val bufferSize: Int) : RecycleQueue<ByteArray>(capacity) {
+        override fun newCacheEntry(): ByteArray {
+            return ByteArray(bufferSize)
+        }
+
     }
 }
