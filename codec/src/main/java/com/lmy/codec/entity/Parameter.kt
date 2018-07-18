@@ -65,7 +65,7 @@ data class Parameter(var context: Context,
     data class Audio(var mime: String = "audio/mp4a-latm",
                      var channel: Int = 1,
                      var sampleRateInHz: Int = 44100,
-                     var bitrate: Int = 32 * 1024,
+                     var bitrate: Int = sampleRateInHz * 2,
                      var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
                      var sampleBits: Int = AudioFormat.ENCODING_PCM_16BIT)
 
