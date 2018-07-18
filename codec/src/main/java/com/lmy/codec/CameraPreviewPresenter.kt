@@ -83,6 +83,14 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     fun updateSize(width: Int, height: Int) {
         render?.updateSize(width, height)
+        render?.post(Runnable {
+            encoder?.stop()
+            encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
+                    cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+            if (null != muxer) {
+                encoder!!.setOnSampleListener(muxer!!)
+            }
+        })
     }
 
     fun stopPreview() {

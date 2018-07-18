@@ -48,6 +48,7 @@ class DefaultRenderImpl(var parameter: Parameter,
             }
             filter?.width = parameter.video.width
             filter?.height = parameter.video.height
+//            debug_e("camera texture: ${cameraWrapper.getFrameBuffer()},${cameraWrapper.getFrameBufferTexture()}")
             filter?.textureId = cameraWrapper.getFrameBufferTexture()
             filter?.init()
         }
@@ -75,7 +76,7 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     private fun drawFilter() {
         synchronized(filterLock) {
-            GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+            GLES20.glViewport(0, 180, parameter.video.width, parameter.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             filter?.drawTexture(null)
         }
@@ -105,6 +106,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         parameter.video.height = height
         viewport.reset(parameter)
         SingleEventPipeline.instance.queueEvent(Runnable {
+            cameraWrapper.updateFrameBuffer(parameter.video.width, parameter.video.height)
             initFilter(NormalFilter::class.java)
         })
     }
@@ -182,7 +184,7 @@ class DefaultRenderImpl(var parameter: Parameter,
 
         private fun reset(parameter: Parameter, width: Int, height: Int) {
             initCameraViewport(parameter, width, height)
-            debug_e("initViewport($width, $height): before")
+//            debug_e("initViewport($width, $height): before")
             val videoRatio = parameter.video.width / parameter.video.height.toFloat()
             val viewRatio = width / height.toFloat()
             if (videoRatio > viewRatio) {//以View的宽为准
@@ -194,7 +196,9 @@ class DefaultRenderImpl(var parameter: Parameter,
             }
             point.x = (width - size.width) / 2
             point.y = (height - size.height) / 2
-            debug_e("initViewport(${point.x}, ${point.y})(${size.width}, ${size.height}): after")
+            debug_e("initViewport(${point.x}, ${point.y})" +
+                    "(${size.width}, ${size.height})" +
+                    "(${parameter.video.width}, ${parameter.video.height}): after")
         }
 
         private fun initCameraViewport(parameter: Parameter, width: Int, height: Int) {
@@ -210,7 +214,7 @@ class DefaultRenderImpl(var parameter: Parameter,
                 cameraSize.width = (height * cameraRatio).toInt()
                 cameraSize.height = height
             }
-            debug_e("initCameraViewport(${cameraSize.width}, ${cameraSize.height})")
+//            debug_e("initCameraViewport(${cameraSize.width}, ${cameraSize.height})")
         }
     }
 }

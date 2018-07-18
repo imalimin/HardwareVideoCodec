@@ -49,22 +49,24 @@ class CameraTexture(width: Int, height: Int,
     override fun drawTexture(transformMatrix: FloatArray?) {
         if (null == transformMatrix)
             throw RuntimeException("TransformMatrix can not be null")
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
-        GLES20.glUseProgram(shaderProgram!!)
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId)
-        GLES20.glUniform1i(uTextureLocation, 0)
-        enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
-        GLES20.glUniformMatrix4fv(uTextureMatrix, 1, false, transformMatrix, 0)
+        synchronized(frameBufferLock) {
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
+            GLES20.glUseProgram(shaderProgram!!)
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId)
+            GLES20.glUniform1i(uTextureLocation, 0)
+            enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
+            GLES20.glUniformMatrix4fv(uTextureMatrix, 1, false, transformMatrix, 0)
 
-        drawer.draw()
+            drawer.draw()
 
-        GLES20.glFinish()
-        GLES20.glDisableVertexAttribArray(aPositionLocation)
-        GLES20.glDisableVertexAttribArray(aTextureCoordinateLocation)
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NONE)
-        GLES20.glUseProgram(GLES20.GL_NONE)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+            GLES20.glFinish()
+            GLES20.glDisableVertexAttribArray(aPositionLocation)
+            GLES20.glDisableVertexAttribArray(aTextureCoordinateLocation)
+            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NONE)
+            GLES20.glUseProgram(GLES20.GL_NONE)
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+        }
 
         //simple
 //        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)

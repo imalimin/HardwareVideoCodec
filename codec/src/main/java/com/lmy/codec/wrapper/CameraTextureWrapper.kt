@@ -59,4 +59,8 @@ class CameraTextureWrapper(width: Int,
         checkTexture()
         return (texture as BaseFrameBufferTexture).frameBufferTexture!!
     }
+
+    fun updateFrameBuffer(width: Int, height: Int) {
+        (texture as BaseFrameBufferTexture).updateFrameBuffer(width, height)
+    }
 }
