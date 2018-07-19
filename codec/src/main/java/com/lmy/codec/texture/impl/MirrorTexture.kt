@@ -24,15 +24,17 @@ class MirrorTexture(width: Int, height: Int,
 
     companion object {
         private val VERTICES_VERTICAL = floatArrayOf(
-                0f, 0f,
-                0f, 1f,
-                1f, 1f,
-                1f, 0f)
+                0.0f, 1.0f,//LEFT,TOP
+                1.0f, 1.0f,//RIGHT,TOP
+                0.0f, 0.0f,//LEFT,BOTTOM
+                1.0f, 0.0f//RIGHT,BOTTOM
+        )
         private val VERTICES_HORIZONTAL = floatArrayOf(
-                1f, 1f,
-                1f, 0f,
-                0f, 0f,
-                0f, 1f)
+                1.0f, 0.0f,//RIGHT,BOTTOM
+                0.0f, 0.0f,//LEFT,BOTTOM
+                1.0f, 1.0f,//RIGHT,TOP
+                0.0f, 1.0f//LEFT,TOP
+        )
     }
 
     private var aPositionLocation = 0

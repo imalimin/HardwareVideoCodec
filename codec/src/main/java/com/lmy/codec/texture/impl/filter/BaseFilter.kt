@@ -135,9 +135,10 @@ abstract class BaseFilter(width: Int = 0,
         private var shareFrameBuffer: Int? = null
         private var shareFrameBufferTexture: Int? = null
         private val VERTICES = floatArrayOf(
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f)
+                0.0f, 0.0f,//LEFT,BOTTOM
+                1.0f, 0.0f,//RIGHT,BOTTOM
+                0.0f, 1.0f,//LEFT,TOP
+                1.0f, 1.0f//RIGHT,TOP
+        )
     }
 }

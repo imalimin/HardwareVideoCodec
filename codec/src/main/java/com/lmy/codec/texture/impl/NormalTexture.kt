@@ -18,10 +18,11 @@ class NormalTexture(textureId: Int) : BaseTexture(textureId) {
 
     companion object {
         private val VERTICES_SCREEN = floatArrayOf(
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f)
+                0.0f, 0.0f,//LEFT,BOTTOM
+                1.0f, 0.0f,//RIGHT,BOTTOM
+                0.0f, 1.0f,//LEFT,TOP
+                1.0f, 1.0f//RIGHT,TOP
+        )
     }
 
     private var aPositionLocation = 0
