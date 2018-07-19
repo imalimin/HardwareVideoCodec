@@ -177,10 +177,10 @@ class VideoEncoderImpl(var parameter: Parameter,
         if (mFrameCount > 0) {
             while (dequeue()) {//取出编码器中剩余的帧
             }
+            //编码结束，发送结束信号，让surface不在提供数据
+            codec!!.signalEndOfInputStream()
         }
         mFrameCount = 0
-        //编码结束，发送结束信号，让surface不在提供数据
-        codec!!.signalEndOfInputStream()
         codec!!.stop()
         codec!!.release()
         mPipeline.queueEvent(Runnable {
