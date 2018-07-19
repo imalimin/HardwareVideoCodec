@@ -11,7 +11,7 @@ import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
 import com.lmy.codec.encoder.Encoder
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
@@ -26,13 +26,13 @@ import java.nio.ByteBuffer
  * Project Name：HardwareVideoCodec.
  * @author lrlmy@foxmail.com
  */
-class AudioEncoderImpl(var parameter: Parameter,
+class AudioEncoderImpl(var context: CodecContext,
                        private var codec: MediaCodec? = null,
                        var inputBuffers: Array<ByteBuffer>? = null,
                        var outputBuffers: Array<ByteBuffer>? = null,
                        private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var audioWrapper: AudioRecordWrapper? = null,
-                       private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
+                       private var pTimer: PresentationTimer = PresentationTimer(context.video.fps))
     : Encoder, AudioRecordWrapper.OnPCMListener {
 
     companion object {
@@ -52,7 +52,7 @@ class AudioEncoderImpl(var parameter: Parameter,
     }
 
     private fun initCodec() {
-        val f = CodecHelper.createAudioFormat(parameter)
+        val f = CodecHelper.createAudioFormat(context)
         if (null == f) {
             loge("Unsupport codec type")
             return
@@ -73,7 +73,7 @@ class AudioEncoderImpl(var parameter: Parameter,
         pTimer.reset()
         codec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         codec?.start()
-        audioWrapper = AudioRecordWrapper(parameter)
+        audioWrapper = AudioRecordWrapper(context)
         audioWrapper?.setOnPCMListener(this)
         mCache = Cache(5, audioWrapper!!.getBufferSize())
         mCache?.ready()

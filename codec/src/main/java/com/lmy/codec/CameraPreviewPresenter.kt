@@ -11,7 +11,7 @@ import android.graphics.SurfaceTexture
 import android.os.Environment
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.muxer.impl.MuxerImpl
@@ -24,7 +24,7 @@ import com.lmy.codec.wrapper.CameraWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
-class CameraPreviewPresenter(var parameter: Parameter,
+class CameraPreviewPresenter(var context: CodecContext,
                              var encoder: Encoder? = null,
                              var audioEncoder: Encoder? = null,
                              private var cameraWrapper: CameraWrapper? = null,
@@ -36,9 +36,9 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     init {
         SingleEventPipeline.instance.start()
-        cameraWrapper = CameraWrapper.open(parameter, this)
+        cameraWrapper = CameraWrapper.open(context, this)
                 .post(Runnable {
-                    render = DefaultRenderImpl(parameter, cameraWrapper!!.textureWrapper)
+                    render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper)
                 })
     }
 
@@ -77,9 +77,9 @@ class CameraPreviewPresenter(var parameter: Parameter,
 
     private fun start() {
         muxer = MuxerImpl("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4")
-        encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
+        encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
-        audioEncoder = AudioEncoderImpl(parameter)
+        audioEncoder = AudioEncoderImpl(context)
         if (null != muxer) {
             encoder!!.setOnSampleListener(muxer!!)
             audioEncoder!!.setOnSampleListener(muxer!!)

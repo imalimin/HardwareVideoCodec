@@ -14,14 +14,14 @@ import android.media.MediaCodecInfo
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
-data class Parameter(var context: Context,
-                     var video: Video = Video(),
-                     var audio: Audio = Audio(),
-                     var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
-                     var previewWidth: Int = 1280,//以水平分辨率为准
-                     var previewHeight: Int = 720,//以水平分辨率为准
-                     var orientation: Int = 90,
-                     var codecType: CodecType = CodecType.HARD) {
+data class CodecContext(var context: Context,
+                        var video: Video = Video(),
+                        var audio: Audio = Audio(),
+                        var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
+                        var previewWidth: Int = 1280,//以水平分辨率为准
+                        var previewHeight: Int = 720,//以水平分辨率为准
+                        var orientation: Int = 90,
+                        var codecType: CodecType = CodecType.HARD) {
     fun check() {
         if (!isHorizontal() && !isVertical())
             throw RuntimeException("Orientation must be 0, 90, 180 or 270")

@@ -13,7 +13,7 @@ import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
 import com.lmy.codec.encoder.Encoder
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
 import com.lmy.codec.pipeline.EventPipeline
@@ -25,13 +25,13 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
-class VideoEncoderImpl(var parameter: Parameter,
+class VideoEncoderImpl(var context: CodecContext,
                        private var textureId: Int,
                        private var eglContext: EGLContext,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
-                       private var pTimer: PresentationTimer = PresentationTimer(parameter.video.fps))
+                       private var pTimer: PresentationTimer = PresentationTimer(context.video.fps))
     : Encoder {
 
     companion object {
@@ -55,7 +55,7 @@ class VideoEncoderImpl(var parameter: Parameter,
     }
 
     private fun initCodec() {
-        val f = CodecHelper.createVideoFormat(parameter)
+        val f = CodecHelper.createVideoFormat(context)
         if (null == f) {
             loge("Unsupport codec type")
             return
@@ -93,7 +93,7 @@ class VideoEncoderImpl(var parameter: Parameter,
         synchronized(mEncodingSyn) {
             pTimer.record()
             codecWrapper?.egl?.makeCurrent()
-            GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+            GLES20.glViewport(0, 0, context.video.width, context.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             codecWrapper?.drawTexture(null)

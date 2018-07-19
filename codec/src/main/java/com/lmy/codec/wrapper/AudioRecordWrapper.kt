@@ -10,7 +10,7 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Environment
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.util.debug_e
 import java.io.File
 import java.io.IOException
@@ -23,7 +23,7 @@ import java.lang.Short.reverseBytes
  * Project Name：HardwareVideoCodec.
  * @author lrlmy@foxmail.com
  */
-class AudioRecordWrapper(var parameter: Parameter,
+class AudioRecordWrapper(var context: CodecContext,
                          private var bufferSize: Int = 0,
                          private var record: AudioRecord? = null,
                          private var thread: Thread? = null,
@@ -38,13 +38,13 @@ class AudioRecordWrapper(var parameter: Parameter,
 //        initPcmFile()
         buffer = ByteArray(getBufferSize())
 
-        val minBufferSize = AudioRecord.getMinBufferSize(parameter.audio.sampleRateInHz,
-                AudioFormat.CHANNEL_IN_MONO, parameter.audio.sampleBits)
+        val minBufferSize = AudioRecord.getMinBufferSize(context.audio.sampleRateInHz,
+                AudioFormat.CHANNEL_IN_MONO, context.audio.sampleBits)
         val bufferSize = Math.max(BUFFER_SIZE_FACTOR * minBufferSize, buffer!!.size)
 
         debug_e("bufferSize: $bufferSize, buffer`s size: ${buffer!!.size}")
-        record = AudioRecord(MediaRecorder.AudioSource.MIC, parameter.audio.sampleRateInHz,
-                AudioFormat.CHANNEL_IN_MONO, parameter.audio.sampleBits, bufferSize)
+        record = AudioRecord(MediaRecorder.AudioSource.MIC, context.audio.sampleRateInHz,
+                AudioFormat.CHANNEL_IN_MONO, context.audio.sampleBits, bufferSize)
         if (AudioRecord.STATE_INITIALIZED != record!!.state) {
             debug_e("AudioRecord initialize failed!")
         }
@@ -99,12 +99,12 @@ class AudioRecordWrapper(var parameter: Parameter,
 
 
     fun getBufferSize(): Int {
-        val bytesPerFrame = parameter.audio.channel * (getSampleBits() / 8)
-        return bytesPerFrame * parameter.audio.sampleRateInHz / BUFFERS_PER_SECOND
+        val bytesPerFrame = context.audio.channel * (getSampleBits() / 8)
+        return bytesPerFrame * context.audio.sampleRateInHz / BUFFERS_PER_SECOND
     }
 
     private fun getSampleBits(): Int {
-        return when (parameter.audio.sampleBits) {
+        return when (context.audio.sampleBits) {
             AudioFormat.ENCODING_PCM_16BIT -> 16
             AudioFormat.ENCODING_PCM_8BIT -> 8
             else -> 8
@@ -127,10 +127,10 @@ class AudioRecordWrapper(var parameter: Parameter,
             dos.writeBytes("fmt ")
             dos.writeInt(Integer.reverseBytes(16)) // Sub-chunk size, 16 for PCM
             dos.writeShort(reverseBytes(1).toInt()) // AudioFormat, 1 for PCM
-            dos.writeShort(reverseBytes(parameter.audio.channel.toShort()).toInt())// Number of channels, 1 for mono, 2 for stereo
-            dos.writeInt(Integer.reverseBytes(parameter.audio.sampleRateInHz)) // Sample rate
-            dos.writeInt(Integer.reverseBytes(parameter.audio.sampleRateInHz * 16 * parameter.audio.channel / 8)) // Byte rate, SampleRate*NumberOfChannels*BitsPerSample/8
-            dos.writeShort(reverseBytes((parameter.audio.channel * 16 / 8).toShort()).toInt()) // Block align, NumberOfChannels*BitsPerSample/8
+            dos.writeShort(reverseBytes(context.audio.channel.toShort()).toInt())// Number of channels, 1 for mono, 2 for stereo
+            dos.writeInt(Integer.reverseBytes(context.audio.sampleRateInHz)) // Sample rate
+            dos.writeInt(Integer.reverseBytes(context.audio.sampleRateInHz * 16 * context.audio.channel / 8)) // Byte rate, SampleRate*NumberOfChannels*BitsPerSample/8
+            dos.writeShort(reverseBytes((context.audio.channel * 16 / 8).toShort()).toInt()) // Block align, NumberOfChannels*BitsPerSample/8
             dos.writeShort(reverseBytes(16).toInt()) // Bits per sample
             dos.writeBytes("data")
             dos.writeInt(0) // Data chunk size not known yet, write 0

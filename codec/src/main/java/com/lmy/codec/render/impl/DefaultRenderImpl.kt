@@ -9,7 +9,7 @@ package com.lmy.codec.render.impl
 import android.graphics.Point
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Size
 import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.render.Render
@@ -22,7 +22,7 @@ import com.lmy.codec.wrapper.ScreenTextureWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class DefaultRenderImpl(var parameter: Parameter,
+class DefaultRenderImpl(var context: CodecContext,
                         var cameraWrapper: CameraTextureWrapper,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
@@ -46,8 +46,8 @@ class DefaultRenderImpl(var parameter: Parameter,
                 initScreen()
                 return
             }
-            filter?.width = parameter.video.width
-            filter?.height = parameter.video.height
+            filter?.width = context.video.width
+            filter?.height = context.video.height
 //            debug_e("camera texture: ${cameraWrapper.getFrameBuffer()},${cameraWrapper.getFrameBufferTexture()}")
             filter?.textureId = cameraWrapper.getFrameBufferTexture()
             filter?.init()
@@ -76,7 +76,7 @@ class DefaultRenderImpl(var parameter: Parameter,
 
     private fun drawFilter() {
         synchronized(filterLock) {
-            GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
+            GLES20.glViewport(0, 0, context.video.width, context.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             filter?.drawTexture(null)
@@ -97,17 +97,17 @@ class DefaultRenderImpl(var parameter: Parameter,
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {
         updateScreenTexture(texture)
         viewport.setViewSize(width, height)
-        viewport.reset(parameter)
+        viewport.reset(context)
         SingleEventPipeline.instance.queueEvent(Runnable { init() })
     }
 
     override fun updateSize(width: Int, height: Int) {
-        parameter.video.width = width
-        parameter.video.height = height
-        viewport.reset(parameter)
+        context.video.width = width
+        context.video.height = height
+        viewport.reset(context)
         SingleEventPipeline.instance.queueEvent(Runnable {
-            cameraWrapper.updateSize(parameter.previewWidth, parameter.previewHeight,
-                    parameter.video.width, parameter.video.height)
+            cameraWrapper.updateSize(context.previewWidth, context.previewHeight,
+                    context.video.width, context.video.height)
             initFilter(NormalFilter::class.java)
         })
     }
@@ -178,15 +178,15 @@ class DefaultRenderImpl(var parameter: Parameter,
             viewSize.height = height
         }
 
-        fun reset(parameter: Parameter) {
+        fun reset(codecContext: CodecContext) {
             check()
-            reset(parameter, viewSize.width, viewSize.height)
+            reset(codecContext, viewSize.width, viewSize.height)
         }
 
-        private fun reset(parameter: Parameter, width: Int, height: Int) {
-            initCameraViewport(parameter, width, height)
+        private fun reset(codecContext: CodecContext, width: Int, height: Int) {
+            initCameraViewport(codecContext, width, height)
 //            debug_e("initViewport($width, $height): before")
-            val videoRatio = parameter.video.width / parameter.video.height.toFloat()
+            val videoRatio = codecContext.video.width / codecContext.video.height.toFloat()
             val viewRatio = width / height.toFloat()
             if (videoRatio > viewRatio) {//以View的宽为准
                 size.width = width
@@ -199,14 +199,14 @@ class DefaultRenderImpl(var parameter: Parameter,
             point.y = (height - size.height) / 2
             debug_e("initViewport(${point.x}, ${point.y})" +
                     "(${size.width}, ${size.height})" +
-                    "(${parameter.video.width}, ${parameter.video.height}): after")
+                    "(${codecContext.video.width}, ${codecContext.video.height}): after")
         }
 
-        private fun initCameraViewport(parameter: Parameter, width: Int, height: Int) {
+        private fun initCameraViewport(codecContext: CodecContext, width: Int, height: Int) {
             cameraSize.width = width
             cameraSize.height = height
             //摄像头宽高以横屏为准
-            val cameraRatio = parameter.previewHeight / parameter.previewWidth.toFloat()
+            val cameraRatio = codecContext.previewHeight / codecContext.previewWidth.toFloat()
             val viewRatio = width / height.toFloat()
             if (cameraRatio < viewRatio) {//高度被压缩了，以View的宽为准
                 cameraSize.width = width

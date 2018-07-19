@@ -8,7 +8,7 @@ package com.lmy.codec.helper
 
 import android.graphics.ImageFormat
 import android.hardware.Camera
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.util.debug_v
 
 /**
@@ -21,31 +21,31 @@ class CameraHelper {
             return Camera.getNumberOfCameras()
         }
 
-        fun setPreviewSize(cameraParam: Camera.Parameters, videoParam: Parameter) {
+        fun setPreviewSize(cameraParam: Camera.Parameters, context: CodecContext) {
             val supportSizes = cameraParam.supportedPreviewSizes
             var bestWidth = 0
             var bestHeight = 0
             for (size in supportSizes) {
-                if (size.width >= videoParam.previewWidth//预览宽大于输出宽
-                        && size.height >= videoParam.previewHeight//预览高大于输出高
+                if (size.width >= context.previewWidth//预览宽大于输出宽
+                        && size.height >= context.previewHeight//预览高大于输出高
                         && (size.width * size.height < bestWidth * bestHeight || 0 == bestWidth * bestHeight)) {//选择像素最少的分辨率
                     bestWidth = size.width
                     bestHeight = size.height
                 }
             }
-            debug_v("target preview size: " + videoParam.previewWidth + "x" + videoParam.previewHeight + ", best: " + bestWidth + "x" + bestHeight)
-            videoParam.previewWidth = bestWidth
-            videoParam.previewHeight = bestHeight
-            videoParam.check()
-            cameraParam.setPreviewSize(videoParam.previewWidth, videoParam.previewHeight)
+            debug_v("target preview size: " + context.previewWidth + "x" + context.previewHeight + ", best: " + bestWidth + "x" + bestHeight)
+            context.previewWidth = bestWidth
+            context.previewHeight = bestHeight
+            context.check()
+            cameraParam.setPreviewSize(context.previewWidth, context.previewHeight)
         }
 
-        fun setColorFormat(cameraParam: Camera.Parameters, videoParam: Parameter) {
+        fun setColorFormat(cameraParam: Camera.Parameters, context: CodecContext) {
             if (cameraParam.supportedPreviewFormats.contains(ImageFormat.NV21))
                 cameraParam.previewFormat = ImageFormat.NV21
         }
 
-        fun setFocusMode(cameraParam: Camera.Parameters, videoParam: Parameter) {
+        fun setFocusMode(cameraParam: Camera.Parameters, context: CodecContext) {
             val modes = cameraParam.supportedFocusModes ?: return
             when {
                 modes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO) -> cameraParam.focusMode = Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO
@@ -54,15 +54,15 @@ class CameraHelper {
             }
         }
 
-        fun setFps(cameraParam: Camera.Parameters, videoParam: Parameter) {
+        fun setFps(cameraParam: Camera.Parameters, context: CodecContext) {
             val fpsRanges = cameraParam.supportedPreviewFpsRange
             var fps = fpsRanges[0]
             fpsRanges.forEach {
-                if (videoParam.video.fps * 1000 >= it[0] && it[0] > fps[0])
+                if (context.video.fps * 1000 >= it[0] && it[0] > fps[0])
                     fps = it
             }
             cameraParam.setPreviewFpsRange(fps[0], fps[1])
-            debug_v("fps: ${fps[0]}-${fps[1]}, target: ${videoParam.video.fps * 1000}")
+            debug_v("fps: ${fps[0]}-${fps[1]}, target: ${context.video.fps * 1000}")
         }
 
         fun setAutoExposureLock(cameraParam: Camera.Parameters, flag: Boolean) {

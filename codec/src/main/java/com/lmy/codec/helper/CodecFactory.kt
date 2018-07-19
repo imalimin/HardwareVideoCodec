@@ -8,7 +8,7 @@ package com.lmy.codec.helper
 
 import android.opengl.EGLContext
 import com.lmy.codec.encoder.Encoder
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.encoder.impl.SoftVideoEncoderImpl
 import com.lmy.codec.encoder.impl.VideoEncoderImpl
 
@@ -17,13 +17,13 @@ import com.lmy.codec.encoder.impl.VideoEncoderImpl
  */
 class CodecFactory {
     companion object {
-        fun getEncoder(parameter: Parameter,
+        fun getEncoder(context: CodecContext,
                        textureId: Int,
                        eglContext: EGLContext): Encoder {
-            return if (Parameter.CodecType.HARD == parameter.codecType) {
-                VideoEncoderImpl(parameter, textureId, eglContext)
+            return if (CodecContext.CodecType.HARD == context.codecType) {
+                VideoEncoderImpl(context, textureId, eglContext)
             } else {
-                SoftVideoEncoderImpl(parameter, textureId, eglContext)
+                SoftVideoEncoderImpl(context, textureId, eglContext)
             }
         }
     }

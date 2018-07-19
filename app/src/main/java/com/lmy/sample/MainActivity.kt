@@ -16,7 +16,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import com.lmy.codec.CameraPreviewPresenter
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.loge
 import com.lmy.codec.texture.impl.filter.*
 import com.lmy.codec.util.debug_e
@@ -43,9 +43,9 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
-        mPresenter = CameraPreviewPresenter(Parameter(this))
-        defaultVideoWidth = mPresenter.parameter.video.width
-        defaultVideoHeight = mPresenter.parameter.video.height
+        mPresenter = CameraPreviewPresenter(CodecContext(this))
+        defaultVideoWidth = mPresenter.context.video.width
+        defaultVideoHeight = mPresenter.context.video.height
         val mTextureView = TextureView(this)
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
@@ -235,7 +235,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
         if (seekBar.id == R.id.heightBar) {
             val p = if (progress < 1) 1 else progress
-            val width = mPresenter.parameter.video.width
+            val width = mPresenter.context.video.width
             var height = (p / seekBar.max.toFloat() * defaultVideoHeight).toInt()
             if (0 != height % 2) {
                 ++height

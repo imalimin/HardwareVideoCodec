@@ -8,7 +8,7 @@ package com.lmy.codec.wrapper
 
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CameraHelper
 import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.util.debug_e
@@ -17,11 +17,11 @@ import com.lmy.codec.util.debug_v
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
-class CameraWrapper(private var parameter: Parameter,
+class CameraWrapper(private var context: CodecContext,
                     private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener) {
     companion object {
         private val PREPARE = 0x1
-        fun open(param: Parameter, onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener)
+        fun open(param: CodecContext, onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener)
                 : CameraWrapper {
             return CameraWrapper(param, onFrameAvailableListener)
         }
@@ -35,9 +35,9 @@ class CameraWrapper(private var parameter: Parameter,
     init {
         mCameras = CameraHelper.getNumberOfCameras()
         SingleEventPipeline.instance.queueEvent(Runnable {
-            textureWrapper = CameraTextureWrapper(parameter.video.width, parameter.video.height)
-            textureWrapper.updateSize(parameter.previewWidth, parameter.previewHeight,
-                    parameter.video.width, parameter.video.height)
+            textureWrapper = CameraTextureWrapper(context.video.width, context.video.height)
+            textureWrapper.updateSize(context.previewWidth, context.previewHeight,
+                    context.video.width, context.video.height)
             textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
         })
         SingleEventPipeline.instance.queueEvent(Runnable { prepare() })
@@ -54,9 +54,9 @@ class CameraWrapper(private var parameter: Parameter,
             return
         }
         //如果没有前置摄像头，则强制使用后置摄像头
-        if (parameter.cameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT && mCameras < 2)
-            parameter.cameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK
-        mCameraIndex = parameter.cameraIndex
+        if (context.cameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT && mCameras < 2)
+            context.cameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK
+        mCameraIndex = context.cameraIndex
 
         val time = System.currentTimeMillis()
         mCamera = openCamera(mCameraIndex)
@@ -66,10 +66,10 @@ class CameraWrapper(private var parameter: Parameter,
             return
         }
         val cameraParam = mCamera!!.parameters
-        CameraHelper.setPreviewSize(cameraParam, parameter)
-        CameraHelper.setColorFormat(cameraParam, parameter)
-        CameraHelper.setFocusMode(cameraParam, parameter)
-        CameraHelper.setFps(cameraParam, parameter)
+        CameraHelper.setPreviewSize(cameraParam, context)
+        CameraHelper.setColorFormat(cameraParam, context)
+        CameraHelper.setFocusMode(cameraParam, context)
+        CameraHelper.setFps(cameraParam, context)
         CameraHelper.setAutoExposureLock(cameraParam, false)
         CameraHelper.setSceneMode(cameraParam, Camera.Parameters.SCENE_MODE_AUTO)
         CameraHelper.setFlashMode(cameraParam, Camera.Parameters.FLASH_MODE_OFF)
@@ -77,7 +77,7 @@ class CameraWrapper(private var parameter: Parameter,
         CameraHelper.setVideoStabilization(cameraParam, true)
         val fps = IntArray(2)
         cameraParam.getPreviewFpsRange(fps)
-        debug_v("Config: Size(${parameter.previewWidth}x${parameter.previewHeight})\n" +
+        debug_v("Config: Size(${context.previewWidth}x${context.previewHeight})\n" +
                 "Format(${cameraParam.previewFormat})\n" +
                 "FocusMode(${cameraParam.focusMode})\n" +
                 "Fps(${fps[0]}-${fps[1]})\n" +
@@ -98,8 +98,8 @@ class CameraWrapper(private var parameter: Parameter,
     private fun openCamera(index: Int): Camera? {
         return try {
             val camera = Camera.open(index)
-            parameter.check()
-            camera.setDisplayOrientation(parameter.orientation)
+            context.check()
+            camera.setDisplayOrientation(context.orientation)
             camera
         } catch (e: SecurityException) {
             debug_e("Camera $index open failed, No permission")
