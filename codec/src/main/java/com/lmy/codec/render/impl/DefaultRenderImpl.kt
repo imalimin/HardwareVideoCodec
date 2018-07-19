@@ -69,7 +69,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         screenWrapper?.egl?.makeCurrent()
         GLES20.glViewport(viewport.point.x, viewport.point.y, viewport.size.width, viewport.size.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-        GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
+        GLES20.glClearColor(0f, 0f, 0f, 0f)
         screenWrapper?.drawTexture(transformMatrix)
         screenWrapper?.egl?.swapBuffers()
     }
@@ -78,6 +78,7 @@ class DefaultRenderImpl(var parameter: Parameter,
         synchronized(filterLock) {
             GLES20.glViewport(0, 0, parameter.video.width, parameter.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             filter?.drawTexture(null)
         }
     }
