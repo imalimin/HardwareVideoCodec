@@ -29,7 +29,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
                              var audioEncoder: Encoder? = null,
                              private var cameraWrapper: CameraWrapper? = null,
                              private var render: Render? = null,
-                             private var muxer: Muxer? = MuxerImpl("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"))
+                             private var muxer: Muxer? = null)
     : SurfaceTexture.OnFrameAvailableListener {
 
     private var onStateListener: OnStateListener? = null
@@ -66,13 +66,7 @@ class CameraPreviewPresenter(var parameter: Parameter,
             cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
             render?.post(Runnable {
-                encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
-                        cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
-                audioEncoder = AudioEncoderImpl(parameter)
-                if (null != muxer) {
-                    encoder!!.setOnSampleListener(muxer!!)
-                    audioEncoder!!.setOnSampleListener(muxer!!)
-                }
+                start()
             })
         })
     }
@@ -81,15 +75,22 @@ class CameraPreviewPresenter(var parameter: Parameter,
 //        mRender?.updatePreview(width, height)
     }
 
+    private fun start() {
+        muxer = MuxerImpl("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4")
+        encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
+                cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+        audioEncoder = AudioEncoderImpl(parameter)
+        if (null != muxer) {
+            encoder!!.setOnSampleListener(muxer!!)
+            audioEncoder!!.setOnSampleListener(muxer!!)
+        }
+    }
+
     fun updateSize(width: Int, height: Int) {
         render?.updateSize(width, height)
-        render?.post(Runnable {
-            encoder?.stop()
-            encoder = CodecFactory.getEncoder(parameter, render!!.getFrameBufferTexture(),
-                    cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
-            if (null != muxer) {
-                encoder!!.setOnSampleListener(muxer!!)
-            }
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            stop()
+            start()
         })
     }
 
@@ -99,7 +100,9 @@ class CameraPreviewPresenter(var parameter: Parameter,
     }
 
     private fun release() {
-        stopEncoder()
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            stop()
+        })
         try {
             cameraWrapper?.release()
             cameraWrapper = null
@@ -110,13 +113,11 @@ class CameraPreviewPresenter(var parameter: Parameter,
         }
     }
 
-    private fun stopEncoder() {
-        SingleEventPipeline.instance.queueEvent(Runnable {
-            encoder?.stop()
-            audioEncoder?.stop()
-            muxer?.release()
-            onStateListener?.onStop()
-        })
+    private fun stop() {
+        encoder?.stop()
+        audioEncoder?.stop()
+        muxer?.release()
+        onStateListener?.onStop()
     }
 
     fun setOnStateListener(listener: OnStateListener) {
