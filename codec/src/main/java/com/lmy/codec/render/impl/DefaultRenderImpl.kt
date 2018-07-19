@@ -88,7 +88,6 @@ class DefaultRenderImpl(var parameter: Parameter,
             cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
         cameraWrapper.egl?.makeCurrent()
-        GLES20.glViewport(0, 0, parameter.previewHeight, parameter.previewWidth)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         cameraWrapper.drawTexture(transformMatrix)
@@ -106,7 +105,8 @@ class DefaultRenderImpl(var parameter: Parameter,
         parameter.video.height = height
         viewport.reset(parameter)
         SingleEventPipeline.instance.queueEvent(Runnable {
-            cameraWrapper.updateFrameBuffer(parameter.video.width, parameter.video.height)
+            cameraWrapper.updateSize(parameter.previewWidth, parameter.previewHeight,
+                    parameter.video.width, parameter.video.height)
             initFilter(NormalFilter::class.java)
         })
     }
