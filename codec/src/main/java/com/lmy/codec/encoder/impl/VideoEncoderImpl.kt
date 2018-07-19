@@ -131,13 +131,17 @@ class VideoEncoderImpl(var parameter: Parameter,
                 }
                 else -> {
                     if (flag < 0) return@dequeue false//如果小于零，则跳过
-                    val data = codec!!.outputBuffers[flag]//否则代表编码成功，可以从输出缓冲区队列取出数据
-                    if (null != data) {
+                    val buffer = codec!!.outputBuffers[flag]//否则代表编码成功，可以从输出缓冲区队列取出数据
+                    if (null != buffer) {
                         val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
                         if (endOfStream == 0) {//如果没有收到BUFFER_FLAG_END_OF_STREAM信号，则代表输出数据时有效的
-                            ++mFrameCount
-                            mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-                            onSampleListener?.onSample(this, mBufferInfo, data)
+                            if (mBufferInfo.size != 0) {
+                                ++mFrameCount
+                                buffer.position(mBufferInfo.offset)
+                                buffer.limit(mBufferInfo.offset + mBufferInfo.size)
+                                mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
+                                onSampleListener?.onSample(this, mBufferInfo, buffer)
+                            }
                         }
                         //缓冲区使用完后必须把它还给MediaCodec，以便再次使用，至此一个流程结束，再次循环
                         codec!!.releaseOutputBuffer(flag, false)
