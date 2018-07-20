@@ -87,6 +87,7 @@ class CameraPreviewPresenter(var context: CodecContext,
     }
 
     fun updateSize(width: Int, height: Int) {
+        if (context.video.width == width && context.video.height == height) return
         render?.updateSize(width, height)
         SingleEventPipeline.instance.queueEvent(Runnable {
             stop()
