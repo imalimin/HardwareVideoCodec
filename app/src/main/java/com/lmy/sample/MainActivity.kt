@@ -240,7 +240,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
             if (0 != height % 2) {
                 ++height
             }
-            mPresenter.updateSize(width, height)
+            mPresenter.updateSize(mPresenter.context.video.width, mPresenter.context.video.width)
             return
         }
         mPresenter.getFilter()?.setValue(progressLayout.indexOfChild(seekBar), progress)
