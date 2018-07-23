@@ -49,14 +49,14 @@ class PixelsReader private constructor(context: Context, width: Int, height: Int
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, 0)
     }
 
-    fun readPixels(texture: BaseFrameBufferTexture) {
+    fun readPixels(frameBuffer: Int) {
         //如果pixelsBuffer有效，则跳过
         if (null != pixelsBuffer && null != pixelsBuffer!!.getBuffer() && !pixelsBuffer!!.isInvalid())
             return
         if (!enablePBO) {//不使用PBO
-            readPixelsFromFBO(texture)
+            readPixelsFromFBO(frameBuffer)
         } else {
-            readPixelsFromPBO(texture)
+            readPixelsFromPBO(frameBuffer)
         }
 
         if (null == pixelsBuffer || null == pixelsBuffer!!.buffer) {
@@ -70,21 +70,21 @@ class PixelsReader private constructor(context: Context, width: Int, height: Int
         }
     }
 
-    private fun readPixelsFromFBO(texture: BaseFrameBufferTexture) {
+    private fun readPixelsFromFBO(frameBuffer: Int) {
         if (pixelsBuffer == null || null == pixelsBuffer!!.buffer) return
         pixelsBuffer!!.clear()
-        GLES20.glBindFramebuffer(GL_FRAMEBUFFER, texture.frameBuffer!!)
-        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
-                GLES30.GL_TEXTURE_2D, texture.frameBufferTexture!!, 0)
+        GLES20.glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer)
+//        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
+//                GLES30.GL_TEXTURE_2D, texture.frameBufferTexture!!, 0)
         GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA,
                 GLES20.GL_UNSIGNED_BYTE, pixelsBuffer!!.buffer)
         GLES20.glBindFramebuffer(GL_FRAMEBUFFER, GLES20.GL_NONE)
     }
 
-    private fun readPixelsFromPBO(texture: BaseFrameBufferTexture) {
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, texture.frameBuffer!!)
-        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
-                GLES30.GL_TEXTURE_2D, texture.frameBufferTexture!!, 0)
+    private fun readPixelsFromPBO(frameBuffer: Int) {
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, frameBuffer)
+//        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
+//                GLES30.GL_TEXTURE_2D, texture.frameBufferTexture!!, 0)
         //绑定到第一个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos!![index])
         GLHelper.glReadPixels(0, 0, width, height, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE)

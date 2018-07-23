@@ -105,7 +105,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     private fun readPixels() {
         GLES20.glViewport(0, 0, context.video.width, context.video.height)
         mirrorTexture.drawTexture(null)
-        reader?.readPixels(mirrorTexture)
+        reader?.readPixels(mirrorTexture.frameBuffer!!)
     }
 
 
@@ -153,6 +153,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
             if (mEncoding && inited) {
                 readPixels()
                 mPipeline.queueEvent(Runnable { encode() })
+                reader?.recycleBuffer()
             }
         }
     }
