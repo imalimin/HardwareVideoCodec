@@ -92,6 +92,12 @@ class DefaultRenderImpl(var context: CodecContext,
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             filter?.drawTexture(null)
+            ++count
+            if (0 == count % 60) {
+                reader?.readPixels(filter!!.frameBuffer!!)
+                reader?.shoot("${Environment.getExternalStorageDirectory().path}/temp.jpg")
+                reader?.recycleBuffer()
+            }
         }
     }
 
@@ -104,12 +110,6 @@ class DefaultRenderImpl(var context: CodecContext,
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         cameraWrapper.drawTexture(transformMatrix)
-        ++count
-        if (0 == count % 60) {
-            reader?.readPixels(cameraWrapper.getFrameBuffer())
-            reader?.shoot("${Environment.getExternalStorageDirectory().path}/temp.jpg")
-            reader?.recycleBuffer()
-        }
     }
 
     private var count = 0
