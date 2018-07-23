@@ -16,6 +16,11 @@ import android.opengl.GLES20;
  */
 
 public class GLHelper {
+    static {
+        System.loadLibrary("x264");
+        System.loadLibrary("codec");
+    }
+
     private final static int PBO_SUPPORT_VERSION = 0x30000;
 
     public static native void glReadPixels(int x,
