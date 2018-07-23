@@ -9,8 +9,10 @@ package com.lmy.codec.render.impl
 import android.graphics.Point
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
+import android.os.Environment
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Size
+import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -18,6 +20,7 @@ import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
+
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
@@ -27,6 +30,7 @@ class DefaultRenderImpl(var context: CodecContext,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
+                        var reader: PixelsReader? = null,
                         private var viewport: Viewport = Viewport())
     : Render {
 
@@ -34,6 +38,7 @@ class DefaultRenderImpl(var context: CodecContext,
     private var filter: BaseFilter? = null
 
     fun init() {
+        initReader()
         initFilter(NormalFilter::class.java)
     }
 
@@ -55,6 +60,12 @@ class DefaultRenderImpl(var context: CodecContext,
         initScreen()
     }
 
+    private fun initReader() {
+        reader?.stop()
+        reader = PixelsReader.create(context.context, context.video.width, context.video.height)
+        reader?.start()
+    }
+
     private fun initScreen() {
         if (null == screenWrapper) {
             screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
@@ -72,6 +83,7 @@ class DefaultRenderImpl(var context: CodecContext,
         GLES20.glClearColor(0f, 0f, 0f, 0f)
         screenWrapper?.drawTexture(transformMatrix)
         screenWrapper?.egl?.swapBuffers()
+//        save()
     }
 
     private fun drawFilter() {
@@ -92,7 +104,15 @@ class DefaultRenderImpl(var context: CodecContext,
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         cameraWrapper.drawTexture(transformMatrix)
+        ++count
+        if (0 == count % 60) {
+            reader?.readPixels(cameraWrapper.getFrameBuffer())
+            reader?.shoot("${Environment.getExternalStorageDirectory().path}/temp.jpg")
+            reader?.recycleBuffer()
+        }
     }
+
+    private var count = 0
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {
         updateScreenTexture(texture)
@@ -106,6 +126,7 @@ class DefaultRenderImpl(var context: CodecContext,
         context.video.height = height
         viewport.reset(context)
         SingleEventPipeline.instance.queueEvent(Runnable {
+            initReader()
             cameraWrapper.updateSize(context.previewWidth, context.previewHeight,
                     context.video.width, context.video.height)
             initFilter(NormalFilter::class.java)
@@ -121,6 +142,7 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     override fun release() {
+        reader?.stop()
         stop()
     }
 
