@@ -34,11 +34,13 @@ class PixelsReader private constructor(context: Context, width: Int, height: Int
         this.width = width
         this.height = height
         supportPBO = GLHelper.isSupportPBO(context)
-        pixelsBuffer = PixelsBuffer.allocate(width * height * 4)
     }
 
     private fun initPBOs() {
-        if (!supportPBO) return
+        if (!supportPBO) {
+            pixelsBuffer = PixelsBuffer.allocate(width * height * 4)
+            return
+        }
         val size = width * height * 4
         pbos = IntArray(PBO_COUNT)
         GLES30.glGenBuffers(PBO_COUNT, pbos, 0)
@@ -114,6 +116,7 @@ class PixelsReader private constructor(context: Context, width: Int, height: Int
         }
         if (pixelsBuffer != null) {
             pixelsBuffer!!.clear()
+            pixelsBuffer = null
         }
         GLES20.glDeleteBuffers(pbos!!.size, pbos, 0)
     }
@@ -127,7 +130,7 @@ class PixelsReader private constructor(context: Context, width: Int, height: Int
     }
 
     fun start() {
-        if (width < 1 || height < 1 || null == pixelsBuffer) {
+        if (width < 1 || height < 1) {
             throw RuntimeException("You must config before start!")
         }
         initPBOs()
