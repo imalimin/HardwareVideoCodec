@@ -44,6 +44,7 @@ class EventPipeline private constructor(name: String) {
             return
         }
         start = false
+        mHandlerThread.interrupt()
         mHandlerThread.quitSafely()
     }
 
