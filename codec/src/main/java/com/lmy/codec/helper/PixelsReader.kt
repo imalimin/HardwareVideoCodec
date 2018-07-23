@@ -1,43 +1,50 @@
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 package com.lmy.codec.helper
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_FRAMEBUFFER
 import android.opengl.GLES30
 import com.lmy.codec.entity.PixelsBuffer
-import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
 import java.nio.ByteBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/6/11.
  */
 
-class PixelsReader private constructor(context: Context, width: Int, height: Int,
+class PixelsReader private constructor(private var usePbo: Boolean,
+                                       private var width: Int = 0,
+                                       private var height: Int = 0,
                                        private var pbos: IntArray? = null,
                                        private var pixelsBuffer: PixelsBuffer? = null) {
-
-    private var width: Int = 0
-    private var height: Int = 0
-    private var supportPBO = false
-    private var enablePBO = false
 
     private var index = 0
     private var nextIndex = 1
 
     init {
-        config(context, width, height)
+        config(usePbo, width, height)
     }
 
-    fun config(context: Context, width: Int, height: Int) {
+    fun config(usePbo: Boolean, width: Int, height: Int) {
         this.width = width
         this.height = height
-        supportPBO = GLHelper.isSupportPBO(context)
+        this.usePbo = usePbo
     }
 
     private fun initPBOs() {
-        if (!supportPBO) {
+        if (!enablePBO()) {
             pixelsBuffer = PixelsBuffer.allocate(width * height * 4)
             return
         }
@@ -53,9 +60,9 @@ class PixelsReader private constructor(context: Context, width: Int, height: Int
 
     fun readPixels(frameBuffer: Int) {
         //如果pixelsBuffer有效，则跳过
-        if (null != pixelsBuffer && null != pixelsBuffer!!.getBuffer() && !pixelsBuffer!!.isInvalid())
+        if (null != pixelsBuffer && null != pixelsBuffer!!.buffer && !pixelsBuffer!!.isInvalid)
             return
-        if (!enablePBO) {//不使用PBO
+        if (!enablePBO()) {//不使用PBO
             readPixelsFromFBO(frameBuffer)
         } else {
             readPixelsFromPBO(frameBuffer)
@@ -122,7 +129,7 @@ class PixelsReader private constructor(context: Context, width: Int, height: Int
     }
 
     fun enablePBO(): Boolean {
-        return enablePBO
+        return usePbo
     }
 
     fun currentIndex(): Int {
@@ -151,9 +158,89 @@ class PixelsReader private constructor(context: Context, width: Int, height: Int
         return pixelsBuffer!!.buffer
     }
 
+    private fun btoi(btarr: ByteArray): IntArray? {
+        if (btarr.size % 4 != 0) {
+            return null
+        }
+        val intarr = IntArray(btarr.size / 4)
+
+        var i1: Int
+        var i2: Int
+        var i3: Int
+        var i4: Int
+        var j = 0
+        var k = 0
+        while (j < intarr.size)
+        //j循环int        k循环byte数组
+        {
+            i1 = btarr[k].toInt()
+            i2 = btarr[k + 1].toInt()
+            i3 = btarr[k + 2].toInt()
+            i4 = btarr[k + 3].toInt()
+
+            if (i1 < 0) {
+                i1 += 256
+            }
+            if (i2 < 0) {
+                i2 += 256
+            }
+            if (i3 < 0) {
+                i3 += 256
+            }
+            if (i4 < 0) {
+                i4 += 256
+            }
+            intarr[j] = (i1 shl 24) + (i2 shl 16) + (i3 shl 8) + (i4 shl 0)//保存Int数据类型转换
+            j++
+            k += 4
+
+        }
+        return intarr
+    }
+
+    private val opts = BitmapFactory.Options()
+
+    private fun convertARGB(data: ByteArray) {
+        val width = width
+        val height = height
+        for (j in 0 until height) {
+            for (i in 0 until width) {
+                val index = width * 4 * j + i * 4
+                val a = data[index + 3]
+                data[index + 3] = data[index + 2]
+                data[index + 2] = data[index + 1]
+                data[index + 1] = data[index]
+                data[index] = a
+            }
+        }
+    }
+
+    private fun save(data: ByteArray, path: String) {
+        convertARGB(data)
+        val bitmap = Bitmap.createBitmap(btoi(data), width, height, Bitmap.Config.ARGB_8888)
+        //        opts.inJustDecodeBounds = false;
+        //        opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        //        Bitmap bitmap = BitmapFactory.decodeByteArray(frame.data, 0, frame.data.length, opts);
+        try {
+            val os = FileOutputStream(File(path))
+            bitmap!!.compress(Bitmap.CompressFormat.JPEG, 80, os)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
+
+        if (null != bitmap && !bitmap.isRecycled)
+            bitmap.recycle()
+    }
+
+    fun shoot(path: String) {
+        val src = ByteArray(width * height * 4)
+        getPixelsBuffer().get(src)
+        save(src, path)
+    }
+
     companion object {
         fun create(context: Context, width: Int, height: Int): PixelsReader {
-            return PixelsReader(context, width, height)
+            return PixelsReader(GLHelper.isSupportPBO(context), width, height)
         }
 
         private val PBO_COUNT = 2
