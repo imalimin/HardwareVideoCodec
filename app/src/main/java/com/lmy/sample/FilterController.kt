@@ -5,13 +5,13 @@ import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import com.lmy.codec.CameraPreviewPresenter
+import com.lmy.codec.RecordPresenter
 import com.lmy.codec.texture.impl.filter.*
 
 /**
  * Created by lmyooyo@gmail.com on 2018/7/24.
  */
-class FilterController(private val mPresenter: CameraPreviewPresenter,
+class FilterController(private val mPresenter: RecordPresenter,
                        private val progressLayout: ViewGroup)
     : SeekBar.OnSeekBarChangeListener {
     companion object {

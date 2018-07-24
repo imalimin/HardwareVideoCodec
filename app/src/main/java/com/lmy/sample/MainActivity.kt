@@ -17,7 +17,7 @@ import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.RadioGroup
-import com.lmy.codec.CameraPreviewPresenter
+import com.lmy.codec.RecordPresenter
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.loge
@@ -28,7 +28,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         View.OnTouchListener, RadioGroup.OnCheckedChangeListener {
 
-    private lateinit var mPresenter: CameraPreviewPresenter
+    private lateinit var mPresenter: RecordPresenter
     private lateinit var mFilterController: FilterController
     private var defaultVideoWidth = 0
     private var defaultVideoHeight = 0
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
             return
         val context = CodecContext(this)
         context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
-        mPresenter = CameraPreviewPresenter(context)
+        mPresenter = RecordPresenter(context)
         mPresenter.setOnStateListener(onStateListener)
         defaultVideoWidth = mPresenter.context.video.width
         defaultVideoHeight = mPresenter.context.video.height
@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
     }
 
     private var onStateListener =
-            object : CameraPreviewPresenter.OnStateListener {
+            object : RecordPresenter.OnStateListener {
                 override fun onStop() {
 
                 }
