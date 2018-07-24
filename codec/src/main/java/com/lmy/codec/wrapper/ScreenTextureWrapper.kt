@@ -27,7 +27,9 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
             egl!!.makeCurrent()
             if (null == textureId)
                 throw RuntimeException("textureId can not be null")
-            texture = NormalTexture(textureId!!)
+            texture = NormalTexture(textureId!!).apply {
+                name="Screen Texture"
+            }
         } else {
             debug_e("Egl create failed")
         }

@@ -20,7 +20,8 @@ abstract class BaseTexture(var textureId: IntArray,
                            var locationBuffer: FloatBuffer? = null,
                            var textureBuffer: FloatBuffer? = null,
                            var shaderProgram: Int? = null,
-                           var drawer: GLDrawer = GLDrawer()) : Texture {
+                           var drawer: GLDrawer = GLDrawer(),
+                           var name: String = "BaseTexture") : Texture {
     companion object {
         var COORDS_PER_VERTEX = 2
         var TEXTURE_COORDS_PER_VERTEX = 2
@@ -132,7 +133,7 @@ abstract class BaseTexture(var textureId: IntArray,
         var right = -left
         val bottom = -y
         val top = -bottom
-        debug_e("location($left, $top, $right, $bottom)")
+        debug_e("$name location($left, $top, $right, $bottom)")
         return floatArrayOf(
                 left, bottom,//LEFT,BOTTOM
                 right, bottom,//RIGHT,BOTTOM
@@ -148,7 +149,7 @@ abstract class BaseTexture(var textureId: IntArray,
         var right = left + x
         val bottom = (1 - y) / 2
         val top = bottom + y
-        debug_e("crop($left, $top, $right, $bottom)")
+        debug_e("$name crop($left, $top, $right, $bottom)")
         return floatArrayOf(
                 left, bottom,//LEFT,BOTTOM
                 right, bottom,//RIGHT,BOTTOM

@@ -17,10 +17,14 @@ abstract class BaseFrameBufferTexture(var width: Int,
                                       var height: Int,
                                       textureId: IntArray,
                                       var frameBuffer: IntArray = IntArray(1),
-                                      var frameBufferTexture: IntArray = IntArray(1),
-                                      var name: String = "BaseFrameBufferTexture") : BaseTexture(textureId) {
+                                      var frameBufferTexture: IntArray = IntArray(1)) : BaseTexture(textureId) {
 
     protected val frameBufferLock = Any()
+
+    init {
+        name = "BaseFrameBufferTexture"
+    }
+
     open fun updateFrameBuffer(width: Int, height: Int) {
         this.width = width
         this.height = height

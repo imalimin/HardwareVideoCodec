@@ -26,7 +26,9 @@ class CameraTextureWrapper(width: Int,
         egl!!.initEGL()
         egl!!.makeCurrent()
         textureId = createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES)
-        texture = CameraTexture(width, height, textureId!!)
+        texture = CameraTexture(width, height, textureId!!).apply {
+            name = "Camera Texture"
+        }
         intTexture()
     }
 

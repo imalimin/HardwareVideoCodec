@@ -25,7 +25,9 @@ class CodecTextureWrapper(var surface: Surface,
         egl!!.makeCurrent()
         if (null == textureId)
             throw RuntimeException("textureId can not be null")
-        texture = NormalTexture(textureId!!)
+        texture = NormalTexture(textureId!!).apply {
+            name = "Codec Texture"
+        }
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
