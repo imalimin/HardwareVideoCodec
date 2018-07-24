@@ -83,7 +83,6 @@ class DefaultRenderImpl(var context: CodecContext,
         GLES20.glClearColor(0f, 0f, 0f, 0f)
         screenWrapper?.drawTexture(transformMatrix)
         screenWrapper?.egl?.swapBuffers()
-//        save()
     }
 
     private fun drawFilter() {

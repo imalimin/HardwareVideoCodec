@@ -17,6 +17,7 @@ import android.media.MediaCodecInfo
 data class CodecContext(var context: Context,
                         var video: Video = Video(),
                         var audio: Audio = Audio(),
+                        var ioContext: IOContext = IOContext(),
                         var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
                         var previewWidth: Int = 1280,//以水平分辨率为准
                         var previewHeight: Int = 720,//以水平分辨率为准
@@ -72,4 +73,6 @@ data class CodecContext(var context: Context,
     enum class CodecType {
         HARD, SOFT
     }
+
+    data class IOContext(var path: String? = null)
 }

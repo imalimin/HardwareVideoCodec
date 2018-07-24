@@ -8,7 +8,7 @@
 package com.lmy.codec
 
 import android.graphics.SurfaceTexture
-import android.os.Environment
+import android.text.TextUtils
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
@@ -76,7 +76,10 @@ class CameraPreviewPresenter(var context: CodecContext,
     }
 
     private fun start() {
-        muxer = MuxerImpl("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4")
+        if (TextUtils.isEmpty(context.ioContext.path)) {
+            throw RuntimeException("context.ioContext.path can not be null!")
+        }
+        muxer = MuxerImpl(context.ioContext.path!!)
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
         audioEncoder = AudioEncoderImpl(context)

@@ -8,6 +8,7 @@ package com.lmy.sample
 
 import android.graphics.SurfaceTexture
 import android.os.Bundle
+import android.os.Environment
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
@@ -43,7 +44,9 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
-        mPresenter = CameraPreviewPresenter(CodecContext(this))
+        val context = CodecContext(this)
+        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
+        mPresenter = CameraPreviewPresenter(context)
         defaultVideoWidth = mPresenter.context.video.width
         defaultVideoHeight = mPresenter.context.video.height
         val mTextureView = TextureView(this)
