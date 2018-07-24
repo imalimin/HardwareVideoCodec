@@ -45,4 +45,6 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
         if (null != textureId)
             GLES20.glDeleteTextures(1, intArrayOf(textureId!!), 0)
     }
+
+    abstract fun updateSize(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int)
 }

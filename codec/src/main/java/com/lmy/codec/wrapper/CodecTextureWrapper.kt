@@ -18,6 +18,7 @@ import com.lmy.codec.util.debug_e
 class CodecTextureWrapper(var surface: Surface,
                           override var textureId: Int?,
                           var eglContext: EGLContext? = null) : TextureWrapper() {
+
     init {
         egl = Egl("Codec")
         egl!!.initEGL(surface, eglContext)
@@ -38,5 +39,9 @@ class CodecTextureWrapper(var surface: Surface,
     override fun release() {
         super.release()
         surface.release()
+    }
+
+    override fun updateSize(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+
     }
 }
