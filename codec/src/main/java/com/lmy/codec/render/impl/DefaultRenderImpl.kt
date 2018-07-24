@@ -95,12 +95,12 @@ class DefaultRenderImpl(var context: CodecContext,
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             filter?.drawTexture(null)
-            ++count
-            if (0 == count % 60) {
-                reader?.readPixels(filter!!.frameBuffer[0])
-                reader?.shoot("${Environment.getExternalStorageDirectory().path}/temp.jpg")
-                reader?.recycleBuffer()
-            }
+//            ++count
+//            if (0 == count % 60) {
+//                reader?.readPixels(filter!!.frameBuffer[0])
+//                reader?.shoot("${Environment.getExternalStorageDirectory().path}/temp.jpg")
+//                reader?.recycleBuffer()
+//            }
         }
     }
 
