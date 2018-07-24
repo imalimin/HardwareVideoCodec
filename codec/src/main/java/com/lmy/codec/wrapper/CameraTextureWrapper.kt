@@ -60,9 +60,9 @@ class CameraTextureWrapper(width: Int,
         return (texture as BaseFrameBufferTexture).frameBufferTexture!!
     }
 
-    fun updateSize(previewWidth: Int, previewHeight: Int, width: Int, height: Int) {
-        (texture as CameraTexture).updateFrameBuffer(width, height)
-        (texture as CameraTexture).crop(width / previewHeight.toFloat(),
-                height / previewWidth.toFloat())
+    override fun updateSize(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+        (texture as CameraTexture).updateFrameBuffer(destWidth, destHeight)
+        (texture as CameraTexture).crop(destWidth / srcHeight.toFloat(),
+                destHeight / srcWidth.toFloat())
     }
 }
