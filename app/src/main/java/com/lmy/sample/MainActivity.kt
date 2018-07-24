@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         mTextureView.surfaceTextureListener = this
         mTextureView.setOnTouchListener(this)
         mFilterController = FilterController(mPresenter, progressLayout)
-        changeBtn.setOnClickListener({
+        effectBtn.setOnClickListener({
             mFilterController.chooseFilter(this)
         })
     }
