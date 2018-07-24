@@ -39,4 +39,10 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
         }
         texture?.drawTexture(transformMatrix)
     }
+
+    override fun updateSize(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+        debug_e("($srcWidth, $srcHeight)($destWidth, $destHeight)")
+        (texture as NormalTexture).updateLocation(destWidth / srcWidth.toFloat(),
+                destHeight / srcHeight.toFloat())
+    }
 }
