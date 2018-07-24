@@ -14,6 +14,13 @@ import com.lmy.codec.texture.impl.filter.*
 class FilterController(private val mPresenter: CameraPreviewPresenter,
                        private val progressLayout: ViewGroup)
     : SeekBar.OnSeekBarChangeListener {
+    companion object {
+        private val FILTERS = arrayOf("Normal", "Grey", "Beauty", "Pixelation", "Hue",
+                "Gamma", "Brightness", "Sepia", "Sharpness", "Saturation",
+                "Exposure", "Highlight Shadow", "Monochrome", "White Balance", "Vignette",
+                "Crosshatch", "Smooth", "Sketch", "Halftone", "Haze")
+    }
+
     private var oneBar: SeekBar = progressLayout.getChildAt(0) as SeekBar
     private var twoBar: SeekBar = progressLayout.getChildAt(1) as SeekBar
     private var thBar: SeekBar = progressLayout.getChildAt(2) as SeekBar
@@ -22,10 +29,7 @@ class FilterController(private val mPresenter: CameraPreviewPresenter,
     fun chooseFilter(context: Context) {
         AlertDialog.Builder(context).apply {
             setTitle("Change filter")
-            setItems(arrayOf("Normal", "Grey", "Beauty", "Pixelation", "Hue",
-                    "Gamma", "Brightness", "Sepia", "Sharpness", "Saturation",
-                    "Exposure", "Highlight Shadow", "Monochrome", "White Balance", "Vignette",
-                    "Crosshatch", "Smooth", "Sketch", "Halftone", "Haze")) { dialog, which ->
+            setItems(FILTERS) { dialog, which ->
                 choose(which)
                 dialog.dismiss()
             }
