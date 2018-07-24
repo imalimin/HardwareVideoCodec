@@ -26,6 +26,13 @@ class FilterController(private val mPresenter: RecordPresenter,
     private var thBar: SeekBar = progressLayout.getChildAt(2) as SeekBar
     private var fBar: SeekBar = progressLayout.getChildAt(3) as SeekBar
 
+    init {
+        oneBar.setOnSeekBarChangeListener(this)
+        twoBar.setOnSeekBarChangeListener(this)
+        thBar.setOnSeekBarChangeListener(this)
+        fBar.setOnSeekBarChangeListener(this)
+    }
+
     fun chooseFilter(context: Context) {
         AlertDialog.Builder(context).apply {
             setTitle("EFFECT")
