@@ -32,7 +32,7 @@ class AudioEncoderImpl(var context: CodecContext,
                        var outputBuffers: Array<ByteBuffer>? = null,
                        private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var audioWrapper: AudioRecordWrapper? = null,
-                       private var pTimer: PresentationTimer = PresentationTimer(context.video.fps))
+                       private var pTimer: PresentationTimer = PresentationTimer(context.audio.sampleRateInHz))
     : Encoder, AudioRecordWrapper.OnPCMListener {
 
     companion object {
@@ -96,7 +96,6 @@ class AudioEncoderImpl(var context: CodecContext,
     private fun encode(buffer: ByteArray) {
         synchronized(mEncodingSyn) {
             try {
-                pTimer.record()
                 inputBuffers = codec!!.inputBuffers
                 outputBuffers = codec!!.outputBuffers
                 val inputBufferIndex = codec!!.dequeueInputBuffer(WAIT_TIME)
@@ -136,6 +135,7 @@ class AudioEncoderImpl(var context: CodecContext,
 //                            if (bufferInfo.presentationTimeUs > 0)
 //                            timestamp += 29023
 //                            bufferInfo.presentationTimeUs = timestamp
+                            pTimer.record()
                             bufferInfo.presentationTimeUs = pTimer.presentationTimeUs
                             onSampleListener?.onSample(this, bufferInfo, data)
                         }
@@ -187,7 +187,7 @@ class AudioEncoderImpl(var context: CodecContext,
     override fun onFrameAvailable(p0: SurfaceTexture?) {
     }
 
-    class PresentationTimer(var fps: Int,
+    class PresentationTimer(var sampleRateInHz: Int,
                             var presentationTimeUs: Long = 0,
                             private var timestamp: Long = 0) {
 
@@ -196,11 +196,12 @@ class AudioEncoderImpl(var context: CodecContext,
         }
 
         fun record() {
-            val timeTmp = System.currentTimeMillis()
+            val timeTmp = System.nanoTime() / 1000
             presentationTimeUs += if (0L != timestamp)
-                (timeTmp - timestamp) * 1000
+                timeTmp - timestamp
             else
-                1000000L / fps
+                1000000000L / sampleRateInHz
+            debug_e("presentationTimeUs=$presentationTimeUs")
             timestamp = timeTmp
         }
 
