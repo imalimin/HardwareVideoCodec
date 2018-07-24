@@ -43,6 +43,7 @@ class AudioEncoderImpl(var context: CodecContext,
 
     private lateinit var format: MediaFormat
     private var mPipeline = EventPipeline.create("AudioEncodePipeline")
+    private var mDequeuePipeline = EventPipeline.create("AudioDequeuePipeline")
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var onSampleListener: Encoder.OnSampleListener? = null
@@ -79,6 +80,22 @@ class AudioEncoderImpl(var context: CodecContext,
         audioWrapper?.setOnPCMListener(this)
         mCache = Cache(5, audioWrapper!!.getBufferSize())
         mCache?.ready()
+        loop()
+    }
+
+    private val looper = Runnable {
+        if (!dequeue()) {
+            try {
+                Thread.sleep(5)
+            }catch (e:InterruptedException){
+
+            }
+        }
+        loop()
+    }
+
+    private fun loop() {
+        mDequeuePipeline.queueEvent(looper)
     }
 
     override fun onPCMSample(buffer: ByteArray) {
@@ -107,7 +124,6 @@ class AudioEncoderImpl(var context: CodecContext,
                     inputBuffer.put(buffer)
                     codec!!.queueInputBuffer(inputBufferIndex, 0, buffer.size, 0, 0)
                 }
-                dequeue()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -178,6 +194,7 @@ class AudioEncoderImpl(var context: CodecContext,
         audioWrapper?.stop()
         mCache?.release()
         mPipeline.quit()
+        mDequeuePipeline.quit()
         debug_e("Audio encoder stop")
     }
 
@@ -203,7 +220,6 @@ class AudioEncoderImpl(var context: CodecContext,
                 timeTmp - timestamp
             else
                 1000000000L / sampleRateInHz
-//            debug_e("presentationTimeUs=$presentationTimeUs")
             timestamp = timeTmp
         }
 
