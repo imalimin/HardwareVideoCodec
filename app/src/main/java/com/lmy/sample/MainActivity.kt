@@ -15,6 +15,7 @@ import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.RadioGroup
 import android.widget.SeekBar
 import com.lmy.codec.CameraPreviewPresenter
 import com.lmy.codec.entity.CodecContext
@@ -24,7 +25,8 @@ import com.lmy.codec.util.debug_e
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, SeekBar.OnSeekBarChangeListener {
+class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
+        SeekBar.OnSeekBarChangeListener, RadioGroup.OnCheckedChangeListener {
 
     private lateinit var mPresenter: CameraPreviewPresenter
     private var defaultVideoWidth = 0
@@ -40,7 +42,8 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         twoBar.setOnSeekBarChangeListener(this)
         thBar.setOnSeekBarChangeListener(this)
         fBar.setOnSeekBarChangeListener(this)
-        heightBar.setOnSeekBarChangeListener(this)
+        ratioGroup.check(ratioGroup.getChildAt(0).id)
+        ratioGroup.setOnCheckedChangeListener(this)
         loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
@@ -235,17 +238,30 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
                 .show()
     }
 
-    override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        if (seekBar.id == R.id.heightBar) {
-            val p = if (progress < 1) 1 else progress
-            val width = mPresenter.context.video.width
-            var height = (p / seekBar.max.toFloat() * defaultVideoHeight).toInt()
-            if (0 != height % 2) {
-                ++height
+    override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
+        val width = mPresenter.context.video.width
+        var height = when (group.indexOfChild(group.findViewById(checkedId))) {
+            1 -> {//1:1
+                width
             }
-            mPresenter.updateSize(mPresenter.context.video.width, mPresenter.context.video.width)
-            return
+            2 -> {//4:3
+                (width / 4f * 3).toInt()
+            }
+            3 -> {//3:2
+                (width / 3f * 2).toInt()
+
+            }
+            else -> {//默认
+                defaultVideoHeight
+            }
         }
+        if (0 != height % 2) {
+            ++height
+        }
+        mPresenter.updateSize(width, height)
+    }
+
+    override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
         mPresenter.getFilter()?.setValue(progressLayout.indexOfChild(seekBar), progress)
     }
 
