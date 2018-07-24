@@ -28,7 +28,7 @@ class FilterController(private val mPresenter: RecordPresenter,
 
     fun chooseFilter(context: Context) {
         AlertDialog.Builder(context).apply {
-            setTitle("Change filter")
+            setTitle("EFFECT")
             setItems(FILTERS) { dialog, which ->
                 choose(which)
                 dialog.dismiss()
