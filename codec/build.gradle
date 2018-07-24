@@ -1,14 +1,17 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion 26
-
+    lintOptions {
+        abortOnError false
+    }
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 6
-        versionName "1.4.0"
+        versionCode 7
+        versionName "1.4.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -48,4 +51,12 @@ dependencies {
 }
 repositories {
     mavenCentral()
+}
+publish {
+    userOrg = 'limingyilr@gmail.com'
+    groupId = 'com.lmy.codec'
+    artifactId = 'hardwarevideocodec'
+    publishVersion = android.defaultConfig.versionName
+    desc = 'HardwareVideoCodec is an efficient video encoding library for Android.'
+    website = 'https://github.com/lmylr'
 }
