@@ -17,6 +17,17 @@ abstract class BaseFrameBufferTexture(var width: Int,
                                       textureId: Int,
                                       var frameBuffer: Int? = null,
                                       var frameBufferTexture: Int? = null) : BaseTexture(textureId) {
+    protected val frameBufferLock = Any()
+    fun updateFrameBuffer(width: Int, height: Int) {
+        this.width = width
+        this.height = height
+        synchronized(frameBufferLock) {
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture!!)
+            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, this.width, this.height,
+                    0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
+        }
+    }
 
     open fun initFrameBuffer() {
         releaseFrameBuffer()

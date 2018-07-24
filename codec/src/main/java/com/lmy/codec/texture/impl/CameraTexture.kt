@@ -22,7 +22,6 @@ class CameraTexture(width: Int, height: Int,
     private var uTextureLocation = 0
     private var aTextureCoordinateLocation = 0
     private var uTextureMatrix = 0
-    private val frameBufferLock = Any()
     private val verticesBufferLock = Any()
 
     init {
@@ -30,15 +29,6 @@ class CameraTexture(width: Int, height: Int,
 
         createProgram()
         initFrameBuffer()
-    }
-
-    fun updateFrameBuffer(width: Int, height: Int) {
-        synchronized(frameBufferLock) {
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture!!)
-            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height,
-                    0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null)
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
-        }
     }
 
     fun updateTextureLocation(cropRatioWidth: Float, cropRatioHeight: Float) {
