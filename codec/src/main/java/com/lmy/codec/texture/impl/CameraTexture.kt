@@ -41,7 +41,7 @@ class CameraTexture(width: Int, height: Int,
         }
     }
 
-    fun crop(cropRatioWidth: Float, cropRatioHeight: Float) {
+    fun updateTextureLocation(cropRatioWidth: Float, cropRatioHeight: Float) {
         synchronized(verticesBufferLock) {
             verticesBuffer = createShapeVerticesBuffer(getVertices(cropRatioWidth, cropRatioHeight))
         }

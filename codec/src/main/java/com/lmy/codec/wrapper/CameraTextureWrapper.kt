@@ -66,7 +66,7 @@ class CameraTextureWrapper(width: Int,
 
     override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
         (texture as CameraTexture).updateFrameBuffer(destWidth, destHeight)
-        (texture as CameraTexture).crop(destWidth / srcHeight.toFloat(),
+        (texture as CameraTexture).updateTextureLocation(destWidth / srcHeight.toFloat(),
                 destHeight / srcWidth.toFloat())
     }
 }
