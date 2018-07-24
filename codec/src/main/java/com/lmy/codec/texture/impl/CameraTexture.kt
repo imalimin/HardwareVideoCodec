@@ -10,7 +10,6 @@ import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import com.lmy.codec.BaseApplication
 import com.lmy.codec.helper.AssetsHelper
-import com.lmy.codec.util.debug_e
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/29.
@@ -22,19 +21,10 @@ class CameraTexture(width: Int, height: Int,
     private var uTextureLocation = 0
     private var aTextureCoordinateLocation = 0
     private var uTextureMatrix = 0
-    private val verticesBufferLock = Any()
 
     init {
-        verticesBuffer = createShapeVerticesBuffer(getVertices(1f, 1f))
-
         createProgram()
         initFrameBuffer()
-    }
-
-    fun updateTextureLocation(cropRatioWidth: Float, cropRatioHeight: Float) {
-        synchronized(verticesBufferLock) {
-            verticesBuffer = createShapeVerticesBuffer(getVertices(cropRatioWidth, cropRatioHeight))
-        }
     }
 
     private fun createProgram() {
@@ -56,9 +46,7 @@ class CameraTexture(width: Int, height: Int,
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId)
         GLES20.glUniform1i(uTextureLocation, 0)
-        synchronized(verticesBufferLock) {
-            enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
-        }
+        enableVertex(aPositionLocation, aTextureCoordinateLocation)
         GLES20.glUniformMatrix4fv(uTextureMatrix, 1, false, transformMatrix, 0)
 
         drawer.draw()
@@ -69,21 +57,5 @@ class CameraTexture(width: Int, height: Int,
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
-    }
-
-    private fun getVertices(cropRatioWidth: Float, cropRatioHeight: Float): FloatArray {
-        val x = if (cropRatioWidth > 1) 1f else cropRatioWidth
-        val y = if (cropRatioHeight > 1) 1f else cropRatioHeight
-        val left = (1 - x) / 2
-        var right = left + x
-        val bottom = (1 - y) / 2
-        val top = bottom + y
-        debug_e("crop($left, $top, $right, $bottom)")
-        return floatArrayOf(
-                left, bottom,//LEFT,BOTTOM
-                right, bottom,//RIGHT,BOTTOM
-                left, top,//LEFT,TOP
-                right, top//RIGHT,TOP
-        )
     }
 }

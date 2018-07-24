@@ -30,7 +30,6 @@ class NormalTexture(textureId: Int) : BaseTexture(textureId) {
     private var uTextureLocation = 0
 
     init {
-        verticesBuffer = createShapeVerticesBuffer(VERTICES_SCREEN)
         createProgram()
     }
 
@@ -47,7 +46,7 @@ class NormalTexture(textureId: Int) : BaseTexture(textureId) {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(uTextureLocation, 0)
-        enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
+        enableVertex(aPositionLocation, aTextureCoordinateLocation)
 
         drawer.draw()
 

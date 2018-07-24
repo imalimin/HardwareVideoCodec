@@ -17,26 +17,20 @@ import java.nio.FloatBuffer
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 abstract class BaseTexture(var textureId: Int,
-                           var buffer: FloatBuffer? = null,
-                           var verticesBuffer: FloatBuffer? = null,
+                           var locationBuffer: FloatBuffer? = null,
+                           var textureBuffer: FloatBuffer? = null,
                            var shaderProgram: Int? = null,
                            var drawer: GLDrawer = GLDrawer()) : Texture {
     companion object {
         var COORDS_PER_VERTEX = 2
         var TEXTURE_COORDS_PER_VERTEX = 2
-        private val DRAW_INDICES = shortArrayOf(0, 1, 2, 0, 2, 3)
-        val VERTICES_SQUARE = floatArrayOf(
-                -1.0f, -1.0f,//LEFT,BOTTOM
-                1.0f, -1.0f,//RIGHT,BOTTOM
-                -1.0f, 1.0f,//LEFT,TOP
-                1.0f, 1.0f//RIGHT,TOP
-        )
     }
 
     private val bufferLock = Any()
 
     init {
-        buffer = createShapeVerticesBuffer(VERTICES_SQUARE)
+        locationBuffer = createShapeVerticesBuffer(getLocationVertices(1f, 1f))
+        textureBuffer = createShapeVerticesBuffer(getTextureLocationVertices(1f, 1f))
     }
 
     fun createShapeVerticesBuffer(array: FloatArray): FloatBuffer {
@@ -86,19 +80,24 @@ abstract class BaseTexture(var textureId: Int,
         return program
     }
 
-    fun enableVertex(posLoc: Int, texLoc: Int, shapeBuffer: FloatBuffer, texBuffer: FloatBuffer) {
+    fun enableVertex(posLoc: Int, texLoc: Int) {
         GLES20.glEnableVertexAttribArray(posLoc)
         GLES20.glEnableVertexAttribArray(texLoc)
-        //xy
         synchronized(bufferLock) {
+            //xy
             GLES20.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
                     GLES20.GL_FLOAT, false,
-                    COORDS_PER_VERTEX * 4, shapeBuffer)
+                    COORDS_PER_VERTEX * 4, locationBuffer)
+            //st
+            GLES20.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
+                    GLES20.GL_FLOAT, false,
+                    TEXTURE_COORDS_PER_VERTEX * 4, textureBuffer)
         }
-        //st
-        GLES20.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false,
-                TEXTURE_COORDS_PER_VERTEX * 4, texBuffer)
+    }
+
+    fun disableVertex(position: Int, coordinate: Int) {
+        GLES20.glDisableVertexAttribArray(position)
+        GLES20.glDisableVertexAttribArray(coordinate)
     }
 
     fun getAttribLocation(name: String): Int {
@@ -116,11 +115,17 @@ abstract class BaseTexture(var textureId: Int,
 
     open fun updateLocation(cropRatioWidth: Float, cropRatioHeight: Float) {
         synchronized(bufferLock) {
-            buffer = createShapeVerticesBuffer(getVertices(cropRatioWidth, cropRatioHeight))
+            locationBuffer = createShapeVerticesBuffer(getLocationVertices(cropRatioWidth, cropRatioHeight))
         }
     }
 
-    private fun getVertices(cropRatioWidth: Float, cropRatioHeight: Float): FloatArray {
+    fun updateTextureLocation(cropRatioWidth: Float, cropRatioHeight: Float) {
+        synchronized(bufferLock) {
+            textureBuffer = createShapeVerticesBuffer(getTextureLocationVertices(cropRatioWidth, cropRatioHeight))
+        }
+    }
+
+    private fun getLocationVertices(cropRatioWidth: Float, cropRatioHeight: Float): FloatArray {
         val x = if (cropRatioWidth > 1) 1f else cropRatioWidth
         val y = if (cropRatioHeight > 1) 1f else cropRatioHeight
         val left = -x
@@ -128,6 +133,22 @@ abstract class BaseTexture(var textureId: Int,
         val bottom = -y
         val top = -bottom
         debug_e("location($left, $top, $right, $bottom)")
+        return floatArrayOf(
+                left, bottom,//LEFT,BOTTOM
+                right, bottom,//RIGHT,BOTTOM
+                left, top,//LEFT,TOP
+                right, top//RIGHT,TOP
+        )
+    }
+
+    private fun getTextureLocationVertices(cropRatioWidth: Float, cropRatioHeight: Float): FloatArray {
+        val x = if (cropRatioWidth > 1) 1f else cropRatioWidth
+        val y = if (cropRatioHeight > 1) 1f else cropRatioHeight
+        val left = (1 - x) / 2
+        var right = left + x
+        val bottom = (1 - y) / 2
+        val top = bottom + y
+        debug_e("crop($left, $top, $right, $bottom)")
         return floatArrayOf(
                 left, bottom,//LEFT,BOTTOM
                 right, bottom,//RIGHT,BOTTOM

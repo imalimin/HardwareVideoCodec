@@ -20,7 +20,6 @@ abstract class BaseFilter(width: Int = 0,
                           height: Int = 0,
                           textureId: Int = -1) : BaseFrameBufferTexture(width, height, textureId) {
     open fun init() {
-        verticesBuffer = createShapeVerticesBuffer(getVerticesBuffer())
         shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), getVertex()),
                 AssetsHelper.read(BaseApplication.assetManager(), getFragment()))
         initFrameBuffer()
@@ -76,18 +75,9 @@ abstract class BaseFilter(width: Int = 0,
         setUniform1i(uniform, x)
     }
 
-    fun enableVertex(position: Int, coordinate: Int) {
-        enableVertex(position, coordinate, buffer!!, verticesBuffer!!)
-    }
-
     fun draw() {
         drawer.draw()
         GLES20.glFinish()
-    }
-
-    fun disableVertex(position: Int, coordinate: Int) {
-        GLES20.glDisableVertexAttribArray(position)
-        GLES20.glDisableVertexAttribArray(coordinate)
     }
 
     fun inactive() {
