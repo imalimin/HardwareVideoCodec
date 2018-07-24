@@ -23,7 +23,6 @@ public class PixelsBuffer {
     public static PixelsBuffer wrap(ByteBuffer buffer) {
         PixelsBuffer pixelsBuffer = new PixelsBuffer();
         pixelsBuffer.buffer = buffer;
-        //标记为有效
         pixelsBuffer.valid();
         return pixelsBuffer;
     }
