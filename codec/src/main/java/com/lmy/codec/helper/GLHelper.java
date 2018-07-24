@@ -18,8 +18,7 @@ import android.util.Log;
 
 public class GLHelper {
     static {
-        System.loadLibrary("x264");
-        System.loadLibrary("codec");
+        System.loadLibrary("glhelper");
     }
 
     private final static int PBO_SUPPORT_VERSION = 0x30000;

@@ -11,6 +11,11 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_MODULE := libx264
     LOCAL_SRC_FILES := lib/armeabi-v7a/libx264.so
     include $(PREBUILT_SHARED_LIBRARY)
+
+    include $(CLEAR_VARS)
+    LOCAL_MODULE := glhelper
+    LOCAL_SRC_FILES := lib/armeabi-v7a/libglhelper.so
+    include $(PREBUILT_SHARED_LIBRARY)
 endif
 
 ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), x86 x86_64))
@@ -22,6 +27,11 @@ ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), x86 x86_64))
     include $(CLEAR_VARS)
     LOCAL_MODULE := libx264
     LOCAL_SRC_FILES := lib/x86/libx264.so
+    include $(PREBUILT_SHARED_LIBRARY)
+
+    include $(CLEAR_VARS)
+    LOCAL_MODULE := glhelper
+    LOCAL_SRC_FILES := lib/x86/libglhelper.so
     include $(PREBUILT_SHARED_LIBRARY)
 endif
 
@@ -41,8 +51,7 @@ endif
 # endif
 
 LOCAL_MODULE := codec
-LOCAL_SRC_FILES := com_lmy_codec_helper_GLHelper.c \
-    Java_com_lmy_codec_x264_X264Encoder.cpp \
+LOCAL_SRC_FILES := Java_com_lmy_codec_x264_X264Encoder.cpp \
     X264Encoder.cpp \
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
@@ -56,5 +65,5 @@ endif
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_LDLIBS := -llog -lz -ljnigraphics -landroid -lm -pthread -lGLESv2
-LOCAL_SHARED_LIBRARIES := libyuv libx264
+LOCAL_SHARED_LIBRARIES := libyuv libx264 libglhelper
 include $(BUILD_SHARED_LIBRARY)
