@@ -8,6 +8,7 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
 import com.lmy.codec.texture.Texture
+import com.lmy.codec.util.debug_e
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -31,6 +32,8 @@ abstract class BaseTexture(var textureId: Int,
                 1.0f, 1.0f//RIGHT,TOP
         )
     }
+
+    private val bufferLock = Any()
 
     init {
         buffer = createShapeVerticesBuffer(VERTICES_SQUARE)
@@ -87,9 +90,11 @@ abstract class BaseTexture(var textureId: Int,
         GLES20.glEnableVertexAttribArray(posLoc)
         GLES20.glEnableVertexAttribArray(texLoc)
         //xy
-        GLES20.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false,
-                COORDS_PER_VERTEX * 4, shapeBuffer)
+        synchronized(bufferLock) {
+            GLES20.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
+                    GLES20.GL_FLOAT, false,
+                    COORDS_PER_VERTEX * 4, shapeBuffer)
+        }
         //st
         GLES20.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
@@ -107,6 +112,28 @@ abstract class BaseTexture(var textureId: Int,
     open fun release() {
         if (null != shaderProgram)
             GLES20.glDeleteProgram(shaderProgram!!)
+    }
+
+    open fun updateLocation(cropRatioWidth: Float, cropRatioHeight: Float) {
+        synchronized(bufferLock) {
+            buffer = createShapeVerticesBuffer(getVertices(cropRatioWidth, cropRatioHeight))
+        }
+    }
+
+    private fun getVertices(cropRatioWidth: Float, cropRatioHeight: Float): FloatArray {
+        val x = if (cropRatioWidth > 1) 1f else cropRatioWidth
+        val y = if (cropRatioHeight > 1) 1f else cropRatioHeight
+        val left = -0.5f - x / 2
+        var right = - left
+        val bottom = -0.5f - y / 2
+        val top = - bottom
+        debug_e("location($left, $top, $right, $bottom)")
+        return floatArrayOf(
+                left, bottom,//LEFT,BOTTOM
+                right, bottom,//RIGHT,BOTTOM
+                left, top,//LEFT,TOP
+                right, top//RIGHT,TOP
+        )
     }
 
     class GLDrawer {
