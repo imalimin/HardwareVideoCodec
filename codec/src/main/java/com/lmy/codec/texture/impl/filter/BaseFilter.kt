@@ -30,6 +30,7 @@ abstract class BaseFilter(width: Int = 0,
         if (null != shareFrameBuffer && null != shareFrameBufferTexture) {
             this.frameBuffer = shareFrameBuffer
             this.frameBufferTexture = shareFrameBufferTexture
+            updateFrameBuffer(width, height)
             debug_e("enable share frame buffer: ${this.frameBuffer}, ${this.frameBufferTexture}")
             return
         }
