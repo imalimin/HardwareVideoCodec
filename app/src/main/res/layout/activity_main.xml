@@ -3,17 +3,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
     tools:context="com.lmy.sample.MainActivity">
 
     <FrameLayout
         android:id="@+id/mTextureContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="false" />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:fitsSystemWindows="true"
+        android:paddingLeft="16dp"
+        android:paddingTop="32dp">
 
         <TextView
             android:id="@+id/timeView"

@@ -8,6 +8,7 @@ package com.lmy.sample
 
 import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.support.v7.app.AlertDialog
@@ -25,6 +26,7 @@ import com.lmy.codec.util.debug_e
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
+
 class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         View.OnTouchListener, RadioGroup.OnCheckedChangeListener {
 
@@ -36,6 +38,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        fillStatusBar()
         initView()
     }
 
@@ -53,6 +56,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         defaultVideoWidth = mPresenter.context.video.width
         defaultVideoHeight = mPresenter.context.video.height
         val mTextureView = TextureView(this)
+        mTextureView.fitsSystemWindows = true
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
         mTextureView.keepScreenOn = true
@@ -183,5 +187,13 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
     override fun onDestroy() {
         super.onDestroy()
         debug_e("onDestroy")
+    }
+
+    private fun fillStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.decorView.systemUiVisibility = (window.decorView.systemUiVisibility
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+        }
     }
 }
