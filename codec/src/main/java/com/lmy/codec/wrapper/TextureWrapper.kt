@@ -46,5 +46,9 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
             GLES20.glDeleteTextures(1, intArrayOf(textureId!!), 0)
     }
 
-    abstract fun updateSize(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int)
+    //更新xy坐标
+    abstract fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int)
+
+    //更新st坐标
+    abstract fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int)
 }

@@ -71,7 +71,7 @@ class DefaultRenderImpl(var context: CodecContext,
             screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
                     cameraWrapper.egl!!.eglContext!!)
         }
-        screenWrapper?.updateSize(viewport.viewSize.width, viewport.viewSize.height,
+        screenWrapper?.updateLocation(viewport.viewSize.width, viewport.viewSize.height,
                 viewport.size.width, viewport.size.height)
     }
 
@@ -128,7 +128,7 @@ class DefaultRenderImpl(var context: CodecContext,
         viewport.reset(context)
         SingleEventPipeline.instance.queueEvent(Runnable {
             initReader()
-            cameraWrapper.updateSize(context.previewWidth, context.previewHeight,
+            cameraWrapper.updateTextureLocation(context.previewWidth, context.previewHeight,
                     context.video.width, context.video.height)
             initFilter(NormalFilter::class.java)
         })

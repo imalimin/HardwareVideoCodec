@@ -19,6 +19,7 @@ import com.lmy.codec.util.debug_e
 class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
                            override var textureId: Int?,
                            var eglContext: EGLContext? = null) : TextureWrapper() {
+
     init {
         if (null != surfaceTexture) {
             egl = Egl("Screen")
@@ -40,9 +41,13 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
         texture?.drawTexture(transformMatrix)
     }
 
-    override fun updateSize(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+    override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
         debug_e("($srcWidth, $srcHeight)($destWidth, $destHeight)")
         (texture as NormalTexture).updateLocation(destWidth / srcWidth.toFloat(),
                 destHeight / srcHeight.toFloat())
+    }
+
+    override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+
     }
 }

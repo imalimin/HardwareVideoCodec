@@ -41,7 +41,11 @@ class CodecTextureWrapper(var surface: Surface,
         surface.release()
     }
 
-    override fun updateSize(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+    override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+
+    }
+
+    override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
 
     }
 }

@@ -36,7 +36,7 @@ class CameraWrapper(private var context: CodecContext,
         mCameras = CameraHelper.getNumberOfCameras()
         SingleEventPipeline.instance.queueEvent(Runnable {
             textureWrapper = CameraTextureWrapper(context.video.width, context.video.height)
-            textureWrapper.updateSize(context.previewWidth, context.previewHeight,
+            textureWrapper.updateTextureLocation(context.previewWidth, context.previewHeight,
                     context.video.width, context.video.height)
             textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
         })
