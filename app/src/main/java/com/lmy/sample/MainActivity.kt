@@ -18,6 +18,7 @@ import android.widget.FrameLayout
 import android.widget.RadioGroup
 import android.widget.SeekBar
 import com.lmy.codec.CameraPreviewPresenter
+import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.loge
 import com.lmy.codec.texture.impl.filter.*
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
     private lateinit var mPresenter: CameraPreviewPresenter
     private var defaultVideoWidth = 0
     private var defaultVideoHeight = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -50,6 +52,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         val context = CodecContext(this)
         context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
         mPresenter = CameraPreviewPresenter(context)
+        mPresenter.setOnStateListener(onStateListener)
         defaultVideoWidth = mPresenter.context.video.width
         defaultVideoHeight = mPresenter.context.video.height
         val mTextureView = TextureView(this)
@@ -91,6 +94,65 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         if (null != p0)
             mPresenter.startPreview(p0, p1, p2)
         debug_e("onSurfaceTextureAvailable")
+    }
+
+    private var onStateListener =
+            object : CameraPreviewPresenter.OnStateListener {
+                override fun onStop() {
+
+                }
+
+                override fun onPrepared(encoder: Encoder) {
+                    runOnUiThread {
+                        enableChangeRatio(true)
+                        timeView.text = "00:00"
+                    }
+                }
+
+                override fun onRecord(encoder: Encoder, timeUs: Long) {
+                    runOnUiThread {
+                        timeView.text = formatTimeUs(timeUs)
+                    }
+                }
+            }
+
+    private fun formatTimeUs(timeUs: Long): String {
+        val second = timeUs / 1000000
+        var s = (second % 60).toString()
+        s = if (1 == s.length) "0$s" else s
+        var m = (second / 60).toString()
+        m = if (1 == m.length) "0$m" else m
+        return "$m:$s"
+    }
+
+    private fun enableChangeRatio(enable: Boolean) {
+        for (i in 0 until ratioGroup.childCount) {
+            ratioGroup.getChildAt(i).isEnabled = enable
+        }
+    }
+
+    override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
+        val width = mPresenter.context.video.width
+        var height = when (group.indexOfChild(group.findViewById(checkedId))) {
+            1 -> {//1:1
+                width
+            }
+            2 -> {//4:3
+                (width / 4f * 3).toInt()
+            }
+            3 -> {//3:2
+                (width / 3f * 2).toInt()
+
+            }
+            else -> {//默认
+                defaultVideoHeight
+            }
+        }
+        if (0 != height % 2) {
+            ++height
+        }
+        enableChangeRatio(false)
+        mPresenter.updateSize(width, height)
     }
 
     private fun showFilterDialog() {
@@ -236,29 +298,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
                     finish()
                 })
                 .show()
-    }
-
-    override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
-        val width = mPresenter.context.video.width
-        var height = when (group.indexOfChild(group.findViewById(checkedId))) {
-            1 -> {//1:1
-                width
-            }
-            2 -> {//4:3
-                (width / 4f * 3).toInt()
-            }
-            3 -> {//3:2
-                (width / 3f * 2).toInt()
-
-            }
-            else -> {//默认
-                defaultVideoHeight
-            }
-        }
-        if (0 != height % 2) {
-            ++height
-        }
-        mPresenter.updateSize(width, height)
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
