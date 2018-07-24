@@ -16,7 +16,7 @@ import com.lmy.codec.util.debug_e
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 class CodecTextureWrapper(var surface: Surface,
-                          override var textureId: Int?,
+                          override var textureId: IntArray?,
                           var eglContext: EGLContext? = null) : TextureWrapper() {
 
     init {

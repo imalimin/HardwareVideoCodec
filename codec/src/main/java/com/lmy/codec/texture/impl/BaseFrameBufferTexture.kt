@@ -7,6 +7,7 @@
 package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
+import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.util.debug_e
 
 /**
@@ -14,15 +15,17 @@ import com.lmy.codec.util.debug_e
  */
 abstract class BaseFrameBufferTexture(var width: Int,
                                       var height: Int,
-                                      textureId: Int,
-                                      var frameBuffer: Int? = null,
-                                      var frameBufferTexture: Int? = null) : BaseTexture(textureId) {
+                                      textureId: IntArray,
+                                      var frameBuffer: IntArray = IntArray(1),
+                                      var frameBufferTexture: IntArray = IntArray(1),
+                                      var name: String = "BaseFrameBufferTexture") : BaseTexture(textureId) {
+
     protected val frameBufferLock = Any()
-    fun updateFrameBuffer(width: Int, height: Int) {
+    open fun updateFrameBuffer(width: Int, height: Int) {
         this.width = width
         this.height = height
         synchronized(frameBufferLock) {
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture!!)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture[0])
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, this.width, this.height,
                     0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null)
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
@@ -31,11 +34,11 @@ abstract class BaseFrameBufferTexture(var width: Int,
 
     open fun initFrameBuffer() {
         releaseFrameBuffer()
-        val frameBuffer = IntArray(1)
-        val frameBufferTex = IntArray(1)
+        this.width = width
+        this.height = height
         GLES20.glGenFramebuffers(1, frameBuffer, 0)
-        GLES20.glGenTextures(1, frameBufferTex, 0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTex[0])
+        GLES20.glGenTextures(1, frameBufferTexture, 0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture[0])
         GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null)
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat())
@@ -46,25 +49,19 @@ abstract class BaseFrameBufferTexture(var width: Int,
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, frameBufferTex[0], 0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
-        val error = GLES20.glGetError()
-        if (error != GLES20.GL_NO_ERROR) {
-            val msg = "initFrameBuffer: glError 0x" + Integer.toHexString(error)
-            debug_e(msg)
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D,
+                frameBufferTexture[0], 0)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+        if (GLES20.GL_NO_ERROR != GLHelper.checkGLES2Error("$name initFrameBuffer")) {
             return
         }
-        this.frameBuffer = frameBuffer[0]
-        this.frameBufferTexture = frameBufferTex[0]
-        debug_e("enable frame buffer: ${this.frameBuffer}, ${this.frameBufferTexture}")
+        debug_e("$name enable frame buffer: ${this.frameBuffer[0]}, ${this.frameBufferTexture[0]}")
     }
 
     private fun releaseFrameBuffer() {
-        if (null != frameBuffer)
-            GLES20.glDeleteFramebuffers(1, intArrayOf(frameBuffer!!), 0)
-        if (null != frameBufferTexture)
-            GLES20.glDeleteTextures(1, intArrayOf(frameBufferTexture!!), 0)
+        GLES20.glDeleteFramebuffers(1, frameBuffer, 0)
+        GLES20.glDeleteTextures(1, frameBufferTexture, 0)
     }
 
     override fun release() {

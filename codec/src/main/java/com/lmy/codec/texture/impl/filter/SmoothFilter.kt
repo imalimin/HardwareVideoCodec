@@ -11,7 +11,7 @@ package com.lmy.codec.texture.impl.filter
  */
 class SmoothFilter(width: Int = 0,
                      height: Int = 0,
-                     textureId: Int = -1,
+                   textureId: IntArray = IntArray(1),
                      private var mRadius: Int = 0) : BaseFilter(width, height, textureId) {
 
     private var aPositionLocation = 0

@@ -10,6 +10,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLES20;
+import android.util.Log;
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/25.
@@ -45,10 +46,11 @@ public class GLHelper {
         return GLHelper.glVersion(context) > PBO_SUPPORT_VERSION;
     }
 
-    public static void checkNoGLES2Error(String msg) {
+    public static int checkGLES2Error(String tag) {
         int error = GLES20.glGetError();
         if (error != GLES20.GL_NO_ERROR) {
-            throw new RuntimeException(msg + ": GLES20 error: " + error);
+            Log.e(tag, "glError 0x" + Integer.toHexString(error));
         }
+        return error;
     }
 }

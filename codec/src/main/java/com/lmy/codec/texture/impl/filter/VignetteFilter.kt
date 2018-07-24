@@ -13,7 +13,7 @@ import android.graphics.PointF
  */
 class VignetteFilter(width: Int = 0,
                      height: Int = 0,
-                     textureId: Int = -1,
+                     textureId: IntArray = IntArray(1),
                      private var mVignetteCenter: PointF = PointF(0.5f,0.5f),
                      private var mVignetteColor: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f),
                      private var mVignetteStart: Float = 0.5f,

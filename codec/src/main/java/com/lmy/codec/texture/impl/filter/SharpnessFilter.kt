@@ -12,7 +12,7 @@ package com.lmy.codec.texture.impl.filter
  */
 class SharpnessFilter(width: Int = 0,
                       height: Int = 0,
-                      textureId: Int = -1,
+                      textureId: IntArray = IntArray(1),
                       private var mSharpness: Float = 0f,
                       private var mImageWidth: Float = 1f / width,
                       private var mImageHeight: Float = 1f / height) : BaseFilter(width, height, textureId) {

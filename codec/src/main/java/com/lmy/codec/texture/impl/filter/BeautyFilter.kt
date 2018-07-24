@@ -11,7 +11,7 @@ package com.lmy.codec.texture.impl.filter
  */
 class BeautyFilter(width: Int = 0,
                    height: Int = 0,
-                   textureId: Int = -1) : BaseFilter(width, height, textureId) {
+                   textureId: IntArray = IntArray(1)) : BaseFilter(width, height, textureId) {
 
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0

@@ -12,7 +12,7 @@ package com.lmy.codec.texture.impl.filter
  */
 class MonochromeFilter(width: Int = 0,
                        height: Int = 0,
-                       textureId: Int = -1,
+                       textureId: IntArray = IntArray(1),
                        private var mIntensity: Float = 0.toFloat(),
                        private var mColor: FloatArray = floatArrayOf(0.6f, 0.45f, 0.3f, 1f)) : BaseFilter(width, height, textureId) {
 

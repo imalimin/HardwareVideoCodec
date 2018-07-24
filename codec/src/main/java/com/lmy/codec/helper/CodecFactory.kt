@@ -18,7 +18,7 @@ import com.lmy.codec.encoder.impl.VideoEncoderImpl
 class CodecFactory {
     companion object {
         fun getEncoder(context: CodecContext,
-                       textureId: Int,
+                       textureId: IntArray,
                        eglContext: EGLContext): Encoder {
             return if (CodecContext.CodecType.HARD == context.codecType) {
                 VideoEncoderImpl(context, textureId, eglContext)

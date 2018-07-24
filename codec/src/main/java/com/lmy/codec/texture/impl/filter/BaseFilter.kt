@@ -18,8 +18,9 @@ import java.nio.FloatBuffer
  */
 abstract class BaseFilter(width: Int = 0,
                           height: Int = 0,
-                          textureId: Int = -1) : BaseFrameBufferTexture(width, height, textureId) {
+                          textureId: IntArray) : BaseFrameBufferTexture(width, height, textureId) {
     open fun init() {
+        name = "BaseFilter"
         shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), getVertex()),
                 AssetsHelper.read(BaseApplication.assetManager(), getFragment()))
         initFrameBuffer()
@@ -27,48 +28,21 @@ abstract class BaseFilter(width: Int = 0,
 
     override fun initFrameBuffer() {
         if (null != shareFrameBuffer && null != shareFrameBufferTexture) {
-            this.frameBuffer = shareFrameBuffer
-            this.frameBufferTexture = shareFrameBufferTexture
-            updateFrameBuffer(width, height)
-            debug_e("enable share frame buffer: ${this.frameBuffer}, ${this.frameBufferTexture}")
+            this.frameBuffer = shareFrameBuffer!!
+            this.frameBufferTexture = shareFrameBufferTexture!!
+            debug_e("enable share frame buffer: ${this.frameBuffer[0]}, ${this.frameBufferTexture[0]}")
             return
         }
-        val frameBuffer = IntArray(1)
-        val frameBufferTex = IntArray(1)
-        GLES20.glGenFramebuffers(1, frameBuffer, 0)
-        GLES20.glGenTextures(1, frameBufferTex, 0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTex[0])
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null)
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat())
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR.toFloat())
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE.toFloat())
-        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, frameBufferTex[0], 0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0)
-        val error = GLES20.glGetError()
-        if (error != GLES20.GL_NO_ERROR) {
-            val msg = "initFrameBuffer: glError 0x" + Integer.toHexString(error)
-            debug_e(msg)
-            return
-        }
-        shareFrameBuffer = frameBuffer[0]
-        shareFrameBufferTexture = frameBufferTex[0]
-        this.frameBuffer = shareFrameBuffer
-        this.frameBufferTexture = shareFrameBufferTexture
-        debug_e("enable frame buffer: ${this.frameBuffer}, ${this.frameBufferTexture}")
+        super.initFrameBuffer()
+        shareFrameBuffer = this.frameBuffer
+        shareFrameBufferTexture = this.frameBufferTexture
     }
 
     fun active() {
         GLES20.glUseProgram(shaderProgram!!)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
     }
 
     fun uniform1i(uniform: Int, x: Int) {
@@ -123,8 +97,8 @@ abstract class BaseFilter(width: Int = 0,
     }
 
     companion object {
-        private var shareFrameBuffer: Int? = null
-        private var shareFrameBufferTexture: Int? = null
+        private var shareFrameBuffer: IntArray? = null
+        private var shareFrameBufferTexture: IntArray? = null
         private val VERTICES = floatArrayOf(
                 0.0f, 0.0f,//LEFT,BOTTOM
                 1.0f, 0.0f,//RIGHT,BOTTOM

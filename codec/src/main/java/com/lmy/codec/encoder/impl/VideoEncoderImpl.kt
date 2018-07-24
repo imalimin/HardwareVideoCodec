@@ -26,7 +26,7 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 class VideoEncoderImpl(var context: CodecContext,
-                       private var textureId: Int,
+                       private var textureId: IntArray,
                        private var eglContext: EGLContext,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,

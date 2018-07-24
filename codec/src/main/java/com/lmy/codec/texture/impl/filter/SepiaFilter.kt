@@ -11,7 +11,7 @@ package com.lmy.codec.texture.impl.filter
  */
 class SepiaFilter(width: Int = 0,
                   height: Int = 0,
-                  textureId: Int = -1) : ColorMatrixFilter(width, height, textureId, 0f, MATRIX) {
+                  textureId: IntArray = IntArray(1)) : ColorMatrixFilter(width, height, textureId, 0f, MATRIX) {
     companion object {
         val MATRIX: FloatArray = floatArrayOf(
                 0.3588f, 0.7044f, 0.1368f, 0.0f,

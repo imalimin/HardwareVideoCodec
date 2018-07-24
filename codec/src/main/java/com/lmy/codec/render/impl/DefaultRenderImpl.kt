@@ -44,6 +44,8 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun initFilter(clazz: Class<*>) {
         synchronized(filterLock) {
+            //由于使用共享的FBO，所以更换filter的时候不能释放
+//            filter?.release()
             try {
                 filter = clazz.newInstance() as BaseFilter
             } catch (e: Exception) {
@@ -53,7 +55,7 @@ class DefaultRenderImpl(var context: CodecContext,
             }
             filter?.width = context.video.width
             filter?.height = context.video.height
-//            debug_e("camera texture: ${cameraWrapper.getFrameBuffer()},${cameraWrapper.getFrameBufferTexture()}")
+            debug_e("camera texture: ${cameraWrapper.getFrameBuffer()[0]}, ${cameraWrapper.getFrameBufferTexture()[0]}")
             filter?.textureId = cameraWrapper.getFrameBufferTexture()
             filter?.init()
         }
@@ -93,12 +95,12 @@ class DefaultRenderImpl(var context: CodecContext,
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             filter?.drawTexture(null)
-//            ++count
-//            if (0 == count % 60) {
-//                reader?.readPixels(filter!!.frameBuffer!!)
-//                reader?.shoot("${Environment.getExternalStorageDirectory().path}/temp.jpg")
-//                reader?.recycleBuffer()
-//            }
+            ++count
+            if (0 == count % 60) {
+                reader?.readPixels(filter!!.frameBuffer[0])
+                reader?.shoot("${Environment.getExternalStorageDirectory().path}/temp.jpg")
+                reader?.recycleBuffer()
+            }
         }
     }
 
@@ -127,10 +129,13 @@ class DefaultRenderImpl(var context: CodecContext,
         context.video.height = height
         viewport.reset(context)
         SingleEventPipeline.instance.queueEvent(Runnable {
-            initReader()
             cameraWrapper.updateTextureLocation(context.previewWidth, context.previewHeight,
                     context.video.width, context.video.height)
-            initFilter(NormalFilter::class.java)
+            initReader()
+            synchronized(filterLock) {
+                filter?.updateFrameBuffer(context.video.width, context.video.height)
+            }
+            initScreen()
         })
     }
 
@@ -171,17 +176,17 @@ class DefaultRenderImpl(var context: CodecContext,
         }
     }
 
-    override fun getFrameBuffer(): Int {
+    override fun getFrameBuffer(): IntArray {
         synchronized(filterLock) {
-            if (null != filter) return filter!!.frameBuffer!!
+            if (null != filter) return filter!!.frameBuffer
         }
         return cameraWrapper.getFrameBuffer()
 
     }
 
-    override fun getFrameBufferTexture(): Int {
+    override fun getFrameBufferTexture(): IntArray {
         synchronized(filterLock) {
-            if (null != filter) return filter!!.frameBufferTexture!!
+            if (null != filter) return filter!!.frameBufferTexture
         }
         return cameraWrapper.getFrameBufferTexture()
     }

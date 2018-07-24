@@ -23,6 +23,6 @@ interface Render {
 
     fun setFilter(filter: Class<*>)
     fun getFilter(): BaseFilter?
-    fun getFrameBuffer(): Int
-    fun getFrameBufferTexture(): Int
+    fun getFrameBuffer(): IntArray
+    fun getFrameBufferTexture(): IntArray
 }

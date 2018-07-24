@@ -33,8 +33,8 @@ class CameraTextureWrapper(width: Int,
     @SuppressLint("Recycle")
     private fun intTexture() {
         if (null != textureId)
-            surfaceTexture = SurfaceTexture(textureId!!)
-        debug_e("camera textureId: $textureId")
+            surfaceTexture = SurfaceTexture(textureId!![0])
+        debug_e("camera textureId: ${textureId!![0]}")
     }
 
     private fun checkTexture() {
@@ -50,14 +50,14 @@ class CameraTextureWrapper(width: Int,
         texture?.drawTexture(transformMatrix)
     }
 
-    fun getFrameBuffer(): Int {
+    fun getFrameBuffer(): IntArray {
         checkTexture()
-        return (texture as BaseFrameBufferTexture).frameBuffer!!
+        return (texture as BaseFrameBufferTexture).frameBuffer
     }
 
-    fun getFrameBufferTexture(): Int {
+    fun getFrameBufferTexture(): IntArray {
         checkTexture()
-        return (texture as BaseFrameBufferTexture).frameBufferTexture!!
+        return (texture as BaseFrameBufferTexture).frameBufferTexture
     }
 
     override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {

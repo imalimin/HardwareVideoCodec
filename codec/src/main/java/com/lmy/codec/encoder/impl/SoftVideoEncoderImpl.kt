@@ -32,7 +32,7 @@ import java.nio.ByteBuffer
  * Created by lmyooyo@gmail.com on 2018/4/3.
  */
 class SoftVideoEncoderImpl(var context: CodecContext,
-                           textureId: Int,
+                           textureId: IntArray,
                            private var eglContext: EGLContext,
                            var codec: CacheX264Encoder? = null,
                            var reader: PixelsReader? = null,
@@ -105,7 +105,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     private fun readPixels() {
         GLES20.glViewport(0, 0, context.video.width, context.video.height)
         mirrorTexture.drawTexture(null)
-        reader?.readPixels(mirrorTexture.frameBuffer!!)
+        reader?.readPixels(mirrorTexture.frameBuffer[0])
     }
 
 

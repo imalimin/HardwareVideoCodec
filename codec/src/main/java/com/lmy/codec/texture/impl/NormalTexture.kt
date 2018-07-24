@@ -14,7 +14,7 @@ import com.lmy.codec.helper.AssetsHelper
  * 无滤镜效果
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-class NormalTexture(textureId: Int) : BaseTexture(textureId) {
+class NormalTexture(textureId: IntArray) : BaseTexture(textureId) {
 
     companion object {
         private val VERTICES_SCREEN = floatArrayOf(
@@ -44,7 +44,7 @@ class NormalTexture(textureId: Int) : BaseTexture(textureId) {
     override fun drawTexture(transformMatrix: FloatArray?) {
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
         GLES20.glUniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
 

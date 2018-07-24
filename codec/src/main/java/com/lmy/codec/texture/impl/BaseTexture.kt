@@ -16,7 +16,7 @@ import java.nio.FloatBuffer
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-abstract class BaseTexture(var textureId: Int,
+abstract class BaseTexture(var textureId: IntArray,
                            var locationBuffer: FloatBuffer? = null,
                            var textureBuffer: FloatBuffer? = null,
                            var shaderProgram: Int? = null,
@@ -42,7 +42,7 @@ abstract class BaseTexture(var textureId: Int,
     fun createProgram(vertex: String, fragment: String): Int {
         val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertex)
         val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragment)
-        return linkProgram(vertexShader!!, fragmentShader!!)
+        return linkProgram(vertexShader, fragmentShader)
     }
 
     /**
