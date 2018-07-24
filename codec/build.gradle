@@ -53,7 +53,7 @@ repositories {
     mavenCentral()
 }
 publish {
-    userOrg = 'limingyilr@gmail.com'
+    userOrg = 'lmylr'
     groupId = 'com.lmy.codec'
     artifactId = 'hardwarevideocodec'
     publishVersion = android.defaultConfig.versionName
