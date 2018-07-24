@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
                 override fun onPrepared(encoder: Encoder) {
                     runOnUiThread {
                         enableChangeRatio(true)
-                        timeView.text = "00:00"
+                        timeView.text = "00:00.00"
                     }
                 }
 
@@ -122,11 +122,13 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
 
     private fun formatTimeUs(timeUs: Long): String {
         val second = timeUs / 1000000
+        var ms = (timeUs / 10000 % 100).toString()
+        ms = if (1 == ms.length) "0$ms" else ms
         var s = (second % 60).toString()
         s = if (1 == s.length) "0$s" else s
         var m = (second / 60).toString()
         m = if (1 == m.length) "0$m" else m
-        return "$m:$s"
+        return "$m:$s.$ms"
     }
 
     private fun enableChangeRatio(enable: Boolean) {
