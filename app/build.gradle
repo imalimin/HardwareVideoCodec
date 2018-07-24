@@ -35,5 +35,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation 'com.tencent.bugly:crashreport:latest.release'
     implementation 'com.tencent.bugly:nativecrashreport:latest.release'
+//    implementation 'com.lmy.codec:hardwarevideocodec:1.4.1'
     implementation project(':codec')
 }
