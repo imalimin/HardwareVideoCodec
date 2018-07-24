@@ -71,6 +71,8 @@ class DefaultRenderImpl(var context: CodecContext,
             screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
                     cameraWrapper.egl!!.eglContext!!)
         }
+        screenWrapper?.updateSize(viewport.viewSize.width, viewport.viewSize.height,
+                viewport.size.width, viewport.size.height)
     }
 
     override fun draw() {
@@ -78,7 +80,7 @@ class DefaultRenderImpl(var context: CodecContext,
         drawCamera()
         drawFilter()
         screenWrapper?.egl?.makeCurrent()
-        GLES20.glViewport(viewport.point.x, viewport.point.y, viewport.size.width, viewport.size.height)
+        GLES20.glViewport(0, 0, viewport.viewSize.width, viewport.viewSize.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0f, 0f, 0f, 0f)
         screenWrapper?.drawTexture(transformMatrix)
