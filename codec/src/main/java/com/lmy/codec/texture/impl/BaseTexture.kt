@@ -123,10 +123,10 @@ abstract class BaseTexture(var textureId: Int,
     private fun getVertices(cropRatioWidth: Float, cropRatioHeight: Float): FloatArray {
         val x = if (cropRatioWidth > 1) 1f else cropRatioWidth
         val y = if (cropRatioHeight > 1) 1f else cropRatioHeight
-        val left = -0.5f - x / 2
-        var right = - left
-        val bottom = -0.5f - y / 2
-        val top = - bottom
+        val left = -x
+        var right = -left
+        val bottom = -y
+        val top = -bottom
         debug_e("location($left, $top, $right, $bottom)")
         return floatArrayOf(
                 left, bottom,//LEFT,BOTTOM
