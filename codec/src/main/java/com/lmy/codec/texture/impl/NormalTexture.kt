@@ -56,26 +56,5 @@ class NormalTexture(textureId: Int) : BaseTexture(textureId) {
         GLES20.glDisableVertexAttribArray(aTextureCoordinateLocation)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)
-
-
-//        GLES20.glUseProgram(mShaderProgram!!)
-//        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-//        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, inputTextureId)
-//        GLES20.glUniform1i(uTextureLocation, 0)
-//        drawer.draw()
-////        if (null != transformMatrix)
-////            GLES20.glUniformMatrix4fv(uTextureMatrixLocation, 1, false, transformMatrix, 0)
-//
-//        if (null != buffer) {
-//            buffer!!.position(0)
-//            GLES20.glEnableVertexAttribArray(aPositionLocation)
-//            GLES20.glVertexAttribPointer(aPositionLocation, 2, GLES20.GL_FLOAT, false, 16, buffer)
-//
-//            buffer!!.position(2)
-//            GLES20.glEnableVertexAttribArray(aTextureCoordinateLocation)
-//            GLES20.glVertexAttribPointer(aTextureCoordinateLocation, 2, GLES20.GL_FLOAT, false, 16, buffer)
-//
-//            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6)
-//        }
     }
 }
