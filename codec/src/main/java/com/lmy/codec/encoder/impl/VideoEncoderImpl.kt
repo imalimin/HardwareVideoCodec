@@ -31,7 +31,9 @@ class VideoEncoderImpl(var context: CodecContext,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
-                       private var pTimer: PresentationTimer = PresentationTimer(context.video.fps))
+                       private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
+                       override var onPreparedListener: Encoder.OnPreparedListener? = null,
+                       override var onRecordListener: Encoder.OnRecordListener? = null)
     : Encoder {
 
     companion object {
@@ -82,6 +84,7 @@ class VideoEncoderImpl(var context: CodecContext,
         codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), textureId, eglContext)
         codecWrapper?.egl?.makeCurrent()
         codec!!.start()
+        onPreparedListener?.onPrepared(this)
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
@@ -141,6 +144,7 @@ class VideoEncoderImpl(var context: CodecContext,
                                 buffer.limit(mBufferInfo.offset + mBufferInfo.size)
                                 mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
                                 onSampleListener?.onSample(this, mBufferInfo, buffer)
+                                onRecordListener?.onRecord(this, mBufferInfo.presentationTimeUs)
                             }
                         }
                         //缓冲区使用完后必须把它还给MediaCodec，以便再次使用，至此一个流程结束，再次循环
@@ -199,9 +203,9 @@ class VideoEncoderImpl(var context: CodecContext,
         }
 
         fun record() {
-            val timeTmp = System.nanoTime()
+            val timeTmp = System.nanoTime() / 1000
             presentationTimeUs += if (0L != timestamp)
-                (timeTmp - timestamp) / 1000
+                timeTmp - timestamp
             else
                 1000000L / fps
             timestamp = timeTmp

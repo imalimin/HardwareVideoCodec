@@ -32,7 +32,9 @@ class AudioEncoderImpl(var context: CodecContext,
                        var outputBuffers: Array<ByteBuffer>? = null,
                        private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var audioWrapper: AudioRecordWrapper? = null,
-                       private var pTimer: PresentationTimer = PresentationTimer(context.audio.sampleRateInHz))
+                       private var pTimer: PresentationTimer = PresentationTimer(context.audio.sampleRateInHz),
+                       override var onPreparedListener: Encoder.OnPreparedListener? = null,
+                       override var onRecordListener: Encoder.OnRecordListener? = null)
     : Encoder, AudioRecordWrapper.OnPCMListener {
 
     companion object {
@@ -201,7 +203,7 @@ class AudioEncoderImpl(var context: CodecContext,
                 timeTmp - timestamp
             else
                 1000000000L / sampleRateInHz
-            debug_e("presentationTimeUs=$presentationTimeUs")
+//            debug_e("presentationTimeUs=$presentationTimeUs")
             timestamp = timeTmp
         }
 

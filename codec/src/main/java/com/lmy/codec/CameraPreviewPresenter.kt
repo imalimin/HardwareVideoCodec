@@ -29,10 +29,9 @@ class CameraPreviewPresenter(var context: CodecContext,
                              var audioEncoder: Encoder? = null,
                              private var cameraWrapper: CameraWrapper? = null,
                              private var render: Render? = null,
-                             private var muxer: Muxer? = null)
+                             private var muxer: Muxer? = null,
+                             private var onStateListener: OnStateListener? = null)
     : SurfaceTexture.OnFrameAvailableListener {
-
-    private var onStateListener: OnStateListener? = null
 
     init {
         SingleEventPipeline.instance.start()
@@ -82,6 +81,8 @@ class CameraPreviewPresenter(var context: CodecContext,
         muxer = MuxerImpl(context.ioContext.path!!)
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+        if (null != onStateListener)
+            setOnStateListener(onStateListener!!)
         audioEncoder = AudioEncoderImpl(context)
         if (null != muxer) {
             encoder!!.setOnSampleListener(muxer!!)
@@ -125,10 +126,12 @@ class CameraPreviewPresenter(var context: CodecContext,
     }
 
     fun setOnStateListener(listener: OnStateListener) {
-        onStateListener = listener
+        this.onStateListener = listener
+        encoder?.onPreparedListener = onStateListener
+        encoder?.onRecordListener = onStateListener
     }
 
-    interface OnStateListener {
+    interface OnStateListener : Encoder.OnPreparedListener, Encoder.OnRecordListener {
         fun onStop()
     }
 }

@@ -36,8 +36,11 @@ class SoftVideoEncoderImpl(var context: CodecContext,
                            private var eglContext: EGLContext,
                            var codec: CacheX264Encoder? = null,
                            var reader: PixelsReader? = null,
-                           private var pTimer: VideoEncoderImpl.PresentationTimer = VideoEncoderImpl.PresentationTimer(context.video.fps))
+                           private var pTimer: VideoEncoderImpl.PresentationTimer = VideoEncoderImpl.PresentationTimer(context.video.fps),
+                           override var onPreparedListener: Encoder.OnPreparedListener? = null,
+                           override var onRecordListener: Encoder.OnRecordListener? = null)
     : Encoder, CacheX264Encoder.OnSampleListener {
+
     override fun onFormatChanged(format: MediaFormat) {
         onSampleListener?.onFormatChanged(this, format)
     }
@@ -46,6 +49,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
         pTimer.record()
         info.presentationTimeUs = pTimer.presentationTimeUs
         onSampleListener?.onSample(this, info, data)
+        onRecordListener?.onRecord(this, info.presentationTimeUs)
     }
 
     companion object {
@@ -86,6 +90,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
 //        c.setProfile("high")
 //        codec?.setLevel(31)
         codec = CacheX264Encoder(context.video.width * context.video.height * 4, c)
+        onPreparedListener?.onPrepared(this)
         codec?.onSampleListener = this
     }
 

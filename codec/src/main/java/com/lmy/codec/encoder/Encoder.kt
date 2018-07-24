@@ -15,6 +15,8 @@ import java.nio.ByteBuffer
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 interface Encoder : SurfaceTexture.OnFrameAvailableListener {
+    var onPreparedListener: OnPreparedListener?
+    var onRecordListener: OnRecordListener?
     fun start()
     fun pause()
     fun stop()
@@ -27,5 +29,13 @@ interface Encoder : SurfaceTexture.OnFrameAvailableListener {
 
     interface OnStopListener {
         fun onStop()
+    }
+
+    interface OnPreparedListener {
+        fun onPrepared(encoder: Encoder)
+    }
+
+    interface OnRecordListener {
+        fun onRecord(encoder: Encoder, timeUs: Long)
     }
 }
