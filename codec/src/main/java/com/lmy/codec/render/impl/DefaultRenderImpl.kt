@@ -9,7 +9,6 @@ package com.lmy.codec.render.impl
 import android.graphics.Point
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
-import android.os.Environment
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Size
 import com.lmy.codec.helper.PixelsReader
