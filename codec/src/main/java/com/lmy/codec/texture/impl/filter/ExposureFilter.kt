@@ -12,7 +12,7 @@ package com.lmy.codec.texture.impl.filter
  */
 class ExposureFilter(width: Int = 0,
                      height: Int = 0,
-                     textureId: Int = -1,
+                     textureId: IntArray = IntArray(1),
                      private var mExposure: Float = 0f) : BaseFilter(width, height, textureId) {
 
     private var aPositionLocation = 0

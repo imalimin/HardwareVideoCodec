@@ -6,60 +6,65 @@
  */
 package com.lmy.sample
 
+import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.SeekBar
-import com.lmy.codec.CameraPreviewPresenter
+import android.widget.RadioGroup
+import com.lmy.codec.RecordPresenter
+import com.lmy.codec.encoder.Encoder
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.loge
-import com.lmy.codec.texture.impl.filter.*
-import com.lmy.codec.util.debug_v
+import com.lmy.codec.util.debug_e
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, SeekBar.OnSeekBarChangeListener {
 
-    private lateinit var mPresenter: CameraPreviewPresenter
+class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
+        View.OnTouchListener, RadioGroup.OnCheckedChangeListener {
+
+    private lateinit var mPresenter: RecordPresenter
+    private lateinit var mFilterController: FilterController
+    private var defaultVideoWidth = 0
+    private var defaultVideoHeight = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        fillStatusBar()
         initView()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initView() {
-        oneBar.setOnSeekBarChangeListener(this)
-        twoBar.setOnSeekBarChangeListener(this)
-        thBar.setOnSeekBarChangeListener(this)
-        fBar.setOnSeekBarChangeListener(this)
-        loge("Permission: " + !PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
+        ratioGroup.check(ratioGroup.getChildAt(0).id)
+        ratioGroup.setOnCheckedChangeListener(this)
+        loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
-        mPresenter = CameraPreviewPresenter(com.lmy.codec.entity.Parameter(this))
+        val context = CodecContext(this)
+        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
+        mPresenter = RecordPresenter(context)
+        mPresenter.setOnStateListener(onStateListener)
+        defaultVideoWidth = mPresenter.context.video.width
+        defaultVideoHeight = mPresenter.context.video.height
         val mTextureView = TextureView(this)
+        mTextureView.fitsSystemWindows = true
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
         mTextureView.keepScreenOn = true
         mTextureView.surfaceTextureListener = this
-        mTextureView.setOnTouchListener { v, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    mPresenter.encoder?.start()
-                    mPresenter.audioEncoder?.start()
-                }
-                MotionEvent.ACTION_UP -> {
-                    mPresenter.encoder?.pause()
-                    mPresenter.audioEncoder?.pause()
-                }
-            }
-            return@setOnTouchListener true
-        }
-        changeBtn.setOnClickListener({
-            showFilterDialog()
+        mTextureView.setOnTouchListener(this)
+        mFilterController = FilterController(mPresenter, progressLayout)
+        effectBtn.setOnClickListener({
+            mFilterController.chooseFilter(this)
         })
     }
 
@@ -75,144 +80,85 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
         return true
     }
 
-    private fun showFilterDialog() {
-        AlertDialog.Builder(this).apply {
-            setTitle("Change filter")
-            setItems(arrayOf("Normal", "Grey", "Beauty", "Pixelation", "Hue",
-                    "Gamma", "Brightness", "Sepia", "Sharpness", "Saturation",
-                    "Exposure", "Highlight Shadow", "Monochrome", "White Balance", "Vignette",
-                    "Crosshatch", "Smooth", "Sketch", "Halftone", "Haze")) { dialog, which ->
-                choose(which)
-                dialog.dismiss()
-            }
-        }.show()
-    }
-
-    private fun choose(which: Int) {
-        when (which) {
-            0 -> {
-                mPresenter.setFilter(NormalFilter::class.java)
-                show(0)
-            }
-            1 -> {
-                mPresenter.setFilter(GreyFilter::class.java)
-                show(0)
-            }
-            2 -> {
-                mPresenter.setFilter(BeautyFilter::class.java)
-                show(4)
-                oneBar.progress = 0
-                twoBar.progress = 50
-                thBar.progress = 0
-                fBar.progress = 50
-            }
-            3 -> {
-                mPresenter.setFilter(PixelationFilter::class.java)
-                show(1)
-                oneBar.progress = 0
-            }
-            4 -> {
-                mPresenter.setFilter(HueFilter::class.java)
-                show(1)
-                oneBar.progress = 0
-            }
-            5 -> {
-                mPresenter.setFilter(GammaFilter::class.java)
-                show(1)
-                oneBar.progress = 33
-            }
-            6 -> {
-                mPresenter.setFilter(BrightnessFilter::class.java)
-                show(1)
-                oneBar.progress = 50
-            }
-            7 -> {
-                mPresenter.setFilter(SepiaFilter::class.java)
-                show(1)
-                oneBar.progress = 0
-            }
-            8 -> {
-                mPresenter.setFilter(SharpnessFilter::class.java)
-                show(1)
-                oneBar.progress = 50
-            }
-            9 -> {
-                mPresenter.setFilter(SaturationFilter::class.java)
-                show(1)
-                oneBar.progress = 50
-            }
-            10 -> {
-                mPresenter.setFilter(ExposureFilter::class.java)
-                show(1)
-                oneBar.progress = 50
-            }
-            11 -> {
-                mPresenter.setFilter(HighlightShadowFilter::class.java)
-                show(2)
-                oneBar.progress = 0
-                twoBar.progress = 0
-            }
-            12 -> {
-                mPresenter.setFilter(MonochromeFilter::class.java)
-                show(4)
-                oneBar.progress = 0
-                twoBar.progress = 60
-                thBar.progress = 45
-                fBar.progress = 30
-            }
-            13 -> {
-                mPresenter.setFilter(WhiteBalanceFilter::class.java)
-                show(2)
-                oneBar.progress = 50
-                twoBar.progress = 0
-            }
-            14 -> {
-                mPresenter.setFilter(VignetteFilter::class.java)
-                show(4)
-                oneBar.progress = 50
-                twoBar.progress = 50
-                thBar.progress = 50
-                fBar.progress = 100
-            }
-            15 -> {
-                mPresenter.setFilter(CrosshatchFilter::class.java)
-                show(2)
-                oneBar.progress = 30
-                twoBar.progress = 30
-            }
-            16 -> {
-                mPresenter.setFilter(SmoothFilter::class.java)
-                show(1)
-                oneBar.progress = 30
-            }
-            17 -> {
-                mPresenter.setFilter(SketchFilter::class.java)
-                show(1)
-                oneBar.progress = 30
-            }
-            18 -> {
-                mPresenter.setFilter(HalftoneFilter::class.java)
-                show(2)
-                oneBar.progress = 30
-                twoBar.progress = 10
-            }
-            19 -> {
-                mPresenter.setFilter(HazeFilter::class.java)
-                show(2)
-                oneBar.progress = 50
-                twoBar.progress = 50
-            }
-            else -> {
-                mPresenter.setFilter(NormalFilter::class.java)
-                show(0)
-            }
-        }
-    }
-
     override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
         if (null != p0)
             mPresenter.startPreview(p0, p1, p2)
-        debug_v("onSurfaceTextureAvailable")
+        debug_e("onSurfaceTextureAvailable")
+    }
+
+    override fun onTouch(v: View, event: MotionEvent): Boolean {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                mPresenter.encoder?.start()
+                mPresenter.audioEncoder?.start()
+            }
+            MotionEvent.ACTION_UP -> {
+                mPresenter.encoder?.pause()
+                mPresenter.audioEncoder?.pause()
+            }
+        }
+        return true
+    }
+
+    private var onStateListener =
+            object : RecordPresenter.OnStateListener {
+                override fun onStop() {
+
+                }
+
+                override fun onPrepared(encoder: Encoder) {
+                    runOnUiThread {
+                        enableChangeRatio(true)
+                        timeView.text = "00:00.00"
+                    }
+                }
+
+                override fun onRecord(encoder: Encoder, timeUs: Long) {
+                    runOnUiThread {
+                        timeView.text = formatTimeUs(timeUs)
+                    }
+                }
+            }
+
+    private fun formatTimeUs(timeUs: Long): String {
+        val second = timeUs / 1000000
+        var ms = (timeUs / 10000 % 100).toString()
+        ms = if (1 == ms.length) "0$ms" else ms
+        var s = (second % 60).toString()
+        s = if (1 == s.length) "0$s" else s
+        var m = (second / 60).toString()
+        m = if (1 == m.length) "0$m" else m
+        return "$m:$s.$ms"
+    }
+
+    private fun enableChangeRatio(enable: Boolean) {
+        for (i in 0 until ratioGroup.childCount) {
+            ratioGroup.getChildAt(i).isEnabled = enable
+        }
+    }
+
+    override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
+        val width = mPresenter.context.video.width
+        var height = when (group.indexOfChild(group.findViewById(checkedId))) {
+            1 -> {//1:1
+                width
+            }
+            2 -> {//4:3
+                (width / 4f * 3).toInt()
+            }
+            3 -> {//3:2
+                (width / 3f * 2).toInt()
+
+            }
+            else -> {//默认
+                defaultVideoHeight
+            }
+        }
+        if (0 != height % 2) {
+            ++height
+        }
+        enableChangeRatio(false)
+        mPresenter.updateSize(width, height)
     }
 
     private fun showPermissionsDialog() {
@@ -226,25 +172,6 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
                 .show()
     }
 
-    override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        mPresenter.getFilter()?.setValue(progressLayout.indexOfChild(seekBar), progress)
-    }
-
-    private fun show(count: Int) {
-        oneBar.visibility = if (count > 0) View.VISIBLE else View.GONE
-        twoBar.visibility = if (count > 1) View.VISIBLE else View.GONE
-        thBar.visibility = if (count > 2) View.VISIBLE else View.GONE
-        fBar.visibility = if (count > 3) View.VISIBLE else View.GONE
-    }
-
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
-    }
-
-    override fun onStopTrackingTouch(seekBar: SeekBar?) {
-
-    }
-
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (null == grantResults || grantResults.isEmpty()) return
@@ -256,6 +183,19 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener, Se
                     showPermissionsDialog()
                 }
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        debug_e("onDestroy")
+    }
+
+    private fun fillStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.decorView.systemUiVisibility = (window.decorView.systemUiVisibility
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
         }
     }
 }

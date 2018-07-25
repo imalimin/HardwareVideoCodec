@@ -11,7 +11,7 @@ package com.lmy.codec.texture.impl.filter
  */
 class WhiteBalanceFilter(width: Int = 0,
                          height: Int = 0,
-                         textureId: Int = -1,
+                         textureId: IntArray = IntArray(1),
                          private var mTemperature: Float = 0f,
                          private var mTint: Float = 0f) : BaseFilter(width, height, textureId) {
 

@@ -9,8 +9,9 @@ package com.lmy.codec.texture.impl.filter
 /**
  * Created by lmyooyo@gmail.com on 2018/4/28.
  */
-class HDRFilter(width: Int, height: Int,
-                textureId: Int = -1) : BaseFilter(width, height, textureId) {
+class HDRFilter(width: Int,
+                height: Int,
+                textureId: IntArray = IntArray(1)) : BaseFilter(width, height, textureId) {
 
     private var aPositionLocation = 0
     private var uTextureLocation = 0

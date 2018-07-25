@@ -17,16 +17,19 @@ import com.lmy.codec.util.debug_e
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
 class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
-                           override var textureId: Int?,
+                           override var textureId: IntArray?,
                            var eglContext: EGLContext? = null) : TextureWrapper() {
+
     init {
         if (null != surfaceTexture) {
-            egl = Egl()
+            egl = Egl("Screen")
             egl!!.initEGL(surfaceTexture!!, eglContext)
             egl!!.makeCurrent()
             if (null == textureId)
                 throw RuntimeException("textureId can not be null")
-            texture = NormalTexture(textureId!!)
+            texture = NormalTexture(textureId!!).apply {
+                name="Screen Texture"
+            }
         } else {
             debug_e("Egl create failed")
         }
@@ -38,5 +41,15 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
             return
         }
         texture?.drawTexture(transformMatrix)
+    }
+
+    override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+        debug_e("($srcWidth, $srcHeight)($destWidth, $destHeight)")
+        (texture as NormalTexture).updateLocation(destWidth / srcWidth.toFloat(),
+                destHeight / srcHeight.toFloat())
+    }
+
+    override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+
     }
 }

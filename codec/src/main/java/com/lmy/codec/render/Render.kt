@@ -13,19 +13,16 @@ import com.lmy.codec.texture.impl.filter.BaseFilter
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 interface Render {
-    fun onFrameAvailable(): Render
+    fun onFrameAvailable()
     fun draw()
     fun start(texture: SurfaceTexture, width: Int, height: Int)
-    fun start(texture: SurfaceTexture, width: Int, height: Int, runnable: Runnable?)
+    fun updateSize(width: Int, height: Int)
     fun stop()
     fun release()
-    /**
-     * After render completed
-     */
-    fun afterRender(runnable: Runnable)
+    fun post(runnable: Runnable)
 
     fun setFilter(filter: Class<*>)
-    fun getFilter(): BaseFilter
-    fun getFrameBuffer(): Int
-    fun getFrameBufferTexture(): Int
+    fun getFilter(): BaseFilter?
+    fun getFrameBuffer(): IntArray
+    fun getFrameBufferTexture(): IntArray
 }

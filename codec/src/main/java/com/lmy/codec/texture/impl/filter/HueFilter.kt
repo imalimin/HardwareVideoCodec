@@ -12,7 +12,7 @@ package com.lmy.codec.texture.impl.filter
  */
 class HueFilter(width: Int = 0,
                 height: Int = 0,
-                textureId: Int = -1) : BaseFilter(width, height, textureId) {
+                textureId: IntArray = IntArray(1)) : BaseFilter(width, height, textureId) {
 
     private var aPositionLocation = 0
     private var uTextureLocation = 0

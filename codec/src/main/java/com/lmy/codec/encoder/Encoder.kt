@@ -4,7 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec
+package com.lmy.codec.encoder
 
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
@@ -15,18 +15,27 @@ import java.nio.ByteBuffer
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 interface Encoder : SurfaceTexture.OnFrameAvailableListener {
+    var onPreparedListener: OnPreparedListener?
+    var onRecordListener: OnRecordListener?
     fun start()
     fun pause()
     fun stop()
-    fun stop(listener: OnStopListener?)
     fun setOnSampleListener(listener: OnSampleListener)
 
     interface OnSampleListener {
-        fun onFormatChanged(format: MediaFormat)
-        fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer)
+        fun onFormatChanged(encoder: Encoder, format: MediaFormat)
+        fun onSample(encoder: Encoder, info: MediaCodec.BufferInfo, data: ByteBuffer)
     }
 
     interface OnStopListener {
         fun onStop()
+    }
+
+    interface OnPreparedListener {
+        fun onPrepared(encoder: Encoder)
+    }
+
+    interface OnRecordListener {
+        fun onRecord(encoder: Encoder, timeUs: Long)
     }
 }

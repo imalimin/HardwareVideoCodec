@@ -16,15 +16,18 @@ import com.lmy.codec.util.debug_e
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
 class CodecTextureWrapper(var surface: Surface,
-                          override var textureId: Int?,
+                          override var textureId: IntArray?,
                           var eglContext: EGLContext? = null) : TextureWrapper() {
+
     init {
-        egl = Egl()
+        egl = Egl("Codec")
         egl!!.initEGL(surface, eglContext)
         egl!!.makeCurrent()
         if (null == textureId)
             throw RuntimeException("textureId can not be null")
-        texture = NormalTexture(textureId!!)
+        texture = NormalTexture(textureId!!).apply {
+            name = "Codec Texture"
+        }
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
@@ -38,5 +41,13 @@ class CodecTextureWrapper(var surface: Surface,
     override fun release() {
         super.release()
         surface.release()
+    }
+
+    override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+
+    }
+
+    override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+
     }
 }

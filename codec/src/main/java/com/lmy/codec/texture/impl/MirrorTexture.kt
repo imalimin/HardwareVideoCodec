@@ -15,7 +15,7 @@ import com.lmy.codec.helper.AssetsHelper
  * Created by lmyooyo@gmail.com on 2018/4/20.
  */
 class MirrorTexture(width: Int, height: Int,
-                    textureId: Int,
+                    textureId: IntArray,
                     private var direction: Direction = Direction.VERTICAL)
     : BaseFrameBufferTexture(width, height, textureId) {
     enum class Direction {
@@ -24,15 +24,17 @@ class MirrorTexture(width: Int, height: Int,
 
     companion object {
         private val VERTICES_VERTICAL = floatArrayOf(
-                0f, 0f,
-                0f, 1f,
-                1f, 1f,
-                1f, 0f)
+                0.0f, 1.0f,//LEFT,TOP
+                1.0f, 1.0f,//RIGHT,TOP
+                0.0f, 0.0f,//LEFT,BOTTOM
+                1.0f, 0.0f//RIGHT,BOTTOM
+        )
         private val VERTICES_HORIZONTAL = floatArrayOf(
-                1f, 1f,
-                1f, 0f,
-                0f, 0f,
-                0f, 1f)
+                1.0f, 0.0f,//RIGHT,BOTTOM
+                0.0f, 0.0f,//LEFT,BOTTOM
+                1.0f, 1.0f,//RIGHT,TOP
+                0.0f, 1.0f//LEFT,TOP
+        )
     }
 
     private var aPositionLocation = 0
@@ -40,7 +42,7 @@ class MirrorTexture(width: Int, height: Int,
     private var aTextureCoordinateLocation = 0
 
     init {
-        verticesBuffer = createShapeVerticesBuffer(
+        textureBuffer = createShapeVerticesBuffer(
                 if (Direction.VERTICAL == direction) VERTICES_VERTICAL
                 else VERTICES_HORIZONTAL)
 
@@ -57,12 +59,12 @@ class MirrorTexture(width: Int, height: Int,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer!!)
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
         GLES20.glUniform1i(uTextureLocation, 0)
-        enableVertex(aPositionLocation, aTextureCoordinateLocation, buffer!!, verticesBuffer!!)
+        enableVertex(aPositionLocation, aTextureCoordinateLocation)
 
         drawer.draw()
 

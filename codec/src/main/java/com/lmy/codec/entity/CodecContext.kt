@@ -14,14 +14,15 @@ import android.media.MediaCodecInfo
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
-data class Parameter(var context: Context,
-                     var video: Video = Video(),
-                     var audio: Audio = Audio(),
-                     var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
-                     var previewWidth: Int = 1280,//以水平分辨率为准
-                     var previewHeight: Int = 720,//以水平分辨率为准
-                     var orientation: Int = 90,
-                     var codecType: CodecType = CodecType.HARD) {
+data class CodecContext(var context: Context,
+                        var video: Video = Video(),
+                        var audio: Audio = Audio(),
+                        var ioContext: IOContext = IOContext(),
+                        var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
+                        var previewWidth: Int = 1280,//以水平分辨率为准
+                        var previewHeight: Int = 720,//以水平分辨率为准
+                        var orientation: Int = 90,
+                        var codecType: CodecType = CodecType.HARD) {
     fun check() {
         if (!isHorizontal() && !isVertical())
             throw RuntimeException("Orientation must be 0, 90, 180 or 270")
@@ -40,7 +41,7 @@ data class Parameter(var context: Context,
 
     data class Video(var mime: String = "video/avc",
                      var width: Int = 720,
-                     var height: Int = 1080,
+                     var height: Int = 1280,
                      var fps: Int = 30,//If not support, select the lowest fps
                      var bitrate: Int = width * height * MEDIUM * fps / 24,
                      var iFrameInterval: Int = 2,
@@ -64,13 +65,14 @@ data class Parameter(var context: Context,
 
     data class Audio(var mime: String = "audio/mp4a-latm",
                      var channel: Int = 1,
-                     var samplePerFrame: Int = 1024,
-                     var sampleRateInHz: Int = 16000,
-                     var bitrate: Int = 64000,
+                     var sampleRateInHz: Int = 44100,
+                     var bitrate: Int = sampleRateInHz * 2,
                      var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
-                     var pcm: Int = AudioFormat.ENCODING_PCM_16BIT)
+                     var sampleBits: Int = AudioFormat.ENCODING_PCM_16BIT)
 
     enum class CodecType {
         HARD, SOFT
     }
+
+    data class IOContext(var path: String? = null)
 }

@@ -11,8 +11,9 @@ import android.media.MediaCodecInfo.CodecCapabilities.createFromProfileLevel
 import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Build
-import com.lmy.codec.entity.Parameter
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.loge
+import com.lmy.codec.logi
 
 
 /**
@@ -20,38 +21,44 @@ import com.lmy.codec.loge
  */
 class CodecHelper {
     companion object {
-        fun createVideoFormat(parameter: Parameter, ignoreDevice: Boolean = false): MediaFormat? {
-            val codecInfo = getCodecInfo(parameter.video.mime, true)
+        /**
+         * MediaCodec兼容性问题：
+         * 1. 部分7.0以上机型开启high效果不明显，如LG G6
+         * 2. 部分机型开启high会导致BufferInfo.presentationTimeUs乱序，具体表现为0, 100000, 50000, 150000，如小米NOTE PRO
+         * @param ignoreDevice 忽略设备兼容性检测
+         */
+        fun createVideoFormat(context: CodecContext, ignoreDevice: Boolean = false): MediaFormat? {
+            val codecInfo = getCodecInfo(context.video.mime, true)
             if (!ignoreDevice && null == codecInfo) {//Unsupport codec type
                 return null
             }
             val mediaFormat = MediaFormat()
-            mediaFormat.setString(MediaFormat.KEY_MIME, parameter.video.mime)
-            mediaFormat.setInteger(MediaFormat.KEY_WIDTH, parameter.video.width)
-            mediaFormat.setInteger(MediaFormat.KEY_HEIGHT, parameter.video.height)
+            mediaFormat.setString(MediaFormat.KEY_MIME, context.video.mime)
+            mediaFormat.setInteger(MediaFormat.KEY_WIDTH, context.video.width)
+            mediaFormat.setInteger(MediaFormat.KEY_HEIGHT, context.video.height)
             mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
-            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, parameter.video.bitrate)
-            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, parameter.video.fps)
-            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, parameter.video.iFrameInterval)
+            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, context.video.bitrate)
+            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, context.video.fps)
+            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, context.video.iFrameInterval)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mediaFormat.setInteger(MediaFormat.KEY_BITRATE_MODE, parameter.video.bitrateMode)
+                mediaFormat.setInteger(MediaFormat.KEY_BITRATE_MODE, context.video.bitrateMode)
                 if (!ignoreDevice)
-                    setProfileLevel(parameter, codecInfo!!, mediaFormat)
+                    setProfileLevel(context, codecInfo!!, mediaFormat)
             }
             return mediaFormat
         }
 
-        fun createAudioFormat(parameter: Parameter, ignoreDevice: Boolean = false): MediaFormat? {
-            val codecInfo = getCodecInfo(parameter.audio.mime, true)
+        fun createAudioFormat(context: CodecContext, ignoreDevice: Boolean = false): MediaFormat? {
+            val codecInfo = getCodecInfo(context.audio.mime, true)
             if (!ignoreDevice && null == codecInfo) {//Unsupport codec type
                 return null
             }
             val mediaFormat = MediaFormat()
-            mediaFormat.setString(MediaFormat.KEY_MIME, parameter.audio.mime)
-            mediaFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, parameter.audio.channel)
-            mediaFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, parameter.audio.sampleRateInHz)
-            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, parameter.audio.bitrate)
-            mediaFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, parameter.audio.profile)
+            mediaFormat.setString(MediaFormat.KEY_MIME, context.audio.mime)
+            mediaFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, context.audio.channel)
+            mediaFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, context.audio.sampleRateInHz)
+            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, context.audio.bitrate)
+            mediaFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, context.audio.profile)
             return mediaFormat
         }
 
@@ -62,7 +69,7 @@ class CodecHelper {
                         .filter { it.isEncoder == isEncode }
                         .forEach { info ->
                             info.supportedTypes.forEach {
-                                loge(it)
+                                logi(it)
                                 if (it.equals(mime, ignoreCase = true)) {
                                     return info
                                 }
@@ -75,7 +82,7 @@ class CodecHelper {
                         .filter { it.isEncoder == isEncode }
                         .forEach { info ->
                             info.supportedTypes.forEach {
-                                loge(it)
+                                logi(it)
                                 if (it.equals(mime, ignoreCase = true)) {
                                     return info
                                 }
@@ -85,7 +92,7 @@ class CodecHelper {
             return null
         }
 
-        private fun setProfileLevel(parameter: Parameter, codecInfo: MediaCodecInfo, format: MediaFormat) {
+        private fun setProfileLevel(context: CodecContext, codecInfo: MediaCodecInfo, format: MediaFormat) {
             //低于LOLLIPOP的系统不支持profile和level
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return
             val mime = format.getString(MediaFormat.KEY_MIME)
@@ -96,7 +103,7 @@ class CodecHelper {
             selected.level = -1
             //查找支持的最佳配置
             for (p in profileLevels) {
-                loge("profile item: " + p.profile + ", " + p.level)
+                logi("profile item: " + p.profile + ", " + p.level)
                 if (supportsProfileLevel(p.profile, p.level, profileLevels, mime)) {
                     if (MediaCodecInfo.CodecProfileLevel.AVCProfileHigh == p.profile
                             && p.profile > selected.profile
@@ -111,18 +118,16 @@ class CodecHelper {
             loge("selected: " + selected.profile + ", " + selected.level + ", " + supportsProfileLevel(selected.profile, selected.level, profileLevels, mime))
             //如果找不到则默认
             if (-1 == selected.profile) return
-            setProfileLevel(parameter, format, selected.profile, selected.level)
+            setProfileLevel(context, format, selected.profile, selected.level)
         }
 
-        private fun setProfileLevel(parameter: Parameter, format: MediaFormat, profile: Int, level: Int) {
-            parameter.video.profile = profile
-            parameter.video.level = level
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                format.setInteger(MediaFormat.KEY_PROFILE, parameter.video.profile)
-            }
+        private fun setProfileLevel(context: CodecContext, format: MediaFormat, profile: Int, level: Int) {
+            context.video.profile = profile
+            context.video.level = level
             //level must be set even below M
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                format.setInteger(MediaFormat.KEY_LEVEL, parameter.video.level)
+                format.setInteger(MediaFormat.KEY_PROFILE, context.video.profile)
+                format.setInteger(MediaFormat.KEY_LEVEL, context.video.level)
             }
         }
 

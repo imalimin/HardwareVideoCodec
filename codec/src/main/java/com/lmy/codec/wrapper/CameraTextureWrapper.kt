@@ -9,55 +9,34 @@ package com.lmy.codec.wrapper
 import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
-import android.opengl.GLES20
 import com.lmy.codec.entity.Egl
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.CameraTexture
 import com.lmy.codec.util.debug_e
-import javax.microedition.khronos.opengles.GL10
 
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class CameraTextureWrapper : TextureWrapper() {
+class CameraTextureWrapper(width: Int,
+                           height: Int) : TextureWrapper() {
 
     init {
-        /**
-         * 使用createTexture()会一直返回0，导致一些错误
-         */
-        textureId = 10
-        intTexture()
-    }
-
-    fun initEGL(width: Int, height: Int) {
-        egl = Egl()
+        egl = Egl("Camera")
         egl!!.initEGL()
         egl!!.makeCurrent()
-        texture = CameraTexture(width, height, textureId!!)
-        debug_e("camera textureId: ${textureId}")
-    }
-
-    private fun createTexture(): Int {
-        val texture = IntArray(1)
-        GLES20.glGenTextures(1, texture, 0)
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texture[0])
-        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST.toFloat())
-        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR.toFloat())
-        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE.toFloat())
-        GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE.toFloat())
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0)
-        return texture[0]
+        textureId = createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES)
+        texture = CameraTexture(width, height, textureId!!).apply {
+            name = "Camera Texture"
+        }
+        intTexture()
     }
 
     @SuppressLint("Recycle")
     private fun intTexture() {
         if (null != textureId)
-            surfaceTexture = SurfaceTexture(textureId!!)
+            surfaceTexture = SurfaceTexture(textureId!![0])
+        debug_e("camera textureId: ${textureId!![0]}")
     }
 
     private fun checkTexture() {
@@ -73,13 +52,23 @@ class CameraTextureWrapper : TextureWrapper() {
         texture?.drawTexture(transformMatrix)
     }
 
-    fun getFrameBuffer(): Int {
+    fun getFrameBuffer(): IntArray {
         checkTexture()
-        return (texture as BaseFrameBufferTexture).frameBuffer!!
+        return (texture as BaseFrameBufferTexture).frameBuffer
     }
 
-    fun getFrameBufferTexture(): Int {
+    fun getFrameBufferTexture(): IntArray {
         checkTexture()
-        return (texture as BaseFrameBufferTexture).frameBufferTexture!!
+        return (texture as BaseFrameBufferTexture).frameBufferTexture
+    }
+
+    override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+
+    }
+
+    override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+        (texture as CameraTexture).updateFrameBuffer(destWidth, destHeight)
+        (texture as CameraTexture).updateTextureLocation(destWidth / srcHeight.toFloat(),
+                destHeight / srcWidth.toFloat())
     }
 }
