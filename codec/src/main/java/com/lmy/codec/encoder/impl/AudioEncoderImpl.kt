@@ -187,14 +187,14 @@ class AudioEncoderImpl(var context: CodecContext,
 
     override fun stop() {
         pause()
-        while (dequeue()) {//取出编码器中剩余的帧
-        }
+//        while (dequeue()) {//取出编码器中剩余的帧
+//        }
+        mPipeline.quit()
+        mDequeuePipeline.quit()
         codec!!.stop()
         codec!!.release()
         audioWrapper?.stop()
         mCache?.release()
-        mPipeline.quit()
-        mDequeuePipeline.quit()
         debug_e("Audio encoder stop")
     }
 
