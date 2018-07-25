@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity() {
                     mPresenter.startPreview(surface, width, height)
             }
         }
+        //For recording control
         mTextureView.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
