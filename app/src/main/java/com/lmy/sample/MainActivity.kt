@@ -21,6 +21,7 @@ import android.widget.RadioGroup
 import com.lmy.codec.RecordPresenter
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
+import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.loge
 import com.lmy.codec.util.debug_e
 import com.lmy.sample.helper.PermissionHelper
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
-        val context = CodecContext(this)
+        val context = CodecContext(GLHelper.isSupportPBO(this))
         context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
         mPresenter = RecordPresenter(context)
         mPresenter.setOnStateListener(onStateListener)

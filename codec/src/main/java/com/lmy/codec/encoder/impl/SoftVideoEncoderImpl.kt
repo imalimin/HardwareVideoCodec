@@ -16,7 +16,6 @@ import android.opengl.GLES20
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecHelper
-import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
@@ -95,8 +94,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     }
 
     private fun initPixelsCache() {
-        isSupportPbo = GLHelper.isSupportPBO(context.context)
-        reader = PixelsReader.create(context.context, context.video.width, context.video.height)
+        reader = PixelsReader.create(context.supportPBO, context.video.width, context.video.height)
         reader?.start()
     }
 

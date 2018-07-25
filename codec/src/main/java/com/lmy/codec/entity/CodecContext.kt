@@ -6,7 +6,6 @@
  */
 package com.lmy.codec.entity
 
-import android.content.Context
 import android.hardware.Camera
 import android.media.AudioFormat
 import android.media.MediaCodecInfo
@@ -14,7 +13,7 @@ import android.media.MediaCodecInfo
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
-data class CodecContext(var context: Context,
+data class CodecContext(var supportPBO: Boolean,
                         var video: Video = Video(),
                         var audio: Audio = Audio(),
                         var ioContext: IOContext = IOContext(),

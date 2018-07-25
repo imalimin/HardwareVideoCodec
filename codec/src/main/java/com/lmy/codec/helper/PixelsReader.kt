@@ -6,7 +6,6 @@
  */
 package com.lmy.codec.helper
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.opengl.GLES20
@@ -239,8 +238,8 @@ class PixelsReader private constructor(private var usePbo: Boolean,
     }
 
     companion object {
-        fun create(context: Context, width: Int, height: Int): PixelsReader {
-            return PixelsReader(GLHelper.isSupportPBO(context), width, height)
+        fun create(usePbo: Boolean, width: Int, height: Int): PixelsReader {
+            return PixelsReader(usePbo, width, height)
         }
 
         private val PBO_COUNT = 2

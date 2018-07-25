@@ -64,7 +64,7 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun initReader() {
         reader?.stop()
-        reader = PixelsReader.create(context.context, context.video.width, context.video.height)
+        reader = PixelsReader.create(context.supportPBO, context.video.width, context.video.height)
         reader?.start()
     }
 
