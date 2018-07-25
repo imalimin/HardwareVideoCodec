@@ -48,6 +48,7 @@ class AudioEncoderImpl(var context: CodecContext,
     private var mEncoding = false
     private var onSampleListener: Encoder.OnSampleListener? = null
     private var mCache: Cache? = null
+    private var looping = false
 
     init {
         initCodec()
@@ -80,14 +81,13 @@ class AudioEncoderImpl(var context: CodecContext,
         audioWrapper?.setOnPCMListener(this)
         mCache = Cache(5, audioWrapper!!.getBufferSize())
         mCache?.ready()
-        loop()
     }
 
     private val looper = Runnable {
         if (!dequeue()) {
             try {
                 Thread.sleep(5)
-            }catch (e:InterruptedException){
+            } catch (e: InterruptedException) {
 
             }
         }
@@ -100,6 +100,10 @@ class AudioEncoderImpl(var context: CodecContext,
 
     override fun onPCMSample(buffer: ByteArray) {
         if (!mEncoding || null == mCache) return
+        if (!looping) {
+            looping = true
+            loop()
+        }
         val cache = mCache!!.pollCache() ?: return
         System.arraycopy(buffer, 0, cache, 0, buffer.size)
         mCache!!.offer(cache)
@@ -147,7 +151,7 @@ class AudioEncoderImpl(var context: CodecContext,
                     val data = codec!!.outputBuffers[flag]
                     if (null != data) {
                         val endOfStream = bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
-                        if (endOfStream == 0) {
+                        if (endOfStream == 0 && bufferInfo.size > 0) {
 //                            bufferInfo.presentationTimeUs = pTimer.presentationTimeUs
 //                            debug_e("read sample($flag): ${bufferInfo.size}")
 //                            if (bufferInfo.presentationTimeUs > 0)
