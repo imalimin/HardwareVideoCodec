@@ -37,5 +37,4 @@ dependencies {
     implementation 'com.tencent.bugly:nativecrashreport:latest.release'
     //    implementation 'com.lmy.codec:hardwarevideocodec:1.4.1'
     implementation project(':codec')
-    implementation project(':rtmp')
 }
