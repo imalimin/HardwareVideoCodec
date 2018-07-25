@@ -12,6 +12,16 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
+        ndk {
+            stl 'gnustl_static'//指定C++运行
+            moduleName "rtmp"
+            abiFilters "armeabi-v7a", "x86"
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/jni/Android.mk"
+        }
     }
 
     buildTypes {
