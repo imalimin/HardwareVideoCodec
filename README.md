@@ -43,6 +43,10 @@ dependencies {
     implementation 'com.lmy.codec:hardwarevideocodec:1.4.1'
 }
 ```
+* Extend BaseApplication
+```
+class MyApplication : BaseApplication()
+```
 * MainActivity
 ```
 class MainActivity : AppCompatActivity() {
