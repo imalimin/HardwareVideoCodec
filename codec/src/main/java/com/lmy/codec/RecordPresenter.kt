@@ -13,8 +13,8 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecFactory
+import com.lmy.codec.helper.MuxerFactory
 import com.lmy.codec.muxer.Muxer
-import com.lmy.codec.muxer.impl.MuxerImpl
 import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
@@ -78,7 +78,7 @@ class RecordPresenter(var context: CodecContext,
         if (TextUtils.isEmpty(context.ioContext.path)) {
             throw RuntimeException("context.ioContext.path can not be null!")
         }
-        muxer = MuxerImpl(context.ioContext.path!!)
+        muxer = MuxerFactory.getMuxer(context)
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
         if (null != onStateListener)
