@@ -19,11 +19,12 @@ JNIEXPORT void JNICALL Java_com_lmy_rtmp_RtmpClient_init
     }
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_rtmp_RtmpClient_connect
+JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connect
         (JNIEnv *env, jobject thiz, jstring url, jint width, jint height, jint timeOut) {
     char *urlTmp = (char *) env->GetStringUTFChars(url, NULL);
-    client->connect(urlTmp, width, height, timeOut);
+    int ret = client->connect(urlTmp, width, height, timeOut);
     env->ReleaseStringUTFChars(url, urlTmp);
+    return ret;
 }
 
 JNIEXPORT jint JNICALL
@@ -39,7 +40,8 @@ Java_com_lmy_rtmp_RtmpClient_sendSpsAndPps(JNIEnv *env, jobject thiz, jbyteArray
 }
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendVideoData(JNIEnv *env, jobject thiz, jbyteArray data, jint len, jlong timestamp) {
+Java_com_lmy_rtmp_RtmpClient_sendVideoData(JNIEnv *env, jobject thiz, jbyteArray data, jint len,
+                                           jlong timestamp) {
     jbyte *buffer = env->GetByteArrayElements(data, JNI_FALSE);
     int ret = client->sendVideoData((char *) buffer, len, timestamp);
     env->ReleaseByteArrayElements(data, buffer, JNI_FALSE);
@@ -55,7 +57,8 @@ Java_com_lmy_rtmp_RtmpClient_sendAacSpec(JNIEnv *env, jobject thiz, jbyteArray d
 }
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendAacData(JNIEnv *env, jobject thiz, jbyteArray data, jint len, jlong timestamp) {
+Java_com_lmy_rtmp_RtmpClient_sendAacData(JNIEnv *env, jobject thiz, jbyteArray data, jint len,
+                                         jlong timestamp) {
     jbyte *buffer = env->GetByteArrayElements(data, JNI_FALSE);
     int ret = client->sendAacData((char *) buffer, len, timestamp);
     env->ReleaseByteArrayElements(data, buffer, JNI_FALSE);
