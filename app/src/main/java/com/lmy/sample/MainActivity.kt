@@ -10,7 +10,7 @@ import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
+import android.os.Handler
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
         val context = CodecContext(GLHelper.isSupportPBO(this))
-        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
+        context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
         mPresenter = RecordPresenter(context)
         mPresenter.setOnStateListener(onStateListener)
         defaultVideoWidth = mPresenter.context.video.width
@@ -82,16 +82,16 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
     }
 
     override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
-        if (null != p0)
+        if (null != p0) {
             mPresenter.startPreview(p0, p1, p2)
+        }
         debug_e("onSurfaceTextureAvailable")
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                mPresenter.encoder?.start()
-                mPresenter.audioEncoder?.start()
+                start()
             }
             MotionEvent.ACTION_UP -> {
                 mPresenter.encoder?.pause()
@@ -101,6 +101,11 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         return true
     }
 
+    private fun start() {
+        mPresenter.encoder?.start()
+        mPresenter.audioEncoder?.start()
+    }
+
     private var onStateListener =
             object : RecordPresenter.OnStateListener {
                 override fun onStop() {
@@ -108,6 +113,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
                 }
 
                 override fun onPrepared(encoder: Encoder) {
+                    start()
                     runOnUiThread {
                         enableChangeRatio(true)
                         timeView.text = "00:00.00"
