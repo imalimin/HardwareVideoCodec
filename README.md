@@ -1,5 +1,5 @@
 # HardwareVideoCodec
-HardwareVideoCodec is an efficient video encoding library for Android.
+HardwareVideoCodec is an efficient video encoding library for Android.With it you can easily record videos of various resolutions on your android app.
 
 ## Latest release
 [V1.4.1](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.4.1)
@@ -18,7 +18,7 @@ HardwareVideoCodec is an efficient video encoding library for Android.
 * More features.
 
 ## Start
-If you are building with Gradle, simply add the following line to the dependencies section of your build.gradle file:
+If you are building with Gradle, simply add the following code to your project:
 * Project root build.gradle
 ```
 buildscript {
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 ```
-## Join the Fresco community
+## Join the HardwareVideoCodec community
 Please use our [issues page](https://github.com/lmylr/HardwareVideoCodec/issues) to let us know of any problems.
 
 ## License
