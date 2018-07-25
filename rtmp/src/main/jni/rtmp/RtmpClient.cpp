@@ -29,28 +29,30 @@ int RtmpClient::connect(char *url, int w, int h, int timeOut) {
     this->height = h;
     this->timeOut = timeOut;
 
-    RTMP_LogSetLevel(RTMP_LOGDEBUG);
+    RTMP_LogSetLevel(RTMP_LOGALL);
     rtmp = RTMP_Alloc();
     RTMP_Init(rtmp);
     rtmp->Link.timeout = timeOut;
     RTMP_SetupURL(rtmp, url);
     RTMP_EnableWrite(rtmp);
-
-    if (RTMP_Connect(rtmp, NULL) <= 0) {
+    int ret = 1;
+    if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
+        LOGE("RTMP_Connect failed! Is it timeout %d",rtmp->m_sb.sb_timedout);
         stop();
-        LOGE("RTMP_Connect failed!");
-        return -1;
+        return ret;
     }
 
-    if (RTMP_ConnectStream(rtmp, 0) <= 0) {
+    if ((ret = RTMP_ConnectStream(rtmp, 0)) <= 0) {
         stop();
         LOGE("RTMP_ConnectStream failed!");
-        return -1;
+        return ret;
     }
-    return 0;
+    connected = true;
+    return ret;
 }
 
 int RtmpClient::sendSpsAndPps(char *sps, int spsLen, char *pps, int ppsLen, long timestamp) {
+    if (!connected) return -1;
     int i;
     RTMPPacket *packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + 1024);
     memset(packet, 0, RTMP_HEAD_SIZE);
@@ -102,10 +104,11 @@ int RtmpClient::sendSpsAndPps(char *sps, int spsLen, char *pps, int ppsLen, long
         RTMP_SendPacket(rtmp, packet, TRUE);
     }
     free(packet);
-    return 0;
+    return 1;
 }
 
 int RtmpClient::sendVideoData(char *data, int len, long timestamp) {
+    if (!connected) return -1;
     int type;
 
     /*去掉帧界定符*/
@@ -159,11 +162,13 @@ int RtmpClient::sendVideoData(char *data, int len, long timestamp) {
         RTMP_SendPacket(rtmp, packet, TRUE);
     }
     free(packet);
+    LOGI("Send video packet: %d", len);
 
-    return 0;
+    return 1;
 }
 
 int RtmpClient::sendAacSpec(char *data, int len) {
+    if (!connected) return -1;
     RTMPPacket *packet;
     char *body;
     packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + len + 2);
@@ -189,10 +194,11 @@ int RtmpClient::sendAacSpec(char *data, int len) {
     }
     free(packet);
 
-    return 0;
+    return 1;
 }
 
 int RtmpClient::sendAacData(char *data, int len, long timestamp) {
+    if (!connected) return -1;
     if (len > 0) {
         RTMPPacket *packet;
         char *body;
@@ -217,15 +223,18 @@ int RtmpClient::sendAacData(char *data, int len, long timestamp) {
             RTMP_SendPacket(rtmp, packet, TRUE);
         }
 
-        LOGI("send packet body[0]=%x,body[1]=%x", body[0], body[1]);
+//        LOGI("Send audio packet body[0]=%x,body[1]=%x", body[0], body[1]);
         free(packet);
+        LOGI("Send audio packet: %d", len);
+        return 1;
     }
-    return 0;
+    return -1;
 }
 
-void RtmpClient::stop() const {
+void RtmpClient::stop() {
     RTMP_Close(rtmp);
     RTMP_Free(rtmp);
+    connected = false;
 }
 
 RtmpClient::~RtmpClient() {
