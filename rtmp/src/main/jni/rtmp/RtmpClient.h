@@ -11,9 +11,19 @@
 class RtmpClient {
 public:
     /**
-     * 初始化
+     * 连接rtmp服务
      */
-    int connect(char *url, int w, int h, int timeOut);
+    int connect(char *url, int timeOut);
+
+    /**
+     * 新建流连接
+     */
+    int connectStream(int w, int h);
+
+    /**
+     * 删除流连接
+     */
+    void deleteStream();
 
     /**
      * 发送sps、pps 帧

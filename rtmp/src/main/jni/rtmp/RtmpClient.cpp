@@ -23,10 +23,8 @@
 #define STREAM_CHANNEL_VIDEO     0x04
 #define STREAM_CHANNEL_AUDIO     0x05
 
-int RtmpClient::connect(char *url, int w, int h, int timeOut) {
+int RtmpClient::connect(char *url, int timeOut) {
     this->url = url;
-    this->width = w;
-    this->height = h;
     this->timeOut = timeOut;
 
     RTMP_LogSetLevel(RTMP_LOGALL);
@@ -41,7 +39,17 @@ int RtmpClient::connect(char *url, int w, int h, int timeOut) {
         stop();
         return ret;
     }
+    return ret;
+}
 
+int RtmpClient::connectStream(int w, int h) {
+    if (!RTMP_IsConnected(rtmp)) {
+        LOGE("You must connected before connect stream!");
+        return -1;
+    }
+    this->width = w;
+    this->height = h;
+    int ret = 1;
     if ((ret = RTMP_ConnectStream(rtmp, 0)) <= 0) {
         stop();
         LOGE("RTMP_ConnectStream failed!");
@@ -50,7 +58,12 @@ int RtmpClient::connect(char *url, int w, int h, int timeOut) {
     return ret;
 }
 
-int RtmpClient::sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen, long timestamp) {
+void RtmpClient::deleteStream() {
+    RTMP_DeleteStream(rtmp);
+}
+
+int
+RtmpClient::sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen, long timestamp) {
     if (!RTMP_IsConnected(rtmp)) return -1;
     int i;
     RTMPPacket *packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + 1024);

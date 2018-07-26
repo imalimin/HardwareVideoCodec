@@ -13,15 +13,16 @@
 extern "C" {
 #endif
 
-JNIEXPORT void JNICALL
-Java_com_lmy_rtmp_RtmpClient_init(JNIEnv *, jobject);
+JNIEXPORT jint JNICALL
+Java_com_lmy_rtmp_RtmpClient_connect(JNIEnv *, jobject, jstring, jint);
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_connect(JNIEnv *, jobject, jstring, jint, jint, jint);
+Java_com_lmy_rtmp_RtmpClient_connectStream(JNIEnv *, jobject, jint, jint);
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendVideoSpecificData(JNIEnv *, jobject, jbyteArray, jint, jbyteArray, jint,
-                                           jlong);
+Java_com_lmy_rtmp_RtmpClient_sendVideoSpecificData(JNIEnv *, jobject, jbyteArray, jint, jbyteArray,
+                                                   jint,
+                                                   jlong);
 
 JNIEXPORT jint JNICALL
 Java_com_lmy_rtmp_RtmpClient_sendVideo(JNIEnv *, jobject, jbyteArray, jint, jlong);
