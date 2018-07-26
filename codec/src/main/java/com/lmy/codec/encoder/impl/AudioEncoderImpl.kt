@@ -95,6 +95,7 @@ class AudioEncoderImpl(var context: CodecContext,
     }
 
     private fun loop() {
+        if (!looping) return
         mDequeuePipeline.queueEvent(looper)
     }
 
@@ -193,6 +194,7 @@ class AudioEncoderImpl(var context: CodecContext,
         pause()
 //        while (dequeue()) {//取出编码器中剩余的帧
 //        }
+        looping = false
         mPipeline.quit()
         mDequeuePipeline.quit()
         codec!!.stop()
