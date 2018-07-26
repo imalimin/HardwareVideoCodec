@@ -78,7 +78,11 @@ class RecordPresenter(var context: CodecContext,
         if (TextUtils.isEmpty(context.ioContext.path)) {
             throw RuntimeException("context.ioContext.path can not be null!")
         }
-        muxer = MuxerFactory.getMuxer(context)
+        if (null == muxer) {
+            muxer = MuxerFactory.getMuxer(context)
+        } else {
+            muxer?.reset()
+        }
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
         if (null != onStateListener)
@@ -94,7 +98,7 @@ class RecordPresenter(var context: CodecContext,
         if (context.video.width == width && context.video.height == height) return
         render?.updateSize(width, height)
         SingleEventPipeline.instance.queueEvent(Runnable {
-            stop()
+            stopEncoder()
             start()
         })
     }
@@ -106,7 +110,8 @@ class RecordPresenter(var context: CodecContext,
 
     private fun release() {
         SingleEventPipeline.instance.queueEvent(Runnable {
-            stop()
+            stopEncoder()
+            stopMuxer()
         })
         try {
             cameraWrapper?.release()
@@ -118,11 +123,14 @@ class RecordPresenter(var context: CodecContext,
         }
     }
 
-    private fun stop() {
+    private fun stopEncoder() {
         encoder?.stop()
         audioEncoder?.stop()
-        muxer?.release()
         onStateListener?.onStop()
+    }
+
+    private fun stopMuxer() {
+        muxer?.release()
     }
 
     fun setOnStateListener(listener: OnStateListener) {

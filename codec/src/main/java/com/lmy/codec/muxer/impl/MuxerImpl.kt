@@ -10,9 +10,9 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.media.MediaMuxer
 import com.lmy.codec.encoder.Encoder
-import com.lmy.codec.muxer.Muxer
-import com.lmy.codec.entity.Sample
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
+import com.lmy.codec.entity.Sample
+import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.util.debug_e
 import java.io.File
@@ -25,22 +25,37 @@ import java.util.*
 class MuxerImpl(var path: String,
                 private var muxer: MediaMuxer? = null,
                 var videoTrack: Int = 0,
-                var audioTrack: Int = 0) : Muxer {
+                var audioTrack: Int = 0,
+                private var mFrameCount: Int = 0,
+                private var mVideoTrackReady: Boolean = false,
+                private var mAudioTrackReady: Boolean = false,
+                private var mStart: Boolean = false) : Muxer {
 
     private val mQueue = LinkedList<Sample>()
     private val mWriteSyn = Any()
     private var mAudioPipeline = EventPipeline.create("AudioWritePipeline")
     private var mVideoPipeline = EventPipeline.create("VideoWritePipeline")
-    private var mFrameCount = 0
-    private var mVideoTrackReady = false
-    private var mAudioTrackReady = false
-    private var mStart = false
 
     init {
+        start()
+    }
+
+    private fun start() {
+        mFrameCount = 0
+        mVideoTrackReady = false
+        mAudioTrackReady = false
+        mStart = false
         //删除已存在的文件
         val file = File(path)
         if (file.exists()) file.delete()
         muxer = MediaMuxer(path, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+    }
+
+    override fun reStart() {
+        mVideoPipeline.queueEvent(Runnable {
+            stop()
+            start()
+        })
     }
 
     override fun onFormatChanged(encoder: Encoder, format: MediaFormat) {
@@ -96,21 +111,6 @@ class MuxerImpl(var path: String,
         ready()
     }
 
-    override fun release() {
-        debug_e("Muxer release")
-        mVideoPipeline.quit()
-        mAudioPipeline.quit()
-        if (mStart) {
-            mStart = false
-            try {
-                muxer?.stop()
-            } catch (e: IllegalStateException) {
-                e.printStackTrace()
-            }
-        }
-        muxer?.release()
-    }
-
     override fun writeVideoSample(sample: Sample) {
         if (!mStart) return
         ++mFrameCount
@@ -141,5 +141,24 @@ class MuxerImpl(var path: String,
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    override fun release() {
+        debug_e("Muxer release")
+        mVideoPipeline.quit()
+        mAudioPipeline.quit()
+        stop()
+    }
+
+    private fun stop() {
+        if (mStart) {
+            mStart = false
+            try {
+                muxer?.stop()
+            } catch (e: IllegalStateException) {
+                e.printStackTrace()
+            }
+        }
+        muxer?.release()
     }
 }

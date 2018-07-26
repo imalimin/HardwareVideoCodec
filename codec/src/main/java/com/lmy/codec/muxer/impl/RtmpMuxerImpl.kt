@@ -18,13 +18,22 @@ import java.nio.ByteBuffer
  */
 class RtmpMuxerImpl(var context: CodecContext,
                     private var client: RtmpClient = RtmpClient.build()) : Muxer {
+
     private var mAudioPipeline = EventPipeline.create("LivePipeline")
 
     init {
         mAudioPipeline.queueEvent(Runnable {
-            val ret = client.connect(context.ioContext.path!!,
-                    context.video.width, context.video.height, 10000)
+            var ret = client.connect(context.ioContext.path!!, 10000)
             debug_i("RTMP connect: $ret")
+            ret = client.connectStream(context.video.width, context.video.height)
+            debug_i("RTMP connect stream: $ret")
+        })
+    }
+
+    override fun reset() {
+        mAudioPipeline.queueEvent(Runnable {
+            val ret = client.connectStream(context.video.width, context.video.height)
+            debug_i("RTMP connect stream: $ret")
         })
     }
 
