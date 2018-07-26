@@ -37,7 +37,7 @@ int RtmpClient::connect(char *url, int w, int h, int timeOut) {
     RTMP_EnableWrite(rtmp);
     int ret = 1;
     if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
-        LOGE("RTMP_Connect failed! Is it timeout %d",rtmp->m_sb.sb_timedout);
+        LOGE("RTMP_Connect failed! ");
         stop();
         return ret;
     }
