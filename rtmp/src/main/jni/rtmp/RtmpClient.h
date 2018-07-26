@@ -4,6 +4,7 @@
 #include <log.h>
 #include <string.h>
 #include "librtmp/rtmp.h"
+#include "SpecificData.h"
 
 #ifndef HARDWAREVIDEOCODEC_RTMP_H
 #define HARDWAREVIDEOCODEC_RTMP_H
@@ -28,7 +29,7 @@ public:
     /**
      * 发送sps、pps 帧
      */
-    int sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen, long timestamp);
+    int sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen);
 
     /**
      * 发送视频帧
@@ -53,12 +54,21 @@ public:
     ~RtmpClient();
 
 private:
+    SpecificData *sps = NULL, *pps = NULL, *spec = NULL;
     int width;
     int height;
     int timeOut;
     char *url;
     long startTime;
     RTMP *rtmp;
+
+    void saveVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen);
+
+    void saveAudioSpecificData(char *spec, int len);
+
+    int sendVideoSpecificData(SpecificData *sps, SpecificData *pps);
+
+    int sendAudioSpecificData(SpecificData *spec);
 };
 
 #endif //HARDWAREVIDEOCODEC_RTMP_H

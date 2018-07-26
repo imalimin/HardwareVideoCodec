@@ -22,6 +22,10 @@ class RtmpMuxerImpl(var context: CodecContext,
     private var mAudioPipeline = EventPipeline.create("LivePipeline")
 
     init {
+        start()
+    }
+
+    private fun start() {
         mAudioPipeline.queueEvent(Runnable {
             var ret = client.connect(context.ioContext.path!!, 10000)
             debug_i("RTMP connect: $ret")
