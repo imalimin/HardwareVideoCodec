@@ -16,8 +16,8 @@ import java.nio.ByteBuffer
 /**
  * Created by lmyooyo@gmail.com on 2018/7/25.
  */
-class LiveImpl(var context: CodecContext,
-               private var client: RtmpClient = RtmpClient.build()) : Muxer {
+class RtmpMuxerImpl(var context: CodecContext,
+                    private var client: RtmpClient = RtmpClient.build()) : Muxer {
     private var mAudioPipeline = EventPipeline.create("LivePipeline")
 
     init {

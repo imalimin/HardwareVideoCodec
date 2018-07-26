@@ -3,7 +3,7 @@ package com.lmy.codec.helper
 import android.text.TextUtils
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.muxer.Muxer
-import com.lmy.codec.muxer.impl.LiveImpl
+import com.lmy.codec.muxer.impl.RtmpMuxerImpl
 import com.lmy.codec.muxer.impl.MuxerImpl
 import com.lmy.codec.util.debug_i
 
@@ -18,7 +18,7 @@ class MuxerFactory {
             }
             debug_i("Open muxer for ${context.ioContext.path}")
             return if (context.ioContext.path!!.startsWith("rtmp")) {
-                LiveImpl(context)
+                RtmpMuxerImpl(context)
             } else {
                 MuxerImpl(context.ioContext.path!!)
             }
