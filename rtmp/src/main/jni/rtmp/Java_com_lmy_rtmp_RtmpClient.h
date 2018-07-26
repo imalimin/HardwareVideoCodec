@@ -21,8 +21,7 @@ Java_com_lmy_rtmp_RtmpClient_connectStream(JNIEnv *, jobject, jint, jint);
 
 JNIEXPORT jint JNICALL
 Java_com_lmy_rtmp_RtmpClient_sendVideoSpecificData(JNIEnv *, jobject, jbyteArray, jint, jbyteArray,
-                                                   jint,
-                                                   jlong);
+                                                   jint);
 
 JNIEXPORT jint JNICALL
 Java_com_lmy_rtmp_RtmpClient_sendVideo(JNIEnv *, jobject, jbyteArray, jint, jlong);

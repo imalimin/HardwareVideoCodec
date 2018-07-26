@@ -24,18 +24,17 @@ JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connect
 }
 JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connectStream
         (JNIEnv *env, jobject thiz, jint width, jint height) {
-    client->deleteStream();
+//    client->deleteStream();
     return client->connectStream(width, height);
 }
 
 JNIEXPORT jint JNICALL
 Java_com_lmy_rtmp_RtmpClient_sendVideoSpecificData(JNIEnv *env, jobject thiz, jbyteArray sps,
                                                    jint spsLen,
-                                                   jbyteArray pps, jint ppsLen, jlong timestamp) {
+                                                   jbyteArray pps, jint ppsLen) {
     jbyte *spsBuffer = env->GetByteArrayElements(sps, JNI_FALSE);
     jbyte *ppsBuffer = env->GetByteArrayElements(pps, JNI_FALSE);
-    int ret = client->sendVideoSpecificData((char *) spsBuffer, spsLen, (char *) ppsBuffer, ppsLen,
-                                            timestamp);
+    int ret = client->sendVideoSpecificData((char *) spsBuffer, spsLen, (char *) ppsBuffer, ppsLen);
     env->ReleaseByteArrayElements(sps, spsBuffer, JNI_FALSE);
     env->ReleaseByteArrayElements(pps, ppsBuffer, JNI_FALSE);
     return ret;

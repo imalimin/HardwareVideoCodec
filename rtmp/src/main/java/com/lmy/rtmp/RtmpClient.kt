@@ -11,7 +11,7 @@ class RtmpClient : Rtmp {
 
     external override fun connect(url: String, timeOut: Int): Int
     external override fun connectStream(width: Int, height: Int): Int
-    external override fun sendVideoSpecificData(sps: ByteArray, spsLen: Int, pps: ByteArray, ppsLen: Int, timestamp: Long): Int
+    external override fun sendVideoSpecificData(sps: ByteArray, spsLen: Int, pps: ByteArray, ppsLen: Int): Int
     external override fun sendVideo(data: ByteArray, len: Int, timestamp: Long): Int
     external override fun sendAudioSpecificData(data: ByteArray, len: Int): Int
     external override fun sendAudio(data: ByteArray, len: Int, timestamp: Long): Int

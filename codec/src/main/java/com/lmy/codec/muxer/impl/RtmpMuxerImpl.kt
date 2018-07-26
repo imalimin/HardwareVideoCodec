@@ -32,6 +32,7 @@ class RtmpMuxerImpl(var context: CodecContext,
 
     override fun reset() {
         mAudioPipeline.queueEvent(Runnable {
+            debug_i("RTMP reset")
             val ret = client.connectStream(context.video.width, context.video.height)
             debug_i("RTMP connect stream: $ret")
         })
@@ -43,6 +44,7 @@ class RtmpMuxerImpl(var context: CodecContext,
             debug_e("Add audio track")
             addAudioTrack(format)
         } else {
+            debug_e("Add video track")
             addVideoTrack(format)
         }
     }
@@ -72,7 +74,7 @@ class RtmpMuxerImpl(var context: CodecContext,
         spsBuffer.rewind()
         ppsBuffer.rewind()
         mAudioPipeline.queueEvent(Runnable {
-            client.sendVideoSpecificData(sps, sps.size, pps, pps.size, 0)
+            client.sendVideoSpecificData(sps, sps.size, pps, pps.size)
         })
     }
 
