@@ -50,7 +50,7 @@ int RtmpClient::connect(char *url, int w, int h, int timeOut) {
     return ret;
 }
 
-int RtmpClient::sendSpsAndPps(char *sps, int spsLen, char *pps, int ppsLen, long timestamp) {
+int RtmpClient::sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen, long timestamp) {
     if (!RTMP_IsConnected(rtmp)) return -1;
     int i;
     RTMPPacket *packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + 1024);
@@ -106,7 +106,7 @@ int RtmpClient::sendSpsAndPps(char *sps, int spsLen, char *pps, int ppsLen, long
     return 1;
 }
 
-int RtmpClient::sendVideoData(char *data, int len, long timestamp) {
+int RtmpClient::sendVideo(char *data, int len, long timestamp) {
     if (!RTMP_IsConnected(rtmp)) return -1;
     int type;
 
@@ -166,7 +166,7 @@ int RtmpClient::sendVideoData(char *data, int len, long timestamp) {
     return 1;
 }
 
-int RtmpClient::sendAacSpec(char *data, int len) {
+int RtmpClient::sendAudioSpecificData(char *data, int len) {
     if (!RTMP_IsConnected(rtmp)) return -1;
     RTMPPacket *packet;
     char *body;
@@ -196,7 +196,7 @@ int RtmpClient::sendAacSpec(char *data, int len) {
     return 1;
 }
 
-int RtmpClient::sendAacData(char *data, int len, long timestamp) {
+int RtmpClient::sendAudio(char *data, int len, long timestamp) {
     if (!RTMP_IsConnected(rtmp)) return -1;
     if (len > 0) {
         RTMPPacket *packet;

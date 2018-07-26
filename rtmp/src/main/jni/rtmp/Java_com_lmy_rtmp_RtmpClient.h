@@ -20,17 +20,17 @@ JNIEXPORT jint JNICALL
 Java_com_lmy_rtmp_RtmpClient_connect(JNIEnv *, jobject, jstring, jint, jint, jint);
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendSpsAndPps(JNIEnv *, jobject, jbyteArray, jint, jbyteArray, jint,
+Java_com_lmy_rtmp_RtmpClient_sendVideoSpecificData(JNIEnv *, jobject, jbyteArray, jint, jbyteArray, jint,
                                            jlong);
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendVideoData(JNIEnv *, jobject, jbyteArray, jint, jlong);
+Java_com_lmy_rtmp_RtmpClient_sendVideo(JNIEnv *, jobject, jbyteArray, jint, jlong);
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendAacSpec(JNIEnv *, jobject, jbyteArray, jint);
+Java_com_lmy_rtmp_RtmpClient_sendAudioSpecificData(JNIEnv *, jobject, jbyteArray, jint);
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendAacData(JNIEnv *, jobject, jbyteArray, jint, jlong);
+Java_com_lmy_rtmp_RtmpClient_sendAudio(JNIEnv *, jobject, jbyteArray, jint, jlong);
 
 JNIEXPORT void JNICALL
 Java_com_lmy_rtmp_RtmpClient_stop(JNIEnv *, jobject);

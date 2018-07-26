@@ -11,10 +11,10 @@ class RtmpClient {
 
     private external fun init()
     external fun connect(url: String, width: Int, height: Int, timeOut: Int): Int
-    external fun sendSpsAndPps(sps: ByteArray, spsLen: Int, pps: ByteArray, ppsLen: Int, timestamp: Long): Int
-    external fun sendVideoData(data: ByteArray, len: Int, timestamp: Long): Int
-    external fun sendAacSpec(data: ByteArray, len: Int): Int
-    external fun sendAacData(data: ByteArray, len: Int, timestamp: Long): Int
+    external fun sendVideoSpecificData(sps: ByteArray, spsLen: Int, pps: ByteArray, ppsLen: Int, timestamp: Long): Int
+    external fun sendVideo(data: ByteArray, len: Int, timestamp: Long): Int
+    external fun sendAudioSpecificData(data: ByteArray, len: Int): Int
+    external fun sendAudio(data: ByteArray, len: Int, timestamp: Long): Int
     external fun stop()
 
     companion object {

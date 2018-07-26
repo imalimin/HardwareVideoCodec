@@ -63,7 +63,7 @@ class RtmpMuxerImpl(var context: CodecContext,
         spsBuffer.rewind()
         ppsBuffer.rewind()
         mAudioPipeline.queueEvent(Runnable {
-            client.sendSpsAndPps(sps, sps.size, pps, pps.size, 0)
+            client.sendVideoSpecificData(sps, sps.size, pps, pps.size, 0)
         })
     }
 
@@ -78,7 +78,7 @@ class RtmpMuxerImpl(var context: CodecContext,
         esdsBuffer.get(esds)
         esdsBuffer.rewind()
         mAudioPipeline.queueEvent(Runnable {
-            client.sendAacSpec(esds, esds.size)
+            client.sendAudioSpecificData(esds, esds.size)
         })
     }
 
@@ -88,7 +88,7 @@ class RtmpMuxerImpl(var context: CodecContext,
         sample.sample.get(data)
         sample.sample.rewind()
         mAudioPipeline.queueEvent(Runnable {
-            client.sendVideoData(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
+            client.sendVideo(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
         })
     }
 
@@ -98,7 +98,7 @@ class RtmpMuxerImpl(var context: CodecContext,
         sample.sample.get(data)
         sample.sample.rewind()
         mAudioPipeline.queueEvent(Runnable {
-            client.sendAacData(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
+            client.sendAudio(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
         })
     }
 

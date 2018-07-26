@@ -18,22 +18,22 @@ public:
     /**
      * 发送sps、pps 帧
      */
-    int sendSpsAndPps(char *sps, int spsLen, char *pps, int ppsLen, long timestamp);
+    int sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen, long timestamp);
 
     /**
      * 发送视频帧
      */
-    int sendVideoData(char *data, int len, long timestamp);
+    int sendVideo(char *data, int len, long timestamp);
 
     /**
      * 发送音频关键帧
      */
-    int sendAacSpec(char *data, int len);
+    int sendAudioSpecificData(char *data, int len);
 
     /**
      * 发送音频数据
      */
-    int sendAacData(char *data, int len, long timestamp);
+    int sendAudio(char *data, int len, long timestamp);
 
     /**
      * 释放资源

@@ -28,11 +28,11 @@ JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connect
 }
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendSpsAndPps(JNIEnv *env, jobject thiz, jbyteArray sps, jint spsLen,
+Java_com_lmy_rtmp_RtmpClient_sendVideoSpecificData(JNIEnv *env, jobject thiz, jbyteArray sps, jint spsLen,
                                            jbyteArray pps, jint ppsLen, jlong timestamp) {
     jbyte *spsBuffer = env->GetByteArrayElements(sps, JNI_FALSE);
     jbyte *ppsBuffer = env->GetByteArrayElements(pps, JNI_FALSE);
-    int ret = client->sendSpsAndPps((char *) spsBuffer, spsLen, (char *) ppsBuffer, ppsLen,
+    int ret = client->sendVideoSpecificData((char *) spsBuffer, spsLen, (char *) ppsBuffer, ppsLen,
                                     timestamp);
     env->ReleaseByteArrayElements(sps, spsBuffer, JNI_FALSE);
     env->ReleaseByteArrayElements(pps, ppsBuffer, JNI_FALSE);
@@ -40,27 +40,27 @@ Java_com_lmy_rtmp_RtmpClient_sendSpsAndPps(JNIEnv *env, jobject thiz, jbyteArray
 }
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendVideoData(JNIEnv *env, jobject thiz, jbyteArray data, jint len,
+Java_com_lmy_rtmp_RtmpClient_sendVideo(JNIEnv *env, jobject thiz, jbyteArray data, jint len,
                                            jlong timestamp) {
     jbyte *buffer = env->GetByteArrayElements(data, JNI_FALSE);
-    int ret = client->sendVideoData((char *) buffer, len, timestamp);
+    int ret = client->sendVideo((char *) buffer, len, timestamp);
     env->ReleaseByteArrayElements(data, buffer, JNI_FALSE);
     return ret;
 }
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendAacSpec(JNIEnv *env, jobject thiz, jbyteArray data, jint len) {
+Java_com_lmy_rtmp_RtmpClient_sendAudioSpecificData(JNIEnv *env, jobject thiz, jbyteArray data, jint len) {
     jbyte *buffer = env->GetByteArrayElements(data, JNI_FALSE);
-    int ret = client->sendAacSpec((char *) buffer, len);
+    int ret = client->sendAudioSpecificData((char *) buffer, len);
     env->ReleaseByteArrayElements(data, buffer, JNI_FALSE);
     return ret;
 }
 
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_sendAacData(JNIEnv *env, jobject thiz, jbyteArray data, jint len,
+Java_com_lmy_rtmp_RtmpClient_sendAudio(JNIEnv *env, jobject thiz, jbyteArray data, jint len,
                                          jlong timestamp) {
     jbyte *buffer = env->GetByteArrayElements(data, JNI_FALSE);
-    int ret = client->sendAacData((char *) buffer, len, timestamp);
+    int ret = client->sendAudio((char *) buffer, len, timestamp);
     env->ReleaseByteArrayElements(data, buffer, JNI_FALSE);
     return ret;
 }
