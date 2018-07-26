@@ -38,6 +38,14 @@ class EventPipeline private constructor(name: String) {
         mHandler.sendMessage(mHandler.obtainMessage(0, event))
     }
 
+    fun queueEventDelayed(event: Runnable, delayed: Long) {
+        if (!start) {
+            loge("SingleEventPipeline has quited")
+            return
+        }
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(0, event), delayed)
+    }
+
     fun quit() {
         if (!start) {
             loge("SingleEventPipeline has quited")
