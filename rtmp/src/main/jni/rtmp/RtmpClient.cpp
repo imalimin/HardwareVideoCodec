@@ -47,12 +47,11 @@ int RtmpClient::connect(char *url, int w, int h, int timeOut) {
         LOGE("RTMP_ConnectStream failed!");
         return ret;
     }
-    connected = true;
     return ret;
 }
 
 int RtmpClient::sendSpsAndPps(char *sps, int spsLen, char *pps, int ppsLen, long timestamp) {
-    if (!connected) return -1;
+    if (!RTMP_IsConnected(rtmp)) return -1;
     int i;
     RTMPPacket *packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + 1024);
     memset(packet, 0, RTMP_HEAD_SIZE);
@@ -108,7 +107,7 @@ int RtmpClient::sendSpsAndPps(char *sps, int spsLen, char *pps, int ppsLen, long
 }
 
 int RtmpClient::sendVideoData(char *data, int len, long timestamp) {
-    if (!connected) return -1;
+    if (!RTMP_IsConnected(rtmp)) return -1;
     int type;
 
     /*去掉帧界定符*/
@@ -162,13 +161,13 @@ int RtmpClient::sendVideoData(char *data, int len, long timestamp) {
         RTMP_SendPacket(rtmp, packet, TRUE);
     }
     free(packet);
-    LOGI("Send video packet: %d", len);
+//    LOGI("Send video packet: %d", len);
 
     return 1;
 }
 
 int RtmpClient::sendAacSpec(char *data, int len) {
-    if (!connected) return -1;
+    if (!RTMP_IsConnected(rtmp)) return -1;
     RTMPPacket *packet;
     char *body;
     packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + len + 2);
@@ -198,7 +197,7 @@ int RtmpClient::sendAacSpec(char *data, int len) {
 }
 
 int RtmpClient::sendAacData(char *data, int len, long timestamp) {
-    if (!connected) return -1;
+    if (!RTMP_IsConnected(rtmp)) return -1;
     if (len > 0) {
         RTMPPacket *packet;
         char *body;
@@ -225,7 +224,7 @@ int RtmpClient::sendAacData(char *data, int len, long timestamp) {
 
 //        LOGI("Send audio packet body[0]=%x,body[1]=%x", body[0], body[1]);
         free(packet);
-        LOGI("Send audio packet: %d", len);
+//        LOGI("Send audio packet: %d", len);
         return 1;
     }
     return -1;
@@ -234,7 +233,6 @@ int RtmpClient::sendAacData(char *data, int len, long timestamp) {
 void RtmpClient::stop() {
     RTMP_Close(rtmp);
     RTMP_Free(rtmp);
-    connected = false;
 }
 
 RtmpClient::~RtmpClient() {

@@ -48,7 +48,6 @@ private:
     int timeOut;
     char *url;
     long startTime;
-    bool connected = false;
     RTMP *rtmp;
 };
 
