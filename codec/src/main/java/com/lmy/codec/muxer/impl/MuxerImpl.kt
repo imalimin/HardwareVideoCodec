@@ -51,7 +51,7 @@ class MuxerImpl(var path: String,
         muxer = MediaMuxer(path, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
     }
 
-    override fun reStart() {
+    override fun reset() {
         mVideoPipeline.queueEvent(Runnable {
             stop()
             start()
