@@ -10,6 +10,7 @@ import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
         val context = CodecContext(GLHelper.isSupportPBO(this))
+//        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
         context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
         mPresenter = RecordPresenter(context)
         mPresenter.setOnStateListener(onStateListener)
