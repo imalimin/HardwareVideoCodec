@@ -55,6 +55,7 @@ public:
 
 private:
     SpecificData *sps = NULL, *pps = NULL, *spec = NULL;
+    long videoCount = 0, audioCount = 0;
     int width;
     int height;
     int timeOut;

@@ -24,7 +24,6 @@ JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connect
 }
 JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connectStream
         (JNIEnv *env, jobject thiz, jint width, jint height) {
-//    client->deleteStream();
     return client->connectStream(width, height);
 }
 
