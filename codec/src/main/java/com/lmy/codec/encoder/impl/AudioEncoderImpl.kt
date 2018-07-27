@@ -112,9 +112,13 @@ class AudioEncoderImpl(var context: CodecContext,
     }
 
     private fun encode() {
-        val cache = mCache!!.take()
-        encode(cache)
-        mCache!!.recycle(cache)
+        try {
+            val cache = mCache!!.take()
+            encode(cache)
+            mCache!!.recycle(cache)
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
     }
 
     private fun encode(buffer: ByteArray) {
