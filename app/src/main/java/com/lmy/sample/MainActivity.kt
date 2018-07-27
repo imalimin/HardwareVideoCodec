@@ -11,7 +11,6 @@ import android.graphics.SurfaceTexture
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.os.Handler
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
@@ -52,8 +51,8 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
         val context = CodecContext(GLHelper.isSupportPBO(this))
-//        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
-        context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
+        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
+//        context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
         mPresenter = RecordPresenter(context)
         mPresenter.setOnStateListener(onStateListener)
         defaultVideoWidth = mPresenter.context.video.width
@@ -79,7 +78,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
     }
 
     override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
-        mPresenter.stopPreview()
+        mPresenter.stop()
         return true
     }
 
@@ -93,19 +92,13 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
     override fun onTouch(v: View, event: MotionEvent): Boolean {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                start()
+                mPresenter.start()
             }
             MotionEvent.ACTION_UP -> {
-                mPresenter.encoder?.pause()
-                mPresenter.audioEncoder?.pause()
+                mPresenter.stop()
             }
         }
         return true
-    }
-
-    private fun start() {
-        mPresenter.encoder?.start()
-        mPresenter.audioEncoder?.start()
     }
 
     private var onStateListener =
@@ -115,7 +108,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
                 }
 
                 override fun onPrepared(encoder: Encoder) {
-                    start()
+                    mPresenter.start()
                     runOnUiThread {
                         enableChangeRatio(true)
                         timeView.text = "00:00.00"

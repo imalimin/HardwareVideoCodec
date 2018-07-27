@@ -65,7 +65,7 @@ class RecordPresenter(var context: CodecContext,
             cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
             render?.post(Runnable {
-                start()
+                reset()
             })
         })
     }
@@ -74,7 +74,7 @@ class RecordPresenter(var context: CodecContext,
 //        mRender?.updatePreview(width, height)
     }
 
-    private fun start() {
+    private fun reset() {
         if (TextUtils.isEmpty(context.ioContext.path)) {
             throw RuntimeException("context.ioContext.path can not be null!")
         }
@@ -99,11 +99,21 @@ class RecordPresenter(var context: CodecContext,
         render?.updateSize(width, height)
         SingleEventPipeline.instance.queueEvent(Runnable {
             stopEncoder()
-            start()
+            reset()
         })
     }
 
-    fun stopPreview() {
+    fun start() {
+        encoder?.start()
+        audioEncoder?.start()
+    }
+
+    fun pause() {
+        encoder?.pause()
+        audioEncoder?.pause()
+    }
+
+    fun stop() {
         release()
         SingleEventPipeline.instance.quit()
     }
