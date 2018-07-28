@@ -67,7 +67,8 @@ data class CodecContext(var supportPBO: Boolean,
                      var sampleRateInHz: Int = 44100,
                      var bitrate: Int = sampleRateInHz * 2,
                      var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
-                     var sampleBits: Int = AudioFormat.ENCODING_PCM_16BIT)
+                     var sampleBits: Int = AudioFormat.ENCODING_PCM_16BIT,
+                     var deNoise: Boolean = false)
 
     enum class CodecType {
         HARD, SOFT
