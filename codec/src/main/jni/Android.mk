@@ -25,7 +25,7 @@ ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), x86 x86_64))
     include $(PREBUILT_SHARED_LIBRARY)
 endif
 
-# build glhelper
+######## BUILD glhelper ############
 include $(CLEAR_VARS)
 # fix undefined reference to bug
 # LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
@@ -41,7 +41,30 @@ LOCAL_CFLAGS += -DNO_CRYPTO
 LOCAL_MODULE := libglhelper
 LOCAL_LDLIBS := -llog -lGLESv2
 include $(BUILD_SHARED_LIBRARY)
+######## END glhelper ############
 
+######## BUILD speex ############
+# 有三个测试文件不用编译testenc_uwb.c、testenc_wb.c 、testenc.c
+include $(CLEAR_VARS)
+# fix undefined reference to bug
+# LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
+
+LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/speex/libspeex/*.c)
+LOCAL_SRC_FILES += $(wildcard $(LOCAL_PATH)/speex/libspeex/*.cpp)
+
+# 打印引入的C文件列表
+$(warning $(LOCAL_SRC_FILES))
+
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/speex/libspeex
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/speex/include
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/speex/speex
+LOCAL_CFLAGS = -DFIXED_POINT -DUSE_KISS_FFT -DEXPORT="" -UHAVE_CONFIG_H
+LOCAL_MODULE := libspeex
+LOCAL_LDLIBS := -llog
+include $(BUILD_SHARED_LIBRARY)
+######## END speex ############
+
+######## BUILD codec ############
 include $(CLEAR_VARS)
 # allow missing dependencies
 APP_ALLOW_MISSING_DEPS :=true
@@ -72,5 +95,6 @@ endif
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 LOCAL_LDLIBS := -llog -lz -ljnigraphics -landroid -lm -pthread
-LOCAL_SHARED_LIBRARIES := libyuv libx264 libglhelper
+LOCAL_SHARED_LIBRARIES := libyuv libx264 libglhelper libspeex
 include $(BUILD_SHARED_LIBRARY)
+######## END codec ############
