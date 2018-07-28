@@ -11,11 +11,6 @@ ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     LOCAL_MODULE := libx264
     LOCAL_SRC_FILES := lib/armeabi-v7a/libx264.so
     include $(PREBUILT_SHARED_LIBRARY)
-
-    include $(CLEAR_VARS)
-    LOCAL_MODULE := glhelper
-    LOCAL_SRC_FILES := lib/armeabi-v7a/libglhelper.so
-    include $(PREBUILT_SHARED_LIBRARY)
 endif
 
 ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), x86 x86_64))
@@ -28,12 +23,24 @@ ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), x86 x86_64))
     LOCAL_MODULE := libx264
     LOCAL_SRC_FILES := lib/x86/libx264.so
     include $(PREBUILT_SHARED_LIBRARY)
-
-    include $(CLEAR_VARS)
-    LOCAL_MODULE := glhelper
-    LOCAL_SRC_FILES := lib/x86/libglhelper.so
-    include $(PREBUILT_SHARED_LIBRARY)
 endif
+
+# build glhelper
+include $(CLEAR_VARS)
+# fix undefined reference to bug
+# LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
+
+LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/glhelper/*.c)
+LOCAL_SRC_FILES += $(wildcard $(LOCAL_PATH)/glhelper/*.cpp)
+
+# 打印引入的C文件列表
+$(warning $(LOCAL_SRC_FILES))
+
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/glhelper
+LOCAL_CFLAGS += -DNO_CRYPTO
+LOCAL_MODULE := libglhelper
+LOCAL_LDLIBS := -llog -lGLESv2
+include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 # allow missing dependencies
@@ -64,6 +71,6 @@ endif
 # endif
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_LDLIBS := -llog -lz -ljnigraphics -landroid -lm -pthread -lGLESv2
+LOCAL_LDLIBS := -llog -lz -ljnigraphics -landroid -lm -pthread
 LOCAL_SHARED_LIBRARIES := libyuv libx264 libglhelper
 include $(BUILD_SHARED_LIBRARY)
