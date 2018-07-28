@@ -11,6 +11,7 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Environment
 import com.lmy.codec.entity.CodecContext
+import com.lmy.codec.native.processor.DeNoise
 import com.lmy.codec.util.debug_e
 import java.io.File
 import java.io.IOException
@@ -27,9 +28,10 @@ class AudioRecordWrapper(var context: CodecContext,
                          private var bufferSize: Int = 0,
                          private var record: AudioRecord? = null,
                          private var thread: Thread? = null,
-                         private var buffer: ByteArray? = null) : Runnable {
+                         private var buffer: ByteArray? = null,
+                         private var mStart: Boolean = true,
+                         private var mDeNoise: DeNoise? = null) : Runnable {
     private val mStartSyn = Any()
-    private var mStart = true
     private var onPCMListener: OnPCMListener? = null
     private lateinit var dos: RandomAccessFile
     private var pcmSize = 0
@@ -47,6 +49,9 @@ class AudioRecordWrapper(var context: CodecContext,
                 AudioFormat.CHANNEL_IN_MONO, context.audio.sampleBits, bufferSize)
         if (AudioRecord.STATE_INITIALIZED != record!!.state) {
             debug_e("AudioRecord initialize failed!")
+        }
+        if (context.audio.deNoise) {
+            mDeNoise = DeNoise(context.audio.sampleRateInHz, buffer!!.size / 2)
         }
         thread = Thread(this)
         thread?.name = "AudioRecorder"
@@ -70,6 +75,9 @@ class AudioRecordWrapper(var context: CodecContext,
         val size = record!!.read(buffer, 0, buffer!!.size)
         if (size > 0) {
             pcmSize += size
+//            val time = System.currentTimeMillis()
+            mDeNoise?.preprocess(buffer!!)
+//            debug_e("De noise: ${System.currentTimeMillis() - time}")
 //            debug_e("pcmSize: $pcmSize, size: $size")
 //            write(buffer!!)
             onPCMListener?.onPCMSample(buffer!!)
@@ -94,6 +102,7 @@ class AudioRecordWrapper(var context: CodecContext,
             mStart = false
             record?.stop()
             record?.release()
+            mDeNoise?.stop()
         }
     }
 
