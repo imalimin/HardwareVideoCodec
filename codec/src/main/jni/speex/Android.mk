@@ -9,12 +9,8 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(wildcard $(LOCAL_PATH)/libspeex/*.c)
 LOCAL_SRC_FILES += $(wildcard $(LOCAL_PATH)/libspeex/*.cpp)
 
-# 打印引入的C文件列表
-$(warning $(LOCAL_SRC_FILES))
-
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/libspeex
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/include/speex
 LOCAL_CFLAGS = -DFIXED_POINT -DUSE_KISS_FFT -DEXPORT="" -UHAVE_CONFIG_H
 LOCAL_MODULE := libspeex
 LOCAL_LDLIBS := -llog
