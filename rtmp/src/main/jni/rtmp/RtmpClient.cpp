@@ -45,7 +45,7 @@ int RtmpClient::connect(char *url, int timeOut) {
 int RtmpClient::connectStream(int w, int h) {
     if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
         LOGE("RTMP: You must connected before connect stream!");
-        return -1;
+        return ERROR_DISCONNECT;
     }
     this->width = w;
     this->height = h;
@@ -95,7 +95,7 @@ int
 RtmpClient::sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen) {
     saveVideoSpecificData(sps, spsLen, pps, ppsLen);
     if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        return -1;
+        return ERROR_DISCONNECT;
     }
     if (NULL != this->sps && this->sps->alreadySent()) {
         return 1;
@@ -152,13 +152,14 @@ int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
     packet->m_nInfoField2 = rtmp->m_stream_id;
 
     /*发送*/
+    int ret = ERROR_DISCONNECT;
     if (RTMP_IsConnected(rtmp)) {
-        RTMP_SendPacket(rtmp, packet, TRUE);
+        ret = RTMP_SendPacket(rtmp, packet, TRUE);
     }
     free(packet);
     sps->setSent(true);
     pps->setSent(true);
-    return 1;
+    return ret;
 }
 
 int RtmpClient::sendVideo(char *data, int len, long timestamp) {
@@ -213,21 +214,21 @@ int RtmpClient::sendVideo(char *data, int len, long timestamp) {
     packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
     packet->m_nTimeStamp = timestamp;
 
+    int ret = ERROR_DISCONNECT;
     if (RTMP_IsConnected(rtmp)) {
-        RTMP_SendPacket(rtmp, packet, TRUE);
+        ret = RTMP_SendPacket(rtmp, packet, TRUE);
         ++videoCount;
         if (0 == videoCount % 150)
             LOGI("RTMP: send video packet(%ld): %d", videoCount, len);
-        return 1;
     }
     free(packet);
-    return -3;
+    return ret;
 }
 
 int RtmpClient::sendAudioSpecificData(char *data, int len) {
     saveAudioSpecificData(data, len);
     if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        return -1;
+        return ERROR_DISCONNECT;
     }
     if (NULL != this->spec && this->spec->alreadySent()) {
         return 1;
@@ -257,12 +258,13 @@ int RtmpClient::sendAudioSpecificData(SpecificData *spec) {
     packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
     packet->m_nInfoField2 = rtmp->m_stream_id;
 
+    int ret = ERROR_DISCONNECT;
     if (RTMP_IsConnected(rtmp)) {
-        RTMP_SendPacket(rtmp, packet, TRUE);
+        ret = RTMP_SendPacket(rtmp, packet, TRUE);
     }
     free(packet);
     spec->setSent(true);
-    return 1;
+    return ret;
 }
 
 int RtmpClient::sendAudio(char *data, int len, long timestamp) {
@@ -287,15 +289,16 @@ int RtmpClient::sendAudio(char *data, int len, long timestamp) {
     packet->m_hasAbsTimestamp = 0;
     packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
     packet->m_nInfoField2 = rtmp->m_stream_id;
+
+    int ret = ERROR_DISCONNECT;
     if (RTMP_IsConnected(rtmp)) {
-        RTMP_SendPacket(rtmp, packet, TRUE);
+        ret = RTMP_SendPacket(rtmp, packet, TRUE);
         ++audioCount;
         if (0 == audioCount % 150)
             LOGI("RTMP: send audio packet(%ld): %d", audioCount, len);
-        return 1;
     }
     free(packet);
-    return -3;
+    return ret;
 }
 
 void RtmpClient::stop() {

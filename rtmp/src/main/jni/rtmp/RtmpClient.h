@@ -9,6 +9,8 @@
 #ifndef HARDWAREVIDEOCODEC_RTMP_H
 #define HARDWAREVIDEOCODEC_RTMP_H
 
+#define ERROR_DISCONNECT  -100
+
 class RtmpClient {
 public:
     /**
