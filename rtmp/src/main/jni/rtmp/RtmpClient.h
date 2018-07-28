@@ -58,6 +58,8 @@ public:
 private:
     SpecificData *sps = NULL, *pps = NULL, *spec = NULL;
     long videoCount = 0, audioCount = 0;
+    long retryTime[3] = {3000, 9000, 27000};
+    int curRetryCount = 0;
     int width;
     int height;
     int timeOut;

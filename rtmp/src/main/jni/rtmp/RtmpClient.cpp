@@ -23,6 +23,12 @@
 #define STREAM_CHANNEL_VIDEO     0x04
 #define STREAM_CHANNEL_AUDIO     0x05
 
+template<class T>
+static int arraySizeof(T &array) {
+    if (NULL == array) return 0;
+    return sizeof(array) / sizeof(array[0]);
+}
+
 int RtmpClient::connect(char *url, int timeOut) {
     this->url = url;
     this->timeOut = timeOut;
@@ -35,10 +41,17 @@ int RtmpClient::connect(char *url, int timeOut) {
     RTMP_EnableWrite(rtmp);
     int ret = 1;
     if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
+        if (curRetryCount < arraySizeof(retryTime)) {//Retry
+            LOGE("RTMP: retry connect(%d)", curRetryCount);
+            ret = connect(this->url, this->timeOut);
+            ++curRetryCount;
+            return ret;
+        }
         LOGE("RTMP: connect failed! ");
         stop();
         return ret;
     }
+    curRetryCount = 0;
     return ret;
 }
 
