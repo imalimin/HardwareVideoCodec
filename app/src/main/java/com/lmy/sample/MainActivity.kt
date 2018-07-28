@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
                 mPresenter.start()
             }
             MotionEvent.ACTION_UP -> {
-                mPresenter.stop()
+                mPresenter.pause()
             }
         }
         return true
