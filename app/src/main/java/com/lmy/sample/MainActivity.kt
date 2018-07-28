@@ -51,8 +51,8 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
         val context = CodecContext(GLHelper.isSupportPBO(this))
-        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
-//        context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
+//        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
+        context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
         mPresenter = RecordPresenter(context)
         mPresenter.setOnStateListener(onStateListener)
         defaultVideoWidth = mPresenter.context.video.width
