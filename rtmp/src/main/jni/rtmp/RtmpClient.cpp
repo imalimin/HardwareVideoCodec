@@ -57,8 +57,10 @@ int RtmpClient::connect(char *url, int timeOut) {
 
 int RtmpClient::connectStream(int w, int h) {
     if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        LOGE("RTMP: You must connected before connect stream!");
-        return ERROR_DISCONNECT;
+        if (connect(this->url, this->timeOut) < 0) {
+            LOGE("RTMP: You must connected before connect stream!");
+            return ERROR_DISCONNECT;
+        }
     }
     this->width = w;
     this->height = h;
