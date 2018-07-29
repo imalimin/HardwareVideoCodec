@@ -15,10 +15,10 @@ DeNoise::DeNoise(int sampleRate, int sampleSize) {
     int noiseSuppress = DENOISE_DB;
     speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, &denoise); //降噪
     speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, &noiseSuppress); //设置噪声的dB
-//    int i = 0;
-//    speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_AGC, &i);
-//    i = 8000;
-//    speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_AGC_LEVEL, &i);
+    int i = 1;
+    speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_AGC, &i);
+    i = this->sampleRate;
+    speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_AGC_LEVEL, &i);
 //    i = 0;
 //    speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DEREVERB, &i);
 //    float f = .0;
@@ -51,16 +51,16 @@ int DeNoise::preprocess(char *data) {
 
 void DeNoise::setBuffer(spx_int16_t *dest, char *src) {
     for (int i = 0; i < this->sampleSize; i++) {
-        this->buffer[i] = (short) (((0x000000FF & src[i * 2]) << 8) |
-                                   (0x000000FF & src[i * 2 + 1]));
+        dest[i] = (short) ((src[i * 2] << 8) + (src[i * 2 + 1] << 0));
+//        dest[i] = (short) (((0x000000FF & src[i * 2]) << 8) |
+//                                   (0x000000FF & src[i * 2 + 1]));
     }
 }
 
 void DeNoise::getBuffer(char *dest, spx_int16_t *src) {
     for (int i = 0; i < this->sampleSize; i++) {
-//        this->buffer[i] = (short) ((src[i * 2] << 8) + (src[i * 2 + 1] << 0));
-        dest[i * 2] = (char) ((this->buffer[i] & 0xFF00) >> 8);
-        dest[i * 2 + 1] = (char) (this->buffer[i] & 0xFF);
+        dest[i * 2] = (char) ((src[i] & 0xFF00) >> 8);
+        dest[i * 2 + 1] = (char) (src[i] & 0xFF);
     }
 }
 
