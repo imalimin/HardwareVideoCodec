@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.novoda.bintray-release'
+//apply plugin: 'com.novoda.bintray-release'
 
 android {
     compileSdkVersion 26
@@ -11,7 +11,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 26
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.1"
         ndk {
             stl 'gnustl_static'//指定C++运行
             moduleName "rtmp"
@@ -42,11 +42,11 @@ dependencies {
 repositories {
     mavenCentral()
 }
-publish {
-    userOrg = 'lmylr'
-    groupId = 'com.lmy.codec'
-    artifactId = 'rtmp'
-    publishVersion = android.defaultConfig.versionName
-    desc = 'An rtmp for HardwareVideoCodec'
-    website = 'https://github.com/lmylr'
-}
+//publish {
+//    userOrg = 'lmylr'
+//    groupId = 'com.lmy.codec'
+//    artifactId = 'rtmp'
+//    publishVersion = android.defaultConfig.versionName
+//    desc = 'An rtmp for HardwareVideoCodec'
+//    website = 'https://github.com/lmylr'
+//}

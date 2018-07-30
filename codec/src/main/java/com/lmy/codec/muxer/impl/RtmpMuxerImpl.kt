@@ -10,14 +10,14 @@ import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.rtmp.RtmpClient
+import java.lang.reflect.Method
 import java.nio.ByteBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/7/25.
  */
-class RtmpMuxerImpl(var context: CodecContext,
-                    private var client: RtmpClient = RtmpClient.build()) : Muxer {
+class RtmpMuxerImpl(var context: CodecContext) : Muxer {
+    private var client: RtmpReflect = RtmpReflect()
 
     private var mAudioPipeline = EventPipeline.create("LivePipeline")
 
@@ -120,5 +120,65 @@ class RtmpMuxerImpl(var context: CodecContext,
     override fun release() {
         mAudioPipeline.quit()
         client.stop()
+    }
+
+    inner class RtmpReflect {
+        private val clazz: Class<*>
+        private val thiz: Any
+        private val methodConnect: Method
+        private val methodConnectStream: Method
+        private val methodSendVideoSpecificData: Method
+        private val methodSendVideo: Method
+        private val methodSendAudioSpecificData: Method
+        private val methodSendAudio: Method
+        private val methodStop: Method
+
+        init {
+            try {
+                clazz = Class.forName("com.lmy.rtmp.RtmpClient")
+                methodConnect = clazz.getMethod("connect", String::class.java, Int::class.java)
+                methodConnectStream = clazz.getMethod("connectStream", Int::class.java, Int::class.java)
+                methodSendVideoSpecificData = clazz.getMethod("sendVideoSpecificData",
+                        ByteArray::class.java, Int::class.java, ByteArray::class.java, Int::class.java)
+                methodSendVideo = clazz.getMethod("sendVideo", ByteArray::class.java,
+                        Int::class.java, Long::class.java)
+                methodSendAudioSpecificData = clazz.getMethod("sendAudioSpecificData",
+                        ByteArray::class.java, Int::class.java)
+                methodSendAudio = clazz.getMethod("sendAudio", ByteArray::class.java,
+                        Int::class.java, Long::class.java)
+                methodStop = clazz.getMethod("stop")
+                thiz = clazz.newInstance()
+            } catch (e: ClassNotFoundException) {
+                throw RuntimeException("If you want to use RTMP stream. Please implementation 'com.lmy.codec:rtmp:latestVersion'")
+            }
+        }
+
+        fun connect(url: String, timeOut: Int): Int {
+            return methodConnect.invoke(thiz, url, timeOut) as Int
+        }
+
+        fun connectStream(width: Int, height: Int): Int {
+            return methodConnectStream.invoke(thiz, width, height) as Int
+        }
+
+        fun sendVideoSpecificData(sps: ByteArray, spsLen: Int, pps: ByteArray, ppsLen: Int): Int {
+            return methodSendVideoSpecificData.invoke(thiz, sps, spsLen, pps, ppsLen) as Int
+        }
+
+        fun sendVideo(data: ByteArray, len: Int, timestamp: Long): Int {
+            return methodSendVideo.invoke(thiz, data, len, timestamp) as Int
+        }
+
+        fun sendAudioSpecificData(data: ByteArray, len: Int): Int {
+            return methodSendAudioSpecificData.invoke(thiz, data, len) as Int
+        }
+
+        fun sendAudio(data: ByteArray, len: Int, timestamp: Long): Int {
+            return methodSendAudio.invoke(thiz, data, len, timestamp) as Int
+        }
+
+        fun stop() {
+            methodStop.invoke(thiz)
+        }
     }
 }

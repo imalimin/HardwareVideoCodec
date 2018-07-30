@@ -9,6 +9,7 @@ package com.lmy.codec
 
 import android.graphics.SurfaceTexture
 import android.text.TextUtils
+import android.view.TextureView
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
@@ -19,6 +20,7 @@ import com.lmy.codec.pipeline.SingleEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
+import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraWrapper
 
 /**
@@ -60,7 +62,7 @@ class RecordPresenter(var context: CodecContext,
         })
     }
 
-    fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
+    private fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
         cameraWrapper?.post(Runnable {
             cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
@@ -70,7 +72,7 @@ class RecordPresenter(var context: CodecContext,
         })
     }
 
-    fun updatePreview(width: Int, height: Int) {
+    private fun updatePreview(width: Int, height: Int) {
 //        mRender?.updatePreview(width, height)
     }
 
@@ -147,6 +149,30 @@ class RecordPresenter(var context: CodecContext,
         this.onStateListener = listener
         encoder?.onPreparedListener = onStateListener
         encoder?.onRecordListener = onStateListener
+    }
+
+    fun setPreviewTexture(view: TextureView) {
+        view.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+
+            override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
+                updatePreview(p1, p2)
+            }
+
+            override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
+            }
+
+            override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
+                stop()
+                return true
+            }
+
+            override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
+                if (null != p0) {
+                    startPreview(p0, p1, p2)
+                }
+                debug_e("onSurfaceTextureAvailable")
+            }
+        }
     }
 
     interface OnStateListener : Encoder.OnPreparedListener, Encoder.OnRecordListener {

@@ -7,10 +7,8 @@
 package com.lmy.sample
 
 import android.annotation.SuppressLint
-import android.graphics.SurfaceTexture
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
@@ -28,8 +26,7 @@ import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
-        View.OnTouchListener, RadioGroup.OnCheckedChangeListener {
+class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnCheckedChangeListener {
 
     private lateinit var mPresenter: RecordPresenter
     private lateinit var mFilterController: FilterController
@@ -52,7 +49,7 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
             return
         val context = CodecContext(GLHelper.isSupportPBO(this))
 //        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
-        context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
+        context.ioContext.path = "rtmp://192.168.16.124:1935/live/livestream"
         mPresenter = RecordPresenter(context)
         mPresenter.setOnStateListener(onStateListener)
         defaultVideoWidth = mPresenter.context.video.width
@@ -61,32 +58,13 @@ class MainActivity : AppCompatActivity(), TextureView.SurfaceTextureListener,
         mTextureView.fitsSystemWindows = true
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
+        mPresenter.setPreviewTexture(mTextureView)
         mTextureView.keepScreenOn = true
-        mTextureView.surfaceTextureListener = this
         mTextureView.setOnTouchListener(this)
         mFilterController = FilterController(mPresenter, progressLayout)
         effectBtn.setOnClickListener({
             mFilterController.chooseFilter(this)
         })
-    }
-
-    override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
-        mPresenter.updatePreview(p1, p2)
-    }
-
-    override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
-    }
-
-    override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
-        mPresenter.stop()
-        return true
-    }
-
-    override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
-        if (null != p0) {
-            mPresenter.startPreview(p0, p1, p2)
-        }
-        debug_e("onSurfaceTextureAvailable")
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
