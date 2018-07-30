@@ -1,16 +1,20 @@
 # HardwareVideoCodec
- [ ![Download](https://api.bintray.com/packages/lmylr/maven/hardwarevideocodec/images/download.svg) ](https://bintray.com/lmylr/maven/hardwarevideocodec/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/lmylr/maven/hardwarevideocodec/images/download.svg) ](https://bintray.com/lmylr/maven/hardwarevideocodec/_latestVersion)
 
 HardwareVideoCodec is an efficient video encoding library for Android. Supports `software` and `hardware` encode. With it you can easily record videos of various resolutions on your android app.
 
+![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/fix-memory/images/ScreenRecord_1.gif)
+![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/fix-memory/images/ScreenRecord_2.gif)
 ## Latest release
-[V1.4.1](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.4.1)
+[V1.5.1](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.5.1)
 
+* Support RTMP stream.
+* Better beautifying filter.
+
+## Features
 * Support for changing resolution without restarting the camera.
 * Fix audio distortion.
 * Supports 20 filters.
-
-## Features
 * Support hard & soft encode.
 * Record video & audio. Pack mp4 through MediaMuxer.
 * Use OpenGL to render and support filter.
@@ -40,7 +44,8 @@ allprojects {
 * Module build.gradle
 ```
 dependencies {
-    implementation 'com.lmy.codec:hardwarevideocodec:1.4.1'
+    implementation 'com.lmy.codec:hardwarevideocodec:1.5.1'
+    implementation 'com.lmy.codec:rtmp:1.0.1'//If you want to use RTMP stream.
 }
 ```
 * Extend BaseApplication
@@ -57,26 +62,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(mTextureView)
         val mPresenter = RecordPresenter(CodecContext(this).apply {
             ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
+            //ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"//If you want to use RTMP stream.
         })
-        mTextureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-            override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
-                mPresenter.updatePreview(width, height)
-            }
-
-            override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {
-
-            }
-
-            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
-                mPresenter.stopPreview()
-                return true
-            }
-
-            override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
-                if (null != surface)
-                    mPresenter.startPreview(surface, width, height)
-            }
-        }
+        mPresenter.setPreviewTexture(mTextureView)
         //For recording control
         mTextureView.setOnTouchListener { v, event ->
             when (event.action) {
