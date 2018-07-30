@@ -1,0 +1,52 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+//apply plugin: 'com.novoda.bintray-release'
+
+android {
+    compileSdkVersion 26
+    lintOptions {
+        abortOnError false
+    }
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0.1"
+        ndk {
+            stl 'gnustl_static'//指定C++运行
+            moduleName "rtmp"
+            abiFilters "armeabi-v7a", "x86"
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path "src/main/jni/Android.mk"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+}
+repositories {
+    mavenCentral()
+}
+//publish {
+//    userOrg = 'lmylr'
+//    groupId = 'com.lmy.codec'
+//    artifactId = 'rtmp'
+//    publishVersion = android.defaultConfig.versionName
+//    desc = 'An rtmp for HardwareVideoCodec'
+//    website = 'https://github.com/lmylr'
+//}
