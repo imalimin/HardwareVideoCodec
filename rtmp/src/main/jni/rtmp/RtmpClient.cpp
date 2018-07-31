@@ -7,6 +7,13 @@
 #include "RtmpClient.h"
 #include "librtmp/log.h"
 
+#define WHAT_CONNECT 10
+#define WHAT_CONNECT_STREAM 11
+#define WHAT_SEND_VSD 12
+#define WHAT_V 13
+#define WHAT_SEND_ASD 14
+#define WHAT_A 15
+
 #define RTMP_HEAD_SIZE (sizeof(RTMPPacket)+RTMP_MAX_HEADER_SIZE)
 #define NAL_SLICE  1
 #define NAL_SLICE_DPA  2
@@ -29,60 +36,46 @@ static int arraySizeof(T &array) {
     return sizeof(array) / sizeof(array[0]);
 }
 
+static void handleMessage(Message *msg) {
+    switch (msg->what) {
+        case WHAT_CONNECT: {
+            Connection *con = reinterpret_cast<Connection *>(msg->obj);
+            con->client->_connect(con->url, con->timeOut);
+            delete con;
+            break;
+        }
+        case WHAT_CONNECT_STREAM: {
+            LOGE("WHAT_CONNECT_STREAM");
+            Size *size = reinterpret_cast<Size *>(msg->obj);
+            size->client->_connectStream(size->width, size->height);
+            delete size;
+            break;
+        }
+        default:
+            break;
+    }
+}
+
 RtmpClient::RtmpClient() {
     pipeline = new EventPipeline();
 }
 
 int RtmpClient::connect(char *url, int timeOut) {
-    this->url = url;
-    this->timeOut = timeOut;
-
-    RTMP_LogSetLevel(RTMP_LOGALL);
-    rtmp = RTMP_Alloc();
-    RTMP_Init(rtmp);
-    rtmp->Link.timeout = timeOut;
-    RTMP_SetupURL(rtmp, url);
-    RTMP_EnableWrite(rtmp);
-    int ret = 1;
-    if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
-        if (curRetryCount < arraySizeof(retryTime)) {//Retry
-            LOGE("RTMP: retry connect(%d)", curRetryCount);
-            ret = connect(this->url, this->timeOut);
-            ++curRetryCount;
-            return ret;
-        }
-        LOGE("RTMP: connect failed! ");
-        stop();
-        return ret;
-    }
-    curRetryCount = 0;
-    return ret;
+    Connection *con = new Connection();
+    con->client = this;
+    con->url = url;
+    con->timeOut = timeOut;
+    pipeline->queueEvent(obtainMessage(WHAT_CONNECT, timeOut, 0, con, handleMessage));
+    return 1;
 }
 
 int RtmpClient::connectStream(int w, int h) {
-    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        if (connect(this->url, this->timeOut) < 0) {
-            LOGE("RTMP: You must connected before connect stream!");
-            return ERROR_DISCONNECT;
-        }
-    }
-    this->width = w;
-    this->height = h;
-    this->videoCount = 0;
-    this->audioCount = 0;
-    int ret = 1;
-    if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
-        stop();
-        LOGE("RTMP: connectStream failed!");
-        return ret;
-    }
-    if (this->sps && this->pps) {
-        sendVideoSpecificData(this->sps, this->pps);
-    }
-    if (this->spec) {
-        sendAudioSpecificData(this->spec);
-    }
-    return ret;
+    Size *size = new Size();
+    size->client = this;
+    size->width = w;
+    size->height = h;
+    pipeline->queueEvent(obtainMessage(WHAT_CONNECT_STREAM, size, handleMessage));
+    return 1;
 }
 
 void RtmpClient::deleteStream() {
@@ -339,4 +332,58 @@ void RtmpClient::stop() {
 
 RtmpClient::~RtmpClient() {
     stop();
+}
+
+int RtmpClient::_connect(char *url, int timeOut) {
+    LOGE("RTMP: connect: %s", url);
+    this->url = url;
+    this->timeOut = timeOut;
+
+    RTMP_LogSetLevel(RTMP_LOGALL);
+    rtmp = RTMP_Alloc();
+    RTMP_Init(rtmp);
+    rtmp->Link.timeout = timeOut;
+    RTMP_SetupURL(rtmp, url);
+    RTMP_EnableWrite(rtmp);
+    int ret = 1;
+    if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
+        if (curRetryCount < arraySizeof(retryTime)) {//Retry
+            LOGE("RTMP: retry connect(%d)", curRetryCount);
+            ret = connect(this->url, this->timeOut);
+            ++curRetryCount;
+            return ret;
+        }
+        LOGE("RTMP: connect failed! ");
+        stop();
+        return ret;
+    }
+    curRetryCount = 0;
+    LOGE("RTMP: connect success! ");
+    return ret;
+}
+
+int RtmpClient::_connectStream(int w, int h) {
+    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
+        if (connect(this->url, this->timeOut) < 0) {
+            LOGE("RTMP: You must connected before connect stream!");
+            return ERROR_DISCONNECT;
+        }
+    }
+    this->width = w;
+    this->height = h;
+    this->videoCount = 0;
+    this->audioCount = 0;
+    int ret = 1;
+    if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
+        stop();
+        LOGE("RTMP: connectStream failed!");
+        return ret;
+    }
+    if (this->sps && this->pps) {
+        sendVideoSpecificData(this->sps, this->pps);
+    }
+    if (this->spec) {
+        sendAudioSpecificData(this->spec);
+    }
+    return ret;
 }

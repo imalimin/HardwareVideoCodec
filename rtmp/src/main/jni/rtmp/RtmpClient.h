@@ -21,10 +21,14 @@ public:
      */
     int connect(char *url, int timeOut);
 
+    int _connect(char *url, int timeOut);
+
     /**
      * 新建流连接
      */
     int connectStream(int w, int h);
+
+    int _connectStream(int w, int h);
 
     /**
      * 删除流连接
@@ -78,6 +82,19 @@ private:
     int sendVideoSpecificData(SpecificData *sps, SpecificData *pps);
 
     int sendAudioSpecificData(SpecificData *spec);
+};
+
+class Connection {
+public:
+    RtmpClient *client;
+    char *url;
+    int timeOut;
+};
+
+class Size {
+public:
+    RtmpClient *client;
+    int width, height;
 };
 
 #endif //HARDWAREVIDEOCODEC_RTMP_H
