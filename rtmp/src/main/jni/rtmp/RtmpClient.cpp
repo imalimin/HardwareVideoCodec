@@ -63,7 +63,7 @@ RtmpClient::RtmpClient() {
 int RtmpClient::connect(char *url, int timeOut) {
     Connection *con = new Connection();
     con->client = this;
-    con->url = url;
+    con->url = const_cast<char *>("rtmp://192.168.16.203:1935/live/livestream");
     con->timeOut = timeOut;
     pipeline->queueEvent(obtainMessage(WHAT_CONNECT, timeOut, 0, con, handleMessage));
     return 1;
@@ -335,7 +335,7 @@ RtmpClient::~RtmpClient() {
 }
 
 int RtmpClient::_connect(char *url, int timeOut) {
-    LOGE("RTMP: connect: %s", url);
+    LOGI("RTMP: connect: %s", url);
     this->url = url;
     this->timeOut = timeOut;
 
@@ -348,7 +348,7 @@ int RtmpClient::_connect(char *url, int timeOut) {
     int ret = 1;
     if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
         if (curRetryCount < arraySizeof(retryTime)) {//Retry
-            LOGE("RTMP: retry connect(%d)", curRetryCount);
+            LOGI("RTMP: retry connect(%d)", curRetryCount);
             ret = connect(this->url, this->timeOut);
             ++curRetryCount;
             return ret;
@@ -358,7 +358,7 @@ int RtmpClient::_connect(char *url, int timeOut) {
         return ret;
     }
     curRetryCount = 0;
-    LOGE("RTMP: connect success! ");
+    LOGI("RTMP: connect success! ");
     return ret;
 }
 
@@ -371,12 +371,13 @@ int RtmpClient::_connectStream(int w, int h) {
     }
     this->width = w;
     this->height = h;
+    LOGI("RTMP: connectStream %dx%d", this->width, this->height);
     this->videoCount = 0;
     this->audioCount = 0;
     int ret = 1;
     if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
         stop();
-        LOGE("RTMP: connectStream failed!");
+        LOGE("RTMP: connectStream failed: %d", ret);
         return ret;
     }
     if (this->sps && this->pps) {
@@ -385,5 +386,6 @@ int RtmpClient::_connectStream(int w, int h) {
     if (this->spec) {
         sendAudioSpecificData(this->spec);
     }
+    LOGI("RTMP: connectStream success", ret);
     return ret;
 }

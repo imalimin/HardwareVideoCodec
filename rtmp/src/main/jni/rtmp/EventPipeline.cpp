@@ -9,8 +9,10 @@
 static void *run(void *arg) {
     EventPipeline *thiz = (EventPipeline *) arg;
     while (thiz->started()) {
+        LOGI("handle");
         Message message = thiz->messageQueue.take();
         message.handle(&message);
+        LOGI("finish");
     }
     return NULL;
 }
