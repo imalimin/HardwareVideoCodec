@@ -19,36 +19,29 @@ import java.nio.ByteBuffer
 class RtmpMuxerImpl(var context: CodecContext) : Muxer {
     private var client: RtmpReflect = RtmpReflect()
 
-    private var mAudioPipeline = EventPipeline.create("LivePipeline")
+//    private var mAudioPipeline = EventPipeline.create("LivePipeline")
 
     init {
         start()
     }
 
     private fun start() {
-        mAudioPipeline.queueEvent(Runnable {
-            var ret = client.connect(context.ioContext.path!!, 10000)
-            debug_i("RTMP connect: $ret")
-            ret = client.connectStream(context.video.width, context.video.height)
-            debug_i("RTMP connect stream: $ret")
-        })
+        client.connect(context.ioContext.path!!, 10000)
+        client.connectStream(context.video.width, context.video.height)
     }
 
     override fun reset() {
-        mAudioPipeline.queueEvent(Runnable {
-            debug_i("RTMP reset")
-            val ret = client.connectStream(context.video.width, context.video.height)
-            debug_i("RTMP connect stream: $ret")
-        })
+        debug_i("RTMP reset")
+        client.connectStream(context.video.width, context.video.height)
     }
 
     //分发MediaFormat
     override fun onFormatChanged(encoder: Encoder, format: MediaFormat) {
         if (encoder is AudioEncoderImpl) {
-            debug_e("Add audio track")
+            debug_i("Add audio track")
             addAudioTrack(format)
         } else {
-            debug_e("Add video track")
+            debug_i("Add video track")
             addVideoTrack(format)
         }
     }
@@ -77,9 +70,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         ppsBuffer.get(pps)
         spsBuffer.rewind()
         ppsBuffer.rewind()
-        mAudioPipeline.queueEvent(Runnable {
-            client.sendVideoSpecificData(sps, sps.size, pps, pps.size)
-        })
+//        client.sendVideoSpecificData(sps, sps.size, pps, pps.size)
     }
 
     override fun addAudioTrack(format: MediaFormat) {
@@ -92,9 +83,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         val esds = ByteArray(esdsBuffer.remaining())
         esdsBuffer.get(esds)
         esdsBuffer.rewind()
-        mAudioPipeline.queueEvent(Runnable {
-            client.sendAudioSpecificData(esds, esds.size)
-        })
+//        client.sendAudioSpecificData(esds, esds.size)
     }
 
     override fun writeVideoSample(sample: Sample) {
@@ -102,9 +91,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         sample.sample.rewind()
         sample.sample.get(data)
         sample.sample.rewind()
-        mAudioPipeline.queueEvent(Runnable {
-            client.sendVideo(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
-        })
+//        client.sendVideo(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
     }
 
     override fun writeAudioSample(sample: Sample) {
@@ -112,13 +99,10 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         sample.sample.rewind()
         sample.sample.get(data)
         sample.sample.rewind()
-        mAudioPipeline.queueEvent(Runnable {
-            client.sendAudio(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
-        })
+//        client.sendAudio(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
     }
 
     override fun release() {
-        mAudioPipeline.quit()
         client.stop()
     }
 
