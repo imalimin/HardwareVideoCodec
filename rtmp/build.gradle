@@ -13,7 +13,7 @@ android {
         versionCode 1
         versionName "1.0.1"
         ndk {
-            stl 'gnustl_static'//指定C++运行
+            stl 'stlport_static'//指定C++运行
             moduleName "rtmp"
             abiFilters "armeabi-v7a", "x86"
         }
