@@ -1,4 +1,5 @@
 LOCAL_PATH := $(call my-dir)
+NDK_ROOT := D:/Android/android-ndk-r14b
 include $(CLEAR_VARS)
 # fix undefined reference to bug
 # LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
@@ -15,7 +16,8 @@ $(warning $(LOCAL_SRC_FILES))
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/librtmp
-LOCAL_CFLAGS += -DNO_CRYPTO
+LOCAL_C_INCLUDES += $(NDK_ROOT)/sources/cxx-stl/stlport/stlport/
+LOCAL_CFLAGS += -DNO_CRYPTO -D_STLP_USE_NEWALLOC
 LOCAL_MODULE := librtmp
 LOCAL_LDLIBS := -llog
 include $(BUILD_SHARED_LIBRARY)
