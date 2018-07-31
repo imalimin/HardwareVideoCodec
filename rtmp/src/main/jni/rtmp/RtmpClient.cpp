@@ -29,6 +29,10 @@ static int arraySizeof(T &array) {
     return sizeof(array) / sizeof(array[0]);
 }
 
+RtmpClient::RtmpClient() {
+    pipeline = new EventPipeline();
+}
+
 int RtmpClient::connect(char *url, int timeOut) {
     this->url = url;
     this->timeOut = timeOut;
@@ -327,6 +331,9 @@ void RtmpClient::stop() {
     }
     if (NULL != spec) {
         delete spec;
+    }
+    if (NULL != pipeline) {
+        pipeline->quit();
     }
 }
 
