@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "BlockQueue.h"
+#include "Message.h"
 #include "../../../../../codec/src/main/jni/codec/log.h"
 #include <malloc.h>
 #include <string.h>
@@ -16,20 +17,20 @@
 
 class EventPipeline {
 public:
+    BlockQueue<Message> messageQueue;
     EventPipeline();
 
     ~EventPipeline();
 
-    void queueEvent();
+    void queueEvent(Message *msg);
 
-    void queueEventDelayed();
+    void queueEventDelayed(Message *msg);
 
     bool started();
 
     void quit();
 
 private:
-    BlockQueue<int> messageQueue;
     pthread_attr_t attr;
     pthread_t thread;
     bool running = true;

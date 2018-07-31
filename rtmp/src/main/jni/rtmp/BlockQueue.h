@@ -9,14 +9,14 @@
 #include <pthread.h>
 #include <queue>
 
+using namespace std;
+
 #define SIZE_CACHE 200
 
 template<class T>
 class BlockQueue {
 public:
     BlockQueue() {
-        _size = 0;
-        queue = new T[SIZE_CACHE];
         mutex = new pthread_mutex_t;
         cond = new pthread_cond_t;
         pthread_mutex_init(mutex, NULL);
@@ -25,8 +25,6 @@ public:
 
     ~BlockQueue() {
         pthread_mutex_lock(mutex);
-        if (queue != NULL)
-            delete queue;
         pthread_mutex_unlock(mutex);
 
         pthread_mutex_destroy(mutex);
@@ -41,13 +39,10 @@ public:
             return false;
         }
 
-//        m_back = (m_back + 1) % m_max_size;
-//        m_array[m_back] = item;
-//
-//        m_size++;
+        m_queue.push(entity);
+
         pthread_cond_broadcast(cond);
         pthread_mutex_unlock(mutex);
-
         return true;
     }
 
@@ -59,31 +54,29 @@ public:
                 return NULL;
             }
         }
+        T e = m_queue.front();
+        m_queue.pop();
 
-//        m_front = (m_front + 1) % m_max_size;
-//        item = m_array[m_front];
-//        m_size--;
         pthread_mutex_unlock(mutex);
-        return true;
-        return NULL;
+        return e;
     }
 
     void clear() {
         pthread_mutex_lock(mutex);
+        while (!isEmpty()) m_queue.pop();
         pthread_mutex_unlock(mutex);
     }
 
     int size() {
-        return _size;
+        return m_queue.size();
     }
 
     bool isEmpty() {
-        return 0 == size();
+        return m_queue.empty();
     }
 
 private:
     pthread_mutex_t *mutex;
     pthread_cond_t *cond;
-    T *queue;
-    int _size;
+    queue<T> m_queue;
 };

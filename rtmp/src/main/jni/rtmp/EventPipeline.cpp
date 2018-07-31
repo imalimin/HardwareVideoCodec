@@ -9,7 +9,8 @@
 static void *run(void *arg) {
     EventPipeline *thiz = (EventPipeline *) arg;
     while (thiz->started()) {
-        LOGI("running");
+        Message message = thiz->messageQueue.take();
+        message.handle(&message);
     }
     return NULL;
 }
@@ -30,14 +31,16 @@ EventPipeline::~EventPipeline() {
     quit();
 }
 
-void EventPipeline::queueEvent() {
+void EventPipeline::queueEvent(Message *msg) {
     if (!started())
         return;
+    messageQueue.offer(*msg);
 }
 
-void EventPipeline::queueEventDelayed() {
+void EventPipeline::queueEventDelayed(Message *msg) {
     if (!started())
         return;
+    messageQueue.offer(*msg);
 }
 
 void EventPipeline::quit() {
