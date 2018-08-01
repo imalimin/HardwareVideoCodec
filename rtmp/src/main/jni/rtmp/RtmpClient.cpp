@@ -10,9 +10,9 @@
 #define WHAT_CONNECT 10
 #define WHAT_CONNECT_STREAM 11
 #define WHAT_SEND_VSD 12
-#define WHAT_V 13
+#define WHAT_SEND_V 13
 #define WHAT_SEND_ASD 14
-#define WHAT_A 15
+#define WHAT_SEND_A 15
 
 #define RTMP_HEAD_SIZE (sizeof(RTMPPacket)+RTMP_MAX_HEADER_SIZE)
 #define NAL_SLICE  1
@@ -51,6 +51,28 @@ static void handleMessage(Message *msg) {
             delete size;
             break;
         }
+        case WHAT_SEND_VSD: {
+            RtmpClient *client = reinterpret_cast<RtmpClient *>(msg->obj);
+            client->_sendVideoSpecificData();
+            break;
+        }
+        case WHAT_SEND_V: {
+            Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
+            pkt->client->_sendVideo(pkt->data, pkt->size, pkt->timestamp);
+            delete pkt;
+            break;
+        }
+        case WHAT_SEND_ASD: {
+            RtmpClient *client = reinterpret_cast<RtmpClient *>(msg->obj);
+            client->_sendAudioSpecificData();
+            break;
+        }
+        case WHAT_SEND_A: {
+            Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
+            pkt->client->_sendAudio(pkt->data, pkt->size, pkt->timestamp);
+            delete pkt;
+            break;
+        }
         default:
             break;
     }
@@ -63,9 +85,11 @@ RtmpClient::RtmpClient() {
 int RtmpClient::connect(char *url, int timeOut) {
     Connection *con = new Connection();
     con->client = this;
-    con->url = const_cast<char *>("rtmp://192.168.16.203:1935/live/livestream");
     con->timeOut = timeOut;
-    pipeline->queueEvent(obtainMessage(WHAT_CONNECT, timeOut, 0, con, handleMessage));
+    int len = strlen(url);
+    con->url = static_cast<char *>(malloc(sizeof(char) * len));
+    strcpy(con->url, url);
+    pipeline->sendMessage(obtainMessage(WHAT_CONNECT, timeOut, 0, con, handleMessage));
     return 1;
 }
 
@@ -74,7 +98,7 @@ int RtmpClient::connectStream(int w, int h) {
     size->client = this;
     size->width = w;
     size->height = h;
-    pipeline->queueEvent(obtainMessage(WHAT_CONNECT_STREAM, size, handleMessage));
+    pipeline->sendMessage(obtainMessage(WHAT_CONNECT_STREAM, size, handleMessage));
     return 1;
 }
 
@@ -106,16 +130,120 @@ void RtmpClient::saveAudioSpecificData(char *spec, int len) {
 int
 RtmpClient::sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen) {
     saveVideoSpecificData(sps, spsLen, pps, ppsLen);
+    pipeline->sendMessage(obtainMessage(WHAT_SEND_VSD, this, handleMessage));
+    return 0;
+}
+
+int RtmpClient::sendVideo(char *data, int len, long timestamp) {
+    Packet *pkt = new Packet();
+    pkt->data = data;
+    pkt->size = len;
+    pkt->timestamp = timestamp;
+    pipeline->sendMessage(obtainMessage(WHAT_SEND_V, pkt, handleMessage));
+    return 0;
+}
+
+int RtmpClient::sendAudioSpecificData(char *data, int len) {
+    saveAudioSpecificData(data, len);
+    pipeline->sendMessage(obtainMessage(WHAT_SEND_ASD, this, handleMessage));
+    return 0;
+}
+
+int RtmpClient::sendAudio(char *data, int len, long timestamp) {
+    Packet *pkt = new Packet();
+    pkt->data = data;
+    pkt->size = len;
+    pkt->timestamp = timestamp;
+    pipeline->sendMessage(obtainMessage(WHAT_SEND_V, pkt, handleMessage));
+    return 0;
+}
+
+void RtmpClient::stop() {
+    RTMP_Close(rtmp);
+    RTMP_Free(rtmp);
+    if (NULL != sps) {
+        delete sps;
+    }
+    if (NULL != pps) {
+        delete pps;
+    }
+    if (NULL != spec) {
+        delete spec;
+    }
+    if (NULL != pipeline) {
+        pipeline->quit();
+    }
+    LOGI("RTMP: stop");
+}
+
+RtmpClient::~RtmpClient() {
+    stop();
+}
+
+int RtmpClient::_connect(char *url, int timeOut) {
+    LOGI("RTMP: connect: %s", url);
+    this->url = url;
+    this->timeOut = timeOut;
+
+    RTMP_LogSetLevel(RTMP_LOGALL);
+    rtmp = RTMP_Alloc();
+    RTMP_Init(rtmp);
+    rtmp->Link.timeout = timeOut;
+    RTMP_SetupURL(rtmp, url);
+    RTMP_EnableWrite(rtmp);
+    int ret = 1, retry = 0, count = arraySizeof(retryTime);
+    while (retry < count) {
+        LOGI("RTMP: try connect(%d)", retry);
+        if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
+            LOGE("RTMP: connect failed! ");
+            ++retry;
+        } else {
+            LOGI("RTMP: connect success! ");
+            break;
+        }
+    }
+    return ret;
+}
+
+int RtmpClient::_connectStream(int w, int h) {
     if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        return ERROR_DISCONNECT;
+        if (connect(this->url, this->timeOut) < 0) {
+            LOGE("RTMP: You must connected before connect stream!");
+            return ERROR_DISCONNECT;
+        }
     }
-    if (NULL != this->sps && this->sps->alreadySent()) {
-        return 1;
+    this->width = w;
+    this->height = h;
+    LOGI("RTMP: connectStream %dx%d", this->width, this->height);
+    this->videoCount = 0;
+    this->audioCount = 0;
+    int ret = 1;
+    if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
+        stop();
+        LOGE("RTMP: connectStream failed: %d", ret);
+        return ret;
     }
+    if (this->sps && this->pps) {
+        sendVideoSpecificData(this->sps, this->pps);
+    }
+    if (this->spec) {
+        sendAudioSpecificData(this->spec);
+    }
+    LOGI("RTMP: connectStream success", ret);
+    return ret;
+}
+
+int RtmpClient::_sendVideoSpecificData() {
     return sendVideoSpecificData(this->sps, this->pps);
 }
 
 int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
+    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
+        return ERROR_DISCONNECT;
+    }
+    if (NULL != sps && sps->alreadySent()) {
+        return 1;
+    }
     LOGI("RTMP: sendVideoSpecificData, IsConnected(%d)", RTMP_IsConnected(rtmp));
     int i;
     RTMPPacket *packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + 1024);
@@ -174,7 +302,7 @@ int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
     return ret;
 }
 
-int RtmpClient::sendVideo(char *data, int len, long timestamp) {
+int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
     if (NULL == rtmp || !sps->alreadySent()) return -1;
     if (len < 1) return -2;
     int type;
@@ -237,18 +365,17 @@ int RtmpClient::sendVideo(char *data, int len, long timestamp) {
     return ret;
 }
 
-int RtmpClient::sendAudioSpecificData(char *data, int len) {
-    saveAudioSpecificData(data, len);
-    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        return ERROR_DISCONNECT;
-    }
-    if (NULL != this->spec && this->spec->alreadySent()) {
-        return 1;
-    }
+int RtmpClient::_sendAudioSpecificData() {
     return sendAudioSpecificData(this->spec);
 }
 
 int RtmpClient::sendAudioSpecificData(SpecificData *spec) {
+    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
+        return ERROR_DISCONNECT;
+    }
+    if (NULL != spec && spec->alreadySent()) {
+        return 1;
+    }
     LOGI("RTMP: sendAudioSpecificData, IsConnected(%d)", RTMP_IsConnected(rtmp));
     RTMPPacket *packet;
     char *body;
@@ -279,7 +406,7 @@ int RtmpClient::sendAudioSpecificData(SpecificData *spec) {
     return ret;
 }
 
-int RtmpClient::sendAudio(char *data, int len, long timestamp) {
+int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
     if (NULL == rtmp || !spec->alreadySent()) return -1;
     if (len < 1) return -2;
     RTMPPacket *packet;
@@ -310,82 +437,5 @@ int RtmpClient::sendAudio(char *data, int len, long timestamp) {
             LOGI("RTMP: send audio packet(%ld): %d", audioCount, len);
     }
     free(packet);
-    return ret;
-}
-
-void RtmpClient::stop() {
-    RTMP_Close(rtmp);
-    RTMP_Free(rtmp);
-    if (NULL != sps) {
-        delete sps;
-    }
-    if (NULL != pps) {
-        delete pps;
-    }
-    if (NULL != spec) {
-        delete spec;
-    }
-    if (NULL != pipeline) {
-        pipeline->quit();
-    }
-}
-
-RtmpClient::~RtmpClient() {
-    stop();
-}
-
-int RtmpClient::_connect(char *url, int timeOut) {
-    LOGI("RTMP: connect: %s", url);
-    this->url = url;
-    this->timeOut = timeOut;
-
-    RTMP_LogSetLevel(RTMP_LOGALL);
-    rtmp = RTMP_Alloc();
-    RTMP_Init(rtmp);
-    rtmp->Link.timeout = timeOut;
-    RTMP_SetupURL(rtmp, url);
-    RTMP_EnableWrite(rtmp);
-    int ret = 1;
-    if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
-        if (curRetryCount < arraySizeof(retryTime)) {//Retry
-            LOGI("RTMP: retry connect(%d)", curRetryCount);
-            ret = connect(this->url, this->timeOut);
-            ++curRetryCount;
-            return ret;
-        }
-        LOGE("RTMP: connect failed! ");
-        stop();
-        return ret;
-    }
-    curRetryCount = 0;
-    LOGI("RTMP: connect success! ");
-    return ret;
-}
-
-int RtmpClient::_connectStream(int w, int h) {
-    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        if (connect(this->url, this->timeOut) < 0) {
-            LOGE("RTMP: You must connected before connect stream!");
-            return ERROR_DISCONNECT;
-        }
-    }
-    this->width = w;
-    this->height = h;
-    LOGI("RTMP: connectStream %dx%d", this->width, this->height);
-    this->videoCount = 0;
-    this->audioCount = 0;
-    int ret = 1;
-    if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
-        stop();
-        LOGE("RTMP: connectStream failed: %d", ret);
-        return ret;
-    }
-    if (this->sps && this->pps) {
-        sendVideoSpecificData(this->sps, this->pps);
-    }
-    if (this->spec) {
-        sendAudioSpecificData(this->spec);
-    }
-    LOGI("RTMP: connectStream success", ret);
     return ret;
 }

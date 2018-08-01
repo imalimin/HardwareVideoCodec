@@ -40,20 +40,28 @@ public:
      */
     int sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen);
 
+    int _sendVideoSpecificData();
+
     /**
      * 发送视频帧
      */
     int sendVideo(char *data, int len, long timestamp);
+
+    int _sendVideo(char *data, int len, long timestamp);
 
     /**
      * 发送音频关键帧
      */
     int sendAudioSpecificData(char *data, int len);
 
+    int _sendAudioSpecificData();
+
     /**
      * 发送音频数据
      */
     int sendAudio(char *data, int len, long timestamp);
+
+    int _sendAudio(char *data, int len, long timestamp);
 
     /**
      * 释放资源
@@ -67,7 +75,6 @@ private:
     SpecificData *sps = NULL, *pps = NULL, *spec = NULL;
     long videoCount = 0, audioCount = 0;
     long retryTime[3] = {3000, 9000, 27000};
-    int curRetryCount = 0;
     int width;
     int height;
     int timeOut;
@@ -95,6 +102,20 @@ class Size {
 public:
     RtmpClient *client;
     int width, height;
+};
+
+class Packet {
+public:
+    RtmpClient *client;
+    char *data;
+    int size;
+    long timestamp;
+    ~Packet(){
+        if(NULL!=data){
+            free(data);
+            data=NULL;
+        }
+    }
 };
 
 #endif //HARDWAREVIDEOCODEC_RTMP_H
