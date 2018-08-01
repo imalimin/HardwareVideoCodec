@@ -108,7 +108,6 @@ void RtmpClient::deleteStream() {
 
 
 void RtmpClient::saveVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen) {
-//    LOGI("RTMP: saveAudioSpecificData");
     if (NULL != this->sps) {
         delete this->sps;
     }
@@ -117,14 +116,15 @@ void RtmpClient::saveVideoSpecificData(const char *sps, int spsLen, const char *
     }
     this->sps = new SpecificData(sps, spsLen);
     this->pps = new SpecificData(pps, ppsLen);
+    LOGI("RTMP: saveVideoSpecificData");
 }
 
 void RtmpClient::saveAudioSpecificData(const char *spec, int len) {
-//    LOGI("RTMP: saveAudioSpecificData");
     if (NULL != this->spec) {
         delete this->spec;
     }
     this->spec = new SpecificData(spec, len);
+    LOGI("RTMP: saveAudioSpecificData");
 }
 
 int
@@ -305,7 +305,7 @@ int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
 
 int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
     LOGE("RTMP _sendVideo 1");
-    LOGE("RTMP _sendVideo 2: %d", sps->size());
+    LOGE("RTMP _sendVideo 2: %d", NULL == sps);
     if (NULL == sps || !sps->alreadySent()) return -1;
     if (len < 1) return -2;
     int type;
