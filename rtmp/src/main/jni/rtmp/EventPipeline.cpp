@@ -33,13 +33,13 @@ EventPipeline::~EventPipeline() {
     quit();
 }
 
-void EventPipeline::queueEvent(Message *msg) {
+void EventPipeline::sendMessage(Message *msg) {
     if (!started())
         return;
     messageQueue.offer(*msg);
 }
 
-void EventPipeline::queueEventDelayed(Message *msg) {
+void EventPipeline::sendMessageDelayed(Message *msg) {
     if (!started())
         return;
     messageQueue.offer(*msg);

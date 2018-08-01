@@ -22,9 +22,9 @@ public:
 
     ~EventPipeline();
 
-    void queueEvent(Message *msg);
+    void sendMessage(Message *msg);
 
-    void queueEventDelayed(Message *msg);
+    void sendMessageDelayed(Message *msg);
 
     bool started();
 
