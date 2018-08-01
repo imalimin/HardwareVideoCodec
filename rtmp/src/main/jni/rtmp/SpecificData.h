@@ -9,7 +9,7 @@
 
 class SpecificData {
 public:
-    SpecificData(char *data, int size);
+    SpecificData(const char *data, int size);
 
     char *get();
 

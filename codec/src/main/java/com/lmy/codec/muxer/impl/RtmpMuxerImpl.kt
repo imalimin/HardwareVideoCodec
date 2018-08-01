@@ -70,7 +70,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         ppsBuffer.get(pps)
         spsBuffer.rewind()
         ppsBuffer.rewind()
-//        client.sendVideoSpecificData(sps, sps.size, pps, pps.size)
+        client.sendVideoSpecificData(sps, sps.size, pps, pps.size)
     }
 
     override fun addAudioTrack(format: MediaFormat) {
@@ -83,7 +83,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         val esds = ByteArray(esdsBuffer.remaining())
         esdsBuffer.get(esds)
         esdsBuffer.rewind()
-//        client.sendAudioSpecificData(esds, esds.size)
+        client.sendAudioSpecificData(esds, esds.size)
     }
 
     override fun writeVideoSample(sample: Sample) {
@@ -91,7 +91,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         sample.sample.rewind()
         sample.sample.get(data)
         sample.sample.rewind()
-//        client.sendVideo(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
+        client.sendVideo(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
     }
 
     override fun writeAudioSample(sample: Sample) {

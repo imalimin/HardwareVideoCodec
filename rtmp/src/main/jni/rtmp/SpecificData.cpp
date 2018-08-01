@@ -4,7 +4,7 @@
 
 #include "SpecificData.h"
 
-SpecificData::SpecificData(char *data, int size) {
+SpecificData::SpecificData(const char *data, int size) {
     this->s = size;
     if (NULL != this->data) {
         free(this->data);

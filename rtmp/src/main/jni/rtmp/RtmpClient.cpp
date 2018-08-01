@@ -89,7 +89,7 @@ int RtmpClient::connect(char *url, int timeOut) {
     int len = strlen(url);
     con->url = static_cast<char *>(malloc(sizeof(char) * len));
     strcpy(con->url, url);
-    pipeline->sendMessage(obtainMessage(WHAT_CONNECT, timeOut, 0, con, handleMessage));
+    pipeline->sendMessage(obtainMessage(WHAT_CONNECT, con, handleMessage));
     return 1;
 }
 
@@ -107,7 +107,7 @@ void RtmpClient::deleteStream() {
 }
 
 
-void RtmpClient::saveVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen) {
+void RtmpClient::saveVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen) {
 //    LOGI("RTMP: saveAudioSpecificData");
     if (NULL != this->sps) {
         delete this->sps;
@@ -119,7 +119,7 @@ void RtmpClient::saveVideoSpecificData(char *sps, int spsLen, char *pps, int pps
     this->pps = new SpecificData(pps, ppsLen);
 }
 
-void RtmpClient::saveAudioSpecificData(char *spec, int len) {
+void RtmpClient::saveAudioSpecificData(const char *spec, int len) {
 //    LOGI("RTMP: saveAudioSpecificData");
     if (NULL != this->spec) {
         delete this->spec;
@@ -128,33 +128,35 @@ void RtmpClient::saveAudioSpecificData(char *spec, int len) {
 }
 
 int
-RtmpClient::sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen) {
+RtmpClient::sendVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen) {
     saveVideoSpecificData(sps, spsLen, pps, ppsLen);
     pipeline->sendMessage(obtainMessage(WHAT_SEND_VSD, this, handleMessage));
     return 0;
 }
 
-int RtmpClient::sendVideo(char *data, int len, long timestamp) {
+int RtmpClient::sendVideo(const char *data, int len, long timestamp) {
     Packet *pkt = new Packet();
-    pkt->data = data;
+    pkt->data = static_cast<char *>(malloc(sizeof(char) * len));
+    memcpy(pkt->data, data, len);
     pkt->size = len;
     pkt->timestamp = timestamp;
     pipeline->sendMessage(obtainMessage(WHAT_SEND_V, pkt, handleMessage));
     return 0;
 }
 
-int RtmpClient::sendAudioSpecificData(char *data, int len) {
+int RtmpClient::sendAudioSpecificData(const char *data, int len) {
     saveAudioSpecificData(data, len);
     pipeline->sendMessage(obtainMessage(WHAT_SEND_ASD, this, handleMessage));
     return 0;
 }
 
-int RtmpClient::sendAudio(char *data, int len, long timestamp) {
+int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
     Packet *pkt = new Packet();
-    pkt->data = data;
+    pkt->data = static_cast<char *>(malloc(sizeof(char) * len));
+    memcpy(pkt->data, data, len);
     pkt->size = len;
     pkt->timestamp = timestamp;
-    pipeline->sendMessage(obtainMessage(WHAT_SEND_V, pkt, handleMessage));
+    pipeline->sendMessage(obtainMessage(WHAT_SEND_A, pkt, handleMessage));
     return 0;
 }
 
@@ -219,7 +221,6 @@ int RtmpClient::_connectStream(int w, int h) {
     this->audioCount = 0;
     int ret = 1;
     if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
-        stop();
         LOGE("RTMP: connectStream failed: %d", ret);
         return ret;
     }
@@ -303,7 +304,9 @@ int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
 }
 
 int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
-    if (NULL == rtmp || !sps->alreadySent()) return -1;
+    LOGE("RTMP _sendVideo 1");
+    LOGE("RTMP _sendVideo 2: %d", sps->size());
+    if (NULL == sps || !sps->alreadySent()) return -1;
     if (len < 1) return -2;
     int type;
 
@@ -357,9 +360,9 @@ int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
     int ret = ERROR_DISCONNECT;
     if (RTMP_IsConnected(rtmp)) {
         ret = RTMP_SendPacket(rtmp, packet, TRUE);
-        ++videoCount;
         if (0 == videoCount % 150)
             LOGI("RTMP: send video packet(%ld): %d", videoCount, len);
+        ++videoCount;
     }
     free(packet);
     return ret;
@@ -407,7 +410,7 @@ int RtmpClient::sendAudioSpecificData(SpecificData *spec) {
 }
 
 int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
-    if (NULL == rtmp || !spec->alreadySent()) return -1;
+    if (NULL == rtmp || NULL == spec || !spec->alreadySent()) return -1;
     if (len < 1) return -2;
     RTMPPacket *packet;
     char *body;
@@ -432,9 +435,9 @@ int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
     int ret = ERROR_DISCONNECT;
     if (RTMP_IsConnected(rtmp)) {
         ret = RTMP_SendPacket(rtmp, packet, TRUE);
-        ++audioCount;
         if (0 == audioCount % 150)
             LOGI("RTMP: send audio packet(%ld): %d", audioCount, len);
+        ++audioCount;
     }
     free(packet);
     return ret;

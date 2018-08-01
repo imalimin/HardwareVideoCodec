@@ -38,28 +38,28 @@ public:
     /**
      * 发送sps、pps 帧
      */
-    int sendVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen);
+    int sendVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen);
 
     int _sendVideoSpecificData();
 
     /**
      * 发送视频帧
      */
-    int sendVideo(char *data, int len, long timestamp);
+    int sendVideo(const char *data, int len, long timestamp);
 
     int _sendVideo(char *data, int len, long timestamp);
 
     /**
      * 发送音频关键帧
      */
-    int sendAudioSpecificData(char *data, int len);
+    int sendAudioSpecificData(const char *data, int len);
 
     int _sendAudioSpecificData();
 
     /**
      * 发送音频数据
      */
-    int sendAudio(char *data, int len, long timestamp);
+    int sendAudio(const char *data, int len, long timestamp);
 
     int _sendAudio(char *data, int len, long timestamp);
 
@@ -82,9 +82,9 @@ private:
     long startTime;
     RTMP *rtmp;
 
-    void saveVideoSpecificData(char *sps, int spsLen, char *pps, int ppsLen);
+    void saveVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen);
 
-    void saveAudioSpecificData(char *spec, int len);
+    void saveAudioSpecificData(const char *spec, int len);
 
     int sendVideoSpecificData(SpecificData *sps, SpecificData *pps);
 
