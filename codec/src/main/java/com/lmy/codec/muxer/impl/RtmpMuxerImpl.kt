@@ -46,11 +46,13 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         }
     }
 
-    //分发sample
+    private var sent = false
     override fun onSample(encoder: Encoder, info: MediaCodec.BufferInfo, data: ByteBuffer) {
         if (encoder is AudioEncoderImpl) {
             writeAudioSample(Sample.wrap(info, data))
         } else {
+            if (sent) return
+            sent = true
             writeVideoSample(Sample.wrap(info, data))
         }
     }
