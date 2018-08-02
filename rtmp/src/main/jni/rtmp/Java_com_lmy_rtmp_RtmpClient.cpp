@@ -34,8 +34,8 @@ Java_com_lmy_rtmp_RtmpClient_sendVideoSpecificData(JNIEnv *env, jobject thiz, jb
     jbyte *spsBuffer = env->GetByteArrayElements(sps, JNI_FALSE);
     jbyte *ppsBuffer = env->GetByteArrayElements(pps, JNI_FALSE);
     int ret = client->sendVideoSpecificData((char *) spsBuffer, spsLen, (char *) ppsBuffer, ppsLen);
-    env->ReleaseByteArrayElements(sps, spsBuffer, JNI_FALSE);
-    env->ReleaseByteArrayElements(pps, ppsBuffer, JNI_FALSE);
+    env->ReleaseByteArrayElements(sps, spsBuffer, NULL);
+    env->ReleaseByteArrayElements(pps, ppsBuffer, NULL);
     return ret;
 }
 
@@ -44,7 +44,7 @@ Java_com_lmy_rtmp_RtmpClient_sendVideo(JNIEnv *env, jobject thiz, jbyteArray dat
                                        jlong timestamp) {
     jbyte *buffer = env->GetByteArrayElements(data, JNI_FALSE);
     int ret = client->sendVideo((char *) buffer, len, timestamp);
-    env->ReleaseByteArrayElements(data, buffer, JNI_FALSE);
+    env->ReleaseByteArrayElements(data, buffer, NULL);
     return ret;
 }
 
@@ -53,7 +53,7 @@ Java_com_lmy_rtmp_RtmpClient_sendAudioSpecificData(JNIEnv *env, jobject thiz, jb
                                                    jint len) {
     jbyte *buffer = env->GetByteArrayElements(data, JNI_FALSE);
     int ret = client->sendAudioSpecificData((char *) buffer, len);
-    env->ReleaseByteArrayElements(data, buffer, JNI_FALSE);
+    env->ReleaseByteArrayElements(data, buffer, NULL);
     return ret;
 }
 
@@ -62,7 +62,7 @@ Java_com_lmy_rtmp_RtmpClient_sendAudio(JNIEnv *env, jobject thiz, jbyteArray dat
                                        jlong timestamp) {
     jbyte *buffer = env->GetByteArrayElements(data, JNI_FALSE);
     int ret = client->sendAudio((char *) buffer, len, timestamp);
-    env->ReleaseByteArrayElements(data, buffer, JNI_FALSE);
+    env->ReleaseByteArrayElements(data, buffer, NULL);
     return ret;
 }
 
