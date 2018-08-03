@@ -30,23 +30,6 @@
 #define STREAM_CHANNEL_VIDEO     0x04
 #define STREAM_CHANNEL_AUDIO     0x05
 
-template<class T>
-static int arraySizeof(T &array) {
-    if (NULL == array) return 0;
-    return sizeof(array) / sizeof(array[0]);
-}
-
-static bool isIDR(char *data) {
-    if (NULL == data) return false;
-    int offset = 0;
-    if (data[2] == 0x00) {
-        offset = 4;
-    } else if (data[2] == 0x01) {
-        offset = 3;
-    }
-    return (data[offset] & 0x1f) == NAL_SLICE_IDR;
-}
-
 static void handleMessage(Message *msg) {
     switch (msg->what) {
         case WHAT_CONNECT: {
@@ -88,6 +71,51 @@ static void handleMessage(Message *msg) {
     }
 }
 
+static Connection *wrapConnection(RtmpClient *client, char *url, int timeOut) {
+    Connection *con = new Connection();
+    con->client = client;
+    con->timeOut = timeOut;
+    int len = strlen(url);
+    con->url = static_cast<char *>(malloc(sizeof(char) * len));
+    strcpy(con->url, url);
+    return con;
+}
+
+static Size *wrapSize(RtmpClient *client, int width, int height) {
+    Size *size = new Size();
+    size->client = client;
+    size->width = width;
+    size->height = height;
+    return size;
+}
+
+static Packet *wrapPacket(RtmpClient *client, const char *data, int size, long timestamp) {
+    Packet *pkt = new Packet();
+    pkt->client = client;
+    pkt->data = static_cast<char *>(malloc(sizeof(char) * size));
+    memcpy(pkt->data, data, size);
+    pkt->size = size;
+    pkt->timestamp = timestamp;
+    return pkt;
+}
+
+template<class T>
+static int arraySizeof(T &array) {
+    if (NULL == array) return 0;
+    return sizeof(array) / sizeof(array[0]);
+}
+
+static bool isIDR(char *data) {
+    if (NULL == data) return false;
+    int offset = 0;
+    if (data[2] == 0x00) {
+        offset = 4;
+    } else if (data[2] == 0x01) {
+        offset = 3;
+    }
+    return (data[offset] & 0x1f) == NAL_SLICE_IDR;
+}
+
 RtmpClient::RtmpClient(int cacheSize) {
     this->cacheSize = cacheSize;
     pipeline = new HandlerThread();
@@ -95,21 +123,13 @@ RtmpClient::RtmpClient(int cacheSize) {
 }
 
 int RtmpClient::connect(char *url, int timeOut) {
-    Connection *con = new Connection();
-    con->client = this;
-    con->timeOut = timeOut;
-    int len = strlen(url);
-    con->url = static_cast<char *>(malloc(sizeof(char) * len));
-    strcpy(con->url, url);
+    Connection *con = wrapConnection(this, url, timeOut);
     pipeline->sendMessage(obtainMessage(WHAT_CONNECT, con, handleMessage));
     return 1;
 }
 
 int RtmpClient::connectStream(int w, int h) {
-    Size *size = new Size();
-    size->client = this;
-    size->width = w;
-    size->height = h;
+    Size *size = wrapSize(this, w, h);
     pipeline->sendMessage(obtainMessage(WHAT_CONNECT_STREAM, size, handleMessage));
     return 1;
 }
@@ -129,12 +149,7 @@ int RtmpClient::sendVideo(const char *data, int len, long timestamp) {
     if (dropMessage()) {
 //        LOGI("RTMP: drop video, cache=%d", pipeline->size());
     }
-    Packet *pkt = new Packet();
-    pkt->client = this;
-    pkt->data = static_cast<char *>(malloc(sizeof(char) * len));
-    memcpy(pkt->data, data, len);
-    pkt->size = len;
-    pkt->timestamp = timestamp;
+    Packet *pkt = wrapPacket(this, data, len, timestamp);
     pipeline->sendMessage(obtainMessage(WHAT_SEND_V, pkt, handleMessage));
     return 0;
 }
@@ -149,12 +164,7 @@ int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
     if (dropMessage()) {
 //        LOGI("RTMP: drop audio, cache=%d", pipeline->size());
     }
-    Packet *pkt = new Packet();
-    pkt->client = this;
-    pkt->data = static_cast<char *>(malloc(sizeof(char) * len));
-    memcpy(pkt->data, data, len);
-    pkt->size = len;
-    pkt->timestamp = timestamp;
+    Packet *pkt = wrapPacket(this, data, len, timestamp);
     pipeline->sendMessage(obtainMessage(WHAT_SEND_A, pkt, handleMessage));
     return 0;
 }
