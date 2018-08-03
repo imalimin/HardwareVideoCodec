@@ -5,7 +5,7 @@
 #include <string.h>
 #include "librtmp/rtmp.h"
 #include "SpecificData.h"
-#include "EventPipeline.h"
+#include "HandlerThread.h"
 
 #define ERROR_DISCONNECT  -100
 
@@ -71,7 +71,7 @@ public:
     ~RtmpClient();
 
 private:
-    EventPipeline *pipeline = NULL;
+    HandlerThread *pipeline = NULL;
     SpecificData *sps = NULL, *pps = NULL, *spec = NULL;
     long videoCount = 0, audioCount = 0;
     long retryTime[3] = {3000, 9000, 27000};

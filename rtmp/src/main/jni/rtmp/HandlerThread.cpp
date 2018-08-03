@@ -4,10 +4,10 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include "EventPipeline.h"
+#include "HandlerThread.h"
 
 static void *run(void *arg) {
-    EventPipeline *thiz = (EventPipeline *) arg;
+    HandlerThread *thiz = (HandlerThread *) arg;
     while (thiz->started()) {
 //        LOGI("handle");
         Message message = thiz->messageQueue.take();
@@ -17,7 +17,7 @@ static void *run(void *arg) {
     return NULL;
 }
 
-EventPipeline::EventPipeline() {
+HandlerThread::HandlerThread() {
     running = true;
     pthread_attr_init(&attr);
     //将线程的属性称为detached，则线程退出时会自己清理资源
@@ -29,29 +29,29 @@ EventPipeline::EventPipeline() {
     }
 }
 
-EventPipeline::~EventPipeline() {
+HandlerThread::~HandlerThread() {
     quit();
 }
 
-void EventPipeline::sendMessage(Message *msg) {
+void HandlerThread::sendMessage(Message *msg) {
     if (!started())
         return;
     messageQueue.offer(*msg);
 }
 
-void EventPipeline::sendMessageDelayed(Message *msg) {
+void HandlerThread::sendMessageDelayed(Message *msg) {
     if (!started())
         return;
     messageQueue.offer(*msg);
 }
 
-void EventPipeline::quit() {
+void HandlerThread::quit() {
     if (!started())
         return;
     running = false;
     pthread_attr_destroy(&attr);
 }
 
-bool EventPipeline::started() {
+bool HandlerThread::started() {
     return running;
 }

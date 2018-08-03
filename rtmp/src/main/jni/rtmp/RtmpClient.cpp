@@ -79,7 +79,7 @@ static void handleMessage(Message *msg) {
 }
 
 RtmpClient::RtmpClient() {
-    pipeline = new EventPipeline();
+    pipeline = new HandlerThread();
 }
 
 int RtmpClient::connect(char *url, int timeOut) {

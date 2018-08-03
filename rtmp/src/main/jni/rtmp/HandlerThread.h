@@ -15,12 +15,12 @@
 #define HARDWAREVIDEOCODEC_EVENTPIPELINE_H
 
 
-class EventPipeline {
+class HandlerThread {
 public:
     BlockQueue<Message> messageQueue;
-    EventPipeline();
+    HandlerThread();
 
-    ~EventPipeline();
+    ~HandlerThread();
 
     void sendMessage(Message *msg);
 
