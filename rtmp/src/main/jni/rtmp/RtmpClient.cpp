@@ -361,7 +361,7 @@ int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
     if (RTMP_IsConnected(rtmp)) {
         ret = RTMP_SendPacket(rtmp, packet, TRUE);
         if (0 == videoCount % 150)
-            LOGI("RTMP: send video packet(%ld): %d", videoCount, len);
+            LOGI("RTMP: send video packet(%ld): %d, cache=%d", videoCount, len, pipeline->size());
         ++videoCount;
     }
     free(packet);
@@ -436,7 +436,7 @@ int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
     if (RTMP_IsConnected(rtmp)) {
         ret = RTMP_SendPacket(rtmp, packet, TRUE);
         if (0 == audioCount % 150)
-            LOGI("RTMP: send audio packet(%ld): %d", audioCount, len);
+            LOGI("RTMP: send audio packet(%ld): %d, cache=%d", audioCount, len, pipeline->size());
         ++audioCount;
     }
     free(packet);
