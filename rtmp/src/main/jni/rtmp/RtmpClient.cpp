@@ -324,19 +324,25 @@ int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
 
 static bool filter_count = 0;
 
-static bool idrFilter(Message msg) {
+static short idrFilter(Message msg) {
     if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
     Packet *pkt = (Packet *) msg.obj;
     if (isIDR(pkt->data))
         ++filter_count;
-    return 1 == filter_count;
+    if (FILTER_REMOVE == filter_count) {
+        delete pkt;
+    }
+    return filter_count;
 }
 
-static bool frameFilter(Message msg) {
+static short frameFilter(Message msg) {
     if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
     if (WHAT_SEND_V == msg.what)
         ++filter_count;
-    return 1 == filter_count;
+    if (FILTER_REMOVE == filter_count) {
+        delete msg.obj;
+    }
+    return filter_count;
 }
 
 bool RtmpClient::dropMessage() {
