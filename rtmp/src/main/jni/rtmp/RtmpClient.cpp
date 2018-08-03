@@ -136,6 +136,7 @@ RtmpClient::sendVideoSpecificData(const char *sps, int spsLen, const char *pps, 
 
 int RtmpClient::sendVideo(const char *data, int len, long timestamp) {
     Packet *pkt = new Packet();
+    pkt->client = this;
     pkt->data = static_cast<char *>(malloc(sizeof(char) * len));
     memcpy(pkt->data, data, len);
     pkt->size = len;
@@ -152,6 +153,7 @@ int RtmpClient::sendAudioSpecificData(const char *data, int len) {
 
 int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
     Packet *pkt = new Packet();
+    pkt->client = this;
     pkt->data = static_cast<char *>(malloc(sizeof(char) * len));
     memcpy(pkt->data, data, len);
     pkt->size = len;
@@ -304,9 +306,7 @@ int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
 }
 
 int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
-    LOGE("RTMP _sendVideo 1");
-    LOGE("RTMP _sendVideo 2: %d", NULL == sps);
-    if (NULL == sps || !sps->alreadySent()) return -1;
+    if (NULL == rtmp || NULL == sps || !sps->alreadySent()) return -1;
     if (len < 1) return -2;
     int type;
 
