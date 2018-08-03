@@ -12,15 +12,11 @@ static RtmpClient *client = NULL;
 extern "C" {
 #endif
 
-JNIEXPORT void JNICALL Java_com_lmy_rtmp_RtmpClient_init
-        (JNIEnv *env, jobject thiz, jint cacheSize) {
+JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connect
+        (JNIEnv *env, jobject thiz, jstring url, jint timeOut, jint cacheSize) {
     if (NULL == client) {
         client = new RtmpClient(cacheSize);
     }
-}
-
-JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connect
-        (JNIEnv *env, jobject thiz, jstring url, jint timeOut) {
     char *urlTmp = (char *) env->GetStringUTFChars(url, NULL);
     int ret = client->connect(urlTmp, timeOut);
     env->ReleaseStringUTFChars(url, urlTmp);
@@ -76,6 +72,12 @@ Java_com_lmy_rtmp_RtmpClient_stop(JNIEnv *env, jobject thiz) {
     client->stop();
     delete client;
     client = NULL;
+}
+JNIEXPORT void JNICALL
+Java_com_lmy_rtmp_RtmpClient_setCacheSize(JNIEnv *env, jobject thiz, jint size) {
+    if (NULL != client) {
+        client->setCacheSize(size);
+    }
 }
 
 #ifdef __cplusplus

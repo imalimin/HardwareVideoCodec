@@ -7,17 +7,16 @@ class RtmpClient : Rtmp {
 
     init {
         System.loadLibrary("rtmp")
-        init(500)
     }
 
-    external override fun init(cacheSize: Int): Int
-    external override fun connect(url: String, timeOut: Int): Int
+    external override fun connect(url: String, timeOut: Int, cacheSize: Int): Int
     external override fun connectStream(width: Int, height: Int): Int
     external override fun sendVideoSpecificData(sps: ByteArray, spsLen: Int, pps: ByteArray, ppsLen: Int): Int
     external override fun sendVideo(data: ByteArray, len: Int, timestamp: Long): Int
     external override fun sendAudioSpecificData(data: ByteArray, len: Int): Int
     external override fun sendAudio(data: ByteArray, len: Int, timestamp: Long): Int
     external override fun stop()
+    external override fun setCacheSize(size: Int)
 
     companion object {
         fun build(): RtmpClient {

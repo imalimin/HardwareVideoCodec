@@ -25,7 +25,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
     }
 
     private fun start() {
-        client.connect(context.ioContext.path!!, 10000)
+        client.connect(context.ioContext.path!!, 10000, 500)
         client.connectStream(context.video.width, context.video.height)
     }
 
@@ -114,11 +114,12 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         private val methodSendAudioSpecificData: Method
         private val methodSendAudio: Method
         private val methodStop: Method
+        private val methodSetCacheSize: Method
 
         init {
             try {
                 clazz = Class.forName("com.lmy.rtmp.RtmpClient")
-                methodConnect = clazz.getMethod("connect", String::class.java, Int::class.java)
+                methodConnect = clazz.getMethod("connect", String::class.java, Int::class.java, Int::class.java)
                 methodConnectStream = clazz.getMethod("connectStream", Int::class.java, Int::class.java)
                 methodSendVideoSpecificData = clazz.getMethod("sendVideoSpecificData",
                         ByteArray::class.java, Int::class.java, ByteArray::class.java, Int::class.java)
@@ -129,14 +130,15 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
                 methodSendAudio = clazz.getMethod("sendAudio", ByteArray::class.java,
                         Int::class.java, Long::class.java)
                 methodStop = clazz.getMethod("stop")
+                methodSetCacheSize = clazz.getMethod("setCacheSize", Int::class.java)
                 thiz = clazz.newInstance()
             } catch (e: ClassNotFoundException) {
                 throw RuntimeException("If you want to use RTMP stream. Please implementation 'com.lmy.codec:rtmp:latestVersion'")
             }
         }
 
-        fun connect(url: String, timeOut: Int): Int {
-            return methodConnect.invoke(thiz, url, timeOut) as Int
+        fun connect(url: String, timeOut: Int, cacheSize: Int): Int {
+            return methodConnect.invoke(thiz, url, timeOut, cacheSize) as Int
         }
 
         fun connectStream(width: Int, height: Int): Int {
@@ -161,6 +163,10 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
 
         fun stop() {
             methodStop.invoke(thiz)
+        }
+
+        fun setCacheSize(size: Int) {
+            methodSetCacheSize.invoke(thiz, size)
         }
     }
 }

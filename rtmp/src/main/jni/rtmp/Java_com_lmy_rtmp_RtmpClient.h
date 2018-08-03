@@ -13,11 +13,8 @@
 extern "C" {
 #endif
 
-JNIEXPORT void JNICALL
-Java_com_lmy_rtmp_RtmpClient_init(JNIEnv *, jobject, jint);
-
 JNIEXPORT jint JNICALL
-Java_com_lmy_rtmp_RtmpClient_connect(JNIEnv *, jobject, jstring, jint);
+Java_com_lmy_rtmp_RtmpClient_connect(JNIEnv *, jobject, jstring, jint, jint);
 
 JNIEXPORT jint JNICALL
 Java_com_lmy_rtmp_RtmpClient_connectStream(JNIEnv *, jobject, jint, jint);
@@ -37,6 +34,9 @@ Java_com_lmy_rtmp_RtmpClient_sendAudio(JNIEnv *, jobject, jbyteArray, jint, jlon
 
 JNIEXPORT void JNICALL
 Java_com_lmy_rtmp_RtmpClient_stop(JNIEnv *, jobject);
+
+JNIEXPORT void JNICALL
+Java_com_lmy_rtmp_RtmpClient_setCacheSize(JNIEnv *, jobject, jint);
 
 #ifdef __cplusplus
 }

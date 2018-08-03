@@ -68,6 +68,8 @@ public:
      */
     void stop();
 
+    void setCacheSize(int size);
+
     ~RtmpClient();
 
 private:

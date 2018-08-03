@@ -81,6 +81,7 @@ static void handleMessage(Message *msg) {
 RtmpClient::RtmpClient(int cacheSize) {
     this->cacheSize = cacheSize;
     pipeline = new HandlerThread();
+    LOGI("RTMP: init cache size: %d", this->cacheSize);
 }
 
 int RtmpClient::connect(char *url, int timeOut) {
@@ -461,4 +462,8 @@ bool RtmpClient::dropMessage(int what) {
         drop = true;
     }
     return drop;
+}
+
+void RtmpClient::setCacheSize(int size) {
+    this->cacheSize = size;
 }
