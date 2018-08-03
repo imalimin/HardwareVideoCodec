@@ -111,21 +111,27 @@ class ClientWrapper {
 public:
     RtmpClient *client;
 
+    ClientWrapper(RtmpClient *client) {
+        this->client = client;
+    }
 };
 
-class Connection : public ClientWrapper {
+class Connection {
 public:
+    ClientWrapper *wrapper;
     char *url;
     int timeOut;
 };
 
-class Size : public ClientWrapper {
+class Size {
 public:
+    ClientWrapper *wrapper;
     int width, height;
 };
 
-class Packet : public ClientWrapper {
+class Packet {
 public:
+    ClientWrapper *wrapper;
     char *data;
     int size;
     long timestamp;

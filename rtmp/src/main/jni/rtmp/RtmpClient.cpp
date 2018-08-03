@@ -34,36 +34,32 @@ static void handleMessage(Message *msg) {
     switch (msg->what) {
         case WHAT_CONNECT: {
             Connection *con = reinterpret_cast<Connection *>(msg->obj);
-            con->client->_connect(con->url, con->timeOut);
-            delete con;
+            con->wrapper->client->_connect(con->url, con->timeOut);
             break;
         }
         case WHAT_CONNECT_STREAM: {
             Size *size = reinterpret_cast<Size *>(msg->obj);
-            size->client->_connectStream(size->width, size->height);
-            delete size;
+            size->wrapper->client->_connectStream(size->width, size->height);
             break;
         }
         case WHAT_SEND_VSD: {
-            RtmpClient *client = reinterpret_cast<RtmpClient *>(msg->obj);
-            client->_sendVideoSpecificData();
+            ClientWrapper *wrapper = reinterpret_cast<ClientWrapper *>(msg->obj);
+            wrapper->client->_sendVideoSpecificData();
             break;
         }
         case WHAT_SEND_V: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
-            pkt->client->_sendVideo(pkt->data, pkt->size, pkt->timestamp);
-            delete pkt;
+            pkt->wrapper->client->_sendVideo(pkt->data, pkt->size, pkt->timestamp);
             break;
         }
         case WHAT_SEND_ASD: {
-            RtmpClient *client = reinterpret_cast<RtmpClient *>(msg->obj);
-            client->_sendAudioSpecificData();
+            ClientWrapper *wrapper = reinterpret_cast<ClientWrapper *>(msg->obj);
+            wrapper->client->_sendAudioSpecificData();
             break;
         }
         case WHAT_SEND_A: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
-            pkt->client->_sendAudio(pkt->data, pkt->size, pkt->timestamp);
-            delete pkt;
+            pkt->wrapper->client->_sendAudio(pkt->data, pkt->size, pkt->timestamp);
             break;
         }
         default:
@@ -73,7 +69,7 @@ static void handleMessage(Message *msg) {
 
 static Connection *wrapConnection(RtmpClient *client, char *url, int timeOut) {
     Connection *con = new Connection();
-    con->client = client;
+    con->wrapper = new ClientWrapper(client);
     con->timeOut = timeOut;
     int len = strlen(url);
     con->url = static_cast<char *>(malloc(sizeof(char) * len));
@@ -83,7 +79,7 @@ static Connection *wrapConnection(RtmpClient *client, char *url, int timeOut) {
 
 static Size *wrapSize(RtmpClient *client, int width, int height) {
     Size *size = new Size();
-    size->client = client;
+    size->wrapper = new ClientWrapper(client);
     size->width = width;
     size->height = height;
     return size;
@@ -91,7 +87,7 @@ static Size *wrapSize(RtmpClient *client, int width, int height) {
 
 static Packet *wrapPacket(RtmpClient *client, const char *data, int size, long timestamp) {
     Packet *pkt = new Packet();
-    pkt->client = client;
+    pkt->wrapper = new ClientWrapper(client);
     pkt->data = static_cast<char *>(malloc(sizeof(char) * size));
     memcpy(pkt->data, data, size);
     pkt->size = size;
@@ -141,7 +137,7 @@ void RtmpClient::deleteStream() {
 int
 RtmpClient::sendVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen) {
     saveVideoSpecificData(sps, spsLen, pps, ppsLen);
-    pipeline->sendMessage(obtainMessage(WHAT_SEND_VSD, this, handleMessage));
+    pipeline->sendMessage(obtainMessage(WHAT_SEND_VSD, new ClientWrapper(this), handleMessage));
     return 0;
 }
 
@@ -156,7 +152,7 @@ int RtmpClient::sendVideo(const char *data, int len, long timestamp) {
 
 int RtmpClient::sendAudioSpecificData(const char *data, int len) {
     saveAudioSpecificData(data, len);
-    pipeline->sendMessage(obtainMessage(WHAT_SEND_ASD, this, handleMessage));
+    pipeline->sendMessage(obtainMessage(WHAT_SEND_ASD, new ClientWrapper(this), handleMessage));
     return 0;
 }
 
@@ -329,9 +325,6 @@ static short idrFilter(Message msg) {
     Packet *pkt = (Packet *) msg.obj;
     if (isIDR(pkt->data))
         ++filter_count;
-    if (FILTER_REMOVE == filter_count) {
-        delete pkt;
-    }
     return filter_count;
 }
 
@@ -339,9 +332,6 @@ static short frameFilter(Message msg) {
     if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
     if (WHAT_SEND_V == msg.what)
         ++filter_count;
-    if (FILTER_REMOVE == filter_count) {
-        delete msg.obj;
-    }
     return filter_count;
 }
 
