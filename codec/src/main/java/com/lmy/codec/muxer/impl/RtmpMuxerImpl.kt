@@ -18,20 +18,26 @@ import java.nio.ByteBuffer
 class RtmpMuxerImpl(var context: CodecContext) : Muxer {
     private var client: RtmpReflect = RtmpReflect()
 
-//    private var mAudioPipeline = EventPipeline.create("LivePipeline")
+    companion object {
+        private val clientLock = Any()
+    }
 
     init {
         start()
     }
 
     private fun start() {
-        client.connect(context.ioContext.path!!, 10000, 500)
-        client.connectStream(context.video.width, context.video.height)
+        synchronized(clientLock) {
+            client.connect(context.ioContext.path!!, 10000, 500)
+            client.connectStream(context.video.width, context.video.height)
+        }
     }
 
     override fun reset() {
-        debug_i("RTMP reset")
-        client.connectStream(context.video.width, context.video.height)
+        synchronized(clientLock) {
+            debug_i("RTMP reset")
+            client.connectStream(context.video.width, context.video.height)
+        }
     }
 
     //分发MediaFormat
@@ -68,7 +74,9 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         ppsBuffer.get(pps)
         spsBuffer.rewind()
         ppsBuffer.rewind()
-        client.sendVideoSpecificData(sps, sps.size, pps, pps.size)
+        synchronized(clientLock) {
+            client.sendVideoSpecificData(sps, sps.size, pps, pps.size)
+        }
     }
 
     override fun addAudioTrack(format: MediaFormat) {
@@ -81,7 +89,9 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         val esds = ByteArray(esdsBuffer.remaining())
         esdsBuffer.get(esds)
         esdsBuffer.rewind()
-        client.sendAudioSpecificData(esds, esds.size)
+        synchronized(clientLock) {
+            client.sendAudioSpecificData(esds, esds.size)
+        }
     }
 
     override fun writeVideoSample(sample: Sample) {
@@ -89,7 +99,9 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         sample.sample.rewind()
         sample.sample.get(data)
         sample.sample.rewind()
-        client.sendVideo(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
+        synchronized(clientLock) {
+            client.sendVideo(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
+        }
     }
 
     override fun writeAudioSample(sample: Sample) {
@@ -97,11 +109,15 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         sample.sample.rewind()
         sample.sample.get(data)
         sample.sample.rewind()
-        client.sendAudio(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
+        synchronized(clientLock) {
+            client.sendAudio(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
+        }
     }
 
     override fun release() {
-        client.stop()
+        synchronized(clientLock) {
+            client.stop()
+        }
     }
 
     inner class RtmpReflect {
