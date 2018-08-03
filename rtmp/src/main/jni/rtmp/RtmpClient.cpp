@@ -218,15 +218,19 @@ int RtmpClient::_connectStream(int w, int h) {
     }
     this->width = w;
     this->height = h;
-    LOGI("RTMP: connectStream %dx%d", this->width, this->height);
     this->videoCount = 0;
     this->audioCount = 0;
-    int ret = 1;
-    if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
-        LOGE("RTMP: connectStream failed: %d", ret);
-        return ret;
+    int ret = 1, retry = 0;
+    while (retry < 2) {
+        LOGI("RTMP: try connectStream(%d), %dx%d", retry, this->width, this->height);
+        if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
+            LOGE("RTMP: connectStream failed: %d", ret);
+            ++retry;
+        } else {
+            LOGI("RTMP: connectStream success", ret);
+            break;
+        }
     }
-    LOGI("RTMP: connectStream success", ret);
     if (this->sps && this->pps) {
         sendVideoSpecificData(this->sps, this->pps);
     }
