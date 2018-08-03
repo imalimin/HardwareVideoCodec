@@ -9,10 +9,9 @@
 static void *run(void *arg) {
     HandlerThread *thiz = (HandlerThread *) arg;
     while (thiz->started()) {
-        Message message = thiz->popMessage();
+        Message message = thiz->takeMessage();
         message.handle(&message);
-        //TODO:会闪退
-//        delete &message;
+        thiz->popMessage();
     }
     return NULL;
 }
@@ -56,8 +55,12 @@ bool HandlerThread::started() {
     return running;
 }
 
-Message HandlerThread::popMessage() {
+Message HandlerThread::takeMessage() {
     return messageQueue.take();
+}
+
+void HandlerThread::popMessage() {
+    messageQueue.pop();
 }
 
 int HandlerThread::size() {

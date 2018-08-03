@@ -57,10 +57,15 @@ public:
             }
         }
         T e = m_queue.front();
-        m_queue.pop_front();
 
         pthread_mutex_unlock(mutex);
         return e;
+    }
+
+    void pop() {
+        pthread_mutex_lock(mutex);
+        m_queue.pop_front();
+        pthread_mutex_unlock(mutex);
     }
 
     void clear() {
