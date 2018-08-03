@@ -27,7 +27,7 @@ public:
 
     void removeMessage(int what);
 
-    void removeMessage(bool (*filter)(Message));
+    void removeAllMessage(bool (*filter)(Message));
 
     Message popMessage();
 

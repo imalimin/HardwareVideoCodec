@@ -74,7 +74,7 @@ void HandlerThread::removeMessage(int what) {
     }
 }
 
-void HandlerThread::removeMessage(bool (*filter)(Message)) {
+void HandlerThread::removeAllMessage(bool (*filter)(Message)) {
     list<Message>::iterator it;
     for (it = messageQueue.begin(); it != messageQueue.end(); it++) {
         if (filter(*it)) {
