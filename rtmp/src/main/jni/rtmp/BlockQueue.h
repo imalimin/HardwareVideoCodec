@@ -8,14 +8,16 @@
 #include <string.h>
 #include <pthread.h>
 #include <queue>
+#include <list>
 
 using namespace std;
-
-#define SIZE_CACHE 200
 
 template<class T>
 class BlockQueue {
 public:
+    typedef list<T> Queue;
+    typedef typename list<T>::iterator Iterator;
+
     BlockQueue() {
         mutex = new pthread_mutex_t;
         cond = new pthread_cond_t;
@@ -33,13 +35,13 @@ public:
 
     bool offer(T entity) {
         pthread_mutex_lock(mutex);
-        if (size() >= SIZE_CACHE) {
-            pthread_cond_broadcast(cond);
-            pthread_mutex_unlock(mutex);
-            return false;
-        }
+//        if (size() >= SIZE_CACHE) {
+//            pthread_cond_broadcast(cond);
+//            pthread_mutex_unlock(mutex);
+//            return false;
+//        }
 
-        m_queue.push(entity);
+        m_queue.push_back(entity);
 
         pthread_cond_broadcast(cond);
         pthread_mutex_unlock(mutex);
@@ -55,7 +57,7 @@ public:
             }
         }
         T e = m_queue.front();
-        m_queue.pop();
+        m_queue.pop_front();
 
         pthread_mutex_unlock(mutex);
         return e;
@@ -66,7 +68,7 @@ public:
         while (!isEmpty()) {
             T e = m_queue.front();
             delete &e;
-            m_queue.pop();
+            m_queue.pop_front();
         }
         pthread_mutex_unlock(mutex);
     }
@@ -79,8 +81,28 @@ public:
         return m_queue.empty();
     }
 
+    Iterator begin() {
+        pthread_mutex_lock(mutex);
+        Iterator it = m_queue.begin();
+        pthread_mutex_unlock(mutex);
+        return it;
+    }
+
+    Iterator end() {
+        pthread_mutex_lock(mutex);
+        Iterator it = m_queue.end();
+        pthread_mutex_unlock(mutex);
+        return it;
+    }
+
+    void erase(Iterator iterator) {
+        pthread_mutex_lock(mutex);
+        m_queue.erase(iterator);
+        pthread_mutex_unlock(mutex);
+    }
+
 private:
     pthread_mutex_t *mutex;
     pthread_cond_t *cond;
-    queue<T> m_queue;
+    Queue m_queue;
 };
