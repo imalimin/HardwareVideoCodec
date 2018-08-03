@@ -82,7 +82,6 @@ private:
     int height;
     int timeOut;
     char *url;
-    long startTime;
     RTMP *rtmp;
 
     void saveVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen);
@@ -93,7 +92,7 @@ private:
 
     int sendAudioSpecificData(SpecificData *spec);
 
-    bool dropMessage(int what);
+    bool dropMessage();
 };
 
 class ClientWrapper {
