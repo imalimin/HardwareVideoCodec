@@ -11,6 +11,10 @@
 #include <string.h>
 #include <pthread.h>
 
+#define FILTER_DO_NOTHING 0
+#define FILTER_REMOVE 1
+#define FILTER_BREAK 2
+
 #ifndef HARDWAREVIDEOCODEC_EVENTPIPELINE_H
 #define HARDWAREVIDEOCODEC_EVENTPIPELINE_H
 
@@ -27,7 +31,11 @@ public:
 
     void removeMessage(int what);
 
-    void removeAllMessage(bool (*filter)(Message));
+    /**
+     *
+     * @param filter FILTER_DO_NOTHING: do nothing, FILTER_REMOVE: remove, FILTER_BREAK: break
+     */
+    void removeAllMessage(short (*filter)(Message));
 
     Message popMessage();
 
