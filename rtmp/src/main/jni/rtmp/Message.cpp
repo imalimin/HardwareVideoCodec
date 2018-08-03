@@ -26,3 +26,7 @@ Message *obtainMessage(int what, int arg1, long arg2, void *obj, void (handle)(M
 Message::Message(void (handle)(Message *)) {
     this->handle = handle;
 }
+
+Message::~Message() {
+    this->handle = NULL;
+}

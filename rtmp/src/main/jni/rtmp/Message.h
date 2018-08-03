@@ -4,6 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
+#include <string.h>
 
 #ifndef HARDWAREVIDEOCODEC_EVENT_H
 #define HARDWAREVIDEOCODEC_EVENT_H
@@ -18,6 +19,8 @@ public:
     void (*handle)(Message *);
 
     Message(void (handle)(Message *));
+
+    ~Message();
 };
 
 Message *obtainMessage(int what, void *obj, void (handle)(Message *));
