@@ -17,7 +17,6 @@
 
 class HandlerThread {
 public:
-    BlockQueue<Message> messageQueue;
     HandlerThread();
 
     ~HandlerThread();
@@ -26,11 +25,16 @@ public:
 
     void sendMessageDelayed(Message *msg);
 
+    Message popMessage();
+
+    int size();
+
     bool started();
 
     void quit();
 
 private:
+    BlockQueue<Message> messageQueue;
     pthread_attr_t attr;
     pthread_t thread;
     bool running = true;

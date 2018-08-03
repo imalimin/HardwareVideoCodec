@@ -10,8 +10,9 @@ static void *run(void *arg) {
     HandlerThread *thiz = (HandlerThread *) arg;
     while (thiz->started()) {
 //        LOGI("handle");
-        Message message = thiz->messageQueue.take();
+        Message message = thiz->popMessage();
         message.handle(&message);
+//        delete &message;
 //        LOGI("finish");
     }
     return NULL;
@@ -54,4 +55,12 @@ void HandlerThread::quit() {
 
 bool HandlerThread::started() {
     return running;
+}
+
+Message HandlerThread::popMessage() {
+    return messageQueue.take();
+}
+
+int HandlerThread::size() {
+    return messageQueue.size();
 }
