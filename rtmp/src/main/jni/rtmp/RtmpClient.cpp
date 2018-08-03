@@ -14,8 +14,6 @@
 #define WHAT_SEND_ASD 14
 #define WHAT_SEND_A 15
 
-#define SIZE_CACHE 600
-
 #define RTMP_HEAD_SIZE (sizeof(RTMPPacket)+RTMP_MAX_HEADER_SIZE)
 #define NAL_SLICE  1
 #define NAL_SLICE_DPA  2
@@ -458,7 +456,7 @@ int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
 
 bool RtmpClient::dropMessage(int what) {
     bool drop = false;
-    while (pipeline->size() >= SIZE_CACHE) {
+    while (pipeline->size() > this->cacheSize) {
         pipeline->removeMessage(what);
         drop = true;
     }
