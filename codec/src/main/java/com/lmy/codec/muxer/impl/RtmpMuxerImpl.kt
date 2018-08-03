@@ -7,7 +7,6 @@ import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.muxer.Muxer
-import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import java.lang.reflect.Method
@@ -46,13 +45,10 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         }
     }
 
-    private var sent = false
     override fun onSample(encoder: Encoder, info: MediaCodec.BufferInfo, data: ByteBuffer) {
         if (encoder is AudioEncoderImpl) {
             writeAudioSample(Sample.wrap(info, data))
         } else {
-            if (sent) return
-            sent = true
             writeVideoSample(Sample.wrap(info, data))
         }
     }
@@ -101,7 +97,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         sample.sample.rewind()
         sample.sample.get(data)
         sample.sample.rewind()
-//        client.sendAudio(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
+        client.sendAudio(data, data.size, sample.bufferInfo.presentationTimeUs / 1000)
     }
 
     override fun release() {
