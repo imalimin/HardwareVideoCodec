@@ -92,7 +92,19 @@ private:
 
     int sendAudioSpecificData(SpecificData *spec);
 
+    /*
+     * Discard all data between two IDRs, including audio.
+     * If cacheSize too small to cache two IDRs, an error may occur.
+     */
     bool dropMessage();
+
+    RTMPPacket *makeVideoPacket(char *data, int len, long timestamp);
+
+    RTMPPacket *makeAudioPacket(char *data, int len, long timestamp);
+
+    RTMPPacket *makeVideoSpecificData(SpecificData *sps, SpecificData *pps);
+
+    RTMPPacket *makeAudioSpecificData(SpecificData *spec);
 };
 
 class ClientWrapper {

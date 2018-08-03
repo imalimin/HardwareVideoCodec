@@ -118,27 +118,6 @@ void RtmpClient::deleteStream() {
     RTMP_DeleteStream(rtmp);
 }
 
-
-void RtmpClient::saveVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen) {
-    if (NULL != this->sps) {
-        delete this->sps;
-    }
-    if (NULL != this->pps) {
-        delete this->pps;
-    }
-    this->sps = new SpecificData(sps, spsLen);
-    this->pps = new SpecificData(pps, ppsLen);
-    LOGI("RTMP: saveVideoSpecificData");
-}
-
-void RtmpClient::saveAudioSpecificData(const char *spec, int len) {
-    if (NULL != this->spec) {
-        delete this->spec;
-    }
-    this->spec = new SpecificData(spec, len);
-    LOGI("RTMP: saveAudioSpecificData");
-}
-
 int
 RtmpClient::sendVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen) {
     saveVideoSpecificData(sps, spsLen, pps, ppsLen);
@@ -270,13 +249,182 @@ int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
         return 1;
     }
     LOGI("RTMP: sendVideoSpecificData, IsConnected(%d)", RTMP_IsConnected(rtmp));
-    int i;
+    RTMPPacket *packet = makeVideoSpecificData(sps, pps);
+    int ret = ERROR_DISCONNECT;
+    if (RTMP_IsConnected(rtmp)) {
+        ret = RTMP_SendPacket(rtmp, packet, TRUE);
+        sps->setSent(true);
+        pps->setSent(true);
+    }
+    free(packet);
+    return ret;
+}
+
+int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
+    if (NULL == rtmp || NULL == sps || !sps->alreadySent()) return -1;
+    if (len < 1) return -2;
+    RTMPPacket *packet = makeVideoPacket(data, len, timestamp);
+    int ret = ERROR_DISCONNECT;
+    if (RTMP_IsConnected(rtmp)) {
+        ret = RTMP_SendPacket(rtmp, packet, TRUE);
+        if (0 == videoCount % 150)
+            LOGI("RTMP: send video packet(%ld): %d, cache=%d", videoCount, len, pipeline->size());
+        ++videoCount;
+    }
+    free(packet);
+    return ret;
+}
+
+int RtmpClient::_sendAudioSpecificData() {
+    return sendAudioSpecificData(this->spec);
+}
+
+int RtmpClient::sendAudioSpecificData(SpecificData *spec) {
+    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
+        return ERROR_DISCONNECT;
+    }
+    if (NULL != spec && spec->alreadySent()) {
+        return 1;
+    }
+    LOGI("RTMP: sendAudioSpecificData, IsConnected(%d)", RTMP_IsConnected(rtmp));
+    RTMPPacket *packet = makeAudioSpecificData(spec);
+    int ret = ERROR_DISCONNECT;
+    if (RTMP_IsConnected(rtmp)) {
+        ret = RTMP_SendPacket(rtmp, packet, TRUE);
+        spec->setSent(true);
+    }
+    free(packet);
+    return ret;
+}
+
+int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
+    if (NULL == rtmp || NULL == spec || !spec->alreadySent()) return -1;
+    if (len < 1) return -2;
+    RTMPPacket *packet = makeAudioPacket(data, len, timestamp);
+    int ret = ERROR_DISCONNECT;
+    if (RTMP_IsConnected(rtmp)) {
+        ret = RTMP_SendPacket(rtmp, packet, TRUE);
+        if (0 == audioCount % 150)
+            LOGI("RTMP: send audio packet(%ld): %d, cache=%d", audioCount, len, pipeline->size());
+        ++audioCount;
+    }
+    free(packet);
+    return ret;
+}
+
+static bool idr_filter_count = 0;
+
+static bool filter(Message msg) {
+    if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
+    Packet *pkt = (Packet *) msg.obj;
+    if (isIDR(pkt->data))
+        ++idr_filter_count;
+    return 1 == idr_filter_count;
+}
+
+bool RtmpClient::dropMessage() {
+    int size = pipeline->size();
+    if (size < this->cacheSize) return false;
+    idr_filter_count = 0;
+    pipeline->removeAllMessage(filter);
+    /**
+     * If it drop too little, drop it again.
+     */
+    if (size - pipeline->size() <= 10) {
+        idr_filter_count = 0;
+        pipeline->removeAllMessage(filter);
+    }
+    idr_filter_count = 0;
+    if (0 == pipeline->size()) {
+        LOGE("RTMP: cacheSize too small");
+    }
+    LOGI("RTMP: drop %d(%d - %d) message", size - pipeline->size(), size, pipeline->size());
+    return true;
+}
+
+void RtmpClient::setCacheSize(int size) {
+    this->cacheSize = size;
+}
+
+RTMPPacket *RtmpClient::makeVideoPacket(char *data, int len, long timestamp) {
+    /*去掉帧界定符*/
+    if (data[2] == 0x00) {/*00 00 00 01*/
+        data += 4;
+        len -= 4;
+    } else if (data[2] == 0x01) {
+        data += 3;
+        len -= 3;
+    }
+
+    int type = data[0] & 0x1f;
+
+    RTMPPacket *packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + len + 9);
+    memset(packet, 0, RTMP_HEAD_SIZE);
+    packet->m_body = (char *) packet + RTMP_HEAD_SIZE;
+    packet->m_nBodySize = static_cast<uint32_t>(len + 9);
+
+    /* send video packet*/
+    char *body = packet->m_body;
+    memset(body, 0, static_cast<size_t>(len + 9));
+
+    /*key frame*/
+    body[0] = 0x27;
+    if (type == NAL_SLICE_IDR) {
+        body[0] = 0x17; //关键帧
+    }
+
+    body[1] = 0x01;/*nal unit*/
+    body[2] = 0x00;
+    body[3] = 0x00;
+    body[4] = 0x00;
+
+    body[5] = static_cast<char>((len >> 24) & 0xff);
+    body[6] = static_cast<char>((len >> 16) & 0xff);
+    body[7] = static_cast<char>((len >> 8) & 0xff);
+    body[8] = static_cast<char>((len) & 0xff);
+
+    /*copy data*/
+    memcpy(&body[9], data, static_cast<size_t>(len));
+
+    packet->m_hasAbsTimestamp = 0;
+    packet->m_packetType = RTMP_PACKET_TYPE_VIDEO;
+    packet->m_nInfoField2 = rtmp->m_stream_id;
+    packet->m_nChannel = 0x04;
+    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
+    packet->m_nTimeStamp = static_cast<uint32_t>(timestamp);
+    return packet;
+}
+
+RTMPPacket *RtmpClient::makeAudioPacket(char *data, int len, long timestamp) {
+    RTMPPacket *packet;
+    char *body;
+    packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + len + 2);
+    memset(packet, 0, RTMP_HEAD_SIZE);
+    packet->m_body = (char *) packet + RTMP_HEAD_SIZE;
+    body = (char *) packet->m_body;
+
+    /*AF 00 +AAC Raw data*/
+    body[0] = static_cast<char>(0xAF);
+    body[1] = 0x01;
+    memcpy(&body[2], data, static_cast<size_t>(len));
+
+    packet->m_packetType = RTMP_PACKET_TYPE_AUDIO;
+    packet->m_nBodySize = static_cast<uint32_t>(len + 2);
+    packet->m_nChannel = STREAM_CHANNEL_AUDIO;
+    packet->m_nTimeStamp = static_cast<uint32_t>(timestamp);
+    packet->m_hasAbsTimestamp = 0;
+    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
+    packet->m_nInfoField2 = rtmp->m_stream_id;
+    return packet;
+}
+
+RTMPPacket *RtmpClient::makeVideoSpecificData(SpecificData *sps, SpecificData *pps) {
     RTMPPacket *packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + 1024);
     memset(packet, 0, RTMP_HEAD_SIZE);
     packet->m_body = (char *) packet + RTMP_HEAD_SIZE;
     char *body = packet->m_body;
 
-    i = 0;
+    int i = 0;
     body[i++] = 0x17; //1:keyframe 7:AVC
     body[i++] = 0x00; // AVC sequence header
 
@@ -303,104 +451,22 @@ int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
     /*PPS*/
     body[i++] = 0x01;
     /*sps data length*/
-    body[i++] = (pps->size() >> 8) & 0xff;
-    body[i++] = pps->size() & 0xff;
+    body[i++] = static_cast<char>((pps->size() >> 8) & 0xff);
+    body[i++] = static_cast<char>(pps->size() & 0xff);
     memcpy(&body[i], pps->get(), pps->size());
     i += pps->size();
 
     packet->m_packetType = RTMP_PACKET_TYPE_VIDEO;
-    packet->m_nBodySize = i;
+    packet->m_nBodySize = static_cast<uint32_t>(i);
     packet->m_nChannel = 0x04;
     packet->m_nTimeStamp = 0;
     packet->m_hasAbsTimestamp = 0;
     packet->m_headerType = RTMP_PACKET_SIZE_MEDIUM;
     packet->m_nInfoField2 = rtmp->m_stream_id;
-
-    /*发送*/
-    int ret = ERROR_DISCONNECT;
-    if (RTMP_IsConnected(rtmp)) {
-        ret = RTMP_SendPacket(rtmp, packet, TRUE);
-        sps->setSent(true);
-        pps->setSent(true);
-    }
-    free(packet);
-    return ret;
+    return packet;
 }
 
-int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
-    if (NULL == rtmp || NULL == sps || !sps->alreadySent()) return -1;
-    if (len < 1) return -2;
-    int type;
-
-    /*去掉帧界定符*/
-    if (data[2] == 0x00) {/*00 00 00 01*/
-        data += 4;
-        len -= 4;
-    } else if (data[2] == 0x01) {
-        data += 3;
-        len -= 3;
-    }
-
-    type = data[0] & 0x1f;
-
-    RTMPPacket *packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + len + 9);
-    memset(packet, 0, RTMP_HEAD_SIZE);
-    packet->m_body = (char *) packet + RTMP_HEAD_SIZE;
-    packet->m_nBodySize = static_cast<uint32_t>(len + 9);
-
-    /* send video packet*/
-    char *body = packet->m_body;
-    memset(body, 0, static_cast<size_t>(len + 9));
-
-    /*key frame*/
-    body[0] = 0x27;
-    if (type == NAL_SLICE_IDR) {
-        body[0] = 0x17; //关键帧
-    }
-
-    body[1] = 0x01;/*nal unit*/
-    body[2] = 0x00;
-    body[3] = 0x00;
-    body[4] = 0x00;
-
-    body[5] = (len >> 24) & 0xff;
-    body[6] = (len >> 16) & 0xff;
-    body[7] = (len >> 8) & 0xff;
-    body[8] = (len) & 0xff;
-
-    /*copy data*/
-    memcpy(&body[9], data, static_cast<size_t>(len));
-
-    packet->m_hasAbsTimestamp = 0;
-    packet->m_packetType = RTMP_PACKET_TYPE_VIDEO;
-    packet->m_nInfoField2 = rtmp->m_stream_id;
-    packet->m_nChannel = 0x04;
-    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
-    packet->m_nTimeStamp = static_cast<uint32_t>(timestamp);
-
-    int ret = ERROR_DISCONNECT;
-    if (RTMP_IsConnected(rtmp)) {
-        ret = RTMP_SendPacket(rtmp, packet, TRUE);
-        if (0 == videoCount % 150)
-            LOGI("RTMP: send video packet(%ld): %d, cache=%d", videoCount, len, pipeline->size());
-        ++videoCount;
-    }
-    free(packet);
-    return ret;
-}
-
-int RtmpClient::_sendAudioSpecificData() {
-    return sendAudioSpecificData(this->spec);
-}
-
-int RtmpClient::sendAudioSpecificData(SpecificData *spec) {
-    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        return ERROR_DISCONNECT;
-    }
-    if (NULL != spec && spec->alreadySent()) {
-        return 1;
-    }
-    LOGI("RTMP: sendAudioSpecificData, IsConnected(%d)", RTMP_IsConnected(rtmp));
+RTMPPacket *RtmpClient::makeAudioSpecificData(SpecificData *spec) {
     RTMPPacket *packet;
     char *body;
     packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + spec->size() + 2);
@@ -420,81 +486,25 @@ int RtmpClient::sendAudioSpecificData(SpecificData *spec) {
     packet->m_hasAbsTimestamp = 0;
     packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
     packet->m_nInfoField2 = rtmp->m_stream_id;
-
-    int ret = ERROR_DISCONNECT;
-    if (RTMP_IsConnected(rtmp)) {
-        ret = RTMP_SendPacket(rtmp, packet, TRUE);
-        spec->setSent(true);
-    }
-    free(packet);
-    return ret;
+    return packet;
 }
 
-int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
-    if (NULL == rtmp || NULL == spec || !spec->alreadySent()) return -1;
-    if (len < 1) return -2;
-    RTMPPacket *packet;
-    char *body;
-    packet = (RTMPPacket *) malloc(RTMP_HEAD_SIZE + len + 2);
-    memset(packet, 0, RTMP_HEAD_SIZE);
-    packet->m_body = (char *) packet + RTMP_HEAD_SIZE;
-    body = (char *) packet->m_body;
-
-    /*AF 00 +AAC Raw data*/
-    body[0] = 0xAF;
-    body[1] = 0x01;
-    memcpy(&body[2], data, len);
-
-    packet->m_packetType = RTMP_PACKET_TYPE_AUDIO;
-    packet->m_nBodySize = len + 2;
-    packet->m_nChannel = STREAM_CHANNEL_AUDIO;
-    packet->m_nTimeStamp = timestamp;
-    packet->m_hasAbsTimestamp = 0;
-    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
-    packet->m_nInfoField2 = rtmp->m_stream_id;
-
-    int ret = ERROR_DISCONNECT;
-    if (RTMP_IsConnected(rtmp)) {
-        ret = RTMP_SendPacket(rtmp, packet, TRUE);
-        if (0 == audioCount % 150)
-            LOGI("RTMP: send audio packet(%ld): %d, cache=%d", audioCount, len, pipeline->size());
-        ++audioCount;
+void RtmpClient::saveVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen) {
+    if (NULL != this->sps) {
+        delete this->sps;
     }
-    free(packet);
-    return ret;
+    if (NULL != this->pps) {
+        delete this->pps;
+    }
+    this->sps = new SpecificData(sps, spsLen);
+    this->pps = new SpecificData(pps, ppsLen);
+    LOGI("RTMP: saveVideoSpecificData");
 }
 
-static bool idr_filter_count = 0;
-
-/**
- * Discard all data between two IDRs, including audio.
- * If cacheSize too small to cache two IDRs, an error may occur.
- * @param msg
- * @return
- */
-static bool filter(Message msg) {
-    if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
-    Packet *pkt = (Packet *) msg.obj;
-    if (isIDR(pkt->data))
-        ++idr_filter_count;
-    return 1 == idr_filter_count;
-}
-
-bool RtmpClient::dropMessage() {
-    idr_filter_count = 0;
-    bool drop = false;
-    int size = pipeline->size();
-    while (pipeline->size() > this->cacheSize) {
-        pipeline->removeMessage(filter);
-        drop = true;
+void RtmpClient::saveAudioSpecificData(const char *spec, int len) {
+    if (NULL != this->spec) {
+        delete this->spec;
     }
-    idr_filter_count = 0;
-    if (drop) {
-        LOGI("RTMP: drop %d(%d - %d) message", size - pipeline->size(), size, pipeline->size());
-    }
-    return drop;
-}
-
-void RtmpClient::setCacheSize(int size) {
-    this->cacheSize = size;
+    this->spec = new SpecificData(spec, len);
+    LOGI("RTMP: saveAudioSpecificData");
 }
