@@ -7,10 +7,10 @@
 #include "SpecificData.h"
 #include "EventPipeline.h"
 
+#define ERROR_DISCONNECT  -100
+
 #ifndef HARDWAREVIDEOCODEC_RTMP_H
 #define HARDWAREVIDEOCODEC_RTMP_H
-
-#define ERROR_DISCONNECT  -100
 
 class RtmpClient {
 public:
@@ -91,29 +91,33 @@ private:
     int sendAudioSpecificData(SpecificData *spec);
 };
 
-class Connection {
+class ClientWrapper {
 public:
     RtmpClient *client;
+
+};
+
+class Connection : public ClientWrapper {
+public:
     char *url;
     int timeOut;
 };
 
-class Size {
+class Size : public ClientWrapper {
 public:
-    RtmpClient *client;
     int width, height;
 };
 
-class Packet {
+class Packet : public ClientWrapper {
 public:
-    RtmpClient *client;
     char *data;
     int size;
     long timestamp;
-    ~Packet(){
-        if(NULL!=data){
+
+    ~Packet() {
+        if (NULL != data) {
             free(data);
-            data=NULL;
+            data = NULL;
         }
     }
 };
