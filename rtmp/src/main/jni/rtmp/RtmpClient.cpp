@@ -14,6 +14,8 @@
 #define WHAT_SEND_ASD 14
 #define WHAT_SEND_A 15
 
+#define SIZE_CACHE 600
+
 #define RTMP_HEAD_SIZE (sizeof(RTMPPacket)+RTMP_MAX_HEADER_SIZE)
 #define NAL_SLICE  1
 #define NAL_SLICE_DPA  2
@@ -78,7 +80,8 @@ static void handleMessage(Message *msg) {
     }
 }
 
-RtmpClient::RtmpClient() {
+RtmpClient::RtmpClient(int cacheSize) {
+    this->cacheSize = cacheSize;
     pipeline = new HandlerThread();
 }
 
@@ -135,6 +138,9 @@ RtmpClient::sendVideoSpecificData(const char *sps, int spsLen, const char *pps, 
 }
 
 int RtmpClient::sendVideo(const char *data, int len, long timestamp) {
+    if (dropMessage(WHAT_SEND_V)) {
+        LOGI("RTMP: drop video, cache=%d", pipeline->size());
+    }
     Packet *pkt = new Packet();
     pkt->client = this;
     pkt->data = static_cast<char *>(malloc(sizeof(char) * len));
@@ -152,6 +158,9 @@ int RtmpClient::sendAudioSpecificData(const char *data, int len) {
 }
 
 int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
+    if (dropMessage(WHAT_SEND_A)) {
+        LOGI("RTMP: drop audio, cache=%d", pipeline->size());
+    }
     Packet *pkt = new Packet();
     pkt->client = this;
     pkt->data = static_cast<char *>(malloc(sizeof(char) * len));
@@ -445,4 +454,13 @@ int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
     }
     free(packet);
     return ret;
+}
+
+bool RtmpClient::dropMessage(int what) {
+    bool drop = false;
+    while (pipeline->size() >= SIZE_CACHE) {
+        pipeline->removeMessage(what);
+        drop = true;
+    }
+    return drop;
 }

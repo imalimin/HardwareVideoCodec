@@ -12,16 +12,21 @@ static RtmpClient *client = NULL;
 extern "C" {
 #endif
 
+JNIEXPORT void JNICALL Java_com_lmy_rtmp_RtmpClient_init
+        (JNIEnv *env, jobject thiz, jint cacheSize) {
+    if (NULL == client) {
+        client = new RtmpClient(cacheSize);
+    }
+}
+
 JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connect
         (JNIEnv *env, jobject thiz, jstring url, jint timeOut) {
-    if (NULL == client) {
-        client = new RtmpClient();
-    }
     char *urlTmp = (char *) env->GetStringUTFChars(url, NULL);
     int ret = client->connect(urlTmp, timeOut);
     env->ReleaseStringUTFChars(url, urlTmp);
     return ret;
 }
+
 JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connectStream
         (JNIEnv *env, jobject thiz, jint width, jint height) {
     return client->connectStream(width, height);

@@ -13,6 +13,9 @@
 extern "C" {
 #endif
 
+JNIEXPORT void JNICALL
+Java_com_lmy_rtmp_RtmpClient_init(JNIEnv *, jobject, jint);
+
 JNIEXPORT jint JNICALL
 Java_com_lmy_rtmp_RtmpClient_connect(JNIEnv *, jobject, jstring, jint);
 

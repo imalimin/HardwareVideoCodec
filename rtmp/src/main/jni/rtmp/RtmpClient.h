@@ -14,7 +14,7 @@
 
 class RtmpClient {
 public:
-    RtmpClient();
+    RtmpClient(int cacheSize);
 
     /**
      * 连接rtmp服务
@@ -71,6 +71,7 @@ public:
     ~RtmpClient();
 
 private:
+    int cacheSize;
     HandlerThread *pipeline = NULL;
     SpecificData *sps = NULL, *pps = NULL, *spec = NULL;
     long videoCount = 0, audioCount = 0;
@@ -89,6 +90,8 @@ private:
     int sendVideoSpecificData(SpecificData *sps, SpecificData *pps);
 
     int sendAudioSpecificData(SpecificData *spec);
+
+    bool dropMessage(int what);
 };
 
 class ClientWrapper {
