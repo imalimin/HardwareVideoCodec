@@ -322,29 +322,45 @@ int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
     return ret;
 }
 
-static bool idr_filter_count = 0;
+static bool filter_count = 0;
 
-static bool filter(Message msg) {
+static bool idrFilter(Message msg) {
     if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
     Packet *pkt = (Packet *) msg.obj;
     if (isIDR(pkt->data))
-        ++idr_filter_count;
-    return 1 == idr_filter_count;
+        ++filter_count;
+    return 1 == filter_count;
+}
+
+static bool frameFilter(Message msg) {
+    if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
+    if (WHAT_SEND_V == msg.what)
+        ++filter_count;
+    return 1 == filter_count;
 }
 
 bool RtmpClient::dropMessage() {
     int size = pipeline->size();
     if (size < this->cacheSize) return false;
-    idr_filter_count = 0;
-    pipeline->removeAllMessage(filter);
+    filter_count = 0;
+    pipeline->removeAllMessage(idrFilter);
     /**
      * If it drop too little, drop it again.
      */
     if (size - pipeline->size() <= 10) {
-        idr_filter_count = 0;
-        pipeline->removeAllMessage(filter);
+        filter_count = 0;
+        pipeline->removeAllMessage(idrFilter);
+        LOGI("RTMP: drop again");
     }
-    idr_filter_count = 0;
+    /**
+     * If no frame is dropped, the data is discarded between the two video frames.
+     */
+    if (0 == size - pipeline->size()) {
+        filter_count = 0;
+        pipeline->removeAllMessage(frameFilter);
+        LOGI("RTMP: drop video frames");
+    }
+    filter_count = 0;
     if (0 == pipeline->size()) {
         LOGE("RTMP: cacheSize too small");
     }
@@ -373,14 +389,13 @@ RTMPPacket *RtmpClient::makeVideoPacket(char *data, int len, long timestamp) {
     packet->m_body = (char *) packet + RTMP_HEAD_SIZE;
     packet->m_nBodySize = static_cast<uint32_t>(len + 9);
 
-    /* send video packet*/
     char *body = packet->m_body;
     memset(body, 0, static_cast<size_t>(len + 9));
 
     /*key frame*/
     body[0] = 0x27;
     if (type == NAL_SLICE_IDR) {
-        body[0] = 0x17; //关键帧
+        body[0] = 0x17;
     }
 
     body[1] = 0x01;/*nal unit*/
