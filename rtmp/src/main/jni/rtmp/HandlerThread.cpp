@@ -9,11 +9,10 @@
 static void *run(void *arg) {
     HandlerThread *thiz = (HandlerThread *) arg;
     while (thiz->started()) {
-//        LOGI("handle");
         Message message = thiz->popMessage();
         message.handle(&message);
+        //TODO:会闪退
 //        delete &message;
-//        LOGI("finish");
     }
     return NULL;
 }
