@@ -65,12 +65,20 @@ int HandlerThread::size() {
 }
 
 void HandlerThread::removeMessage(int what) {
-    list<Message>::iterator it = messageQueue.begin();
-    for (; it != messageQueue.end();) {
+    list<Message>::iterator it;
+    for (it = messageQueue.begin(); it != messageQueue.end(); it++) {
         if (what == (*it).what) {
             messageQueue.erase(it);
             break;
         }
-        ++it;
+    }
+}
+
+void HandlerThread::removeMessage(bool (*filter)(Message)) {
+    list<Message>::iterator it;
+    for (it = messageQueue.begin(); it != messageQueue.end(); it++) {
+        if (filter(*it)) {
+            messageQueue.erase(it);
+        }
     }
 }
