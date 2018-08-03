@@ -63,3 +63,14 @@ Message HandlerThread::popMessage() {
 int HandlerThread::size() {
     return messageQueue.size();
 }
+
+void HandlerThread::removeMessage(int what) {
+    list<Message>::iterator it = messageQueue.begin();
+    for (; it != messageQueue.end();) {
+        if (what == (*it).what) {
+            messageQueue.erase(it);
+            break;
+        }
+        ++it;
+    }
+}

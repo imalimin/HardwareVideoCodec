@@ -25,6 +25,8 @@ public:
 
     void sendMessageDelayed(Message *msg);
 
+    void removeMessage(int what);
+
     Message popMessage();
 
     int size();
