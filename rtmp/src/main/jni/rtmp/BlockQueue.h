@@ -63,7 +63,11 @@ public:
 
     void clear() {
         pthread_mutex_lock(mutex);
-        while (!isEmpty()) m_queue.pop();
+        while (!isEmpty()) {
+            T e = m_queue.front();
+            delete &e;
+            m_queue.pop();
+        }
         pthread_mutex_unlock(mutex);
     }
 
