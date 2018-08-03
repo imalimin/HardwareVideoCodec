@@ -224,13 +224,13 @@ int RtmpClient::_connectStream(int w, int h) {
         LOGE("RTMP: connectStream failed: %d", ret);
         return ret;
     }
+    LOGI("RTMP: connectStream success", ret);
     if (this->sps && this->pps) {
         sendVideoSpecificData(this->sps, this->pps);
     }
     if (this->spec) {
         sendAudioSpecificData(this->spec);
     }
-    LOGI("RTMP: connectStream success", ret);
     return ret;
 }
 
@@ -296,10 +296,10 @@ int RtmpClient::sendVideoSpecificData(SpecificData *sps, SpecificData *pps) {
     int ret = ERROR_DISCONNECT;
     if (RTMP_IsConnected(rtmp)) {
         ret = RTMP_SendPacket(rtmp, packet, TRUE);
+        sps->setSent(true);
+        pps->setSent(true);
     }
     free(packet);
-    sps->setSent(true);
-    pps->setSent(true);
     return ret;
 }
 
@@ -403,9 +403,9 @@ int RtmpClient::sendAudioSpecificData(SpecificData *spec) {
     int ret = ERROR_DISCONNECT;
     if (RTMP_IsConnected(rtmp)) {
         ret = RTMP_SendPacket(rtmp, packet, TRUE);
+        spec->setSent(true);
     }
     free(packet);
-    spec->setSent(true);
     return ret;
 }
 
