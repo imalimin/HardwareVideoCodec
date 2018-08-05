@@ -30,7 +30,7 @@ public:
      * @param obj
      */
     template<typename T>
-    inline void releaseObject() {
+    inline void destory() {
         if (NULL != obj) {
             delete (T *) obj;
             obj = NULL;

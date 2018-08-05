@@ -35,37 +35,37 @@ static void handleMessage(Message *msg) {
         case WHAT_CONNECT: {
             Connection *con = reinterpret_cast<Connection *>(msg->obj);
             con->client->_connect(con->url, con->timeOut);
-            msg->releaseObject<Connection>();
+            msg->destory<Connection>();
             break;
         }
         case WHAT_CONNECT_STREAM: {
             Size *size = reinterpret_cast<Size *>(msg->obj);
             size->client->_connectStream(size->width, size->height);
-            msg->releaseObject<Size>();
+            msg->destory<Size>();
             break;
         }
         case WHAT_SEND_VSD: {
             ClientWrapper *wrapper = reinterpret_cast<ClientWrapper *>(msg->obj);
             wrapper->client->_sendVideoSpecificData();
-            msg->releaseObject<ClientWrapper>();
+            msg->destory<ClientWrapper>();
             break;
         }
         case WHAT_SEND_V: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
             pkt->client->_sendVideo(pkt->data, pkt->size, pkt->timestamp);
-            msg->releaseObject<Packet>();
+            msg->destory<Packet>();
             break;
         }
         case WHAT_SEND_ASD: {
             ClientWrapper *wrapper = reinterpret_cast<ClientWrapper *>(msg->obj);
             wrapper->client->_sendAudioSpecificData();
-            msg->releaseObject<ClientWrapper>();
+            msg->destory<ClientWrapper>();
             break;
         }
         case WHAT_SEND_A: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
             pkt->client->_sendAudio(pkt->data, pkt->size, pkt->timestamp);
-            msg->releaseObject<Packet>();
+            msg->destory<Packet>();
             break;
         }
         default:
@@ -329,7 +329,7 @@ static short idrFilter(Message *msg) {
     if (isIDR(pkt->data))
         ++filter_count;
     if (FILTER_REMOVE == filter_count)
-        msg->releaseObject<Packet>();
+        msg->destory<Packet>();
     return filter_count;
 }
 
@@ -338,7 +338,7 @@ static short frameFilter(Message *msg) {
     if (WHAT_SEND_V == msg->what)
         ++filter_count;
     if (FILTER_REMOVE == filter_count)
-        msg->releaseObject<Packet>();
+        msg->destory<Packet>();
     return filter_count;
 }
 
