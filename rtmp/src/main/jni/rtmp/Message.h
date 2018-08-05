@@ -21,6 +21,21 @@ public:
     Message(void (handle)(Message *));
 
     ~Message();
+
+    /**
+     * 如果void *指向一个class类，那么系统由于认为void *指向一个普通的内存空间，
+     * 所以释放指针时系统class的析构函数不会调用。
+     * 这里定义一个内敛函数用于释放obj
+     * @tparam T
+     * @param obj
+     */
+    template<typename T>
+    inline void releaseObject() {
+        if (NULL != obj) {
+            delete (T *) obj;
+            obj = NULL;
+        }
+    }
 };
 
 Message *obtainMessage(int what, void *obj, void (handle)(Message *));

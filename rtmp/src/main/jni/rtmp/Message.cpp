@@ -29,8 +29,4 @@ Message::Message(void (handle)(Message *)) {
 
 Message::~Message() {
     this->handle = NULL;
-    if (NULL != obj) {
-        delete obj;
-        obj = NULL;
-    }
 }
