@@ -35,7 +35,7 @@ public:
      *
      * @param filter FILTER_DO_NOTHING: do nothing, FILTER_REMOVE: remove, FILTER_BREAK: break
      */
-    void removeAllMessage(short (*filter)(Message));
+    void removeAllMessage(short (*filter)(Message *));
 
     Message *takeMessage();
 
