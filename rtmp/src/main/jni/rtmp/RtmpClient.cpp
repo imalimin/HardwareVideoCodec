@@ -35,31 +35,37 @@ static void handleMessage(Message *msg) {
         case WHAT_CONNECT: {
             Connection *con = reinterpret_cast<Connection *>(msg->obj);
             con->wrapper->client->_connect(con->url, con->timeOut);
+            msg->releaseObject<Connection>();
             break;
         }
         case WHAT_CONNECT_STREAM: {
             Size *size = reinterpret_cast<Size *>(msg->obj);
             size->wrapper->client->_connectStream(size->width, size->height);
+            msg->releaseObject<Size>();
             break;
         }
         case WHAT_SEND_VSD: {
             ClientWrapper *wrapper = reinterpret_cast<ClientWrapper *>(msg->obj);
             wrapper->client->_sendVideoSpecificData();
+            msg->releaseObject<ClientWrapper>();
             break;
         }
         case WHAT_SEND_V: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
             pkt->wrapper->client->_sendVideo(pkt->data, pkt->size, pkt->timestamp);
+            msg->releaseObject<Packet>();
             break;
         }
         case WHAT_SEND_ASD: {
             ClientWrapper *wrapper = reinterpret_cast<ClientWrapper *>(msg->obj);
             wrapper->client->_sendAudioSpecificData();
+            msg->releaseObject<ClientWrapper>();
             break;
         }
         case WHAT_SEND_A: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
             pkt->wrapper->client->_sendAudio(pkt->data, pkt->size, pkt->timestamp);
+            msg->releaseObject<Packet>();
             break;
         }
         default:
@@ -320,18 +326,22 @@ int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
 
 static bool filter_count = 0;
 
-static short idrFilter(Message msg) {
-    if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
-    Packet *pkt = (Packet *) msg.obj;
+static short idrFilter(Message *msg) {
+    if (WHAT_SEND_V != msg->what && WHAT_SEND_A != msg->what) return false;
+    Packet *pkt = (Packet *) msg->obj;
     if (isIDR(pkt->data))
         ++filter_count;
+    if (FILTER_REMOVE == filter_count)
+        msg->releaseObject<Packet>();
     return filter_count;
 }
 
-static short frameFilter(Message msg) {
-    if (WHAT_SEND_V != msg.what && WHAT_SEND_A != msg.what) return false;
-    if (WHAT_SEND_V == msg.what)
+static short frameFilter(Message *msg) {
+    if (WHAT_SEND_V != msg->what && WHAT_SEND_A != msg->what) return false;
+    if (WHAT_SEND_V == msg->what)
         ++filter_count;
+    if (FILTER_REMOVE == filter_count)
+        msg->releaseObject<Packet>();
     return filter_count;
 }
 
