@@ -33,7 +33,7 @@ public:
         pthread_cond_destroy(cond);
     }
 
-    bool offer(T entity) {
+    bool offer(T *entity) {
         pthread_mutex_lock(mutex);
 //        if (size() >= SIZE_CACHE) {
 //            pthread_cond_broadcast(cond);
@@ -41,14 +41,14 @@ public:
 //            return false;
 //        }
 
-        m_queue.push_back(entity);
+        m_queue.push_back(*entity);
 
         pthread_cond_broadcast(cond);
         pthread_mutex_unlock(mutex);
         return true;
     }
 
-    T take() {
+    T *take() {
         pthread_mutex_lock(mutex);
         while (size() <= 0) {
             if (0 != pthread_cond_wait(cond, mutex)) {
@@ -56,7 +56,7 @@ public:
                 return NULL;
             }
         }
-        T e = m_queue.front();
+        T *e = &m_queue.front();
 
         pthread_mutex_unlock(mutex);
         return e;

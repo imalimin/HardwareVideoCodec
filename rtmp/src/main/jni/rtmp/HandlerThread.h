@@ -37,7 +37,7 @@ public:
      */
     void removeAllMessage(short (*filter)(Message));
 
-    Message takeMessage();
+    Message *takeMessage();
 
     void popMessage();
 

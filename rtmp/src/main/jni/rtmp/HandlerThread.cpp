@@ -9,8 +9,8 @@
 static void *run(void *arg) {
     HandlerThread *thiz = (HandlerThread *) arg;
     while (thiz->started()) {
-        Message message = thiz->takeMessage();
-        message.handle(&message);
+        Message *message = thiz->takeMessage();
+        message->handle(message);
         thiz->popMessage();
     }
     return NULL;
@@ -35,13 +35,13 @@ HandlerThread::~HandlerThread() {
 void HandlerThread::sendMessage(Message *msg) {
     if (!started())
         return;
-    messageQueue.offer(*msg);
+    messageQueue.offer(msg);
 }
 
 void HandlerThread::sendMessageDelayed(Message *msg) {
     if (!started())
         return;
-    messageQueue.offer(*msg);
+    messageQueue.offer(msg);
 }
 
 void HandlerThread::quit() {
@@ -55,7 +55,7 @@ bool HandlerThread::started() {
     return running;
 }
 
-Message HandlerThread::takeMessage() {
+Message *HandlerThread::takeMessage() {
     return messageQueue.take();
 }
 
