@@ -116,22 +116,28 @@ public:
     }
 };
 
-class Connection {
+class Connection : public ClientWrapper {
+
 public:
-    ClientWrapper *wrapper;
+    Connection(RtmpClient *client) : ClientWrapper(client) {}
+
     char *url;
     int timeOut;
 };
 
-class Size {
+class Size : public ClientWrapper {
+
 public:
-    ClientWrapper *wrapper;
+    Size(RtmpClient *client) : ClientWrapper(client) {}
+
     int width, height;
 };
 
-class Packet {
+class Packet : public ClientWrapper {
+
 public:
-    ClientWrapper *wrapper;
+    Packet(RtmpClient *client) : ClientWrapper(client) {}
+
     char *data;
     int size;
     long timestamp;

@@ -34,13 +34,13 @@ static void handleMessage(Message *msg) {
     switch (msg->what) {
         case WHAT_CONNECT: {
             Connection *con = reinterpret_cast<Connection *>(msg->obj);
-            con->wrapper->client->_connect(con->url, con->timeOut);
+            con->client->_connect(con->url, con->timeOut);
             msg->releaseObject<Connection>();
             break;
         }
         case WHAT_CONNECT_STREAM: {
             Size *size = reinterpret_cast<Size *>(msg->obj);
-            size->wrapper->client->_connectStream(size->width, size->height);
+            size->client->_connectStream(size->width, size->height);
             msg->releaseObject<Size>();
             break;
         }
@@ -52,7 +52,7 @@ static void handleMessage(Message *msg) {
         }
         case WHAT_SEND_V: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
-            pkt->wrapper->client->_sendVideo(pkt->data, pkt->size, pkt->timestamp);
+            pkt->client->_sendVideo(pkt->data, pkt->size, pkt->timestamp);
             msg->releaseObject<Packet>();
             break;
         }
@@ -64,7 +64,7 @@ static void handleMessage(Message *msg) {
         }
         case WHAT_SEND_A: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
-            pkt->wrapper->client->_sendAudio(pkt->data, pkt->size, pkt->timestamp);
+            pkt->client->_sendAudio(pkt->data, pkt->size, pkt->timestamp);
             msg->releaseObject<Packet>();
             break;
         }
@@ -74,8 +74,7 @@ static void handleMessage(Message *msg) {
 }
 
 static Connection *wrapConnection(RtmpClient *client, char *url, int timeOut) {
-    Connection *con = new Connection();
-    con->wrapper = new ClientWrapper(client);
+    Connection *con = new Connection(client);
     con->timeOut = timeOut;
     int len = strlen(url);
     con->url = static_cast<char *>(malloc(sizeof(char) * len));
@@ -84,16 +83,14 @@ static Connection *wrapConnection(RtmpClient *client, char *url, int timeOut) {
 }
 
 static Size *wrapSize(RtmpClient *client, int width, int height) {
-    Size *size = new Size();
-    size->wrapper = new ClientWrapper(client);
+    Size *size = new Size(client);
     size->width = width;
     size->height = height;
     return size;
 }
 
 static Packet *wrapPacket(RtmpClient *client, const char *data, int size, long timestamp) {
-    Packet *pkt = new Packet();
-    pkt->wrapper = new ClientWrapper(client);
+    Packet *pkt = new Packet(client);
     pkt->data = static_cast<char *>(malloc(sizeof(char) * size));
     memcpy(pkt->data, data, size);
     pkt->size = size;
