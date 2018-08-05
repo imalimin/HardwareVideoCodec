@@ -15,6 +15,6 @@ import com.tencent.bugly.crashreport.CrashReport
 class MyApplication : BaseApplication() {
     override fun onCreate() {
         super.onCreate()
-        CrashReport.initCrashReport(applicationContext, "d7f93990a9", true)
+        CrashReport.initCrashReport(applicationContext, "d7f93990a9", false)
     }
 }
