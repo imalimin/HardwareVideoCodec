@@ -26,6 +26,10 @@ HandlerThread::HandlerThread() {
         pthread_attr_destroy(&attr);
         LOGE("Pthread create failed: %d", ret);
     }
+    mutex = new pthread_mutex_t;
+    cond = new pthread_cond_t;
+    pthread_mutex_init(mutex, NULL);
+    pthread_cond_init(cond, NULL);
 }
 
 HandlerThread::~HandlerThread() {
@@ -87,4 +91,16 @@ void HandlerThread::removeAllMessage(short (*filter)(Message *)) {
             break;
         }
     }
+}
+
+int HandlerThread::sleep(long ms) {
+    pthread_mutex_lock(mutex);
+    struct timeval now;
+    struct timespec outtime;
+    gettimeofday(&now, NULL);
+    outtime.tv_sec = now.tv_sec + ms / 1000;
+    outtime.tv_nsec = (now.tv_usec + ms % 1000) * 1000;
+    int ret = pthread_cond_timedwait(cond, mutex, &outtime);
+    pthread_mutex_unlock(mutex);
+    return ret;
 }
