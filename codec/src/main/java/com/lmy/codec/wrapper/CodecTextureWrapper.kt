@@ -8,6 +8,7 @@ package com.lmy.codec.wrapper
 
 import android.opengl.EGLContext
 import android.view.Surface
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Egl
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
@@ -43,11 +44,7 @@ class CodecTextureWrapper(var surface: Surface,
         surface.release()
     }
 
-    override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
-
-    }
-
-    override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
+    override fun updateLocation(context: CodecContext) {
 
     }
 }

@@ -8,6 +8,7 @@ package com.lmy.codec.wrapper
 
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Egl
 import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.texture.impl.BaseTexture
@@ -45,9 +46,6 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
             GLES20.glDeleteTextures(1, textureId, 0)
     }
 
-    //更新xy坐标
-    abstract fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int)
-
-    //更新st坐标
-    abstract fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int)
+    //更新xyst坐标
+    abstract fun updateLocation(context: CodecContext)
 }
