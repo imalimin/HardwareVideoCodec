@@ -98,7 +98,6 @@ class CameraWrapper(private var context: CodecContext,
     private fun openCamera(index: Int): Camera? {
         return try {
             val camera = Camera.open(index)
-            context.check()
             camera.setDisplayOrientation(context.orientation)
             camera
         } catch (e: SecurityException) {
