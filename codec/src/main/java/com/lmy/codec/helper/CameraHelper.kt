@@ -26,14 +26,14 @@ class CameraHelper {
             var bestWidth = 0
             var bestHeight = 0
             for (size in supportSizes) {
-                if (size.width >= context.previewWidth//预览宽大于输出宽
-                        && size.height >= context.previewHeight//预览高大于输出高
+                if (size.width >= context.video.height//预览宽大于输出宽
+                        && size.height >= context.video.width//预览高大于输出高
                         && (size.width * size.height < bestWidth * bestHeight || 0 == bestWidth * bestHeight)) {//选择像素最少的分辨率
                     bestWidth = size.width
                     bestHeight = size.height
                 }
             }
-            debug_v("target preview size: " + context.previewWidth + "x" + context.previewHeight + ", best: " + bestWidth + "x" + bestHeight)
+            debug_v("target preview size: " + context.video.height + "x" + context.video.width + ", best: " + bestWidth + "x" + bestHeight)
             context.previewWidth = bestWidth
             context.previewHeight = bestHeight
             context.check()
