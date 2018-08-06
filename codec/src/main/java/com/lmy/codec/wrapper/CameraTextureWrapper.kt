@@ -9,6 +9,7 @@ package com.lmy.codec.wrapper
 import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Egl
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.CameraTexture
@@ -62,13 +63,48 @@ class CameraTextureWrapper(width: Int,
         return (texture as BaseFrameBufferTexture).frameBufferTexture
     }
 
-    override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
-
+    override fun updateLocation(context: CodecContext) {
+        (texture as CameraTexture).updateFrameBuffer(context.video.width, context.video.height)
+        val location = FloatArray(8)
+        val textureLocation = FloatArray(8)
+        calculateBestLocation(context, location, textureLocation)
+        texture?.updateLocation(textureLocation, location)
     }
 
-    override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
-        (texture as CameraTexture).updateFrameBuffer(destWidth, destHeight)
-        (texture as CameraTexture).updateTextureLocation(destWidth / srcHeight.toFloat(),
-                destHeight / srcWidth.toFloat())
+    private fun calculateBestLocation(context: CodecContext,
+                                      location: FloatArray, textureLocation: FloatArray) {
+        val previewWidth = context.previewHeight
+        val previewHeight = context.previewWidth
+        val videoWidth = context.video.width
+        val videoHeight = context.video.height
+        val previewScale = previewWidth / previewHeight.toFloat()
+        val videoScale = videoWidth / videoHeight.toFloat()
+        var destPreviewWidth = previewWidth
+        var destPreviewHeight = previewHeight
+        /**
+         * if (previewScale > videoScale) previewHeight不变，以previewHeight为准计算previewWidth
+         * else previewWidth不变，以previewWidth为准计算previewHeight
+         */
+        if (previewScale > videoScale) {
+            destPreviewWidth = (previewHeight * videoScale).toInt()
+            if (0 != destPreviewWidth % 2) ++destPreviewWidth
+        } else {
+            destPreviewHeight = (previewWidth / videoScale).toInt()
+            if (0 != destPreviewHeight % 2) ++destPreviewHeight
+        }
+        val left = (previewWidth - destPreviewWidth) / 2f / previewWidth.toFloat()
+        val right = 1f - left
+        val bottom = (previewHeight - destPreviewHeight) / 2f / previewHeight.toFloat()
+        val top = 1 - bottom
+        System.arraycopy(floatArrayOf(-1f, -1f, //LEFT,BOTTOM
+                1f, -1f, //RIGHT,BOTTOM
+                -1f, 1f, //LEFT,TOP
+                1f, 1f//RIGHT,TOP
+        ), 0, location, 0, 8)
+        System.arraycopy(floatArrayOf(left, bottom, //LEFT,BOTTOM
+                right, bottom, //RIGHT,BOTTOM
+                left, top, //LEFT,TOP
+                right, top//RIGHT,TOP
+        ), 0, textureLocation, 0, 8)
     }
 }
