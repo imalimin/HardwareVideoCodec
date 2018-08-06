@@ -8,6 +8,7 @@ package com.lmy.codec.wrapper
 
 import android.graphics.SurfaceTexture
 import android.opengl.EGLContext
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Egl
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
@@ -28,7 +29,7 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
             if (null == textureId)
                 throw RuntimeException("textureId can not be null")
             texture = NormalTexture(textureId!!).apply {
-                name="Screen Texture"
+                name = "Screen Texture"
             }
         } else {
             debug_e("Egl create failed")
@@ -43,13 +44,39 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
         texture?.drawTexture(transformMatrix)
     }
 
-    override fun updateLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
-        debug_e("($srcWidth, $srcHeight)($destWidth, $destHeight)")
-        (texture as NormalTexture).updateLocation(destWidth / srcWidth.toFloat(),
-                destHeight / srcHeight.toFloat())
+    override fun updateLocation(context: CodecContext) {
+        val location = FloatArray(8)
+        val textureLocation = FloatArray(8)
+        calculateLocation(context, location, textureLocation)
+        texture?.updateLocation(textureLocation, location)
     }
 
-    override fun updateTextureLocation(srcWidth: Int, srcHeight: Int, destWidth: Int, destHeight: Int) {
-
+    private fun calculateLocation(context: CodecContext,
+                                  location: FloatArray, textureLocation: FloatArray) {
+        val viewWidth = context.viewWidth
+        val viewHeight = context.viewHeight
+        val viewScale = viewWidth / viewHeight.toFloat()
+        val videoScale = context.video.width / context.video.height.toFloat()
+        var destViewWidth = viewWidth
+        var destViewHeight = viewHeight
+        if (viewScale > videoScale) {
+            destViewWidth = (viewHeight * videoScale).toInt()
+        } else {
+            destViewHeight = (viewWidth / videoScale).toInt()
+        }
+        val left = -destViewWidth / viewWidth.toFloat()
+        val right = -left
+        val bottom = -destViewHeight / viewHeight.toFloat()
+        val top = -bottom
+        System.arraycopy(floatArrayOf(left, bottom, //LEFT,BOTTOM
+                right, bottom, //RIGHT,BOTTOM
+                left, top, //LEFT,TOP
+                right, top//RIGHT,TOP
+        ), 0, location, 0, 8)
+        System.arraycopy(floatArrayOf(0f, 0f, //LEFT,BOTTOM
+                1f, 0f, //RIGHT,BOTTOM
+                0f, 1f, //LEFT,TOP
+                1f, 1f//RIGHT,TOP
+        ), 0, textureLocation, 0, 8)
     }
 }
