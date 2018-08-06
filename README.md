@@ -6,15 +6,16 @@ HardwareVideoCodec is an efficient video encoding library for Android. Supports 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_2.gif)
 ## Latest release
-[V1.5.1](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.5.1)
+[V1.5.2](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.5.2)
 
-* Support RTMP stream.
-* Better beautifying filter.
+* Support video encoding at any resolution. No need to care about camera resolution.
+* RTMP module supports caching, and automatic frame dropping strategy.
+* Fixed a bug in RTMP connection timeout setting error
 
 ## Features
+* Support video encoding at any resolution. No need to care about camera resolution.
+* Support RTMP stream.
 * Support for changing resolution without restarting the camera.
-* Fix audio distortion.
-* Supports 20 filters.
 * Support hard & soft encode.
 * Record video & audio. Pack mp4 through MediaMuxer.
 * Use OpenGL to render and support filter.
@@ -44,8 +45,8 @@ allprojects {
 * Module build.gradle
 ```
 dependencies {
-    implementation 'com.lmy.codec:hardwarevideocodec:1.5.1'
-    implementation 'com.lmy.codec:rtmp:1.0.1'//If you want to use RTMP stream.
+    implementation 'com.lmy.codec:hardwarevideocodec:1.5.2'
+    implementation 'com.lmy.codec:rtmp:1.1.0'//If you want to use RTMP stream.
 }
 ```
 * Extend BaseApplication
