@@ -156,6 +156,9 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
                 thiz = clazz.newInstance()
             } catch (e: ClassNotFoundException) {
                 throw RuntimeException("If you want to use RTMP stream. Please implementation 'com.lmy.codec:rtmp:latestVersion'")
+            } catch (e: NoSuchMethodException) {
+                e.printStackTrace()
+                throw RuntimeException("Make sure you are using the correct version of the rtmp library.")
             }
         }
 
