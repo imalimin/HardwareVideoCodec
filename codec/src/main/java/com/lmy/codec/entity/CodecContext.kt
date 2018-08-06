@@ -20,6 +20,8 @@ data class CodecContext(var supportPBO: Boolean,
                         var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
                         internal var previewWidth: Int = 0,//以水平分辨率为准, Do not touch this value.
                         internal var previewHeight: Int = 0,//以水平分辨率为准, Do not touch this value.
+                        internal var viewWidth: Int = 0,//预览大小, Do not touch this value.
+                        internal var viewHeight: Int = 0,//预览大小, Do not touch this value.
                         internal var orientation: Int = 90,
                         var codecType: CodecType = CodecType.HARD) {
     fun check() {
@@ -28,6 +30,8 @@ data class CodecContext(var supportPBO: Boolean,
         if ((isVertical() && (video.width > previewHeight || video.height > previewWidth))
                 || (isHorizontal() && (video.width > previewWidth || video.height > previewHeight)))
             throw RuntimeException("Video size can not be greater than preview size")
+        if (0 != video.width % 2 || 0 != video.height % 2)
+            throw RuntimeException("Video width and height must be a multiple of 2")
     }
 
     fun isHorizontal(): Boolean {
@@ -39,8 +43,8 @@ data class CodecContext(var supportPBO: Boolean,
     }
 
     data class Video(var mime: String = "video/avc",
-                     var width: Int = 480,
-                     var height: Int = 1080,
+                     var width: Int = 200,
+                     var height: Int = 200,
                      var fps: Int = 30,//If not support, select the lowest fps
                      var bitrate: Int = width * height * MEDIUM * fps / 24,
                      var iFrameInterval: Int = 2,
