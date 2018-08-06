@@ -34,10 +34,10 @@ class CameraHelper {
                 }
             }
             debug_v("target preview size: " + context.video.height + "x" + context.video.width + ", best: " + bestWidth + "x" + bestHeight)
-            context.previewWidth = bestWidth
-            context.previewHeight = bestHeight
+            context.cameraSize.width = bestWidth
+            context.cameraSize.height = bestHeight
             context.check()
-            cameraParam.setPreviewSize(context.previewWidth, context.previewHeight)
+            cameraParam.setPreviewSize(context.cameraSize.width, context.cameraSize.height)
         }
 
         fun setColorFormat(cameraParam: Camera.Parameters, context: CodecContext) {

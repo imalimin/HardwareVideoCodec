@@ -53,8 +53,8 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
 
     private fun calculateLocation(context: CodecContext,
                                   location: FloatArray, textureLocation: FloatArray) {
-        val viewWidth = context.viewWidth
-        val viewHeight = context.viewHeight
+        val viewWidth = context.viewSize.width
+        val viewHeight = context.viewSize.height
         val viewScale = viewWidth / viewHeight.toFloat()
         val videoScale = context.video.width / context.video.height.toFloat()
         var destViewWidth = viewWidth

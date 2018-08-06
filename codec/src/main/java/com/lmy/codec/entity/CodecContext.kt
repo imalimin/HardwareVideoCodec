@@ -18,17 +18,15 @@ data class CodecContext(var supportPBO: Boolean,
                         var audio: Audio = Audio(),
                         var ioContext: IOContext = IOContext(),
                         var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
-                        internal var previewWidth: Int = 0,//以水平分辨率为准, Do not touch this value.
-                        internal var previewHeight: Int = 0,//以水平分辨率为准, Do not touch this value.
-                        internal var viewWidth: Int = 0,//预览大小, Do not touch this value.
-                        internal var viewHeight: Int = 0,//预览大小, Do not touch this value.
+                        internal val cameraSize: Size = Size(),//vaer size, Do not touch this value.
+                        internal val viewSize: Size = Size(),//TextureView size, Do not touch this value.
                         internal var orientation: Int = 90,
                         var codecType: CodecType = CodecType.HARD) {
     fun check() {
         if (!isHorizontal() && !isVertical())
             throw RuntimeException("Orientation must be 0, 90, 180 or 270")
-        if ((isVertical() && (video.width > previewHeight || video.height > previewWidth))
-                || (isHorizontal() && (video.width > previewWidth || video.height > previewHeight)))
+        if ((isVertical() && (video.width > cameraSize.height || video.height > cameraSize.width))
+                || (isHorizontal() && (video.width > cameraSize.width || video.height > cameraSize.height)))
             throw RuntimeException("Video size can not be greater than preview size")
         if (0 != video.width % 2 || 0 != video.height % 2)
             throw RuntimeException("Video width and height must be a multiple of 2")

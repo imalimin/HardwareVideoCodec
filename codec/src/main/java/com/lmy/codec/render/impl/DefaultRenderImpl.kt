@@ -77,7 +77,7 @@ class DefaultRenderImpl(var context: CodecContext,
         drawCamera()
         drawFilter()
         screenWrapper?.egl?.makeCurrent()
-        GLES20.glViewport(0, 0, context.viewWidth, context.viewHeight)
+        GLES20.glViewport(0, 0, context.viewSize.width, context.viewSize.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0f, 0f, 0f, 0f)
         screenWrapper?.drawTexture(transformMatrix)
@@ -114,8 +114,8 @@ class DefaultRenderImpl(var context: CodecContext,
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {
         updateScreenTexture(texture)
-        context.viewWidth = width
-        context.viewHeight = height
+        context.viewSize.width = width
+        context.viewSize.height = height
         SingleEventPipeline.instance.queueEvent(Runnable { init() })
     }
 

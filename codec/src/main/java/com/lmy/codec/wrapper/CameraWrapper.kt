@@ -78,7 +78,7 @@ class CameraWrapper(private var context: CodecContext,
         CameraHelper.setVideoStabilization(cameraParam, true)
         val fps = IntArray(2)
         cameraParam.getPreviewFpsRange(fps)
-        debug_v("Config: Size(${context.previewWidth}x${context.previewHeight})\n" +
+        debug_v("Config: Size(${context.cameraSize.width}x${context.cameraSize.height})\n" +
                 "Format(${cameraParam.previewFormat})\n" +
                 "FocusMode(${cameraParam.focusMode})\n" +
                 "Fps(${fps[0]}-${fps[1]})\n" +
