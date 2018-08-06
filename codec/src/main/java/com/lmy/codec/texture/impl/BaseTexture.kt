@@ -8,7 +8,7 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
 import com.lmy.codec.texture.Texture
-import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -30,8 +30,18 @@ abstract class BaseTexture(var textureId: IntArray,
     private val bufferLock = Any()
 
     init {
-        locationBuffer = createShapeVerticesBuffer(getLocationVertices(1f, 1f))
-        textureBuffer = createShapeVerticesBuffer(getTextureLocationVertices(1f, 1f))
+        locationBuffer = createShapeVerticesBuffer(floatArrayOf(
+                -1f, -1f,//LEFT,BOTTOM
+                1f, -1f,//RIGHT,BOTTOM
+                -1f, 1f,//LEFT,TOP
+                1f, 1f//RIGHT,TOP
+        ))
+        textureBuffer = createShapeVerticesBuffer(floatArrayOf(
+                0f, 0f,//LEFT,BOTTOM
+                1f, 0f,//RIGHT,BOTTOM
+                0f, 1f,//LEFT,TOP
+                1f, 1f//RIGHT,TOP
+        ))
     }
 
     fun createShapeVerticesBuffer(array: FloatArray): FloatBuffer {
@@ -114,48 +124,19 @@ abstract class BaseTexture(var textureId: IntArray,
             GLES20.glDeleteProgram(shaderProgram!!)
     }
 
-    open fun updateLocation(cropRatioWidth: Float, cropRatioHeight: Float) {
+    open fun updateLocation(textureLocation: FloatArray, location: FloatArray) {
+        debug_i("location(${textureLocation[0]}, ${textureLocation[1]},\n" +
+                "${textureLocation[2]}, ${textureLocation[3]},\n" +
+                "${textureLocation[4]}, ${textureLocation[5]},\n" +
+                "${textureLocation[6]}, ${textureLocation[7]})\n" +
+                "(${location[0]}, ${location[1]},\n" +
+                "${location[2]}, ${location[3]},\n" +
+                "${location[4]}, ${location[5]},\n" +
+                "${location[6]}, ${location[7]})")
         synchronized(bufferLock) {
-            locationBuffer = createShapeVerticesBuffer(getLocationVertices(cropRatioWidth, cropRatioHeight))
+            locationBuffer = createShapeVerticesBuffer(location)
+            textureBuffer = createShapeVerticesBuffer(textureLocation)
         }
-    }
-
-    fun updateTextureLocation(cropRatioWidth: Float, cropRatioHeight: Float) {
-        synchronized(bufferLock) {
-            textureBuffer = createShapeVerticesBuffer(getTextureLocationVertices(cropRatioWidth, cropRatioHeight))
-        }
-    }
-
-    private fun getLocationVertices(cropRatioWidth: Float, cropRatioHeight: Float): FloatArray {
-        val x = if (cropRatioWidth > 1) 1f else cropRatioWidth
-        val y = if (cropRatioHeight > 1) 1f else cropRatioHeight
-        val left = -x
-        var right = -left
-        val bottom = -y
-        val top = -bottom
-        debug_e("$name location($left, $top, $right, $bottom)")
-        return floatArrayOf(
-                left, bottom,//LEFT,BOTTOM
-                right, bottom,//RIGHT,BOTTOM
-                left, top,//LEFT,TOP
-                right, top//RIGHT,TOP
-        )
-    }
-
-    private fun getTextureLocationVertices(cropRatioWidth: Float, cropRatioHeight: Float): FloatArray {
-        val x = if (cropRatioWidth > 1) 1f else cropRatioWidth
-        val y = if (cropRatioHeight > 1) 1f else cropRatioHeight
-        val left = (1 - x) / 2
-        var right = left + x
-        val bottom = (1 - y) / 2
-        val top = bottom + y
-        debug_e("$name crop($left, $top, $right, $bottom)")
-        return floatArrayOf(
-                left, bottom,//LEFT,BOTTOM
-                right, bottom,//RIGHT,BOTTOM
-                left, top,//LEFT,TOP
-                right, top//RIGHT,TOP
-        )
     }
 
     class GLDrawer {
