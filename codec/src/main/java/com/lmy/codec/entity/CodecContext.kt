@@ -43,8 +43,8 @@ data class CodecContext(var supportPBO: Boolean,
     }
 
     data class Video(var mime: String = "video/avc",
-                     var width: Int = 200,
-                     var height: Int = 200,
+                     var width: Int = 720,
+                     var height: Int = 1280,
                      var fps: Int = 30,//If not support, select the lowest fps
                      var bitrate: Int = width * height * MEDIUM * fps / 24,
                      var iFrameInterval: Int = 2,
