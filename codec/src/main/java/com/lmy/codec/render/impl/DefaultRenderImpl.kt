@@ -40,8 +40,7 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun initFilter(clazz: Class<*>) {
         synchronized(filterLock) {
-            //由于使用共享的FBO，所以更换filter的时候不能释放
-//            filter?.release()
+            filter?.release()
             try {
                 filter = clazz.newInstance() as BaseFilter
             } catch (e: Exception) {
@@ -136,7 +135,7 @@ class DefaultRenderImpl(var context: CodecContext,
         SingleEventPipeline.instance.queueEvent(Runnable {
             screenWrapper?.release()
             screenWrapper = null
-            filter?.release()
+            BaseFilter.release()
         })
     }
 

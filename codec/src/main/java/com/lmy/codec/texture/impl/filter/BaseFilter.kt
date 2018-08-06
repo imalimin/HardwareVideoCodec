@@ -96,14 +96,9 @@ abstract class BaseFilter(width: Int = 0,
         GLES20.glUniformMatrix4fv(location, 1, false, FloatBuffer.wrap(arrayValue))
     }
 
-    /**
-     * This will release the shared resources,
-     * please make sure to release at the last moment
-     */
     override fun release() {
-        super.release()
-        shareFrameBuffer = null
-        shareFrameBufferTexture = null
+        if (null != shaderProgram)
+            GLES20.glDeleteProgram(shaderProgram!!)
     }
 
     companion object {
@@ -115,5 +110,18 @@ abstract class BaseFilter(width: Int = 0,
                 0.0f, 1.0f,//LEFT,TOP
                 1.0f, 1.0f//RIGHT,TOP
         )
+
+        /**
+         * This will release the shared resources,
+         * please make sure to release at the last moment
+         */
+        fun release() {
+            if (null != shareFrameBuffer)
+                GLES20.glDeleteFramebuffers(1, shareFrameBuffer, 0)
+            if (null != shareFrameBufferTexture)
+                GLES20.glDeleteTextures(1, shareFrameBufferTexture, 0)
+            shareFrameBuffer = null
+            shareFrameBufferTexture = null
+        }
     }
 }
