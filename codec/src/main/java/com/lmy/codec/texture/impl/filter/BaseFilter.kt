@@ -96,6 +96,16 @@ abstract class BaseFilter(width: Int = 0,
         GLES20.glUniformMatrix4fv(location, 1, false, FloatBuffer.wrap(arrayValue))
     }
 
+    /**
+     * This will release the shared resources,
+     * please make sure to release at the last moment
+     */
+    override fun release() {
+        super.release()
+        shareFrameBuffer = null
+        shareFrameBufferTexture = null
+    }
+
     companion object {
         private var shareFrameBuffer: IntArray? = null
         private var shareFrameBufferTexture: IntArray? = null
