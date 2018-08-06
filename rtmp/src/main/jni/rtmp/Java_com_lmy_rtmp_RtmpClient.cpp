@@ -13,12 +13,12 @@ extern "C" {
 #endif
 
 JNIEXPORT jint JNICALL Java_com_lmy_rtmp_RtmpClient_connect
-        (JNIEnv *env, jobject thiz, jstring url, jint timeOut, jint cacheSize) {
+        (JNIEnv *env, jobject thiz, jstring url, jint timeOutMs, jint cacheSize) {
     if (NULL == client) {
         client = new RtmpClient(cacheSize);
     }
     char *urlTmp = (char *) env->GetStringUTFChars(url, NULL);
-    int ret = client->connect(urlTmp, timeOut);
+    int ret = client->connect(urlTmp, timeOutMs);
     env->ReleaseStringUTFChars(url, urlTmp);
     return ret;
 }

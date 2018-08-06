@@ -73,9 +73,9 @@ static void handleMessage(Message *msg) {
     }
 }
 
-static Connection *wrapConnection(RtmpClient *client, char *url, int timeOut) {
+static Connection *wrapConnection(RtmpClient *client, char *url, int timeOutMs) {
     Connection *con = new Connection(client);
-    con->timeOut = timeOut;
+    con->timeOut = timeOutMs;
     int len = strlen(url);
     con->url = static_cast<char *>(malloc(sizeof(char) * len));
     strcpy(con->url, url);
@@ -121,8 +121,8 @@ RtmpClient::RtmpClient(int cacheSize) {
     LOGI("RTMP: init cache size: %d", this->cacheSize);
 }
 
-int RtmpClient::connect(char *url, int timeOut) {
-    Connection *con = wrapConnection(this, url, timeOut);
+int RtmpClient::connect(char *url, int timeOutMs) {
+    Connection *con = wrapConnection(this, url, timeOutMs);
     pipeline->sendMessage(obtainMessage(WHAT_CONNECT, con, handleMessage));
     return 1;
 }
@@ -190,15 +190,15 @@ RtmpClient::~RtmpClient() {
     stop();
 }
 
-int RtmpClient::_connect(char *url, int timeOut) {
+int RtmpClient::_connect(char *url, int timeOutMs) {
     LOGI("RTMP: connect: %s", url);
     this->url = url;
-    this->timeOut = timeOut;
+    this->timeOutMs = timeOutMs;
 
     RTMP_LogSetLevel(RTMP_LOGALL);
     rtmp = RTMP_Alloc();
     RTMP_Init(rtmp);
-    rtmp->Link.timeout = timeOut;
+    rtmp->Link.timeout = timeOutMs / 1000;
     RTMP_SetupURL(rtmp, url);
     RTMP_EnableWrite(rtmp);
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
@@ -218,7 +218,7 @@ int RtmpClient::_connect(char *url, int timeOut) {
 
 int RtmpClient::_connectStream(int w, int h) {
     if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
-        if (connect(this->url, this->timeOut) < 0) {
+        if (connect(this->url, this->timeOutMs) < 0) {
             LOGE("RTMP: You must connected before connect stream!");
             return ERROR_DISCONNECT;
         }

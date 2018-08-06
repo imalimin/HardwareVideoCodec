@@ -153,8 +153,8 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
             }
         }
 
-        fun connect(url: String, timeOut: Int, cacheSize: Int): Int {
-            return methodConnect.invoke(thiz, url, timeOut, cacheSize) as Int
+        fun connect(url: String, timeOutMs: Int, cacheSize: Int): Int {
+            return methodConnect.invoke(thiz, url, timeOutMs, cacheSize) as Int
         }
 
         fun connectStream(width: Int, height: Int): Int {

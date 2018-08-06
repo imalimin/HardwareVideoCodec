@@ -19,9 +19,9 @@ public:
     /**
      * 连接rtmp服务
      */
-    int connect(char *url, int timeOut);
+    int connect(char *url, int timeOutMs);
 
-    int _connect(char *url, int timeOut);
+    int _connect(char *url, int timeOutMs);
 
     /**
      * 新建流连接
@@ -80,7 +80,7 @@ private:
     long retryTime[3] = {3000, 9000, 27000};
     int width;
     int height;
-    int timeOut;
+    int timeOutMs;
     char *url;
     RTMP *rtmp;
 
