@@ -11,7 +11,8 @@ With it, you can encode a video at any resolution, no longer need to care about 
 
 * Support video encoding at any resolution. No need to care about camera resolution.
 * RTMP module supports caching, and automatic frame dropping strategy.
-* Fixed a bug in RTMP connection timeout setting error
+* Fix the problem of restarting the app without a picture.
+* Fixed a bug in RTMP connection timeout setting error.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
