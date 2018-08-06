@@ -1,7 +1,9 @@
 # HardwareVideoCodec
 [ ![Download](https://api.bintray.com/packages/lmylr/maven/hardwarevideocodec/images/download.svg) ](https://bintray.com/lmylr/maven/hardwarevideocodec/_latestVersion)
 
-HardwareVideoCodec is an efficient video encoding library for Android. Supports `software` and `hardware` encode. With it you can easily record videos of various resolutions on your android app.
+HardwareVideoCodec is an efficient video encoding library for Android. Supports `software` and `hardware` encode.
+You can encode video at any resolution, no longer need to care about camera resolution.
+With it you can easily record videos of various resolutions on your android app.
 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_2.gif)
