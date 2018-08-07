@@ -173,15 +173,19 @@ void RtmpClient::stop() {
     RTMP_Free(rtmp);
     if (NULL != sps) {
         delete sps;
+        sps = NULL;
     }
     if (NULL != pps) {
         delete pps;
+        pps = NULL;
     }
     if (NULL != spec) {
         delete spec;
+        spec = NULL;
     }
     if (NULL != pipeline) {
         pipeline->quit();
+        pipeline = NULL;
     }
     LOGI("RTMP: stop");
 }

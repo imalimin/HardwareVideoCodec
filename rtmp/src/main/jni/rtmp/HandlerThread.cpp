@@ -53,6 +53,14 @@ void HandlerThread::quit() {
         return;
     running = false;
     pthread_attr_destroy(&attr);
+    if (NULL != mutex) {
+        pthread_mutex_destroy(mutex);
+    }
+    if (NULL != cond) {
+        pthread_cond_destroy(cond);
+    }
+    messageQueue.clear();
+    LOGI("RTMP: HandlerThread quit");
 }
 
 bool HandlerThread::started() {
