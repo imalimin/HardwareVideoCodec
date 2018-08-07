@@ -1,0 +1,28 @@
+LOCAL_PATH := $(call my-dir)
+
+######## BUILD webrtc ############
+include $(CLEAR_VARS)
+# fix undefined reference to bug
+# LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
+
+MY_CPP_LIST := $(wildcard $(LOCAL_PATH)/*.c)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/*.cpp)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/modules/audio_processing/ns/*.c)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/modules/audio_processing/ns/*.cc)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/modules/audio_processing/ns/*.cpp)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/base/*.c)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/base/*.cc)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/base/*.cpp)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/base/*.mm)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/common_audio/*.c)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/common_audio/*.cc)
+MY_CPP_LIST += $(wildcard $(LOCAL_PATH)/libwebrtc/webrtc/common_audio/*.cpp)
+LOCAL_SRC_FILES := $(MY_CPP_LIST:$(LOCAL_PATH)/%=%)
+
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/libwebrtc
+LOCAL_C_INCLUDES += $(NDK_ROOT)/sources/cxx-stl/stlport/stlport/
+LOCAL_CFLAGS += -DNO_CRYPTO -D_STLP_USE_NEWALLOC
+LOCAL_MODULE := libwebrtc
+LOCAL_LDLIBS := -llog -landroid -ldl -lstdc++
+include $(BUILD_SHARED_LIBRARY)
+######## END webrtc ############
