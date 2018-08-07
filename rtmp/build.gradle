@@ -13,6 +13,18 @@ android {
         versionCode 2
         versionName "1.1.0"
         ndk {
+            /**
+             * 名称               说明                         功能
+             * libstdc++（默认）   默认最小系统 C++ 运行时库。  不适用
+             * gabi++_static      GAbi++ 运行时（静态）        C++ 异常和 RTTI
+             * gabi++_shared      GAbi++ 运行时（共享）        C++ 异常和 RTTI
+             * stlport_static     STLport 运行时（静态）       C++ 异常和 RTTI；标准库
+             * stlport_shared     STLport 运行时（共享）       C++ 异常和 RTTI；标准库
+             * gnustl_static      GNU STL（静态）              C++ 异常和 RTTI；标准库
+             * gnustl_shared      GNU STL（共享）              C++ 异常和 RTTI；标准库
+             * c++_static         LLVM libc++ 运行时（静态）    C++ 异常和 RTTI；标准库
+             * c++_shared         LLVM libc++ 运行时（共享）    C++ 异常和 RTTI；标准库
+             */
             stl "stlport_static"
             moduleName "rtmp"
             abiFilters "armeabi-v7a", "x86"
