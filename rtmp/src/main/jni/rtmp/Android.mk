@@ -1,5 +1,4 @@
 LOCAL_PATH := $(call my-dir)
-NDK_ROOT := D:/Android/android-ndk-r14b
 include $(CLEAR_VARS)
 # fix undefined reference to bug
 # LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
