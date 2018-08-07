@@ -31,7 +31,6 @@
 #endif
 
 #include "webrtc/base/checks.h"
-#include "webrtc/base/logging.h"
 
 #if defined(_MSC_VER)
 // Warning C4722: destructor never returns, potential memory leak.
@@ -113,7 +112,7 @@ void FatalMessage::Init(const char* file, int line) {
   stream_ << std::endl << std::endl
           << "#" << std::endl
           << "# Fatal error in " << file << ", line " << line << std::endl
-          << "# last system error: " << LAST_SYSTEM_ERROR << std::endl
+          << "# last system error: " << "LAST_SYSTEM_ERROR" << std::endl
           << "# ";
 }
 
