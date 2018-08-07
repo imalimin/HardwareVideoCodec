@@ -16,7 +16,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         ndk {
-            stl 'gnustl_static'//指定C++运行
+            stl "stlport_static"
             moduleName "codec"
             abiFilters "armeabi-v7a", "x86"
         }
