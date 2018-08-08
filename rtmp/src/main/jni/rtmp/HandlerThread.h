@@ -14,6 +14,7 @@
 #define FILTER_DO_NOTHING 0
 #define FILTER_REMOVE 1
 #define FILTER_BREAK 2
+#define WHAT_QUIT_SAFELY -65535
 
 #ifndef HARDWAREVIDEOCODEC_EVENTPIPELINE_H
 #define HARDWAREVIDEOCODEC_EVENTPIPELINE_H
@@ -44,6 +45,8 @@ public:
     int size();
 
     bool started();
+
+    void quitSafely();
 
     void quit();
 

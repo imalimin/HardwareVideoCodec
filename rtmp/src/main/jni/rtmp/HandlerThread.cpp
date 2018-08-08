@@ -10,9 +10,15 @@ static void *run(void *arg) {
     HandlerThread *thiz = (HandlerThread *) arg;
     while (thiz->started()) {
         Message *message = thiz->takeMessage();
+        if (NULL == message) continue;
+        if (WHAT_QUIT_SAFELY == message->what) {
+            thiz->popMessage();
+            break;
+        }
         message->handle(message);
         thiz->popMessage();
     }
+    thiz->quit();
     return NULL;
 }
 
@@ -48,18 +54,25 @@ void HandlerThread::sendMessageDelayed(Message *msg) {
     messageQueue.offer(msg);
 }
 
+void HandlerThread::quitSafely() {
+    sendMessage(obtainMessage(WHAT_QUIT_SAFELY, NULL, NULL));
+}
+
 void HandlerThread::quit() {
     if (!started())
         return;
     running = false;
+    messageQueue.clear();
+    pthread_cond_broadcast(cond);
     pthread_attr_destroy(&attr);
     if (NULL != mutex) {
         pthread_mutex_destroy(mutex);
+        mutex = NULL;
     }
     if (NULL != cond) {
         pthread_cond_destroy(cond);
+        cond = NULL;
     }
-    messageQueue.clear();
     LOGI("RTMP: HandlerThread quit");
 }
 
