@@ -69,9 +69,11 @@ Java_com_lmy_rtmp_RtmpClient_sendAudio(JNIEnv *env, jobject thiz, jbyteArray dat
 
 JNIEXPORT void JNICALL
 Java_com_lmy_rtmp_RtmpClient_stop(JNIEnv *env, jobject thiz) {
-    client->stop();
-    delete client;
-    client = NULL;
+    if(NULL!=client){
+        client->stop();
+        delete client;
+        client = NULL;
+    }
 }
 JNIEXPORT void JNICALL
 Java_com_lmy_rtmp_RtmpClient_setCacheSize(JNIEnv *env, jobject thiz, jint size) {
