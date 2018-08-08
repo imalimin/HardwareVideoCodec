@@ -191,7 +191,6 @@ void RtmpClient::stop() {
 }
 
 RtmpClient::~RtmpClient() {
-    stop();
 }
 
 int RtmpClient::_connect(char *url, int timeOutMs) {
