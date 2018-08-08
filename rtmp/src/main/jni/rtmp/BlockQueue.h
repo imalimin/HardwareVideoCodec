@@ -18,6 +18,7 @@ public:
     typedef typename list<T>::iterator Iterator;
 
     BlockQueue() {
+        m_queue = new Queue();
         mutex = new pthread_mutex_t;
         cond = new pthread_cond_t;
         pthread_mutex_init(mutex, NULL);
@@ -27,7 +28,10 @@ public:
     ~BlockQueue() {
         pthread_mutex_lock(mutex);
         pthread_mutex_unlock(mutex);
-
+        if (NULL != m_queue) {
+            delete m_queue;
+            m_queue = NULL;
+        }
         pthread_mutex_destroy(mutex);
         pthread_cond_destroy(cond);
     }
@@ -40,7 +44,7 @@ public:
 //            return false;
 //        }
 
-        m_queue.push_back(*entity);
+        m_queue->push_back(*entity);
 
         pthread_cond_broadcast(cond);
         pthread_mutex_unlock(mutex);
@@ -56,8 +60,8 @@ public:
             }
         }
         T *e = NULL;
-        if (!isEmpty()){
-            e = &m_queue.front();
+        if (!isEmpty()) {
+            e = &m_queue->front();
         }
 
         pthread_mutex_unlock(mutex);
@@ -66,47 +70,47 @@ public:
 
     void pop() {
         pthread_mutex_lock(mutex);
-        m_queue.pop_front();
+        m_queue->pop_front();
         pthread_mutex_unlock(mutex);
     }
 
     void clear() {
         pthread_cond_broadcast(cond);
         pthread_mutex_lock(mutex);
-        m_queue.clear();
+        m_queue->clear();
         pthread_mutex_unlock(mutex);
     }
 
     int size() {
-        return m_queue.size();
+        return m_queue->size();
     }
 
     bool isEmpty() {
-        return m_queue.empty();
+        return m_queue->empty();
     }
 
     Iterator begin() {
         pthread_mutex_lock(mutex);
-        Iterator it = m_queue.begin();
+        Iterator it = m_queue->begin();
         pthread_mutex_unlock(mutex);
         return it;
     }
 
     Iterator end() {
         pthread_mutex_lock(mutex);
-        Iterator it = m_queue.end();
+        Iterator it = m_queue->end();
         pthread_mutex_unlock(mutex);
         return it;
     }
 
     void erase(Iterator iterator) {
         pthread_mutex_lock(mutex);
-        m_queue.erase(iterator);
+        m_queue->erase(iterator);
         pthread_mutex_unlock(mutex);
     }
 
 private:
     pthread_mutex_t *mutex;
     pthread_cond_t *cond;
-    Queue m_queue;
+    Queue *m_queue;
 };
