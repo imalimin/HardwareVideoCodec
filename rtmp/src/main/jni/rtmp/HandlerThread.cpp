@@ -24,6 +24,7 @@ static void *run(void *arg) {
 
 HandlerThread::HandlerThread() {
     running = true;
+    messageQueue = new BlockQueue<Message>();
     pthread_attr_init(&attr);
     //将线程的属性称为detached，则线程退出时会自己清理资源
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -45,13 +46,13 @@ HandlerThread::~HandlerThread() {
 void HandlerThread::sendMessage(Message *msg) {
     if (!started())
         return;
-    messageQueue.offer(msg);
+    messageQueue->offer(msg);
 }
 
 void HandlerThread::sendMessageDelayed(Message *msg) {
     if (!started())
         return;
-    messageQueue.offer(msg);
+    messageQueue->offer(msg);
 }
 
 void HandlerThread::quitSafely() {
@@ -62,7 +63,7 @@ void HandlerThread::quit() {
     if (!started())
         return;
     running = false;
-    messageQueue.clear();
+    clear();
     pthread_cond_broadcast(cond);
     pthread_attr_destroy(&attr);
     if (NULL != mutex) {
@@ -81,22 +82,22 @@ bool HandlerThread::started() {
 }
 
 Message *HandlerThread::takeMessage() {
-    return messageQueue.take();
+    return messageQueue->take();
 }
 
 void HandlerThread::popMessage() {
-    messageQueue.pop();
+    messageQueue->pop();
 }
 
 int HandlerThread::size() {
-    return messageQueue.size();
+    return messageQueue->size();
 }
 
 void HandlerThread::removeMessage(int what) {
     list<Message>::iterator it;
-    for (it = messageQueue.begin(); it != messageQueue.end(); it++) {
+    for (it = messageQueue->begin(); it != messageQueue->end(); it++) {
         if (what == (*it).what) {
-            messageQueue.erase(it);
+            messageQueue->erase(it);
             break;
         }
     }
@@ -104,10 +105,10 @@ void HandlerThread::removeMessage(int what) {
 
 void HandlerThread::removeAllMessage(short (*filter)(Message *)) {
     list<Message>::iterator it;
-    for (it = messageQueue.begin(); it != messageQueue.end(); it++) {
+    for (it = messageQueue->begin(); it != messageQueue->end(); it++) {
         int result = filter(&*it);
         if (FILTER_REMOVE == result) {
-            messageQueue.erase(it);
+            messageQueue->erase(it);
         } else if (FILTER_BREAK == result) {
             break;
         }
@@ -124,4 +125,12 @@ int HandlerThread::sleep(long ms) {
     int ret = pthread_cond_timedwait(cond, mutex, &outtime);
     pthread_mutex_unlock(mutex);
     return ret;
+}
+
+void HandlerThread::clear() {
+    if (NULL != messageQueue) {
+        messageQueue->clear();
+        delete messageQueue;
+        messageQueue = NULL;
+    }
 }

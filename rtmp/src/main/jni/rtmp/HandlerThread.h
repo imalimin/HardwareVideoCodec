@@ -53,12 +53,14 @@ public:
     int sleep(long ms);
 
 private:
-    BlockQueue<Message> messageQueue;
+    BlockQueue<Message> *messageQueue;
     pthread_attr_t attr;
     pthread_t thread;
     pthread_mutex_t *mutex;
     pthread_cond_t *cond;
     bool running = true;
+
+    void clear();
 };
 
 
