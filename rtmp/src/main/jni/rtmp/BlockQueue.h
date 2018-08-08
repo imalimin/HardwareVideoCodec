@@ -55,7 +55,10 @@ public:
                 return NULL;
             }
         }
-        T *e = &m_queue.front();
+        T *e = NULL;
+        if (!isEmpty()){
+            e = &m_queue.front();
+        }
 
         pthread_mutex_unlock(mutex);
         return e;
@@ -68,12 +71,9 @@ public:
     }
 
     void clear() {
+        pthread_cond_broadcast(cond);
         pthread_mutex_lock(mutex);
-        while (!isEmpty()) {
-            T e = m_queue.front();
-            delete &e;
-            m_queue.pop_front();
-        }
+        m_queue.clear();
         pthread_mutex_unlock(mutex);
     }
 
