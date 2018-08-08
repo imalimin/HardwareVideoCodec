@@ -82,7 +82,7 @@ private:
     int height;
     int timeOutMs;
     char *url;
-    RTMP *rtmp;
+    RTMP *rtmp = NULL;
 
     void saveVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen);
 
@@ -143,6 +143,7 @@ public:
     long timestamp;
 
     ~Packet() {
+//        LOGE("RTMP: release Packet");
         if (NULL != data) {
             free(data);
             data = NULL;

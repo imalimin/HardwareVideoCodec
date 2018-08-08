@@ -169,8 +169,10 @@ int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
 }
 
 void RtmpClient::stop() {
-    RTMP_Close(rtmp);
-    RTMP_Free(rtmp);
+    if (NULL != rtmp) {
+        RTMP_Close(rtmp);
+        RTMP_Free(rtmp);
+    }
     if (NULL != sps) {
         delete sps;
         sps = NULL;

@@ -106,9 +106,9 @@ void HandlerThread::removeMessage(int what) {
 void HandlerThread::removeAllMessage(short (*filter)(Message *)) {
     list<Message>::iterator it;
     for (it = messageQueue->begin(); it != messageQueue->end(); it++) {
-        LOGE("RTMP: before filter");
+//        LOGE("RTMP: before filter");
         int result = filter(&*it);
-        LOGE("RTMP: after filter result: %d", result);
+//        LOGE("RTMP: after filter result: %d", result);
         if (FILTER_REMOVE == result) {
             messageQueue->erase(it);
         } else if (FILTER_BREAK == result) {
