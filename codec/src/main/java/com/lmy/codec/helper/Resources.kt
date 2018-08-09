@@ -55,7 +55,7 @@ class Resources private constructor() {
 
     private var ctx: Context? = null
     fun attach(ctx: Context) {
-        this.ctx = ctx
+        this.ctx = ctx.applicationContext
     }
 
     fun dettach() {
