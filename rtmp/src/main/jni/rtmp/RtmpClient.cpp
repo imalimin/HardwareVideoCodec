@@ -112,16 +112,20 @@ static bool isIDR(char *data) {
 RtmpClient::RtmpClient(int cacheSize) {
     this->cacheSize = cacheSize;
     pipeline = new HandlerThread();
+    mutex = new pthread_mutex_t;
+    pthread_mutex_init(mutex, NULL);
     LOGI("RTMP: init cache size: %d", this->cacheSize);
 }
 
 int RtmpClient::connect(char *url, int timeOutMs) {
+    if (NULL == pipeline) return 0;
     Connection *con = wrapConnection(this, url, timeOutMs);
     pipeline->sendMessage(obtainMessage(WHAT_CONNECT, con, handleMessage));
     return 1;
 }
 
 int RtmpClient::connectStream(int w, int h) {
+    if (NULL == pipeline) return 0;
     Size *size = wrapSize(this, w, h);
     pipeline->sendMessage(obtainMessage(WHAT_CONNECT_STREAM, size, handleMessage));
     return 1;
@@ -133,12 +137,14 @@ void RtmpClient::deleteStream() {
 
 int
 RtmpClient::sendVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen) {
+    if (NULL == pipeline) return 0;
     saveVideoSpecificData(sps, spsLen, pps, ppsLen);
     pipeline->sendMessage(obtainMessage(WHAT_SEND_VSD, new ClientWrapper(this), handleMessage));
     return 0;
 }
 
 int RtmpClient::sendVideo(const char *data, int len, long timestamp) {
+    if (NULL == pipeline) return 0;
     if (dropMessage()) {
 //        LOGI("RTMP: drop video, cache=%d", pipeline->size());
     }
@@ -148,12 +154,14 @@ int RtmpClient::sendVideo(const char *data, int len, long timestamp) {
 }
 
 int RtmpClient::sendAudioSpecificData(const char *data, int len) {
+    if (NULL == pipeline) return 0;
     saveAudioSpecificData(data, len);
     pipeline->sendMessage(obtainMessage(WHAT_SEND_ASD, new ClientWrapper(this), handleMessage));
     return 0;
 }
 
 int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
+    if (NULL == pipeline) return 0;
     if (dropMessage()) {
 //        LOGI("RTMP: drop audio, cache=%d", pipeline->size());
     }
@@ -163,9 +171,11 @@ int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
 }
 
 void RtmpClient::stop() {
+    pthread_mutex_lock(mutex);
     if (NULL != rtmp) {
         RTMP_Close(rtmp);
         RTMP_Free(rtmp);
+        rtmp = NULL;
     }
     if (NULL != sps) {
         delete sps;
@@ -182,6 +192,11 @@ void RtmpClient::stop() {
     if (NULL != pipeline) {
         pipeline->quitSafely();
         pipeline = NULL;
+    }
+    pthread_mutex_unlock(mutex);
+    if (NULL != mutex) {
+        pthread_mutex_destroy(mutex);
+        mutex = NULL;
     }
     LOGI("RTMP: stop");
 }
@@ -202,13 +217,16 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
     RTMP_EnableWrite(rtmp);
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (retry < count) {
-        if (NULL == rtmp)break;
+        pthread_mutex_lock(mutex);
+        if (NULL == rtmp) break;
         LOGI("RTMP: try connect(%d)", retry);
         if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
+            pthread_mutex_unlock(mutex);
             LOGE("RTMP: connect failed! ");
             ++retry;
             pipeline->sleep(retryTime[retry]);
         } else {
+            pthread_mutex_unlock(mutex);
             LOGI("RTMP: connect success! ");
             break;
         }
@@ -229,13 +247,16 @@ int RtmpClient::_connectStream(int w, int h) {
     this->audioCount = 0;
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (retry < count) {
-        if (NULL == rtmp)break;
+        pthread_mutex_lock(mutex);
+        if (NULL == rtmp) break;
         LOGI("RTMP: try connectStream(%d), %dx%d", retry, this->width, this->height);
         if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
+            pthread_mutex_unlock(mutex);
             LOGE("RTMP: connectStream failed: %d", ret);
             ++retry;
             pipeline->sleep(retryTime[retry]);
         } else {
+            pthread_mutex_unlock(mutex);
             LOGI("RTMP: connectStream success", ret);
             break;
         }

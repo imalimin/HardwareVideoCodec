@@ -75,6 +75,7 @@ public:
 
 private:
     int cacheSize;
+    pthread_mutex_t *mutex;
     HandlerThread *pipeline = NULL;
     SpecificData *sps = NULL, *pps = NULL, *spec = NULL;
     long videoCount = 0, audioCount = 0;
