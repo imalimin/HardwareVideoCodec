@@ -60,7 +60,6 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
         //Init VideoRecorderImpl
         mRecorder = VideoRecorderImpl(this).apply {
             reset()
-            enableHardware(true)//Default true
             setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${++count}.mp4")
 //            setOutputUri("rtmp://192.168.16.125:1935/live/livestream")
             setOutputSize(720, 1280)//Default 720x1280
