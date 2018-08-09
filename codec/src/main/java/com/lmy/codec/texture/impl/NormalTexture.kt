@@ -7,8 +7,7 @@
 package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
-import com.lmy.codec.BaseApplication
-import com.lmy.codec.helper.AssetsHelper
+import com.lmy.codec.helper.Resources
 
 /**
  * 无滤镜效果
@@ -34,8 +33,8 @@ class NormalTexture(textureId: IntArray) : BaseTexture(textureId) {
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_normal.sh"),
-                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_normal.sh"))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_normal.sh"),
+                Resources.instance.readAssetsAsString("shader/fragment_normal.sh"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

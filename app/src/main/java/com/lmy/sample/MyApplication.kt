@@ -6,13 +6,13 @@
  */
 package com.lmy.sample
 
-import com.lmy.codec.BaseApplication
+import android.app.Application
 import com.tencent.bugly.crashreport.CrashReport
 
 /**
  * Created by lmyooyo@gmail.com on 2018/5/29.
  */
-class MyApplication : BaseApplication() {
+class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         CrashReport.initCrashReport(applicationContext, "d7f93990a9", false)

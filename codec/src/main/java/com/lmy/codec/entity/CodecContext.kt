@@ -6,22 +6,32 @@
  */
 package com.lmy.codec.entity
 
+import android.content.Context
 import android.hardware.Camera
 import android.media.AudioFormat
 import android.media.MediaCodecInfo
+import com.lmy.codec.helper.Resources
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
-data class CodecContext(var supportPBO: Boolean,
-                        var video: Video = Video(),
-                        var audio: Audio = Audio(),
-                        var ioContext: IOContext = IOContext(),
-                        var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
-                        internal val cameraSize: Size = Size(),//vaer size, Do not touch this value.
-                        internal val viewSize: Size = Size(),//TextureView size, Do not touch this value.
-                        internal var orientation: Int = 90,
-                        var codecType: CodecType = CodecType.HARD) {
+class CodecContext(ctx: Context,
+                   var video: Video = Video(),
+                   var audio: Audio = Audio(),
+                   var ioContext: IOContext = IOContext(),
+                   var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
+                   internal val cameraSize: Size = Size(),//vaer size, Do not touch this value.
+                   internal val viewSize: Size = Size(),//TextureView size, Do not touch this value.
+                   internal var orientation: Int = 90,
+                   var codecType: CodecType = CodecType.HARD) {
+    init {
+        Resources.instance.attach(ctx)
+    }
+
+    fun release() {
+        Resources.instance.dettach()
+    }
+
     fun check() {
         if (!isHorizontal() && !isVertical())
             throw RuntimeException("Orientation must be 0, 90, 180 or 270")

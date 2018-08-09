@@ -7,8 +7,7 @@
 package com.lmy.codec.texture.impl.filter
 
 import android.opengl.GLES20
-import com.lmy.codec.BaseApplication
-import com.lmy.codec.helper.AssetsHelper
+import com.lmy.codec.helper.Resources
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.util.debug_e
 import java.nio.FloatBuffer
@@ -21,8 +20,8 @@ abstract class BaseFilter(width: Int = 0,
                           textureId: IntArray) : BaseFrameBufferTexture(width, height, textureId) {
     open fun init() {
         name = "BaseFilter"
-        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), getVertex()),
-                AssetsHelper.read(BaseApplication.assetManager(), getFragment()))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString(getVertex()),
+                Resources.instance.readAssetsAsString(getFragment()))
         initFrameBuffer()
     }
 

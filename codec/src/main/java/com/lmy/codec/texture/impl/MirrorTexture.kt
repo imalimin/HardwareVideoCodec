@@ -8,8 +8,7 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
-import com.lmy.codec.BaseApplication
-import com.lmy.codec.helper.AssetsHelper
+import com.lmy.codec.helper.Resources
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/20.
@@ -51,8 +50,8 @@ class MirrorTexture(width: Int, height: Int,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_mirror.sh"),
-                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_mirror.sh"))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_mirror.sh"),
+                Resources.instance.readAssetsAsString("shader/fragment_mirror.sh"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

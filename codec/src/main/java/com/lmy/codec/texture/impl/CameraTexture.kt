@@ -8,8 +8,7 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
-import com.lmy.codec.BaseApplication
-import com.lmy.codec.helper.AssetsHelper
+import com.lmy.codec.helper.Resources
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/29.
@@ -29,8 +28,8 @@ class CameraTexture(width: Int, height: Int,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(AssetsHelper.read(BaseApplication.assetManager(), "shader/vertex_camera.sh"),
-                AssetsHelper.read(BaseApplication.assetManager(), "shader/fragment_camera.sh"))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_camera.sh"),
+                Resources.instance.readAssetsAsString("shader/fragment_camera.sh"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

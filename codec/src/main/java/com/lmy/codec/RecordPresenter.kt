@@ -133,6 +133,7 @@ class RecordPresenter(var context: CodecContext,
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        context.release()
     }
 
     private fun stopEncoder() {

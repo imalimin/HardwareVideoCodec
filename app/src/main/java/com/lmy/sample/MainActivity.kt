@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
         loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
-        val context = CodecContext(GLHelper.isSupportPBO(this))
+        val context = CodecContext(applicationContext)
 //        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
         context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
         mPresenter = RecordPresenter(context)
