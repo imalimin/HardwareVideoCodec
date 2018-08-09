@@ -180,7 +180,7 @@ void RtmpClient::stop() {
         spec = NULL;
     }
     if (NULL != pipeline) {
-        pipeline->quit();
+        pipeline->quitSafely();
         pipeline = NULL;
     }
     LOGI("RTMP: stop");
