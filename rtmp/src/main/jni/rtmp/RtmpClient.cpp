@@ -202,6 +202,7 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
     RTMP_EnableWrite(rtmp);
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (retry < count) {
+        if (NULL == rtmp)break;
         LOGI("RTMP: try connect(%d)", retry);
         if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
             LOGE("RTMP: connect failed! ");
@@ -228,6 +229,7 @@ int RtmpClient::_connectStream(int w, int h) {
     this->audioCount = 0;
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (retry < count) {
+        if (NULL == rtmp)break;
         LOGI("RTMP: try connectStream(%d), %dx%d", retry, this->width, this->height);
         if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
             LOGE("RTMP: connectStream failed: %d", ret);
