@@ -126,6 +126,9 @@ class VideoRecorderImpl(ctx: Context,
     override fun setOutputSize(width: Int, height: Int) {
         context.video.width = width
         context.video.height = height
+        if (0 != context.cameraSize.width && 0 != context.cameraSize.height) {
+            context.check()
+        }
     }
 
     override fun getWidth(): Int {
