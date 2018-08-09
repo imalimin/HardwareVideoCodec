@@ -5,13 +5,14 @@ import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import com.lmy.codec.RecordPresenter
+import com.lmy.codec.presenter.VideoRecorder
+import com.lmy.codec.presenter.impl.VideoRecorderImpl
 import com.lmy.codec.texture.impl.filter.*
 
 /**
  * Created by lmyooyo@gmail.com on 2018/7/24.
  */
-class FilterController(private val mPresenter: RecordPresenter,
+class FilterController(private val mVideoRecorder: VideoRecorder,
                        private val progressLayout: ViewGroup)
     : SeekBar.OnSeekBarChangeListener {
     companion object {
@@ -44,7 +45,7 @@ class FilterController(private val mPresenter: RecordPresenter,
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        mPresenter.getFilter()?.setValue(progressLayout.indexOfChild(seekBar), progress)
+        mVideoRecorder.getFilter()?.setValue(progressLayout.indexOfChild(seekBar), progress)
     }
 
     private fun show(count: Int) {
@@ -57,15 +58,15 @@ class FilterController(private val mPresenter: RecordPresenter,
     private fun choose(which: Int) {
         when (which) {
             0 -> {
-                mPresenter.setFilter(NormalFilter::class.java)
+                mVideoRecorder.setFilter(NormalFilter::class.java)
                 show(0)
             }
             1 -> {
-                mPresenter.setFilter(GreyFilter::class.java)
+                mVideoRecorder.setFilter(GreyFilter::class.java)
                 show(0)
             }
             2 -> {
-                mPresenter.setFilter(BeautyFilter::class.java)
+                mVideoRecorder.setFilter(BeautyFilter::class.java)
                 show(4)
                 oneBar.progress = 0
                 twoBar.progress = 50
@@ -73,53 +74,53 @@ class FilterController(private val mPresenter: RecordPresenter,
                 fBar.progress = 50
             }
             3 -> {
-                mPresenter.setFilter(PixelationFilter::class.java)
+                mVideoRecorder.setFilter(PixelationFilter::class.java)
                 show(1)
                 oneBar.progress = 0
             }
             4 -> {
-                mPresenter.setFilter(HueFilter::class.java)
+                mVideoRecorder.setFilter(HueFilter::class.java)
                 show(1)
                 oneBar.progress = 0
             }
             5 -> {
-                mPresenter.setFilter(GammaFilter::class.java)
+                mVideoRecorder.setFilter(GammaFilter::class.java)
                 show(1)
                 oneBar.progress = 33
             }
             6 -> {
-                mPresenter.setFilter(BrightnessFilter::class.java)
+                mVideoRecorder.setFilter(BrightnessFilter::class.java)
                 show(1)
                 oneBar.progress = 50
             }
             7 -> {
-                mPresenter.setFilter(SepiaFilter::class.java)
+                mVideoRecorder.setFilter(SepiaFilter::class.java)
                 show(1)
                 oneBar.progress = 0
             }
             8 -> {
-                mPresenter.setFilter(SharpnessFilter::class.java)
+                mVideoRecorder.setFilter(SharpnessFilter::class.java)
                 show(1)
                 oneBar.progress = 50
             }
             9 -> {
-                mPresenter.setFilter(SaturationFilter::class.java)
+                mVideoRecorder.setFilter(SaturationFilter::class.java)
                 show(1)
                 oneBar.progress = 50
             }
             10 -> {
-                mPresenter.setFilter(ExposureFilter::class.java)
+                mVideoRecorder.setFilter(ExposureFilter::class.java)
                 show(1)
                 oneBar.progress = 50
             }
             11 -> {
-                mPresenter.setFilter(HighlightShadowFilter::class.java)
+                mVideoRecorder.setFilter(HighlightShadowFilter::class.java)
                 show(2)
                 oneBar.progress = 0
                 twoBar.progress = 0
             }
             12 -> {
-                mPresenter.setFilter(MonochromeFilter::class.java)
+                mVideoRecorder.setFilter(MonochromeFilter::class.java)
                 show(4)
                 oneBar.progress = 0
                 twoBar.progress = 60
@@ -127,13 +128,13 @@ class FilterController(private val mPresenter: RecordPresenter,
                 fBar.progress = 30
             }
             13 -> {
-                mPresenter.setFilter(WhiteBalanceFilter::class.java)
+                mVideoRecorder.setFilter(WhiteBalanceFilter::class.java)
                 show(2)
                 oneBar.progress = 50
                 twoBar.progress = 0
             }
             14 -> {
-                mPresenter.setFilter(VignetteFilter::class.java)
+                mVideoRecorder.setFilter(VignetteFilter::class.java)
                 show(4)
                 oneBar.progress = 50
                 twoBar.progress = 50
@@ -141,35 +142,35 @@ class FilterController(private val mPresenter: RecordPresenter,
                 fBar.progress = 100
             }
             15 -> {
-                mPresenter.setFilter(CrosshatchFilter::class.java)
+                mVideoRecorder.setFilter(CrosshatchFilter::class.java)
                 show(2)
                 oneBar.progress = 30
                 twoBar.progress = 30
             }
             16 -> {
-                mPresenter.setFilter(SmoothFilter::class.java)
+                mVideoRecorder.setFilter(SmoothFilter::class.java)
                 show(1)
                 oneBar.progress = 30
             }
             17 -> {
-                mPresenter.setFilter(SketchFilter::class.java)
+                mVideoRecorder.setFilter(SketchFilter::class.java)
                 show(1)
                 oneBar.progress = 30
             }
             18 -> {
-                mPresenter.setFilter(HalftoneFilter::class.java)
+                mVideoRecorder.setFilter(HalftoneFilter::class.java)
                 show(2)
                 oneBar.progress = 30
                 twoBar.progress = 10
             }
             19 -> {
-                mPresenter.setFilter(HazeFilter::class.java)
+                mVideoRecorder.setFilter(HazeFilter::class.java)
                 show(2)
                 oneBar.progress = 50
                 twoBar.progress = 50
             }
             else -> {
-                mPresenter.setFilter(NormalFilter::class.java)
+                mVideoRecorder.setFilter(NormalFilter::class.java)
                 show(0)
             }
         }

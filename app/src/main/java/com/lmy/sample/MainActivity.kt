@@ -9,6 +9,7 @@ package com.lmy.sample
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
@@ -18,9 +19,9 @@ import android.widget.FrameLayout
 import android.widget.RadioGroup
 import com.lmy.codec.RecordPresenter
 import com.lmy.codec.encoder.Encoder
-import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.loge
+import com.lmy.codec.presenter.impl.VideoRecorderImpl
+import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
@@ -28,10 +29,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnCheckedChangeListener {
 
-    private lateinit var mPresenter: RecordPresenter
+    private lateinit var mRecorder: VideoRecorderImpl
     private lateinit var mFilterController: FilterController
     private var defaultVideoWidth = 0
     private var defaultVideoHeight = 0
+    private var count = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,33 +49,50 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
         loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
-        val context = CodecContext(applicationContext)
-//        context.ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
-        context.ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"
-        mPresenter = RecordPresenter(context)
-        mPresenter.setOnStateListener(onStateListener)
-        defaultVideoWidth = mPresenter.context.video.width
-        defaultVideoHeight = mPresenter.context.video.height
-        val mTextureView = TextureView(this)
-        mTextureView.fitsSystemWindows = true
+        //Init TextureView
+        val mTextureView = TextureView(this).apply {
+            fitsSystemWindows = true
+            keepScreenOn = true
+            setOnTouchListener(this@MainActivity)
+        }
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
-        mPresenter.setPreviewTexture(mTextureView)
-        mTextureView.keepScreenOn = true
-        mTextureView.setOnTouchListener(this)
-        mFilterController = FilterController(mPresenter, progressLayout)
+        //Init VideoRecorderImpl
+        mRecorder = VideoRecorderImpl(this).apply {
+            reset()
+            enableHardware(true)//Default true
+            setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${++count}.mp4")
+//            setOutputUri("rtmp://192.168.16.125:1935/live/livestream")
+            setOutputSize(720, 1280)//Default 720x1280
+            setFilter(NormalFilter::class.java)//Default NormalFilter
+            setPreviewDisplay(mTextureView)
+            setOnStateListener(onStateListener)
+        }
+        mRecorder.prepare()
+        mFilterController = FilterController(mRecorder, progressLayout)
+        defaultVideoWidth = mRecorder.getWidth()
+        defaultVideoHeight = mRecorder.getHeight()
+
         effectBtn.setOnClickListener({
             mFilterController.chooseFilter(this)
         })
+        nextBtn.setOnClickListener {
+            nextBtn.isEnabled = false
+            mRecorder.stop()
+            mRecorder.reset()
+            mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${++count}.mp4")
+            mRecorder.prepare()
+        }
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
+        if (!mRecorder.prepared()) return true
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                mPresenter.start()
+                mRecorder.start()
             }
             MotionEvent.ACTION_UP -> {
-                mPresenter.pause()
+                mRecorder.pause()
             }
         }
         return true
@@ -86,7 +105,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
                 }
 
                 override fun onPrepared(encoder: Encoder) {
-                    mPresenter.start()
+                    nextBtn.isEnabled = true
                     runOnUiThread {
                         enableChangeRatio(true)
                         timeView.text = "00:00.00"
@@ -118,7 +137,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
     }
 
     override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
-        val width = mPresenter.context.video.width
+        val width = mRecorder.getWidth()
         var height = when (group.indexOfChild(group.findViewById(checkedId))) {
             1 -> {//1:1
                 width
@@ -138,7 +157,12 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
             ++height
         }
         enableChangeRatio(false)
-        mPresenter.updateSize(width, height)
+        nextBtn.isEnabled = false
+        mRecorder.stop()
+        mRecorder.reset()
+        mRecorder.setOutputSize(width, height)
+        mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${++count}.mp4")
+        mRecorder.prepare()
     }
 
     private fun showPermissionsDialog() {
@@ -168,6 +192,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
 
     override fun onDestroy() {
         super.onDestroy()
+        mRecorder.release()
         debug_e("onDestroy")
     }
 
