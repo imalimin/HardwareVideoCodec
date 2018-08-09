@@ -56,6 +56,7 @@ void HandlerThread::sendMessageDelayed(Message *msg) {
 }
 
 void HandlerThread::quitSafely() {
+    pthread_cond_broadcast(cond);
     sendMessage(obtainMessage(WHAT_QUIT_SAFELY, NULL, NULL));
 }
 
