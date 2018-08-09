@@ -86,13 +86,14 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
-        if (!mRecorder.prepared()) return true
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                mRecorder.start()
+                if (mRecorder.prepared())
+                    mRecorder.start()
             }
             MotionEvent.ACTION_UP -> {
-                mRecorder.pause()
+                if (mRecorder.started())
+                    mRecorder.pause()
             }
         }
         return true
