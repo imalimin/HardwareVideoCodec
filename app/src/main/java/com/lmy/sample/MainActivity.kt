@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
         //Init VideoRecorderImpl
         mRecorder = VideoRecorderImpl(this).apply {
             reset()
-            setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${++count}.mp4")
+            setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${count++}.mp4")
 //            setOutputUri("rtmp://192.168.16.125:1935/live/livestream")
             setOutputSize(720, 1280)//Default 720x1280
             setFilter(NormalFilter::class.java)//Default NormalFilter
@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
             nextBtn.isEnabled = false
             mRecorder.stop()
             mRecorder.reset()
-            mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${++count}.mp4")
+            mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${count++}.mp4")
             mRecorder.prepare()
         }
     }
@@ -161,7 +161,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
         mRecorder.stop()
         mRecorder.reset()
         mRecorder.setOutputSize(width, height)
-        mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${++count}.mp4")
+        mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${count++}.mp4")
         mRecorder.prepare()
     }
 
