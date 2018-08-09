@@ -28,6 +28,13 @@ class CodecContext(ctx: Context,
         Resources.instance.attach(ctx)
     }
 
+    internal fun reset() {
+        video = Video()
+        audio = Audio()
+        ioContext = IOContext()
+        codecType = CodecType.HARD
+    }
+
     fun release() {
         Resources.instance.dettach()
     }

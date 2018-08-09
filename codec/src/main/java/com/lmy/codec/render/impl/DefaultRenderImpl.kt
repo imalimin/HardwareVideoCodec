@@ -9,7 +9,6 @@ package com.lmy.codec.render.impl
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
 import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.helper.Resources
 import com.lmy.codec.pipeline.SingleEventPipeline
@@ -29,13 +28,17 @@ class DefaultRenderImpl(var context: CodecContext,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
-                        var reader: PixelsReader? = null)
+                        var reader: PixelsReader? = null,
+                        private var width: Int = 0,
+                        private var height: Int = 0)
     : Render {
 
     private val filterLock = Any()
     private var filter: BaseFilter? = null
 
     fun init() {
+        this.width = context.video.width
+        this.height = context.video.height
         initReader()
         initFilter(NormalFilter::class.java)
     }
@@ -50,8 +53,8 @@ class DefaultRenderImpl(var context: CodecContext,
                 initScreen()
                 return
             }
-            filter?.width = context.video.width
-            filter?.height = context.video.height
+            filter?.width = this.width
+            filter?.height = this.height
             debug_e("camera texture: ${cameraWrapper.getFrameBuffer()[0]}, ${cameraWrapper.getFrameBufferTexture()[0]}")
             filter?.textureId = cameraWrapper.getFrameBufferTexture()
             filter?.init()
@@ -61,7 +64,7 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun initReader() {
         reader?.stop()
-        reader = PixelsReader.create(Resources.instance.isSupportPBO(), context.video.width, context.video.height)
+        reader = PixelsReader.create(Resources.instance.isSupportPBO(), this.width, this.height)
         reader?.start()
     }
 
@@ -87,7 +90,7 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun drawFilter() {
         synchronized(filterLock) {
-            GLES20.glViewport(0, 0, context.video.width, context.video.height)
+            GLES20.glViewport(0, 0, this.width, this.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             filter?.drawTexture(null)
@@ -121,13 +124,14 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     override fun updateSize(width: Int, height: Int) {
-        context.video.width = width
-        context.video.height = height
+        if (width == this.width && this.height == height) return
+        this.width = width
+        this.height = height
         SingleEventPipeline.instance.queueEvent(Runnable {
             cameraWrapper.updateLocation(context)
             initReader()
             synchronized(filterLock) {
-                filter?.updateFrameBuffer(context.video.width, context.video.height)
+                filter?.updateFrameBuffer(this.width, this.height)
             }
             initScreen()
         })
