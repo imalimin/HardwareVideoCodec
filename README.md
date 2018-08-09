@@ -59,21 +59,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val mTextureView = TextureView(this)
         setContentView(mTextureView)
-        mPresenter = RecordPresenter(CodecContext(this).apply {
-            ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
-            //ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"//If you want to use RTMP stream.
-        })
-        mPresenter.setPreviewTexture(mTextureView)
+        mRecorder = VideoRecorderImpl(this).apply {
+            reset()
+            setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4")
+            setOutputSize(720, 1280)//Default 720x1280
+            setFilter(NormalFilter::class.java)//Default NormalFilter
+            setPreviewDisplay(mTextureView)
+            setOnStateListener(onStateListener)
+        }
+        mRecorder.prepare()
         //For recording control
         mTextureView.setOnTouchListener { v, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    mPresenter.encoder?.start()
-                    mPresenter.audioEncoder?.start()
+                    if (mRecorder.prepared())
+                        mRecorder.start()
                 }
                 MotionEvent.ACTION_UP -> {
-                    mPresenter.encoder?.pause()
-                    mPresenter.audioEncoder?.pause()
+                    if (mRecorder.started())
+                        mRecorder.pause()
                 }
             }
             true
