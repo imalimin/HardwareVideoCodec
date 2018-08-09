@@ -6,6 +6,7 @@
 #include "librtmp/rtmp.h"
 #include "SpecificData.h"
 #include "HandlerThread.h"
+#include "Object.h"
 
 #define ERROR_DISCONNECT  -100
 
@@ -107,12 +108,16 @@ private:
     RTMPPacket *makeAudioSpecificData(SpecificData *spec);
 };
 
-class ClientWrapper {
+class ClientWrapper : public Object {
 public:
     RtmpClient *client;
 
     ClientWrapper(RtmpClient *client) {
         this->client = client;
+    }
+
+    virtual ~ClientWrapper() {
+
     }
 };
 
@@ -123,6 +128,10 @@ public:
 
     char *url;
     int timeOut;
+
+    virtual ~Connection() {
+
+    }
 };
 
 class Size : public ClientWrapper {
@@ -131,6 +140,10 @@ public:
     Size(RtmpClient *client) : ClientWrapper(client) {}
 
     int width, height;
+
+    virtual ~Size() {
+
+    }
 };
 
 class Packet : public ClientWrapper {
@@ -142,7 +155,7 @@ public:
     int size;
     long timestamp;
 
-    ~Packet() {
+    virtual ~Packet() {
 //        LOGE("RTMP: release Packet");
         if (NULL != data) {
             free(data);

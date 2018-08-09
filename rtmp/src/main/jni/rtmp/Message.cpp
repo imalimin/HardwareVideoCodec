@@ -7,14 +7,14 @@
 
 #include "Message.h"
 
-Message *obtainMessage(int what, void *obj, void (handle)(Message *)) {
+Message *obtainMessage(int what, Object *obj, void (handle)(Message *)) {
     Message *m = new Message(handle);
     m->what = what;
     m->obj = obj;
     return m;
 }
 
-Message *obtainMessage(int what, int arg1, long arg2, void *obj, void (handle)(Message *)) {
+Message *obtainMessage(int what, int arg1, long arg2, Object *obj, void (handle)(Message *)) {
     Message *m = new Message(handle);
     m->what = what;
     m->arg1 = arg1;
@@ -29,4 +29,8 @@ Message::Message(void (handle)(Message *)) {
 
 Message::~Message() {
     this->handle = NULL;
+    if (NULL != obj) {
+        delete obj;
+        obj = NULL;
+    }
 }

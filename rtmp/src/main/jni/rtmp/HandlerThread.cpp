@@ -130,6 +130,7 @@ int HandlerThread::sleep(long ms) {
 }
 
 void HandlerThread::clear() {
+//    LOGI("RTMP: HandlerThread clear");
     if (NULL != messageQueue) {
         messageQueue->clear();
         delete messageQueue;

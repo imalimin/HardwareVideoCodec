@@ -35,37 +35,31 @@ static void handleMessage(Message *msg) {
         case WHAT_CONNECT: {
             Connection *con = reinterpret_cast<Connection *>(msg->obj);
             con->client->_connect(con->url, con->timeOut);
-            msg->destory<Connection>();
             break;
         }
         case WHAT_CONNECT_STREAM: {
             Size *size = reinterpret_cast<Size *>(msg->obj);
             size->client->_connectStream(size->width, size->height);
-            msg->destory<Size>();
             break;
         }
         case WHAT_SEND_VSD: {
             ClientWrapper *wrapper = reinterpret_cast<ClientWrapper *>(msg->obj);
             wrapper->client->_sendVideoSpecificData();
-            msg->destory<ClientWrapper>();
             break;
         }
         case WHAT_SEND_V: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
             pkt->client->_sendVideo(pkt->data, pkt->size, pkt->timestamp);
-            msg->destory<Packet>();
             break;
         }
         case WHAT_SEND_ASD: {
             ClientWrapper *wrapper = reinterpret_cast<ClientWrapper *>(msg->obj);
             wrapper->client->_sendAudioSpecificData();
-            msg->destory<ClientWrapper>();
             break;
         }
         case WHAT_SEND_A: {
             Packet *pkt = reinterpret_cast<Packet *>(msg->obj);
             pkt->client->_sendAudio(pkt->data, pkt->size, pkt->timestamp);
-            msg->destory<Packet>();
             break;
         }
         default:
@@ -335,8 +329,6 @@ static short idrFilter(Message *msg) {
     Packet *pkt = (Packet *) msg->obj;
     if (isIDR(pkt->data))
         ++filter_count;
-    if (FILTER_REMOVE == filter_count)
-        msg->destory<Packet>();
     return filter_count;
 }
 
@@ -344,8 +336,6 @@ static short frameFilter(Message *msg) {
     if (WHAT_SEND_V != msg->what && WHAT_SEND_A != msg->what) return FILTER_DO_NOTHING;
     if (WHAT_SEND_V == msg->what)
         ++filter_count;
-    if (FILTER_REMOVE == filter_count)
-        msg->destory<Packet>();
     return filter_count;
 }
 
