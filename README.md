@@ -51,19 +51,15 @@ dependencies {
     implementation 'com.lmy.codec:rtmp:1.1.0'//If you want to use RTMP stream.
 }
 ```
-* Extend BaseApplication
-```
-class MyApplication : BaseApplication()
-```
-* MainActivity
+* For record mp4
 ```
 class MainActivity : AppCompatActivity() {
-
+    private lateinit var mRecorder: VideoRecorderImpl
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val mTextureView = TextureView(this)
         setContentView(mTextureView)
-        val mPresenter = RecordPresenter(CodecContext(this).apply {
+        mPresenter = RecordPresenter(CodecContext(this).apply {
             ioContext.path = "${Environment.getExternalStorageDirectory().absolutePath}/test.mp4"
             //ioContext.path = "rtmp://192.168.16.203:1935/live/livestream"//If you want to use RTMP stream.
         })
@@ -82,6 +78,45 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        mRecorder.release()
+    }
+}
+```
+* For live
+```
+class MainActivity : AppCompatActivity() {
+    private lateinit var mRecorder: VideoRecorderImpl
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val mTextureView = TextureView(this)
+        setContentView(mTextureView)
+        mRecorder = VideoRecorderImpl(this).apply {
+            reset()
+            setOutputUri("rtmp://192.168.16.125:1935/live/livestream")
+            setOutputSize(720, 1280)//Default 720x1280
+            setFilter(NormalFilter::class.java)//Default NormalFilter
+            setPreviewDisplay(mTextureView)
+            setOnStateListener(onStateListener)
+        }
+        mRecorder.prepare()
+        mRecorder.setOnStateListener(object : RecordPresenter.OnStateListener {
+            override fun onStop() {
+            }
+
+            override fun onPrepared(encoder: Encoder) {
+                mRecorder.start()
+            }
+
+            override fun onRecord(encoder: Encoder, timeUs: Long) {
+            }
+        })
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        mRecorder.release()
     }
 }
 ```
