@@ -112,8 +112,7 @@ static bool isIDR(char *data) {
 RtmpClient::RtmpClient(int cacheSize) {
     this->cacheSize = cacheSize;
     pipeline = new HandlerThread();
-    mutex = new pthread_mutex_t;
-    pthread_mutex_init(mutex, NULL);
+    mutex = new Lock();
     LOGI("RTMP: init cache size: %d", this->cacheSize);
 }
 
@@ -171,7 +170,7 @@ int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
 }
 
 void RtmpClient::stop() {
-    pthread_mutex_lock(mutex);
+    mutex->lock();
     if (NULL != rtmp) {
         RTMP_Close(rtmp);
         RTMP_Free(rtmp);
@@ -193,9 +192,9 @@ void RtmpClient::stop() {
         pipeline->quitSafely();
         pipeline = NULL;
     }
-    pthread_mutex_unlock(mutex);
+    mutex->unlock();
     if (NULL != mutex) {
-        pthread_mutex_destroy(mutex);
+        delete mutex;
         mutex = NULL;
     }
     LOGI("RTMP: stop");
@@ -217,16 +216,19 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
     RTMP_EnableWrite(rtmp);
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (retry < count) {
-        pthread_mutex_lock(mutex);
+        if (NULL != mutex)
+            mutex->lock();
         if (NULL == rtmp) break;
         LOGI("RTMP: try connect(%d)", retry);
         if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
-            pthread_mutex_unlock(mutex);
+            if (NULL != mutex)
+                mutex->unlock();
             LOGE("RTMP: connect failed! ");
             ++retry;
             pipeline->sleep(retryTime[retry]);
         } else {
-            pthread_mutex_unlock(mutex);
+            if (NULL != mutex)
+                mutex->unlock();
             LOGI("RTMP: connect success! ");
             break;
         }
@@ -247,16 +249,19 @@ int RtmpClient::_connectStream(int w, int h) {
     this->audioCount = 0;
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (retry < count) {
-        pthread_mutex_lock(mutex);
+        if (NULL != mutex)
+            mutex->lock();
         if (NULL == rtmp) break;
         LOGI("RTMP: try connectStream(%d), %dx%d", retry, this->width, this->height);
         if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
-            pthread_mutex_unlock(mutex);
+            if (NULL != mutex)
+                mutex->unlock();
             LOGE("RTMP: connectStream failed: %d", ret);
             ++retry;
             pipeline->sleep(retryTime[retry]);
         } else {
-            pthread_mutex_unlock(mutex);
+            if (NULL != mutex)
+                mutex->unlock();
             LOGI("RTMP: connectStream success", ret);
             break;
         }
