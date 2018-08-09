@@ -17,6 +17,7 @@ import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.helper.MuxerFactory
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.SingleEventPipeline
+import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -26,6 +27,7 @@ import com.lmy.codec.wrapper.CameraWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
+@Deprecated("Please use VideoRecorder")
 class RecordPresenter(var context: CodecContext,
                       var encoder: Encoder? = null,
                       var audioEncoder: Encoder? = null,
@@ -176,7 +178,5 @@ class RecordPresenter(var context: CodecContext,
         }
     }
 
-    interface OnStateListener : Encoder.OnPreparedListener, Encoder.OnRecordListener {
-        fun onStop()
-    }
+    interface OnStateListener : VideoRecorder.OnStateListener
 }

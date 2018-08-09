@@ -24,7 +24,7 @@ import com.lmy.codec.wrapper.CameraWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
-@Deprecated("Use RecordPresenter")
+@Deprecated("Please use VideoRecorder")
 class CameraPreviewPresenter(var context: CodecContext,
                              var encoder: Encoder? = null,
                              var audioEncoder: Encoder? = null,
