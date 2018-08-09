@@ -32,7 +32,7 @@ class VideoRecorderImpl(ctx: Context,
                         private var status: Status = Status.IDL) : VideoRecorder {
 
     enum class Status {
-        IDL, PREPARED, START
+        IDL, PREPARED, STARTED
     }
 
     private var context: CodecContext = CodecContext(ctx)
@@ -79,24 +79,29 @@ class VideoRecorderImpl(ctx: Context,
     }
 
     override fun prepared(): Boolean {
-        return Status.PREPARED == status || Status.START == status
+        return Status.PREPARED == status
+    }
+
+    override fun started(): Boolean {
+        return Status.STARTED == status
     }
 
     override fun start() {
-        if (Status.PREPARED != status && Status.START != status) {
+        if (Status.PREPARED != status) {
             throw IllegalStateException("The recorder is not prepare yet.")
         }
         encoder?.start()
         audioEncoder?.start()
-        status = Status.START
+        status = Status.STARTED
     }
 
     override fun pause() {
-        if (Status.START != status) {
+        if (Status.STARTED != status) {
             throw IllegalStateException("The recorder is not start yet.")
         }
         encoder?.pause()
         audioEncoder?.pause()
+        status = Status.PREPARED
     }
 
     override fun stop() {

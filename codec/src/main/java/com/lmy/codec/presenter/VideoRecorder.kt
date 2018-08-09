@@ -15,6 +15,7 @@ interface VideoRecorder : SurfaceTexture.OnFrameAvailableListener {
     fun stop()
     fun reset()
     fun prepared(): Boolean
+    fun started(): Boolean
     fun enableHardware(enable: Boolean)
     fun setOutputSize(width: Int, height: Int)
     fun getWidth(): Int
