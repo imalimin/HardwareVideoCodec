@@ -16,12 +16,11 @@ import android.opengl.GLES20
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecHelper
-import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.helper.Resources
 import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
-import com.lmy.codec.texture.impl.MirrorTexture
+import com.lmy.codec.texture.impl.Rgb2YuvTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.x264.CacheX264Encoder
 import com.lmy.codec.x264.X264Encoder
@@ -77,7 +76,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     init {
         initCodec()
         initPixelsCache()
-        mirrorTexture = MirrorTexture(context.video.width,
+        mirrorTexture = Rgb2YuvTexture(context.video.width,
                 context.video.height, textureId)
         mPipeline.queueEvent(Runnable {
             pTimer.reset()
@@ -103,7 +102,79 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     private fun encode() {
         synchronized(mEncodingSyn) {
             if (reader == null || !mEncoding) return
+            save()
             codec?.encode(reader!!.getPixelsBuffer())
+        }
+    }
+
+    var count = 0
+
+    private fun save() {
+        ++count
+        if (150 == count) {
+            debug_e("save yuv!")
+            val buffer = reader!!.getPixelsBuffer()
+            val ayuv = ByteArray(buffer.capacity())
+            buffer.get(ayuv)
+            val size = buffer.capacity() / 4
+            val yuv = ByteArray(size * 3 / 2)
+            var y0 = 0.toByte()
+            var u0 = 0.toByte()
+            var v0 = 0.toByte()
+
+            var y1 = 0.toByte()
+            var u1 = 0.toByte()
+            var v1 = 0.toByte()
+
+            var y2 = 0.toByte()
+            var u2 = 0.toByte()
+            var v2 = 0.toByte()
+
+            var y3 = 0.toByte()
+            var u3 = 0.toByte()
+            var v3 = 0.toByte()
+            for (i in 0 until context.video.height / 2) {
+                for (j in 0 until context.video.width / 2) {
+                    y0 = ayuv[i * 2 * context.video.width + j * 2 + 1]
+                    u0 = ayuv[i * 2 * context.video.width + j * 2 + 2]
+                    v0 = ayuv[i * 2 * context.video.width + j * 2 + 3]
+
+                    y1 = ayuv[i * 2 * context.video.width + j * 2 + 5]
+                    u1 = ayuv[i * 2 * context.video.width + j * 2 + 6]
+                    v1 = ayuv[i * 2 * context.video.width + j * 2 + 7]
+
+                    y2 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 1]
+                    u2 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 2]
+                    v2 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 3]
+
+                    y3 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 5]
+                    u3 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 6]
+                    v3 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 7]
+                }
+            }
+            for (i in 0 until ayuv.size / 16) {
+                y0 = ayuv[i * 16 + 1]
+                u0 = ayuv[i * 16 + 2]
+                v0 = ayuv[i * 16 + 3]
+
+                y1 = ayuv[i * 16 + 5]
+                u1 = ayuv[i * 16 + 6]
+                v1 = ayuv[i * 16 + 7]
+
+                y2 = ayuv[i * 16 + 9]
+                u2 = ayuv[i * 16 + 10]
+                v2 = ayuv[i * 16 + 11]
+
+                y3 = ayuv[i * 16 + 13]
+                u3 = ayuv[i * 16 + 14]
+                v3 = ayuv[i * 16 + 15]
+
+                yuv[i * 4] = y0
+                yuv[i * 4 + 1] = y1
+                yuv[i * 4 + 2] = y2
+                yuv[i * 4 + 3] = y3
+                yuv[size]
+            }
         }
     }
 
