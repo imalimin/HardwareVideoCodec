@@ -183,20 +183,22 @@ class VideoRecorderImpl(ctx: Context,
     private fun startEncoder() {
         muxer = MuxerFactory.getMuxer(context)
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
-                cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
-        encoder?.onPreparedListener = object : Encoder.OnPreparedListener {
-            override fun onPrepared(encoder: Encoder) {
-                status = Status.PREPARED
-                onStateListener?.onPrepared(encoder)
+                cameraWrapper!!.textureWrapper.egl!!.eglContext!!).apply {
+            onPreparedListener = object : Encoder.OnPreparedListener {
+                override fun onPrepared(encoder: Encoder) {
+                    status = Status.PREPARED
+                    onStateListener?.onPrepared(encoder)
+                }
             }
+            if (null != muxer)
+                setOnSampleListener(muxer!!)
+        }
+        audioEncoder = AudioEncoderImpl(context).apply {
+            if (null != muxer)
+                setOnSampleListener(muxer!!)
         }
         if (null != onStateListener)
             setOnStateListener(onStateListener!!)
-        audioEncoder = AudioEncoderImpl(context)
-        if (null != muxer) {
-            encoder!!.setOnSampleListener(muxer!!)
-            audioEncoder!!.setOnSampleListener(muxer!!)
-        }
     }
 
     override fun setOnStateListener(listener: VideoRecorder.OnStateListener) {
