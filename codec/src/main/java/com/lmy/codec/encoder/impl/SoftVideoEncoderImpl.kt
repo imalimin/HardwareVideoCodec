@@ -6,13 +6,12 @@
  */
 package com.lmy.codec.encoder.impl
 
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.SurfaceTexture
+import android.graphics.*
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
+import android.os.Environment
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecHelper
@@ -20,10 +19,11 @@ import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.helper.Resources
 import com.lmy.codec.pipeline.EventPipeline
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
-import com.lmy.codec.texture.impl.Rgb2YuvTexture
+import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.x264.CacheX264Encoder
 import com.lmy.codec.x264.X264Encoder
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
@@ -52,21 +52,12 @@ class SoftVideoEncoderImpl(var context: CodecContext,
         onRecordListener?.onRecord(this, info.presentationTimeUs)
     }
 
-    companion object {
-        val PBO_COUNT = 2
-        val STOP = 0x3
-    }
-
     private lateinit var format: MediaFormat
     private var mirrorTexture: BaseFrameBufferTexture
     private var mPipeline = EventPipeline.create("VideoEncodePipeline")
     private val mEncodingSyn = Any()
     private var mEncoding = false
-    //For PBO
-    private var index = 0
-    private var nextIndex = 1
     private var inited = false
-    private var isSupportPbo = true
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -74,11 +65,11 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     }
 
     init {
-        initCodec()
         initPixelsCache()
-        mirrorTexture = Rgb2YuvTexture(context.video.width,
+        mirrorTexture = MirrorTexture(context.video.width,
                 context.video.height, textureId)
         mPipeline.queueEvent(Runnable {
+            initCodec()
             pTimer.reset()
             inited = true
         })
@@ -87,8 +78,8 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     private fun initCodec() {
         format = CodecHelper.createVideoFormat(context, true)!!
         val c = X264Encoder(format)
-//        c.setProfile("high")
-//        codec?.setLevel(31)
+        c.setProfile("high")
+        c.setLevel(31)
         codec = CacheX264Encoder(context.video.width * context.video.height * 4, c)
         onPreparedListener?.onPrepared(this)
         codec?.onSampleListener = this
@@ -102,7 +93,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     private fun encode() {
         synchronized(mEncodingSyn) {
             if (reader == null || !mEncoding) return
-            save()
+//            save()
             codec?.encode(reader!!.getPixelsBuffer())
         }
     }
@@ -112,27 +103,27 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     private fun save() {
         ++count
         if (150 == count) {
-            debug_e("save yuv!")
+            val time = System.currentTimeMillis()
             val buffer = reader!!.getPixelsBuffer()
             val ayuv = ByteArray(buffer.capacity())
             buffer.get(ayuv)
             val size = buffer.capacity() / 4
             val yuv = ByteArray(size * 3 / 2)
-            var y0 = 0.toByte()
-            var u0 = 0.toByte()
-            var v0 = 0.toByte()
+            var y0: Byte
+            var u0: Byte
+            var v0: Byte
 
-            var y1 = 0.toByte()
-            var u1 = 0.toByte()
-            var v1 = 0.toByte()
+            var y1: Byte
+            var u1: Byte
+            var v1: Byte
 
-            var y2 = 0.toByte()
-            var u2 = 0.toByte()
-            var v2 = 0.toByte()
+            var y2: Byte
+            var u2: Byte
+            var v2: Byte
 
-            var y3 = 0.toByte()
-            var u3 = 0.toByte()
-            var v3 = 0.toByte()
+            var y3: Byte
+            var u3: Byte
+            var v3: Byte
             for (i in 0 until context.video.height / 2) {
                 for (j in 0 until context.video.width / 2) {
                     y0 = ayuv[i * 2 * context.video.width + j * 2 + 1]
@@ -150,31 +141,22 @@ class SoftVideoEncoderImpl(var context: CodecContext,
                     y3 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 5]
                     u3 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 6]
                     v3 = ayuv[(i * 2 + 1) * context.video.width + j * 2 + 7]
+
+                    yuv[i * 2 * context.video.width + j * 2] = y0
+                    yuv[i * 2 * context.video.width + j * 2 + 1] = y1
+                    yuv[(i * 2 + 1) * context.video.width + j * 2] = y2
+                    yuv[(i * 2 + 1) * context.video.width + j * 2 + 1] = y3
+
+                    yuv[size + i * context.video.width + j * 2] = ((v0 + v1 + v2 + v3) / 4).toByte()
+                    yuv[size + i * context.video.width + j * 2 + 1] = ((u0 + u1 + u2 + u3) / 4).toByte()
                 }
             }
-            for (i in 0 until ayuv.size / 16) {
-                y0 = ayuv[i * 16 + 1]
-                u0 = ayuv[i * 16 + 2]
-                v0 = ayuv[i * 16 + 3]
-
-                y1 = ayuv[i * 16 + 5]
-                u1 = ayuv[i * 16 + 6]
-                v1 = ayuv[i * 16 + 7]
-
-                y2 = ayuv[i * 16 + 9]
-                u2 = ayuv[i * 16 + 10]
-                v2 = ayuv[i * 16 + 11]
-
-                y3 = ayuv[i * 16 + 13]
-                u3 = ayuv[i * 16 + 14]
-                v3 = ayuv[i * 16 + 15]
-
-                yuv[i * 4] = y0
-                yuv[i * 4 + 1] = y1
-                yuv[i * 4 + 2] = y2
-                yuv[i * 4 + 3] = y3
-                yuv[size]
-            }
+            debug_e("save yuv: ${System.currentTimeMillis() - time}")
+            val image = YuvImage(yuv, ImageFormat.NV21,
+                    context.video.width, context.video.height, null)
+            val fos = FileOutputStream(File(Environment.getExternalStorageDirectory(), "yuv.jpg"))
+            image.compressToJpeg(Rect(0, 0, context.video.width, context.video.height), 80, fos)
+            fos.close()
         }
     }
 
