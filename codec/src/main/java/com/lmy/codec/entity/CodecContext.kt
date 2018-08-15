@@ -16,14 +16,14 @@ import com.lmy.codec.helper.Resources
  * Created by lmyooyo@gmail.com on 2018/3/21.
  */
 class CodecContext(ctx: Context,
-                   var video: Video = Video(),
-                   var audio: Audio = Audio(),
-                   var ioContext: IOContext = IOContext(),
-                   var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
+                   internal var video: Video = Video(),
+                   internal var audio: Audio = Audio(),
+                   internal var ioContext: IOContext = IOContext(),
+                   internal var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
                    internal val cameraSize: Size = Size(),//vaer size, Do not touch this value.
                    internal val viewSize: Size = Size(),//TextureView size, Do not touch this value.
                    internal var orientation: Int = 90,
-                   var codecType: CodecType = CodecType.HARD) {
+                   internal var codecType: CodecType = CodecType.HARD) {
     init {
         Resources.instance.attach(ctx)
     }
@@ -57,22 +57,22 @@ class CodecContext(ctx: Context,
         return 90 == orientation || 270 == orientation
     }
 
-    data class Video(var mime: String = "video/avc",
-                     var width: Int = 720,
-                     var height: Int = 1280,
-                     var fps: Int = 30,//If not support, select the lowest fps
-                     var bitrate: Int = width * height * MEDIUM * fps / 24,
-                     var iFrameInterval: Int = 2,
-                     var bitrateMode: Int = 1,//if support, default VBR
+    data class Video(internal var mime: String = "video/avc",
+                     internal var width: Int = 720,
+                     internal var height: Int = 1280,
+                     internal var fps: Int = 30,//If not support, select the lowest fps
+                     internal var bitrate: Int = width * height * MEDIUM * fps / 24,
+                     internal var iFrameInterval: Int = 2,
+                     internal var bitrateMode: Int = 1,//if support, default VBR
                      /**
                       * if support, default High. It will be change by CodecHelper#createVideoFormat
                       * {@link MediaCodecInfo.CodecProfileLevel}
                       */
-                     var profile: Int = 0x08,
+                     internal var profile: Int = 0x08,
                      /**
                       * if support, default level 31. It will be change by CodecHelper#createVideoFormat
                       */
-                     var level: Int = 0x200
+                     internal var level: Int = 0x200
     ) {
         companion object {
             const val HIGH = 5
@@ -81,13 +81,13 @@ class CodecContext(ctx: Context,
         }
     }
 
-    data class Audio(var mime: String = "audio/mp4a-latm",
-                     var channel: Int = 1,
-                     var sampleRateInHz: Int = 44100,
-                     var bitrate: Int = sampleRateInHz * 2,
-                     var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
-                     var sampleBits: Int = AudioFormat.ENCODING_PCM_16BIT,
-                     var deNoise: Boolean = false)
+    data class Audio(internal var mime: String = "audio/mp4a-latm",
+                     internal var channel: Int = 1,
+                     internal var sampleRateInHz: Int = 44100,
+                     internal var bitrate: Int = sampleRateInHz * 2,
+                     internal var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
+                     internal var sampleBits: Int = AudioFormat.ENCODING_PCM_16BIT,
+                     internal var deNoise: Boolean = false)
 
     enum class CodecType {
         HARD, SOFT
