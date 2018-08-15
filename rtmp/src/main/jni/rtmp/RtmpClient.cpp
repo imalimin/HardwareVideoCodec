@@ -442,7 +442,7 @@ RTMPPacket *RtmpClient::makeVideoPacket(char *data, int len, long timestamp) {
     packet->m_hasAbsTimestamp = 0;
     packet->m_packetType = RTMP_PACKET_TYPE_VIDEO;
     packet->m_nInfoField2 = rtmp->m_stream_id;
-    packet->m_nChannel = 0x04;
+    packet->m_nChannel = STREAM_CHANNEL_VIDEO;
     packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
     packet->m_nTimeStamp = static_cast<uint32_t>(timestamp);
     return packet;
@@ -511,7 +511,7 @@ RTMPPacket *RtmpClient::makeVideoSpecificData(SpecificData *sps, SpecificData *p
 
     packet->m_packetType = RTMP_PACKET_TYPE_VIDEO;
     packet->m_nBodySize = static_cast<uint32_t>(i);
-    packet->m_nChannel = 0x04;
+    packet->m_nChannel = STREAM_CHANNEL_VIDEO;
     packet->m_nTimeStamp = 0;
     packet->m_hasAbsTimestamp = 0;
     packet->m_headerType = RTMP_PACKET_SIZE_MEDIUM;
