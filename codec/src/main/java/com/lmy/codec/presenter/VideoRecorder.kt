@@ -18,6 +18,8 @@ interface VideoRecorder : SurfaceTexture.OnFrameAvailableListener {
     fun started(): Boolean
     fun enableHardware(enable: Boolean)
     fun setOutputSize(width: Int, height: Int)
+    fun setVideoBitrate(bitrate: Int)
+    fun setFps(fps: Int)
     fun getWidth(): Int
     fun getHeight(): Int
     fun setFilter(filter: Class<*>)

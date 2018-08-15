@@ -126,9 +126,18 @@ class VideoRecorderImpl(ctx: Context,
     override fun setOutputSize(width: Int, height: Int) {
         context.video.width = width
         context.video.height = height
+        setVideoBitrate(width * height * CodecContext.Video.MEDIUM * context.video.fps / 24)
         if (0 != context.cameraSize.width && 0 != context.cameraSize.height) {
             context.check()
         }
+    }
+
+    override fun setVideoBitrate(bitrate: Int) {
+        context.video.bitrate = bitrate
+    }
+
+    override fun setFps(fps: Int) {
+        context.video.fps = fps
     }
 
     override fun getWidth(): Int {
