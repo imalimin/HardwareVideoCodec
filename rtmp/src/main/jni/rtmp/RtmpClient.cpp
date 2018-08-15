@@ -170,7 +170,7 @@ int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
 }
 
 void RtmpClient::stop() {
-    mutex->lock();
+    lock();
     if (NULL != rtmp) {
         RTMP_Close(rtmp);
         RTMP_Free(rtmp);
@@ -192,7 +192,7 @@ void RtmpClient::stop() {
         pipeline->quitSafely();
         pipeline = NULL;
     }
-    mutex->unlock();
+    unlock();
     if (NULL != mutex) {
         delete mutex;
         mutex = NULL;
@@ -216,19 +216,16 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
     RTMP_EnableWrite(rtmp);
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (retry < count) {
-        if (NULL != mutex)
-            mutex->lock();
+        lock();
         if (NULL == rtmp) break;
         LOGI("RTMP: try connect(%d)", retry);
         if ((ret = RTMP_Connect(rtmp, NULL)) <= 0) {
-            if (NULL != mutex)
-                mutex->unlock();
+            unlock();
             LOGE("RTMP: connect failed! ");
             ++retry;
             pipeline->sleep(retryTime[retry]);
         } else {
-            if (NULL != mutex)
-                mutex->unlock();
+            unlock();
             LOGI("RTMP: connect success! ");
             break;
         }
@@ -249,19 +246,16 @@ int RtmpClient::_connectStream(int w, int h) {
     this->audioCount = 0;
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (retry < count) {
-        if (NULL != mutex)
-            mutex->lock();
+        lock();
         if (NULL == rtmp) break;
         LOGI("RTMP: try connectStream(%d), %dx%d", retry, this->width, this->height);
         if ((ret = RTMP_ReconnectStream(rtmp, 0)) <= 0) {
-            if (NULL != mutex)
-                mutex->unlock();
+            unlock();
             LOGE("RTMP: connectStream failed: %d", ret);
             ++retry;
             pipeline->sleep(retryTime[retry]);
         } else {
-            if (NULL != mutex)
-                mutex->unlock();
+            unlock();
             LOGI("RTMP: connectStream success", ret);
             break;
         }
@@ -303,12 +297,14 @@ int RtmpClient::_sendVideo(char *data, int len, long timestamp) {
     if (len < 1) return -2;
     RTMPPacket *packet = makeVideoPacket(data, len, timestamp);
     int ret = ERROR_DISCONNECT;
+    lock();
     if (RTMP_IsConnected(rtmp)) {
         ret = RTMP_SendPacket(rtmp, packet, TRUE);
         if (0 == videoCount % 150)
             LOGI("RTMP: send video packet(%ld): %d, cache=%d", videoCount, len, pipeline->size());
         ++videoCount;
     }
+    unlock();
     free(packet);
     return ret;
 }
@@ -340,12 +336,14 @@ int RtmpClient::_sendAudio(char *data, int len, long timestamp) {
     if (len < 1) return -2;
     RTMPPacket *packet = makeAudioPacket(data, len, timestamp);
     int ret = ERROR_DISCONNECT;
+    lock();
     if (RTMP_IsConnected(rtmp)) {
         ret = RTMP_SendPacket(rtmp, packet, TRUE);
         if (0 == audioCount % 150)
             LOGI("RTMP: send audio packet(%ld): %d, cache=%d", audioCount, len, pipeline->size());
         ++audioCount;
     }
+    unlock();
     free(packet);
     return ret;
 }
@@ -443,7 +441,7 @@ RTMPPacket *RtmpClient::makeVideoPacket(char *data, int len, long timestamp) {
     packet->m_packetType = RTMP_PACKET_TYPE_VIDEO;
     packet->m_nInfoField2 = rtmp->m_stream_id;
     packet->m_nChannel = STREAM_CHANNEL_VIDEO;
-    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
+    packet->m_headerType = RTMP_PACKET_SIZE_MEDIUM;
     packet->m_nTimeStamp = static_cast<uint32_t>(timestamp);
     return packet;
 }
@@ -466,7 +464,7 @@ RTMPPacket *RtmpClient::makeAudioPacket(char *data, int len, long timestamp) {
     packet->m_nChannel = STREAM_CHANNEL_AUDIO;
     packet->m_nTimeStamp = static_cast<uint32_t>(timestamp);
     packet->m_hasAbsTimestamp = 0;
-    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
+    packet->m_headerType = RTMP_PACKET_SIZE_MEDIUM;
     packet->m_nInfoField2 = rtmp->m_stream_id;
     return packet;
 }
@@ -560,4 +558,14 @@ void RtmpClient::saveAudioSpecificData(const char *spec, int len) {
     }
     this->spec = new SpecificData(spec, len);
     LOGI("RTMP: saveAudioSpecificData");
+}
+
+void RtmpClient::lock() {
+    if (NULL != mutex)
+        mutex->lock();
+}
+
+void RtmpClient::unlock() {
+    if (NULL != mutex)
+        mutex->unlock();
 }

@@ -108,6 +108,10 @@ private:
     RTMPPacket *makeVideoSpecificData(SpecificData *sps, SpecificData *pps);
 
     RTMPPacket *makeAudioSpecificData(SpecificData *spec);
+
+    void lock();
+
+    void unlock();
 };
 
 class ClientWrapper : public Object {
