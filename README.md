@@ -7,12 +7,10 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_2.gif)
 ## Latest release
-[V1.5.2](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.5.2)
+[V1.5.3](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.5.3)
 
-* Support video encoding at any resolution. No need to care about camera resolution.
-* RTMP module supports caching, and automatic frame dropping strategy.
-* Fixed the problem of restarting the app without a picture.
-* Fixed a bug in RTMP connection timeout setting error.
+* New api.
+* Fixed some FC.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
@@ -65,7 +63,6 @@ class MainActivity : AppCompatActivity() {
             setOutputSize(720, 1280)//Default 720x1280
             setFilter(NormalFilter::class.java)//Default NormalFilter
             setPreviewDisplay(mTextureView)
-            setOnStateListener(onStateListener)
         }
         mRecorder.prepare()
         //For recording control
@@ -93,6 +90,18 @@ class MainActivity : AppCompatActivity() {
 ```
 class MainActivity : AppCompatActivity() {
     private lateinit var mRecorder: VideoRecorderImpl
+    private val onStateListener = object : RecordPresenter.OnStateListener {
+        override fun onStop() {
+        }
+
+        override fun onPrepared(encoder: Encoder) {
+            mRecorder.start()
+        }
+
+        override fun onRecord(encoder: Encoder, timeUs: Long) {
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val mTextureView = TextureView(this)
@@ -106,18 +115,8 @@ class MainActivity : AppCompatActivity() {
             setOnStateListener(onStateListener)
         }
         mRecorder.prepare()
-        mRecorder.setOnStateListener(object : RecordPresenter.OnStateListener {
-            override fun onStop() {
-            }
-
-            override fun onPrepared(encoder: Encoder) {
-                mRecorder.start()
-            }
-
-            override fun onRecord(encoder: Encoder, timeUs: Long) {
-            }
-        })
     }
+
     override fun onDestroy() {
         super.onDestroy()
         mRecorder.release()
