@@ -96,11 +96,13 @@ class CameraTextureWrapper(width: Int,
         val right = 1f - left
         val bottom = (previewHeight - destPreviewHeight) / 2f / previewHeight.toFloat()
         val top = 1 - bottom
+        //顶点位置
         System.arraycopy(floatArrayOf(-1f, -1f, //LEFT,BOTTOM
                 1f, -1f, //RIGHT,BOTTOM
                 -1f, 1f, //LEFT,TOP
                 1f, 1f//RIGHT,TOP
         ), 0, location, 0, 8)
+        //顶点纹理坐标
         System.arraycopy(floatArrayOf(left, bottom, //LEFT,BOTTOM
                 right, bottom, //RIGHT,BOTTOM
                 left, top, //LEFT,TOP

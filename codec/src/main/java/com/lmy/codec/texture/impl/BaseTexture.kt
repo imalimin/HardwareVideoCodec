@@ -124,6 +124,11 @@ abstract class BaseTexture(var textureId: IntArray,
             GLES20.glDeleteProgram(shaderProgram!!)
     }
 
+    /**
+     * 更新s,t,x,y
+     * @param textureLocation 顶点纹理坐标
+     * @param location        顶点位置
+     */
     open fun updateLocation(textureLocation: FloatArray, location: FloatArray) {
         debug_i("location(${textureLocation[0]}, ${textureLocation[1]},\n" +
                 "${textureLocation[2]}, ${textureLocation[3]},\n" +
