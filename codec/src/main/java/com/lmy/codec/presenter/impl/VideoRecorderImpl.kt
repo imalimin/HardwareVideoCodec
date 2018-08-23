@@ -118,12 +118,19 @@ class VideoRecorderImpl(ctx: Context,
         }
         context.reset()
     }
+    private fun changeParamsCheck(){
+        if (Status.IDL != status) {
+            throw IllegalStateException("You cannot change a prepared recorder.")
+        }
+    }
 
     override fun enableHardware(enable: Boolean) {
+        changeParamsCheck()
         context.codecType = if (enable) CodecContext.CodecType.HARD else CodecContext.CodecType.SOFT
     }
 
     override fun setOutputSize(width: Int, height: Int) {
+        changeParamsCheck()
         context.video.width = width
         context.video.height = height
         setVideoBitrate(width * height * CodecContext.Video.MEDIUM * context.video.fps / 24)
@@ -133,10 +140,12 @@ class VideoRecorderImpl(ctx: Context,
     }
 
     override fun setVideoBitrate(bitrate: Int) {
+        changeParamsCheck()
         context.video.bitrate = bitrate
     }
 
     override fun setFps(fps: Int) {
+        changeParamsCheck()
         context.video.fps = fps
     }
 
@@ -157,6 +166,7 @@ class VideoRecorderImpl(ctx: Context,
     }
 
     override fun setOutputUri(uri: String) {
+        changeParamsCheck()
         context.ioContext.path = uri
     }
 
