@@ -7,7 +7,7 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_2.gif)
 ## Latest release
-[V1.5.3](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.5.3)
+[V1.6.0](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.6.0)
 
 * New api.
 * Fixed some FC.
@@ -45,8 +45,8 @@ allprojects {
 * Module build.gradle
 ```
 dependencies {
-    implementation 'com.lmy.codec:hardwarevideocodec:1.5.2'
-    implementation 'com.lmy.codec:rtmp:1.1.0'//If you want to use RTMP stream.
+    implementation 'com.lmy.codec:hardwarevideocodec:1.6.0'
+    implementation 'com.lmy.codec:rtmp:1.2.0'//If you want to use RTMP stream.
 }
 ```
 * For record mp4
