@@ -23,6 +23,7 @@ import com.lmy.codec.loge
 import com.lmy.codec.presenter.impl.VideoRecorderImpl
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.wrapper.CameraWrapper
 import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
     private fun initView() {
         ratioGroup.check(ratioGroup.getChildAt(0).id)
         ratioGroup.setOnCheckedChangeListener(this)
+        cameraGroup.setOnCheckedChangeListener(this)
         loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
         if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
             return
@@ -105,7 +107,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
                 }
 
                 override fun onPrepared(encoder: Encoder) {
-                    mRecorder.start()
+//                    mRecorder.start()
                     nextBtn.isEnabled = true
                     runOnUiThread {
                         enableChangeRatio(true)
@@ -138,32 +140,43 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
     }
 
     override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
-        val width = mRecorder.getWidth()
-        var height = when (group.indexOfChild(group.findViewById(checkedId))) {
-            1 -> {//1:1
-                width
+        when (group.id) {
+            R.id.cameraGroup -> {
+                val i = group.indexOfChild(group.findViewById(checkedId))
+                if (0 == i)
+                    mRecorder.setCameraIndex(CameraWrapper.CameraIndex.BACK)
+                else
+                    mRecorder.setCameraIndex(CameraWrapper.CameraIndex.FRONT)
             }
-            2 -> {//4:3
-                (width / 4f * 3).toInt()
-            }
-            3 -> {//3:2
-                (width / 3f * 2).toInt()
+            R.id.ratioGroup -> {
+                val width = mRecorder.getWidth()
+                var height = when (group.indexOfChild(group.findViewById(checkedId))) {
+                    1 -> {//1:1
+                        width
+                    }
+                    2 -> {//4:3
+                        (width / 4f * 3).toInt()
+                    }
+                    3 -> {//3:2
+                        (width / 3f * 2).toInt()
 
-            }
-            else -> {//默认
-                defaultVideoHeight
+                    }
+                    else -> {//默认
+                        defaultVideoHeight
+                    }
+                }
+                if (0 != height % 2) {
+                    ++height
+                }
+                enableChangeRatio(false)
+                nextBtn.isEnabled = false
+                mRecorder.stop()
+                mRecorder.reset()
+                mRecorder.setOutputSize(width, height)
+                mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${count++}.mp4")
+                mRecorder.prepare()
             }
         }
-        if (0 != height % 2) {
-            ++height
-        }
-        enableChangeRatio(false)
-        nextBtn.isEnabled = false
-        mRecorder.stop()
-        mRecorder.reset()
-        mRecorder.setOutputSize(width, height)
-        mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${count++}.mp4")
-        mRecorder.prepare()
     }
 
     private fun showPermissionsDialog() {

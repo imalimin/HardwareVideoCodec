@@ -23,16 +23,20 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
 
     abstract fun drawTexture(transformMatrix: FloatArray?)
 
-    fun createTexture(target: Int): IntArray {
-        val textureId = IntArray(1)
+    fun createTexture(target: Int) {
+        if (null == textureId) {
+            textureId = IntArray(1)
+        } else {
+            GLES20.glDeleteTextures(1, textureId, 0)
+        }
+        textureId!![0] = 0
         GLES20.glGenTextures(1, textureId, 0)
-        GLES20.glBindTexture(target, textureId[0])
+        GLES20.glBindTexture(target, textureId!![0])
         GLES20.glTexParameterf(target, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR.toFloat())
         GLES20.glTexParameterf(target, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat())
         GLES20.glTexParameterf(target, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE.toFloat())
         GLES20.glTexParameterf(target, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE.toFloat())
         GLHelper.checkGLES2Error("createTexture")
-        return textureId
     }
 
     open fun release() {

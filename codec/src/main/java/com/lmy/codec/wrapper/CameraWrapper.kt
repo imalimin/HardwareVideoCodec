@@ -19,6 +19,7 @@ import com.lmy.codec.util.debug_v
  */
 class CameraWrapper(private var context: CodecContext,
                     private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener) {
+    enum class CameraIndex { BACK, FRONT }
     companion object {
         private val PREPARE = 0x1
         fun open(param: CodecContext, onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener)
@@ -29,19 +30,13 @@ class CameraWrapper(private var context: CodecContext,
 
     private var mCamera: Camera? = null
     private var mCameras = 0
-    private var mCameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK
-    lateinit var textureWrapper: CameraTextureWrapper
+    private var mCameraIndex: CameraIndex? = null
+    val textureWrapper: CameraTextureWrapper
 
     init {
         mCameras = CameraHelper.getNumberOfCameras()
-        SingleEventPipeline.instance.queueEvent(Runnable {
-            textureWrapper = CameraTextureWrapper(context.video.width, context.video.height)
-            textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
-        })
-        SingleEventPipeline.instance.queueEvent(Runnable {
-            prepare()
-            textureWrapper.updateLocation(context)
-        })
+        textureWrapper = CameraTextureWrapper(context.video.width, context.video.height)
+        openCamera(context.cameraIndex)
     }
 
     fun post(runnable: Runnable): CameraWrapper {
@@ -49,18 +44,41 @@ class CameraWrapper(private var context: CodecContext,
         return this
     }
 
+    fun openCamera(index: CameraIndex) {
+        //如果没有前置摄像头
+        if (index == CameraIndex.FRONT && mCameras < 2) {
+            if (null != mCameraIndex) return//不做改变
+            context.cameraIndex = CameraIndex.BACK
+        } else {
+            context.cameraIndex = index
+        }
+        SingleEventPipeline.instance.queueEvent(Runnable {
+            stopPreview()
+            updateTexture()
+            prepare()
+            textureWrapper.updateLocation(context)
+        })
+    }
+
+    private fun updateTexture() {
+        textureWrapper.updateTexture()
+        textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
+    }
+
+    private fun getCameraIndex(): Int {
+        if (context.cameraIndex == CameraIndex.FRONT)
+            return Camera.CameraInfo.CAMERA_FACING_FRONT
+        return Camera.CameraInfo.CAMERA_FACING_BACK
+    }
+
     private fun prepare() {
         if (0 == mCameras) {
             debug_e("Unavailable camera")
             return
         }
-        //如果没有前置摄像头，则强制使用后置摄像头
-        if (context.cameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT && mCameras < 2)
-            context.cameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK
-        mCameraIndex = context.cameraIndex
 
         val time = System.currentTimeMillis()
-        mCamera = openCamera(mCameraIndex)
+        mCamera = openCamera(getCameraIndex())
         debug_e("open time: ${System.currentTimeMillis() - time}")
         if (null == mCamera) {
             debug_e("mCamera is null!")

@@ -36,36 +36,63 @@
             android:text="EFFECT"
             android:textColor="@color/colorAccent" />
 
-        <RadioGroup
-            android:id="@+id/ratioGroup"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <RadioButton
+            <RadioGroup
+                android:id="@+id/ratioGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="默认"
-                android:textColor="@color/colorAccent" />
+                android:orientation="vertical">
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1:1"
-                android:textColor="@color/colorAccent" />
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="默认"
+                    android:textColor="@color/colorAccent" />
 
-            <RadioButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="4:3"
-                android:textColor="@color/colorAccent" />
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1:1"
+                    android:textColor="@color/colorAccent" />
 
-            <RadioButton
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4:3"
+                    android:textColor="@color/colorAccent" />
+
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3:2"
+                    android:textColor="@color/colorAccent" />
+            </RadioGroup>
+
+            <RadioGroup
+                android:id="@+id/cameraGroup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="3:2"
-                android:textColor="@color/colorAccent" />
-        </RadioGroup>
+                android:checkedButton="@id/back"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BACK"
+                    android:textColor="@color/colorAccent" />
+
+                <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="FRONT"
+                    android:textColor="@color/colorAccent" />
+            </RadioGroup>
+        </LinearLayout>
     </FrameLayout>
 
     <TextView

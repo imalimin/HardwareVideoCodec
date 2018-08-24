@@ -4,6 +4,7 @@ import android.graphics.SurfaceTexture
 import android.view.TextureView
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.texture.impl.filter.BaseFilter
+import com.lmy.codec.wrapper.CameraWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/8/9.
@@ -16,6 +17,7 @@ interface VideoRecorder : SurfaceTexture.OnFrameAvailableListener {
     fun reset()
     fun prepared(): Boolean
     fun started(): Boolean
+    fun setCameraIndex(index: CameraWrapper.CameraIndex)
     fun enableHardware(enable: Boolean)
     fun setOutputSize(width: Int, height: Int)
     fun setVideoBitrate(bitrate: Int)

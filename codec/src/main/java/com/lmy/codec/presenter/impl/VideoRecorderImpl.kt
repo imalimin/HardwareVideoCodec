@@ -30,7 +30,6 @@ class VideoRecorderImpl(ctx: Context,
                         private var onStateListener: VideoRecorder.OnStateListener? = null,
                         private var textureView: TextureView? = null,
                         private var status: Status = Status.IDL) : VideoRecorder {
-
     enum class Status {
         IDL, PREPARED, STARTED
     }
@@ -118,11 +117,18 @@ class VideoRecorderImpl(ctx: Context,
         }
         context.reset()
     }
-    private fun changeParamsCheck(){
+
+    private fun changeParamsCheck() {
         if (Status.IDL != status) {
             throw IllegalStateException("You cannot change a prepared recorder.")
         }
     }
+
+    override fun setCameraIndex(index: CameraWrapper.CameraIndex) {
+        cameraWrapper?.openCamera(index)
+        cameraWrapper?.startPreview()
+    }
+
 
     override fun enableHardware(enable: Boolean) {
         changeParamsCheck()
@@ -200,7 +206,11 @@ class VideoRecorderImpl(ctx: Context,
     }
 
     private fun startEncoder() {
-        muxer = MuxerFactory.getMuxer(context)
+        if (null == muxer) {
+            muxer = MuxerFactory.getMuxer(context)
+        } else {
+            muxer?.reset()
+        }
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!).apply {
             onPreparedListener = object : Encoder.OnPreparedListener {

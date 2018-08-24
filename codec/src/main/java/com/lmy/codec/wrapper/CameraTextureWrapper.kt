@@ -19,22 +19,30 @@ import com.lmy.codec.util.debug_e
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class CameraTextureWrapper(width: Int,
-                           height: Int) : TextureWrapper() {
+class CameraTextureWrapper(private val width: Int,
+                           private val height: Int) : TextureWrapper() {
 
-    init {
-        egl = Egl("Camera")
-        egl!!.initEGL()
-        egl!!.makeCurrent()
-        textureId = createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES)
-        texture = CameraTexture(width, height, textureId!!).apply {
-            name = "Camera Texture"
+    fun updateTexture() {
+        if (null == egl) {
+            egl = Egl("Camera")
+            egl!!.initEGL()
         }
-        intTexture()
+        egl!!.makeCurrent()
+        createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES)
+        if (null == texture) {
+            texture = CameraTexture(width, height, textureId!!).apply {
+                name = "Camera Texture"
+            }
+        }
+        initTexture()
     }
 
     @SuppressLint("Recycle")
-    private fun intTexture() {
+    private fun initTexture() {
+        if (null != surfaceTexture) {
+            surfaceTexture?.release()
+            surfaceTexture = null
+        }
         if (null != textureId)
             surfaceTexture = SurfaceTexture(textureId!![0])
         debug_e("camera textureId: ${textureId!![0]}")

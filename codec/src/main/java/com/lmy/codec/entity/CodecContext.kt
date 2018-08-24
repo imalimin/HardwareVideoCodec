@@ -7,10 +7,10 @@
 package com.lmy.codec.entity
 
 import android.content.Context
-import android.hardware.Camera
 import android.media.AudioFormat
 import android.media.MediaCodecInfo
 import com.lmy.codec.helper.Resources
+import com.lmy.codec.wrapper.CameraWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
@@ -19,7 +19,7 @@ class CodecContext(ctx: Context,
                    internal var video: Video = Video(),
                    internal var audio: Audio = Audio(),
                    internal var ioContext: IOContext = IOContext(),
-                   internal var cameraIndex: Int = Camera.CameraInfo.CAMERA_FACING_BACK,
+                   internal var cameraIndex: CameraWrapper.CameraIndex = CameraWrapper.CameraIndex.BACK,
                    internal val cameraSize: Size = Size(),//vaer size, Do not touch this value.
                    internal val viewSize: Size = Size(),//TextureView size, Do not touch this value.
                    internal var orientation: Int = 90,
