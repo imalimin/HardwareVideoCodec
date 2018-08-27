@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <jni.h>
+#include "RtmpClient.h"
+#include "Object.h"
 
 #ifndef HARDWAREVIDEOCODEC_JAVA_COM_LMY_RTMP_RTMPCLIENT_H
 #define HARDWAREVIDEOCODEC_JAVA_COM_LMY_RTMP_RTMPCLIENT_H
@@ -37,6 +39,20 @@ Java_com_lmy_rtmp_RtmpClient_stop(JNIEnv *, jobject);
 
 JNIEXPORT void JNICALL
 Java_com_lmy_rtmp_RtmpClient_setCacheSize(JNIEnv *, jobject, jint);
+
+class JavaVMWrapper : public Object {
+
+public:
+    JavaVMWrapper(JavaVM *vm) {
+        this->vm = vm;
+    }
+
+    JavaVM *vm;
+
+    ~JavaVMWrapper() {
+        vm = NULL;
+    }
+};
 
 #ifdef __cplusplus
 }
