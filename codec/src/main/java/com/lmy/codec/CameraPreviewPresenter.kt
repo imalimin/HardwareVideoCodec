@@ -63,7 +63,6 @@ class CameraPreviewPresenter(var context: CodecContext,
 
     fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
         cameraWrapper?.post(Runnable {
-            cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
             render?.post(Runnable {
                 start()

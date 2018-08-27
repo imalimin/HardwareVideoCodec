@@ -66,7 +66,6 @@ class RecordPresenter(var context: CodecContext,
 
     private fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
         cameraWrapper?.post(Runnable {
-            cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
             render?.post(Runnable {
                 reset()
