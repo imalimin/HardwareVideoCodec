@@ -39,9 +39,7 @@ class CameraTexture(width: Int, height: Int,
     override fun drawTexture(transformMatrix: FloatArray?) {
         if (null == transformMatrix)
             throw RuntimeException("TransformMatrix can not be null")
-        synchronized(frameBufferLock) {
-            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
-        }
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId[0])
