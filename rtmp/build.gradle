@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 3
-        versionName "1.2.0"
+        versionCode 12
+        versionName "1.6.1"
         ndk {
             /**
              * 名称               说明                         功能

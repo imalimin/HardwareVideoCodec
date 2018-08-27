@@ -19,9 +19,6 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven {
-            url 'https://dl.bintray.com/lmylr/maven'
-        }
     }
     tasks.getByPath(":codec:releaseAndroidJavadocs").enabled = false
 //    tasks.getByPath(":rtmp:releaseAndroidJavadocs").enabled = false
