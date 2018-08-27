@@ -63,9 +63,9 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     private fun initReader() {
-        reader?.stop()
-        reader = PixelsReader.create(Resources.instance.isSupportPBO(), this.width, this.height)
-        reader?.start()
+//        reader?.stop()
+//        reader = PixelsReader.create(Resources.instance.isSupportPBO(), this.width, this.height)
+//        reader?.start()
     }
 
     private fun initScreen() {
@@ -114,8 +114,6 @@ class DefaultRenderImpl(var context: CodecContext,
         cameraWrapper.drawTexture(transformMatrix)
     }
 
-    private var count = 0
-
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {
         updateScreenTexture(texture)
         context.viewSize.width = width
@@ -128,8 +126,8 @@ class DefaultRenderImpl(var context: CodecContext,
         this.width = width
         this.height = height
         GLEventPipeline.INSTANCE.queueEvent(Runnable {
-            cameraWrapper.updateLocation(context)
             initReader()
+            cameraWrapper.updateLocation(context)
             synchronized(filterLock) {
                 filter?.updateFrameBuffer(this.width, this.height)
             }
