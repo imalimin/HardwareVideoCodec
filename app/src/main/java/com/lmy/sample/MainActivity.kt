@@ -17,9 +17,9 @@ import android.view.TextureView
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.RadioGroup
-import com.lmy.codec.RecordPresenter
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.loge
+import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.presenter.impl.VideoRecorderImpl
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
     }
 
     private var onStateListener =
-            object : RecordPresenter.OnStateListener {
+            object : VideoRecorder.OnStateListener {
                 override fun onStop() {
 
                 }
