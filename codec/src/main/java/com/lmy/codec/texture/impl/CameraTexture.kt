@@ -9,7 +9,6 @@ package com.lmy.codec.texture.impl
 import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import com.lmy.codec.helper.Resources
-import com.lmy.codec.util.debug_e
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/29.
@@ -37,16 +36,12 @@ class CameraTexture(width: Int, height: Int,
         uTextureMatrix = getUniformLocation("uTextureMatrix")
     }
 
-    private var count = 0
     override fun drawTexture(transformMatrix: FloatArray?) {
         if (null == transformMatrix)
             throw RuntimeException("TransformMatrix can not be null")
         synchronized(frameBufferLock) {
             GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         }
-        ++count
-        if (0 == count % 60)
-            debug_e("CameraTexture drawTexture " + textureId[0])
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId[0])
