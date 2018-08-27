@@ -41,6 +41,15 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:text="RATIO"
+                android:textColor="@color/colorAccent"
+                android:textSize="12sp" />
+
             <RadioGroup
                 android:id="@+id/ratioGroup"
                 android:layout_width="wrap_content"
@@ -71,6 +80,15 @@
                     android:text="3:2"
                     android:textColor="@color/colorAccent" />
             </RadioGroup>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:text="CAMERA"
+                android:textColor="@color/colorAccent"
+                android:textSize="12sp" />
 
             <RadioGroup
                 android:id="@+id/cameraGroup"
