@@ -44,18 +44,20 @@ class CameraWrapper(private var context: CodecContext,
         return this
     }
 
-    fun switchCamera(index: CameraIndex){
+    fun switchCamera(index: CameraIndex) {
         openCamera(index)
     }
 
     private fun openCamera(index: CameraIndex) {
-        //如果没有前置摄像头
-        if (index == CameraIndex.FRONT && mCameras < 2) {
-            if (null != mCameraIndex) return//不做改变
-            context.cameraIndex = CameraIndex.BACK
+        val tmp = if (index == CameraIndex.FRONT && mCameras < 2) {//如果没有前置摄像头，则强制使用后置摄像头
+            CameraIndex.BACK
         } else {
-            context.cameraIndex = index
+            index
         }
+        if (null != mCameraIndex && mCameraIndex == tmp) //如果已经打开过摄像头，并且当前已经是index，则不做改变
+            return
+        mCameraIndex = tmp
+        context.cameraIndex = tmp
         GLEventPipeline.INSTANCE.queueEvent(Runnable {
             stopPreview()
             updateTexture()
