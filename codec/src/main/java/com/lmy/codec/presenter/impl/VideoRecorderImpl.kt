@@ -10,7 +10,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.helper.MuxerFactory
 import com.lmy.codec.muxer.Muxer
-import com.lmy.codec.pipeline.SingleEventPipeline
+import com.lmy.codec.pipeline.GLEventPipeline
 import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
@@ -40,7 +40,7 @@ class VideoRecorderImpl(ctx: Context,
         if (TextUtils.isEmpty(context.ioContext.path)) {
             throw RuntimeException("context.ioContext.path can not be null!")
         }
-        SingleEventPipeline.instance.start()
+        GLEventPipeline.INSTANCE.start()
         if (null == cameraWrapper) {
             cameraWrapper = CameraWrapper.open(context, this)
                     .post(Runnable {
@@ -105,7 +105,7 @@ class VideoRecorderImpl(ctx: Context,
 
     override fun stop() {
         if (Status.IDL == status) return
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             stopEncoder()
         })
         status = Status.IDL
@@ -246,7 +246,7 @@ class VideoRecorderImpl(ctx: Context,
             e.printStackTrace()
         }
         context.release()
-        SingleEventPipeline.instance.quit()
+        GLEventPipeline.INSTANCE.quit()
     }
 
     private fun stopEncoder() {

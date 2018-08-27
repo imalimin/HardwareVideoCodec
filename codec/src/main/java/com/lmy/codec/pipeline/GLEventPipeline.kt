@@ -5,13 +5,13 @@ import com.lmy.codec.loge
 /**
  * Created by lmyooyo@gmail.com on 2018/6/20.
  */
-class SingleEventPipeline private constructor() {
+class GLEventPipeline private constructor() {
     private object Holder {
-        val INSTANCE = SingleEventPipeline()
+        val INSTANCE = GLEventPipeline()
     }
 
     companion object {
-        val instance: SingleEventPipeline by lazy { Holder.INSTANCE }
+        val INSTANCE: GLEventPipeline by lazy { Holder.INSTANCE }
     }
 
     private lateinit var eventPipeline: EventPipeline
@@ -19,16 +19,16 @@ class SingleEventPipeline private constructor() {
 
     fun start() {
         if (start) {
-            loge("SingleEventPipeline has started")
+            loge("GLEventPipeline has started")
             return
         }
-        eventPipeline = EventPipeline.create("SingleEventPipeline")
+        eventPipeline = EventPipeline.create("GLEventPipeline")
         start = true
     }
 
     fun queueEvent(event: Runnable) {
         if (!start) {
-            loge("SingleEventPipeline has quited. Please call SingleEventPipeline.instance.start() before.")
+            loge("GLEventPipeline has quited. Please call GLEventPipeline.INSTANCE.start() before.")
             return
         }
         eventPipeline.queueEvent(event)
@@ -36,7 +36,7 @@ class SingleEventPipeline private constructor() {
 
     fun quit() {
         if (!start) {
-            loge("SingleEventPipeline has quited")
+            loge("GLEventPipeline has quited")
             return
         }
         start = false

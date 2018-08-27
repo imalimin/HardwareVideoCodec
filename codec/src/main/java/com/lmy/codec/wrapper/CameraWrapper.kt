@@ -10,7 +10,7 @@ import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CameraHelper
-import com.lmy.codec.pipeline.SingleEventPipeline
+import com.lmy.codec.pipeline.GLEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 
@@ -40,7 +40,7 @@ class CameraWrapper(private var context: CodecContext,
     }
 
     fun post(runnable: Runnable): CameraWrapper {
-        SingleEventPipeline.instance.queueEvent(runnable)
+        GLEventPipeline.INSTANCE.queueEvent(runnable)
         return this
     }
 
@@ -52,7 +52,7 @@ class CameraWrapper(private var context: CodecContext,
         } else {
             context.cameraIndex = index
         }
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             stopPreview()
             updateTexture()
             prepare()
@@ -131,7 +131,7 @@ class CameraWrapper(private var context: CodecContext,
     }
 
     fun release() {
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             stopPreview()
             releaseTexture()
         })

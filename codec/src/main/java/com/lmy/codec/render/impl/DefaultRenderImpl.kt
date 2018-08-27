@@ -11,7 +11,7 @@ import android.opengl.GLES20
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.helper.Resources
-import com.lmy.codec.pipeline.SingleEventPipeline
+import com.lmy.codec.pipeline.GLEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
@@ -120,14 +120,14 @@ class DefaultRenderImpl(var context: CodecContext,
         updateScreenTexture(texture)
         context.viewSize.width = width
         context.viewSize.height = height
-        SingleEventPipeline.instance.queueEvent(Runnable { init() })
+        GLEventPipeline.INSTANCE.queueEvent(Runnable { init() })
     }
 
     override fun updateSize(width: Int, height: Int) {
         if (width == this.width && this.height == height) return
         this.width = width
         this.height = height
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             cameraWrapper.updateLocation(context)
             initReader()
             synchronized(filterLock) {
@@ -138,7 +138,7 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     override fun stop() {
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             screenWrapper?.release()
             screenWrapper = null
             BaseFilter.release()
@@ -151,7 +151,7 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     override fun onFrameAvailable() {
-        SingleEventPipeline.instance.queueEvent(Runnable { draw() })
+        GLEventPipeline.INSTANCE.queueEvent(Runnable { draw() })
     }
 
     fun updateScreenTexture(texture: SurfaceTexture?) {
@@ -159,11 +159,11 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     override fun post(runnable: Runnable) {
-        SingleEventPipeline.instance.queueEvent(runnable)
+        GLEventPipeline.INSTANCE.queueEvent(runnable)
     }
 
     override fun setFilter(filter: Class<*>) {
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             initFilter(filter)
         })
     }

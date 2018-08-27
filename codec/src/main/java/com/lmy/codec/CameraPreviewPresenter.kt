@@ -15,7 +15,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.muxer.impl.MuxerImpl
-import com.lmy.codec.pipeline.SingleEventPipeline
+import com.lmy.codec.pipeline.GLEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -35,7 +35,7 @@ class CameraPreviewPresenter(var context: CodecContext,
     : SurfaceTexture.OnFrameAvailableListener {
 
     init {
-        SingleEventPipeline.instance.start()
+        GLEventPipeline.INSTANCE.start()
         cameraWrapper = CameraWrapper.open(context, this)
                 .post(Runnable {
                     render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper)
@@ -94,7 +94,7 @@ class CameraPreviewPresenter(var context: CodecContext,
     fun updateSize(width: Int, height: Int) {
         if (context.video.width == width && context.video.height == height) return
         render?.updateSize(width, height)
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             stop()
             start()
         })
@@ -102,11 +102,11 @@ class CameraPreviewPresenter(var context: CodecContext,
 
     fun stopPreview() {
         release()
-        SingleEventPipeline.instance.quit()
+        GLEventPipeline.INSTANCE.quit()
     }
 
     private fun release() {
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             stop()
         })
         try {

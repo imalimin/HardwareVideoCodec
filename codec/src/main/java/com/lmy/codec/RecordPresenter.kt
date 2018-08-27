@@ -16,7 +16,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.helper.MuxerFactory
 import com.lmy.codec.muxer.Muxer
-import com.lmy.codec.pipeline.SingleEventPipeline
+import com.lmy.codec.pipeline.GLEventPipeline
 import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
@@ -38,7 +38,7 @@ class RecordPresenter(var context: CodecContext,
     : SurfaceTexture.OnFrameAvailableListener {
 
     init {
-        SingleEventPipeline.instance.start()
+        GLEventPipeline.INSTANCE.start()
         cameraWrapper = CameraWrapper.open(context, this)
                 .post(Runnable {
                     render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper)
@@ -101,7 +101,7 @@ class RecordPresenter(var context: CodecContext,
     fun updateSize(width: Int, height: Int) {
         if (context.video.width == width && context.video.height == height) return
         render?.updateSize(width, height)
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             stopEncoder()
             reset()
         })
@@ -119,11 +119,11 @@ class RecordPresenter(var context: CodecContext,
 
     fun stop() {
         release()
-        SingleEventPipeline.instance.quit()
+        GLEventPipeline.INSTANCE.quit()
     }
 
     private fun release() {
-        SingleEventPipeline.instance.queueEvent(Runnable {
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             stopEncoder()
             stopMuxer()
         })

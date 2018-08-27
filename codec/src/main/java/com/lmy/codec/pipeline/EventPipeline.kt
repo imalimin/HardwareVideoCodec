@@ -32,7 +32,7 @@ class EventPipeline private constructor(name: String) {
 
     fun queueEvent(event: Runnable) {
         if (!start) {
-            loge("SingleEventPipeline has quited")
+            loge("EventPipeline has quited")
             return
         }
         mHandler.sendMessage(mHandler.obtainMessage(0, event))
@@ -40,7 +40,7 @@ class EventPipeline private constructor(name: String) {
 
     fun queueEventDelayed(event: Runnable, delayed: Long) {
         if (!start) {
-            loge("SingleEventPipeline has quited")
+            loge("EventPipeline has quited")
             return
         }
         mHandler.sendMessageDelayed(mHandler.obtainMessage(0, event), delayed)
@@ -48,7 +48,7 @@ class EventPipeline private constructor(name: String) {
 
     fun quit() {
         if (!start) {
-            loge("SingleEventPipeline has quited")
+            loge("EventPipeline has quited")
             return
         }
         start = false
