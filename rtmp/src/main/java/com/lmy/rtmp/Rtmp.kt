@@ -13,4 +13,5 @@ interface Rtmp {
     fun sendAudio(data: ByteArray, len: Int, timestamp: Long): Int
     fun stop()
     fun setCacheSize(size: Int)
+    fun onJniError(error: Int)
 }
