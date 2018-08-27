@@ -1,5 +1,7 @@
 package com.lmy.rtmp
 
+import android.util.Log
+
 /**
  * Created by lmyooyo@gmail.com on 2018/7/25.
  */
@@ -7,6 +9,10 @@ class RtmpClient : Rtmp {
 
     init {
         System.loadLibrary("rtmp")
+    }
+
+    override fun onJniError(error: Int) {
+        Log.e("RtmpClient", "onJniError $error")
     }
 
     external override fun connect(url: String, timeOut: Int, cacheSize: Int): Int

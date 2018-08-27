@@ -72,7 +72,11 @@ public:
 
     void setCacheSize(int size);
 
+    void setErrorCallback(void (callback)(int));
+
     ~RtmpClient();
+
+    HandlerThread *getPipeline();
 
 private:
     int cacheSize;
@@ -80,12 +84,14 @@ private:
     HandlerThread *pipeline = NULL;
     SpecificData *sps = NULL, *pps = NULL, *spec = NULL;
     long videoCount = 0, audioCount = 0;
-    long retryTime[3] = {3000, 9000, 27000};
+    long retryTime[1] = {3000};
     int width;
     int height;
     int timeOutMs;
     char *url;
     RTMP *rtmp = NULL;
+
+    void (*errorCallback)(int);
 
     void saveVideoSpecificData(const char *sps, int spsLen, const char *pps, int ppsLen);
 

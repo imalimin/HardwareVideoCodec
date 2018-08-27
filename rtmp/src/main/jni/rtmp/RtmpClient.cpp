@@ -171,6 +171,7 @@ int RtmpClient::sendAudio(const char *data, int len, long timestamp) {
 
 void RtmpClient::stop() {
     lock();
+    errorCallback = NULL;
     if (NULL != rtmp) {
         RTMP_Close(rtmp);
         RTMP_Free(rtmp);
@@ -215,7 +216,7 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
     RTMP_SetupURL(rtmp, url);
     RTMP_EnableWrite(rtmp);
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
-    while (retry < count) {
+    while (true) {
         lock();
         if (NULL == rtmp) break;
         LOGI("RTMP: try connect(%d)", retry);
@@ -223,12 +224,16 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
             unlock();
             LOGE("RTMP: connect failed! ");
             ++retry;
+            if (retry >= count) break;
             pipeline->sleep(retryTime[retry]);
         } else {
             unlock();
             LOGI("RTMP: connect success! ");
             break;
         }
+    }
+    if (ret <= 0 && NULL != this->errorCallback) {
+        this->errorCallback(0x100);
     }
     return ret;
 }
@@ -245,7 +250,7 @@ int RtmpClient::_connectStream(int w, int h) {
     this->videoCount = 0;
     this->audioCount = 0;
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
-    while (retry < count) {
+    while (true) {
         lock();
         if (NULL == rtmp) break;
         LOGI("RTMP: try connectStream(%d), %dx%d", retry, this->width, this->height);
@@ -253,12 +258,17 @@ int RtmpClient::_connectStream(int w, int h) {
             unlock();
             LOGE("RTMP: connectStream failed: %d", ret);
             ++retry;
+            if (retry >= count) break;
             pipeline->sleep(retryTime[retry]);
         } else {
             unlock();
             LOGI("RTMP: connectStream success", ret);
             break;
         }
+    }
+    if (ret <= 0 && NULL != this->errorCallback) {
+        this->errorCallback(0x101);
+        return ret;
     }
     if (this->sps && this->pps) {
         sendVideoSpecificData(this->sps, this->pps);
@@ -568,4 +578,12 @@ void RtmpClient::lock() {
 void RtmpClient::unlock() {
     if (NULL != mutex)
         mutex->unlock();
+}
+
+void RtmpClient::setErrorCallback(void (*callback)(int)) {
+    this->errorCallback = callback;
+}
+
+HandlerThread *RtmpClient::getPipeline() {
+    return pipeline;
 }
