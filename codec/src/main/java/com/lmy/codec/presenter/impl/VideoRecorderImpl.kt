@@ -125,8 +125,7 @@ class VideoRecorderImpl(ctx: Context,
     }
 
     override fun setCameraIndex(index: CameraWrapper.CameraIndex) {
-        cameraWrapper?.openCamera(index)
-        cameraWrapper?.startPreview()
+        cameraWrapper?.switchCamera(index)
     }
 
 
@@ -189,7 +188,6 @@ class VideoRecorderImpl(ctx: Context,
 
     private fun startPreview(screenTexture: SurfaceTexture, width: Int, height: Int) {
         cameraWrapper?.post(Runnable {
-            cameraWrapper!!.startPreview()
             render?.start(screenTexture, width, height)
             render?.post(Runnable {
                 render?.updateSize(context.video.width, context.video.height)

@@ -44,7 +44,11 @@ class CameraWrapper(private var context: CodecContext,
         return this
     }
 
-    fun openCamera(index: CameraIndex) {
+    fun switchCamera(index: CameraIndex){
+        openCamera(index)
+    }
+
+    private fun openCamera(index: CameraIndex) {
         //如果没有前置摄像头
         if (index == CameraIndex.FRONT && mCameras < 2) {
             if (null != mCameraIndex) return//不做改变
@@ -57,6 +61,7 @@ class CameraWrapper(private var context: CodecContext,
             updateTexture()
             prepare()
             textureWrapper.updateLocation(context)
+            startPreview()
         })
     }
 
@@ -137,7 +142,7 @@ class CameraWrapper(private var context: CodecContext,
         })
     }
 
-    fun startPreview() {
+    private fun startPreview() {
         if (null == mCamera) {
             debug_e("Start preview failed, mCamera is null")
             return
