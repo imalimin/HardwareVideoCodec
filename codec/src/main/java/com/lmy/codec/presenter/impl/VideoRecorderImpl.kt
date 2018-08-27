@@ -125,7 +125,11 @@ class VideoRecorderImpl(ctx: Context,
     }
 
     override fun setCameraIndex(index: CameraWrapper.CameraIndex) {
-        cameraWrapper?.switchCamera(index)
+        if (Status.IDL == status) {
+            context.cameraIndex = index
+        } else if (Status.PREPARED == status || Status.STARTED == status) {
+            cameraWrapper?.switchCamera(index)
+        }
     }
 
 
