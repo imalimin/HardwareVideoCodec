@@ -104,11 +104,11 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     private fun drawCamera() {
+        cameraWrapper.egl?.makeCurrent()
         if (null != cameraWrapper.surfaceTexture) {
             cameraWrapper.surfaceTexture?.updateTexImage()
             cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
-        cameraWrapper.egl?.makeCurrent()
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         cameraWrapper.drawTexture(transformMatrix)
