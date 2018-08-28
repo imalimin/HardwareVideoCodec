@@ -8,6 +8,8 @@ package com.lmy.codec.muxer.impl
 
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.os.Handler
+import android.os.Message
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
@@ -21,14 +23,17 @@ import java.nio.ByteBuffer
 /**
  * Created by lmyooyo@gmail.com on 2018/7/25.
  */
-class RtmpMuxerImpl(var context: CodecContext) : Muxer {
+class RtmpMuxerImpl(var context: CodecContext,
+                    override var onMuxerListener: Muxer.OnMuxerListener? = null) : Muxer {
     private var client: RtmpReflect = RtmpReflect()
+    private var handler: MyHandler = MyHandler(this)
 
     companion object {
         private val clientLock = Any()
     }
 
     init {
+        client.setHandler(handler)
         start()
     }
 
@@ -126,7 +131,17 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         }
     }
 
-    inner class RtmpReflect {
+    private class MyHandler(val muxer: Muxer) : Handler() {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            if (msg.obj is String)
+                muxer.onMuxerListener?.onError(msg.what, msg.obj as String)
+            else
+                muxer.onMuxerListener?.onError(msg.what, "Unknown error!")
+        }
+    }
+
+    private class RtmpReflect {
         private val clazz: Class<*>
         private val thiz: Any
         private val methodConnect: Method
@@ -137,6 +152,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
         private val methodSendAudio: Method
         private val methodStop: Method
         private val methodSetCacheSize: Method
+        private val methodSetHandler: Method
 
         init {
             try {
@@ -153,6 +169,7 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
                         Int::class.java, Long::class.java)
                 methodStop = clazz.getMethod("stop")
                 methodSetCacheSize = clazz.getMethod("setCacheSize", Int::class.java)
+                methodSetHandler = clazz.getMethod("setHandler", Handler::class.java)
                 thiz = clazz.newInstance()
             } catch (e: ClassNotFoundException) {
                 throw RuntimeException("If you want to use RTMP stream. Please implementation 'com.lmy.codec:rtmp:latestVersion'")
@@ -192,6 +209,10 @@ class RtmpMuxerImpl(var context: CodecContext) : Muxer {
 
         fun setCacheSize(size: Int) {
             methodSetCacheSize.invoke(thiz, size)
+        }
+
+        fun setHandler(h: Handler) {
+            methodSetHandler.invoke(thiz, h)
         }
     }
 }

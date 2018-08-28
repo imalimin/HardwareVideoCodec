@@ -29,7 +29,8 @@ class MuxerImpl(var path: String,
                 private var mFrameCount: Int = 0,
                 private var mVideoTrackReady: Boolean = false,
                 private var mAudioTrackReady: Boolean = false,
-                private var mStart: Boolean = false) : Muxer {
+                private var mStart: Boolean = false,
+                override var onMuxerListener: Muxer.OnMuxerListener? = null) : Muxer {
 
     private val mQueue = LinkedList<Sample>()
     private val mWriteSyn = Any()
@@ -92,6 +93,7 @@ class MuxerImpl(var path: String,
             videoTrack = muxer!!.addTrack(format)
         } catch (e: Exception) {
             debug_e("Add video track failed")
+            onMuxerListener?.onError(ERROR_ADD_TRACK, "Add video track failed")
             e.printStackTrace()
             return
         }
@@ -104,6 +106,7 @@ class MuxerImpl(var path: String,
             audioTrack = muxer!!.addTrack(format)
         } catch (e: Exception) {
             debug_e("Add audio track failed")
+            onMuxerListener?.onError(ERROR_ADD_TRACK, "Add audio track failed")
             e.printStackTrace()
             return
         }
@@ -139,6 +142,7 @@ class MuxerImpl(var path: String,
 //                    "Sample($mFrameCount, ${sample.bufferInfo.presentationTimeUs}): ${sample.bufferInfo.size}")
             muxer?.writeSampleData(track, sample.sample, sample.bufferInfo)
         } catch (e: Exception) {
+            onMuxerListener?.onError(ERROR_WRITE, "Write sample failed")
             e.printStackTrace()
         }
     }
@@ -160,5 +164,10 @@ class MuxerImpl(var path: String,
             }
         }
         muxer?.release()
+    }
+
+    companion object {
+        const val ERROR_ADD_TRACK = 0x200
+        const val ERROR_WRITE = 0x201
     }
 }
