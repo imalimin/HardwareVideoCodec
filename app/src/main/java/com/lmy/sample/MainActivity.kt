@@ -102,12 +102,18 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
 
     private var onStateListener =
             object : VideoRecorder.OnStateListener {
+                override fun onError(error: Int, msg: String) {
+                    AlertDialog.Builder(this@MainActivity)
+                            .setTitle("ERROR")
+                            .setMessage(msg).show()
+                }
+
                 override fun onStop() {
 
                 }
 
                 override fun onPrepared(encoder: Encoder) {
-//                    mRecorder.start()
+                    mRecorder.start()
                     nextBtn.isEnabled = true
                     runOnUiThread {
                         enableChangeRatio(true)
