@@ -1,18 +1,28 @@
 package com.lmy.rtmp
 
-import android.util.Log
+import android.os.Handler
+import android.os.Message
 
 /**
  * Created by lmyooyo@gmail.com on 2018/7/25.
  */
-class RtmpClient : Rtmp {
+class RtmpClient(private var handler: Handler? = null) : Rtmp {
 
     init {
         System.loadLibrary("rtmp")
     }
 
     override fun onJniError(error: Int) {
-        Log.e("RtmpClient", "onJniError $error")
+        val m: Message = when (error) {
+            0x100 -> Message.obtain(handler, error, "Connect failed!")
+            0x101 -> Message.obtain(handler, error, "Connect stream failed!")
+            else -> Message.obtain(handler, error, "Unknown error!")
+        }
+        handler?.sendMessage(m)
+    }
+
+    override fun setHandler(h: Handler) {
+        this.handler = h
     }
 
     external override fun connect(url: String, timeOut: Int, cacheSize: Int): Int

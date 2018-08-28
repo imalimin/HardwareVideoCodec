@@ -1,5 +1,7 @@
 package com.lmy.rtmp
 
+import android.os.Handler
+
 interface Rtmp {
     //连接RTMP服务器
     fun connect(url: String, timeOut: Int, cacheSize: Int): Int
@@ -13,5 +15,6 @@ interface Rtmp {
     fun sendAudio(data: ByteArray, len: Int, timestamp: Long): Int
     fun stop()
     fun setCacheSize(size: Int)
+    fun setHandler(h: Handler)
     fun onJniError(error: Int)
 }
