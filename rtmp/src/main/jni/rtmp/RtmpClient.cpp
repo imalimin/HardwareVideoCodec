@@ -243,7 +243,7 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
 
 int RtmpClient::_connectStream(int w, int h) {
     if (NULL == rtmp) {
-        LOGE("RTMP: You must connected before connect stream!");
+        LOGE("RTMP: You must call connect before connectStream!");
         return ERROR_DISCONNECT;
     }
     if (!RTMP_IsConnected(rtmp)) {
