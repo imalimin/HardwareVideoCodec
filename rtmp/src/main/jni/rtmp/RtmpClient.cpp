@@ -210,11 +210,13 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
     this->timeOutMs = timeOutMs;
 
     RTMP_LogSetLevel(RTMP_LOGALL);
-    rtmp = RTMP_Alloc();
-    RTMP_Init(rtmp);
-    rtmp->Link.timeout = timeOutMs / 1000;
-    RTMP_SetupURL(rtmp, url);
-    RTMP_EnableWrite(rtmp);
+    if (NULL == rtmp) {
+        rtmp = RTMP_Alloc();
+        RTMP_Init(rtmp);
+        rtmp->Link.timeout = timeOutMs / 1000;
+        RTMP_SetupURL(rtmp, url);
+        RTMP_EnableWrite(rtmp);
+    }
     int ret = 1, retry = -1, count = arraySizeof(retryTime);
     while (true) {
         lock();
@@ -225,7 +227,8 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
             LOGE("RTMP: connect failed! ");
             ++retry;
             if (retry >= count) break;
-            pipeline->sleep(retryTime[retry]);
+            if (NULL != pipeline)
+                pipeline->sleep(retryTime[retry]);
         } else {
             unlock();
             LOGI("RTMP: connect success! ");
@@ -239,7 +242,11 @@ int RtmpClient::_connect(char *url, int timeOutMs) {
 }
 
 int RtmpClient::_connectStream(int w, int h) {
-    if (NULL == rtmp || !RTMP_IsConnected(rtmp)) {
+    if (NULL == rtmp) {
+        LOGE("RTMP: You must connected before connect stream!");
+        return ERROR_DISCONNECT;
+    }
+    if (!RTMP_IsConnected(rtmp)) {
         if (_connect(this->url, this->timeOutMs) < 0) {
             LOGE("RTMP: You must connected before connect stream!");
             return ERROR_DISCONNECT;
@@ -259,7 +266,8 @@ int RtmpClient::_connectStream(int w, int h) {
             LOGE("RTMP: connectStream failed: %d", ret);
             ++retry;
             if (retry >= count) break;
-            pipeline->sleep(retryTime[retry]);
+            if (NULL != pipeline)
+                pipeline->sleep(retryTime[retry]);
         } else {
             unlock();
             LOGI("RTMP: connectStream success", ret);
