@@ -210,6 +210,11 @@ class VideoRecorderImpl(ctx: Context,
     private fun startEncoder() {
         if (null == muxer) {
             muxer = MuxerFactory.getMuxer(context)
+            muxer?.onMuxerListener = object : Muxer.OnMuxerListener {
+                override fun onError(error: Int, msg: String) {
+                    onStateListener?.onError(error, msg)
+                }
+            }
         } else {
             muxer?.reset()
         }

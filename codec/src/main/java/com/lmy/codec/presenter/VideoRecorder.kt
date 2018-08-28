@@ -36,5 +36,6 @@ interface VideoRecorder : SurfaceTexture.OnFrameAvailableListener {
     fun release()
     interface OnStateListener : Encoder.OnPreparedListener, Encoder.OnRecordListener {
         fun onStop()
+        fun onError(error: Int, msg: String)
     }
 }
