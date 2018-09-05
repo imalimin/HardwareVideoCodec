@@ -15,6 +15,7 @@ import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
+import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraWrapper
 
@@ -29,7 +30,8 @@ class VideoRecorderImpl(ctx: Context,
                         private var muxer: Muxer? = null,
                         private var onStateListener: VideoRecorder.OnStateListener? = null,
                         private var textureView: TextureView? = null,
-                        private var status: Status = Status.IDL) : VideoRecorder {
+                        private var status: Status = Status.IDL,
+                        private var filter: Class<*>? = NormalFilter::class.java) : VideoRecorder {
     enum class Status {
         IDL, PREPARED, STARTED
     }
@@ -167,7 +169,13 @@ class VideoRecorderImpl(ctx: Context,
     }
 
     override fun setFilter(filter: Class<*>) {
-        render?.setFilter(filter)
+        if (null == render) {
+            this.filter = filter
+            if (null == this.filter)
+                this.filter = NormalFilter::class.java
+        } else {
+            render?.setFilter(filter)
+        }
     }
 
     override fun getFilter(): BaseFilter? {
@@ -200,6 +208,9 @@ class VideoRecorderImpl(ctx: Context,
                 }
                 startEncoder()
             })
+        })
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
+            render?.setFilter(filter!!)
         })
     }
 
