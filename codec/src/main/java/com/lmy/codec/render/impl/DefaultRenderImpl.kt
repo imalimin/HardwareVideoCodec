@@ -10,7 +10,6 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES20
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.PixelsReader
-import com.lmy.codec.helper.Resources
 import com.lmy.codec.pipeline.GLEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -25,6 +24,7 @@ import com.lmy.codec.wrapper.ScreenTextureWrapper
  */
 class DefaultRenderImpl(var context: CodecContext,
                         var cameraWrapper: CameraTextureWrapper,
+                        private var filterClass: Class<*>? = null,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
@@ -40,7 +40,7 @@ class DefaultRenderImpl(var context: CodecContext,
         this.width = context.video.width
         this.height = context.video.height
         initReader()
-        initFilter(NormalFilter::class.java)
+        initFilter(if (null != filterClass) filterClass!! else NormalFilter::class.java)
     }
 
     private fun initFilter(clazz: Class<*>) {

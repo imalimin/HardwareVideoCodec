@@ -46,7 +46,7 @@ class VideoRecorderImpl(ctx: Context,
         if (null == cameraWrapper) {
             cameraWrapper = CameraWrapper.open(context, this)
                     .post(Runnable {
-                        render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper)
+                        render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper, filter)
                     })
         }
         if (null != textureView && textureView!!.isAvailable) {
@@ -208,9 +208,6 @@ class VideoRecorderImpl(ctx: Context,
                 }
                 startEncoder()
             })
-        })
-        GLEventPipeline.INSTANCE.queueEvent(Runnable {
-            render?.setFilter(filter!!)
         })
     }
 
