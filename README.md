@@ -7,9 +7,10 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_2.gif)
 ## Latest release
-[V1.6.1](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.6.1)
+[V1.6.2](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.6.2)
 
-* Can switch camera.
+* Fix cannot set filter before recorder prepare.
+* New beauty filter.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             reset()
             setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4")
             setOutputSize(720, 1280)//Default 720x1280
-            setFilter(NormalFilter::class.java)//Default NormalFilter
+            setFilter(BeautyV4Filter::class.java)//Default NormalFilter
             setPreviewDisplay(mTextureView)
         }
         mRecorder.prepare()
@@ -108,7 +109,7 @@ class MainActivity : AppCompatActivity() {
             reset()
             setOutputUri("rtmp://192.168.16.125:1935/live/livestream")
             setOutputSize(720, 1280)//Default 720x1280
-            setFilter(NormalFilter::class.java)//Default NormalFilter
+            setFilter(BeautyV4Filter::class.java)//Default NormalFilter
             setPreviewDisplay(mTextureView)
             setOnStateListener(onStateListener)
         }
