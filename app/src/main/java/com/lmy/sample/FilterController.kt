@@ -69,7 +69,7 @@ class FilterController(private val mVideoRecorder: VideoRecorder,
                 mVideoRecorder.setFilter(BeautyFilter::class.java)
                 show(3)
                 oneBar.progress = 55
-                twoBar.progress = 50
+                twoBar.progress = 25
                 thBar.progress = 15
             }
             3 -> {

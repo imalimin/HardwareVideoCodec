@@ -57,7 +57,7 @@ class BeautyFilter(width: Int = 0,
     }
 
     private var brightLevel = 0.55f
-    private var texelOffset = 1f
+    private var texelOffset = 0.5f
     private var rgba = floatArrayOf(0.33f, 0.63f, 0.4f, 0.15f)
 
     /**
