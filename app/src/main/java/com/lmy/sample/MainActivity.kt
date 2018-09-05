@@ -21,7 +21,7 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.loge
 import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.presenter.impl.VideoRecorderImpl
-import com.lmy.codec.texture.impl.filter.BeautyFilter
+import com.lmy.codec.texture.impl.filter.BeautyV4Filter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraWrapper
 import com.lmy.sample.helper.PermissionHelper
@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
             setOutputUri("rtmp://192.168.16.203:1935/live/livestream")
             setOutputSize(720, 1280)//Default 720x1280
             setCameraIndex(CameraWrapper.CameraIndex.FRONT)
-            setFilter(BeautyFilter::class.java)//Default NormalFilter
+            setFilter(BeautyV4Filter::class.java)//Default NormalFilter
             setPreviewDisplay(mTextureView)
             setOnStateListener(onStateListener)
         }
