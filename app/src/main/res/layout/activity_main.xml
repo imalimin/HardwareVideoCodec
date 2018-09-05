@@ -122,16 +122,6 @@
         android:text="Hold to record"
         android:textColor="#ffffff" />
 
-    <Button
-        android:id="@+id/nextBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="16dp"
-        android:enabled="false"
-        android:text="NEW FILE" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -139,6 +129,17 @@
         android:gravity="right"
         android:orientation="vertical"
         android:padding="4dp">
+
+        <Button
+            android:id="@+id/nextBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginBottom="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:enabled="false"
+            android:text="NEW FILE"
+            android:textColor="@color/colorAccent" />
 
         <LinearLayout
             android:id="@+id/progressLayout"
