@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
 import com.lmy.codec.presenter.VideoRecorder
-import com.lmy.codec.presenter.impl.VideoRecorderImpl
 import com.lmy.codec.texture.impl.filter.*
 
 /**
