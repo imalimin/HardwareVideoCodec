@@ -19,7 +19,6 @@ class BeautyFilter(width: Int = 0,
 
     private var paramsLocation = 0
     private var brightnessLocation = 0
-    private var singleStepOffsetLocation = 0
     private var texelWidthLocation = 0
     private var texelHeightLocation = 0
 
@@ -31,7 +30,6 @@ class BeautyFilter(width: Int = 0,
         //美颜参数
         paramsLocation = getUniformLocation("params")
         brightnessLocation = getUniformLocation("brightness")
-        singleStepOffsetLocation = getUniformLocation("singleStepOffset")
         texelWidthLocation = getUniformLocation("texelWidthOffset")
         texelHeightLocation = getUniformLocation("texelHeightOffset")
     }
@@ -39,9 +37,9 @@ class BeautyFilter(width: Int = 0,
     override fun drawTexture(transformMatrix: FloatArray?) {
         active()
 
-        setParams(beautyLevel, toneLevel)
+        setParams(rgba)
         setBrightLevel(brightLevel)
-        setTexelOffset(texelWidthOffset)
+        setTexelOffset(texelOffset)
 
         uniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
@@ -58,52 +56,27 @@ class BeautyFilter(width: Int = 0,
         return "shader/fragment_beauty.sh"
     }
 
-    private var texelHeightOffset = 0f
-    private var texelWidthOffset = 0f
-    private var toneLevel = 0f
-    private var beautyLevel = 0f
-    private var brightLevel = 0f
-
-    private fun setToneLevel(toneLeve: Float) {
-        this.toneLevel = toneLeve
-        setParams(beautyLevel, toneLevel)
-    }
-
-    private fun setBeautyLevel(beautyLeve: Float) {
-        this.beautyLevel = beautyLeve
-        setParams(beautyLevel, toneLevel)
-    }
+    private var brightLevel = 0.55f
+    private var texelOffset = 1f
+    private var rgba = floatArrayOf(0.33f, 0.63f, 0.4f, 0.15f)
 
     /**
-     * 0==index: beauty
-     * 1==index: tone
-     * 2==index: brightLevel
-     * 3==index: texelOffset
+     * 0==index: bright/亮度
+     * 1==index: texelOffset/磨皮
+     * 2==index: rosy/红润
      */
     override fun setValue(index: Int, value: Int) {
         when (index) {
             0 -> {
-                this.beautyLevel = value / 100f * 2.5f
-            }
-            1 -> {
-                this.toneLevel = (value - 50) / 100f * 10
-            }
-            2 -> {
                 this.brightLevel = value / 100f
             }
-            3 -> {
-                texelHeightOffset = (value - 50) / 100f * 2
-                texelWidthOffset = texelHeightOffset
+            1 -> {
+                texelOffset = value / 100f * 2
+            }
+            2 -> {
+                this.rgba[3] = value / 100f
             }
         }
-    }
-
-    /**
-     * -1 - 1
-     */
-    private fun setTexelOffset(texelOffset: Float) {
-        setUniform1f(texelWidthLocation, texelOffset / 1440)
-        setUniform1f(texelHeightLocation, texelOffset / 2100)
     }
 
     /**
@@ -116,16 +89,15 @@ class BeautyFilter(width: Int = 0,
     /**
      * beauty: 0 - 2.5, tone: -5 - 5
      */
-    private fun setParams(beauty: Float, tone: Float) {
-        val vector = FloatArray(4)
-        vector[0] = 1.0f - 0.6f * beauty
-        vector[1] = 1.0f - 0.3f * beauty
-        vector[2] = 0.1f + 0.3f * tone
-        vector[3] = 0.1f + 0.3f * tone
-        setUniform4fv(paramsLocation, vector)
+    private fun setParams(rgba: FloatArray) {
+        setUniform4fv(paramsLocation, rgba)
     }
 
-    private fun setTexelSize(w: Float, h: Float) {
-        setUniform2fv(singleStepOffsetLocation, floatArrayOf(2.0f / w, 2.0f / h))
+    /**
+     * -1 - 1
+     */
+    private fun setTexelOffset(texelOffset: Float) {
+        setUniform1f(texelWidthLocation, texelOffset / width)
+        setUniform1f(texelHeightLocation, texelOffset / height)
     }
 }

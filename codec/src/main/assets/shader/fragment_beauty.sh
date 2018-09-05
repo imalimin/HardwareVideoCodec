@@ -1,7 +1,6 @@
 precision highp float;
 varying highp vec2 vTextureCoord;
 uniform sampler2D uTexture;
-uniform highp vec2 singleStepOffset;
 uniform highp vec4 params;
 uniform highp float brightness;
 uniform float texelWidthOffset;
