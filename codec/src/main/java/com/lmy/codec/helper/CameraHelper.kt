@@ -56,15 +56,23 @@ class CameraHelper {
 
         fun setFps(cameraParam: Camera.Parameters, context: CodecContext) {
             val fpsRanges = cameraParam.supportedPreviewFpsRange
-            var fps = IntArray(2)
-            cameraParam.getPreviewFpsRange(fps)
-            fpsRanges.forEach {
-                if (context.video.fps * 1000 >= it[0] && it[0] > fps[0])
-                    fps = it
+            var fpsRange = IntArray(2)
+            cameraParam.getPreviewFpsRange(fpsRange)
+            if (context.video.fps > 0) {
+                fpsRanges.forEach {
+                    if (context.video.fps * 1000 >= it[0] && it[0] > fpsRange[0])
+                        fpsRange = it
+                }
+            } else {
+                fpsRanges.forEach {
+                    if (it[0] != it[1] && Math.abs(it[1] - it[0]) > Math.abs(fpsRange[1] - fpsRange[0])) {
+                        fpsRange = it
+                    }
+                }
             }
-            context.video.fps = fps[0] / 1000
-            cameraParam.setPreviewFpsRange(fps[0], fps[1])
-            debug_v("fps: ${fps[0]}-${fps[1]}, target: ${context.video.fps * 1000}")
+            debug_v("Fps: ${fpsRange[0]}-${fpsRange[1]}, target: ${context.video.fps} -> ${(fpsRange[0] + fpsRange[1]) / 2000}")
+            context.video.fps = (fpsRange[0] + fpsRange[1]) / 2000
+            cameraParam.setPreviewFpsRange(fpsRange[0], fpsRange[1])
         }
 
         fun setAutoExposureLock(cameraParam: Camera.Parameters, flag: Boolean) {

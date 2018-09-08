@@ -60,8 +60,8 @@ class CodecContext(ctx: Context,
     data class Video(internal var mime: String = "video/avc",
                      internal var width: Int = 720,
                      internal var height: Int = 1280,
-                     internal var fps: Int = 30,//If not support, select the lowest fps
-                     internal var bitrate: Int = width * height * MEDIUM * fps / 24,
+                     internal var fps: Int = 0,//If not support, select the lower fps. 0 means auto.
+                     internal var bitrate: Int = width * height * MEDIUM / 24,
                      internal var iFrameInterval: Int = 2,
                      internal var bitrateMode: Int = 1,//if support, default VBR
                      /**
