@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity() {
             reset()
             setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test.mp4")
             setOutputSize(720, 1280)//Default 720x1280
+            setFps(30)
             setFilter(BeautyV4Filter::class.java)//Default NormalFilter
             setPreviewDisplay(mTextureView)
         }
@@ -109,6 +110,7 @@ class MainActivity : AppCompatActivity() {
             reset()
             setOutputUri("rtmp://192.168.16.125:1935/live/livestream")
             setOutputSize(720, 1280)//Default 720x1280
+            setFps(30)
             setFilter(BeautyV4Filter::class.java)//Default NormalFilter
             setPreviewDisplay(mTextureView)
             setOnStateListener(onStateListener)
