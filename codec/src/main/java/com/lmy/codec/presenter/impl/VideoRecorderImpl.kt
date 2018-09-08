@@ -155,6 +155,10 @@ class VideoRecorderImpl(ctx: Context,
         context.video.bitrate = bitrate
     }
 
+    /**
+     * Set fps. It is highly recommended to set this value
+     * @params fps 0 means auto
+     */
     override fun setFps(fps: Int) {
         changeParamsCheck()
         context.video.fps = fps
