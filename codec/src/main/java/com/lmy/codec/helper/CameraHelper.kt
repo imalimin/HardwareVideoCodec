@@ -56,11 +56,13 @@ class CameraHelper {
 
         fun setFps(cameraParam: Camera.Parameters, context: CodecContext) {
             val fpsRanges = cameraParam.supportedPreviewFpsRange
-            var fps = fpsRanges[0]
+            var fps = IntArray(2)
+            cameraParam.getPreviewFpsRange(fps)
             fpsRanges.forEach {
                 if (context.video.fps * 1000 >= it[0] && it[0] > fps[0])
                     fps = it
             }
+            context.video.fps = fps[0] / 1000
             cameraParam.setPreviewFpsRange(fps[0], fps[1])
             debug_v("fps: ${fps[0]}-${fps[1]}, target: ${context.video.fps * 1000}")
         }
