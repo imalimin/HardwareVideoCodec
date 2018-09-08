@@ -115,9 +115,9 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
 
                 override fun onPrepared(encoder: Encoder) {
                     mRecorder.start()
-                    nextBtn.isEnabled = true
                     runOnUiThread {
                         enableChangeRatio(true)
+                        nextBtn.isEnabled = true
                         timeView.text = "00:00.00"
                     }
                 }
