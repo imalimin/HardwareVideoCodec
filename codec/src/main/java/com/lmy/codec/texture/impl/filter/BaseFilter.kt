@@ -37,26 +37,23 @@ abstract class BaseFilter(width: Int = 0,
         shareFrameBufferTexture = this.frameBufferTexture
     }
 
-    open fun active() {
+    open fun active(samplerLocation: Int) {
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
+        setUniform1i(samplerLocation, 0)
     }
 
-    fun uniform1i(uniform: Int, x: Int) {
-        setUniform1i(uniform, x)
-    }
-
-    fun draw() {
+    protected fun draw() {
         drawer.draw()
-        GLES20.glFinish()
     }
 
     fun inactive() {
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+        GLES20.glFinish()
     }
 
 

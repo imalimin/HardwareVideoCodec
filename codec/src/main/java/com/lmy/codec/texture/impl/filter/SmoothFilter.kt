@@ -28,8 +28,7 @@ class SmoothFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
-        uniform1i(uTextureLocation, 0)
+        active(uTextureLocation)
         setUniform1i(mRadiusLocation, mRadius)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()

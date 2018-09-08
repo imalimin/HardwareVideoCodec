@@ -35,13 +35,10 @@ class BeautyFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
-
+        active(uTextureLocation)
         setParams(rgba)
         setBrightLevel(brightLevel)
         setTexelOffset(texelOffset)
-
-        uniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)

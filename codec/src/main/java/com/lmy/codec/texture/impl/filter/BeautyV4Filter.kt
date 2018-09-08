@@ -29,13 +29,10 @@ class BeautyV4Filter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
-
+        active(uTextureLocation)
         setUniform1f(paramsLocation, params)
         setUniform1f(distanceLocation, distance)
         setUniform1f(brightnessLocation, brightness)
-
-        uniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)

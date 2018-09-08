@@ -33,10 +33,9 @@ class HighlightShadowFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
+        active(uTextureLocation)
         setUniform1f(mHighlightsLocation, mHighlights)
         setUniform1f(mShadowsLocation, mShadows)
-        uniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)

@@ -31,8 +31,7 @@ class HazeFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
-        uniform1i(uTextureLocation, 0)
+        active(uTextureLocation)
         setUniform1f(mDistanceLocation, mDistance)
         setUniform1f(mSlopeLocation, mSlope)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)

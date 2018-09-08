@@ -25,8 +25,7 @@ class GreyFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
-        uniform1i(uTextureLocation, 0)
+        active(uTextureLocation)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)

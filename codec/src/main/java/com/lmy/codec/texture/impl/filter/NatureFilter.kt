@@ -16,8 +16,7 @@ class NatureFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
-        uniform1i(uTextureLocation, getTextureOffset())
+        active(uTextureLocation)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)

@@ -31,10 +31,9 @@ class WhiteBalanceFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
+        active(uTextureLocation)
         setUniform1f(mTemperatureLocation, mTemperature)
         setUniform1f(mTintLocation, mTint)
-        uniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)

@@ -41,25 +41,16 @@ abstract class BaseMultipleSamplerFilter(width: Int = 0,
         return texture[0]
     }
 
-    override fun active() {
+    override fun active(samplerLocation: Int) {
+        super.active(samplerLocation)
         if (null == textures || null == textureLocations || null == getSamplers()) {
-            super.active()
             return
         }
-        GLES20.glUseProgram(shaderProgram!!)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         textures!!.forEachIndexed { index, it ->
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + index)
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + index + 1)
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, it)
-            uniform1i(textureLocations!![index], index)
+            setUniform1i(textureLocations!![index], index + 1)
         }
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + getTextureOffset())
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
-    }
-
-    fun getTextureOffset(): Int {
-        if (null == getSamplers()) return 0
-        return getSamplers()!!.size
     }
 
     abstract fun getSamplers(): Array<Sampler>?

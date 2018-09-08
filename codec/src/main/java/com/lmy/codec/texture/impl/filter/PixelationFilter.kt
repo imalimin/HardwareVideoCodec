@@ -15,7 +15,7 @@ class PixelationFilter(width: Int = 0,
                        textureId: IntArray = IntArray(1)) : BaseFilter(width, height, textureId) {
 
     private var aPositionLocation = 0
-    private var uTexture = 0
+    private var uTextureLocation = 0
     private var aTextureCoordinateLocation = 0
 
     private var imageWidthFactor = 0
@@ -27,7 +27,7 @@ class PixelationFilter(width: Int = 0,
         valueWidthFactor = 1f / width
         valueHeightFactor = 1f / height
         aPositionLocation = getAttribLocation("aPosition")
-        uTexture = getUniformLocation("uTexture")
+        uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
 
         imageWidthFactor = getUniformLocation("imageWidthFactor")
@@ -36,11 +36,10 @@ class PixelationFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
+        active(uTextureLocation)
         setUniform1f(imageWidthFactor, valueWidthFactor)
         setUniform1f(imageHeightFactor, valueHeightFactor)
         setUniform1f(pixel, valuePixel)
-        uniform1i(uTexture, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)

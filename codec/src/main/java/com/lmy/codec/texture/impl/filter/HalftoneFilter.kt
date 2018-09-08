@@ -32,8 +32,7 @@ class HalftoneFilter(width: Int = 0,
     }
 
     override fun drawTexture(transformMatrix: FloatArray?) {
-        active()
-        uniform1i(uTextureLocation, 0)
+        active(uTextureLocation)
         setUniform1f(mFractionalWidthOfPixelLocation, mFractionalWidthOfAPixel)
         setUniform1f(mAspectRatioLocation, mAspectRatio)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
