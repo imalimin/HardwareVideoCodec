@@ -9,8 +9,8 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ## Latest release
 [V1.6.2](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.6.2)
 
-* Fix cannot set filter before recorder prepare.
-* New beauty filter.
+* More filters.
+* Fix the problem of camera frame rate selection error.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
