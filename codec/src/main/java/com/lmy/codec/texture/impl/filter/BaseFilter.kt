@@ -37,7 +37,7 @@ abstract class BaseFilter(width: Int = 0,
         shareFrameBufferTexture = this.frameBufferTexture
     }
 
-    fun active() {
+    open fun active() {
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
