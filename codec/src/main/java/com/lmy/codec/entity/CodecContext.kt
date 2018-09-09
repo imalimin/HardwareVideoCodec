@@ -29,7 +29,9 @@ class CodecContext(ctx: Context,
     }
 
     internal fun reset() {
-        video = Video()
+        video = Video().apply {
+            fps = video.fps//因为重置的时候，可能并不会重新打开摄像头，无法获取fps，所以不重置fps
+        }
         audio = Audio()
         ioContext = IOContext()
         codecType = CodecType.HARD
