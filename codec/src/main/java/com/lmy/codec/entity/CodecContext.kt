@@ -63,7 +63,7 @@ class CodecContext(ctx: Context,
                      internal var width: Int = 720,
                      internal var height: Int = 1280,
                      internal var fps: Int = 0,//If not support, select the lower fps. 0 means auto.
-                     internal var bitrate: Int = width * height * MEDIUM / 24,
+                     internal var bitrate: Int = width * height * MEDIUM,
                      internal var iFrameInterval: Int = 2,
                      internal var bitrateMode: Int = 1,//if support, default VBR
                      /**
