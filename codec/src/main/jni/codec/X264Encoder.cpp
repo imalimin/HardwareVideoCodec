@@ -269,6 +269,13 @@ bool X264Encoder::fillSrc(char *argb) {
     return ret >= 0;
 }
 
+/**
+ *
+ * @param dest sps和pps，这里把他们保存在同一块内存，也可以分开保存
+ * @param s sps和pps总长度
+ * @param type 用于标记这是sps和pps
+ * @return
+ */
 bool X264Encoder::encodeHeader(char *dest, int *s, int *type) {
     int nal, size = 0;
     x264_nal_t *nals;
