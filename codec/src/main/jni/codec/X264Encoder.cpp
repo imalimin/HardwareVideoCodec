@@ -255,6 +255,11 @@ void X264Encoder::setLevel(int level) {
     encoder->param->i_level_idc = level;// 11 12 13 20 for CIF;31 for 720P
 }
 
+/**
+ * 使用libyuv把rgb转为i420，并填充到encoder->picture
+ * @param argb
+ * @return
+ */
 bool X264Encoder::fillSrc(char *argb) {
     int width = encoder->param->i_width;
     int height = encoder->param->i_height;
