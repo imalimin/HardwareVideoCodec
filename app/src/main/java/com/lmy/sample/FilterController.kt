@@ -17,13 +17,14 @@ class FilterController(private val mVideoRecorder: VideoRecorder,
     companion object {
         private val FILTERS = arrayOf(
                 "Normal", "Beauty", "Beauty V4", "Grey", "Pixelation",
-                "Hue","Gamma", "Brightness", "Sepia", "Sharpness",
+                "Hue", "Gamma", "Brightness", "Sepia", "Sharpness",
                 "Saturation", "Exposure", "Highlight Shadow", "Monochrome", "White Balance",
                 "Vignette", "Crosshatch", "Smooth", "Sketch", "Halftone",
                 "Haze", "NatureFilter", "CleanFilter", "VividFilter", "Beach",
                 "Brannan", "Coral", "Crisp", "Fresh", "Grass",
                 "Inkwell", "Lolita", "Pink", "Sunset", "Sweet",
-                "Urban", "Valencia", "Vintage", "Walden")
+                "Urban", "Valencia", "Vintage", "Walden", "Pixar",
+                "Chromatic")
     }
 
     private var oneBar: SeekBar = progressLayout.getChildAt(0) as SeekBar
@@ -250,6 +251,15 @@ class FilterController(private val mVideoRecorder: VideoRecorder,
             38 -> {
                 mVideoRecorder.setFilter(WaldenFilter::class.java)
                 show(0)
+            }
+            39 -> {
+                mVideoRecorder.setFilter(PixarFilter::class.java)
+                show(0)
+            }
+            40 -> {
+                mVideoRecorder.setFilter(ChromaticFilter::class.java)
+                show(1)
+                oneBar.progress = 10
             }
             else -> {
                 mVideoRecorder.setFilter(NormalFilter::class.java)
