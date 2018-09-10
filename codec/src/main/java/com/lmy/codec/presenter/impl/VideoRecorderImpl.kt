@@ -144,7 +144,6 @@ class VideoRecorderImpl(ctx: Context,
         changeParamsCheck()
         context.video.width = width
         context.video.height = height
-        setVideoBitrate(width * height * CodecContext.Video.MEDIUM * context.video.fps / 24)
         if (0 != context.cameraSize.width && 0 != context.cameraSize.height) {
             context.check()
         }
@@ -230,6 +229,9 @@ class VideoRecorderImpl(ctx: Context,
         } else {
             muxer?.reset()
         }
+        if (context.video.bitrate <= 0)
+            setVideoBitrate(context.video.width * context.video.height * CodecContext.Video.MEDIUM * context.video.fps / 24)
+        context.check()
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!).apply {
             onPreparedListener = object : Encoder.OnPreparedListener {

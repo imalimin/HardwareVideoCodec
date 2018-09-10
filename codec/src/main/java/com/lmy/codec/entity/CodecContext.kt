@@ -49,6 +49,10 @@ class CodecContext(ctx: Context,
             throw RuntimeException("Video size can not be greater than preview size")
         if (0 != video.width % 2 || 0 != video.height % 2)
             throw RuntimeException("Video width and height must be a multiple of 2")
+        if (video.fps < 1)
+            throw RuntimeException("Video fps must be greater than 0")
+        if (video.bitrate < 1)
+            throw RuntimeException("Video bitrate must be greater than 0")
     }
 
     fun isHorizontal(): Boolean {
