@@ -8,8 +8,7 @@ import java.nio.ByteBuffer
 /**
  * Created by lmyooyo@gmail.com on 2018/6/7.
  */
-class CacheX264Encoder(frameSize: Int,
-                       private val codec: X264Encoder,
+class CacheX264Encoder(private val codec: X264Encoder,
                        private var cache: Cache? = null,
                        var onSampleListener: OnSampleListener? = null,
                        private var running: Boolean = true) : X264, Runnable {
@@ -17,7 +16,7 @@ class CacheX264Encoder(frameSize: Int,
     private var mEncodeThread = Thread(this).apply { name = "CacheX264Encoder" }
 
     init {
-        cache = Cache(frameSize, 5)
+        cache = Cache(codec.getWidth() * codec.getHeight() * 4, 5)
         codec.start()
         mEncodeThread.start()
     }
