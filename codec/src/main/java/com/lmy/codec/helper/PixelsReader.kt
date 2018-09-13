@@ -215,6 +215,10 @@ class PixelsReader private constructor(private var usePbo: Boolean,
     }
 
     private fun save(data: ByteArray, path: String) {
+//        val fos = FileOutputStream(path)
+//        YuvImage(data, ImageFormat.YUY2, width, height, null)
+//                .compressToJpeg(Rect(0, 0, width, height), 80, fos)
+//        fos.close()
         convertARGB(data)
         val bitmap = Bitmap.createBitmap(btoi(data), width, height, Bitmap.Config.ARGB_8888)
         //        opts.inJustDecodeBounds = false;
