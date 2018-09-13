@@ -24,7 +24,7 @@ class CacheX264Encoder(private val codec: X264Encoder,
 
     fun encode(buffer: ByteBuffer) {
         val data = cache?.pollCache() ?: return
-        buffer.position(0)
+        buffer.rewind()
         buffer.get(data)
         cache?.offer(data)
     }
