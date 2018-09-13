@@ -129,9 +129,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
             if (mEncoding && inited) {
-                val ttt = System.currentTimeMillis()
                 readPixels()
-                debug_e("readPixels cost " + (System.currentTimeMillis() - ttt))
                 mPipeline.queueEvent(Runnable { encode() })
                 reader?.recycleBuffer()
             }
