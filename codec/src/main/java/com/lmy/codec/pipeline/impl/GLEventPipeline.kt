@@ -21,25 +21,36 @@ class GLEventPipeline private constructor() : Pipeline {
         val INSTANCE: Pipeline by lazy { Holder.INSTANCE }
     }
 
-    private var eventPipeline: EventPipeline = EventPipeline.create("GLEventPipeline")
-
-    override fun queueEvent(event: Runnable) {
-        eventPipeline.queueEvent(event)
+    private var eventPipeline: EventPipeline? = null
+    private fun check() {
+        if (null == eventPipeline)
+            eventPipeline = EventPipeline.create("GLEventPipeline")
     }
 
-    override fun quit() {
-        eventPipeline.quit()
+    override fun queueEvent(event: Runnable) {
+        check()
+        eventPipeline?.queueEvent(event)
     }
 
     override fun queueEvent(event: Runnable, delayed: Long) {
-        eventPipeline.queueEvent(event, delayed)
+        check()
+        eventPipeline?.queueEvent(event, delayed)
+    }
+
+    override fun quit() {
+        if (null != eventPipeline) {
+            eventPipeline?.quit()
+            eventPipeline = null
+        }
     }
 
     override fun started(): Boolean {
-        return eventPipeline.started()
+        if (null == eventPipeline) return false
+        return eventPipeline!!.started()
     }
 
     override fun getName(): String {
-        return eventPipeline.getName()
+        if (null == eventPipeline) return "UNKNOWN"
+        return eventPipeline!!.getName()
     }
 }
