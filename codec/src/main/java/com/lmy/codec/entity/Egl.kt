@@ -22,8 +22,8 @@ class Egl(private val name: String,
           var eglSurface: EGLSurface? = null,
           var eglContext: EGLContext? = null) {
     companion object {
-        const val COLOR_CHANNELS = 3
-        const val GL_CLOLR_DEFAULT = GLES20.GL_RGB
+        const val COLOR_CHANNELS = 4
+        const val GL_CLOLR_DEFAULT = GLES20.GL_RGBA
         private val EGL_RECORDABLE_ANDROID = 0x3142
         private val CONFIG_DEFAULT = intArrayOf(
                 EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
