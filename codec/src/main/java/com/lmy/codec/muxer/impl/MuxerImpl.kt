@@ -158,12 +158,11 @@ class MuxerImpl(var path: String,
         if (mStart) {
             mStart = false
             try {
-                muxer?.stop()
+                muxer?.release()
             } catch (e: IllegalStateException) {
                 e.printStackTrace()
             }
         }
-        muxer?.release()
     }
 
     companion object {
