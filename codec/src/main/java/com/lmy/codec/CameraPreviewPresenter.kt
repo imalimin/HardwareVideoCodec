@@ -35,7 +35,6 @@ class CameraPreviewPresenter(var context: CodecContext,
     : SurfaceTexture.OnFrameAvailableListener {
 
     init {
-        GLEventPipeline.INSTANCE.start()
         cameraWrapper = CameraWrapper.open(context, this)
                 .post(Runnable {
                     render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper)

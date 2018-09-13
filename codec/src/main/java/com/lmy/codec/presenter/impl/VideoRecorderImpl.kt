@@ -42,7 +42,6 @@ class VideoRecorderImpl(ctx: Context,
         if (TextUtils.isEmpty(context.ioContext.path)) {
             throw RuntimeException("context.ioContext.path can not be null!")
         }
-        GLEventPipeline.INSTANCE.start()
         if (null == cameraWrapper) {
             cameraWrapper = CameraWrapper.open(context, this)
                     .post(Runnable {
