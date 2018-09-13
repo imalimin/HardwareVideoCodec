@@ -9,6 +9,8 @@ interface X264 {
     fun encode(src: ByteArray): MediaCodec.BufferInfo?
     fun getWidth(): Int
     fun getHeight(): Int
+    fun setProfile(profile: String)
+    fun setLevel(level: Int)
     fun stop()
     fun release()
 }

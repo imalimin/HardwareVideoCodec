@@ -66,6 +66,13 @@ class CacheX264Encoder(private val codec: X264Encoder,
     override fun getWidth(): Int = codec.getWidth()
 
     override fun getHeight(): Int = codec.getHeight()
+    override fun setLevel(level: Int) {
+        codec.setLevel(level)
+    }
+
+    override fun setProfile(profile: String) {
+        codec.setProfile(profile)
+    }
 
     class Cache(private var size: Int,
                 capacity: Int) : RecycleQueue<ByteArray>(capacity) {

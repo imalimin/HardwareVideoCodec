@@ -169,12 +169,12 @@ class X264Encoder(private var format: MediaFormat,
 
     private external fun init()
     external fun start()
-    override external fun stop()
+    external override fun stop()
     external fun encode(src: ByteArray, dest: ByteArray, size: IntArray, type: IntArray): Boolean
     external fun setVideoSize(width: Int, height: Int)
     external fun setBitrate(bitrate: Int)
     external fun setFrameFormat(format: Int)
     external fun setFps(fps: Int)
-    external fun setProfile(profile: String)
-    external fun setLevel(level: Int)
+    external override fun setProfile(profile: String)
+    external override fun setLevel(level: Int)
 }
