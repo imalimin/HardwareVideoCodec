@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 package com.lmy.codec.pipeline
 
 import android.os.Handler
@@ -8,7 +14,7 @@ import com.lmy.codec.loge
 /**
  * Created by lmyooyo@gmail.com on 2018/6/21.
  */
-class EventPipeline private constructor(name: String) {
+class EventPipeline private constructor(name: String) : Pipeline {
     companion object {
         fun create(name: String): EventPipeline {
             return EventPipeline(name)
@@ -30,7 +36,7 @@ class EventPipeline private constructor(name: String) {
         start = true
     }
 
-    fun queueEvent(event: Runnable) {
+    override fun queueEvent(event: Runnable) {
         if (!start) {
             loge("EventPipeline has quited")
             return
@@ -38,7 +44,7 @@ class EventPipeline private constructor(name: String) {
         mHandler.sendMessage(mHandler.obtainMessage(0, event))
     }
 
-    fun queueEventDelayed(event: Runnable, delayed: Long) {
+    override fun queueEvent(event: Runnable, delayed: Long) {
         if (!start) {
             loge("EventPipeline has quited")
             return
@@ -46,7 +52,7 @@ class EventPipeline private constructor(name: String) {
         mHandler.sendMessageDelayed(mHandler.obtainMessage(0, event), delayed)
     }
 
-    fun quit() {
+    override fun quit() {
         if (!start) {
             loge("EventPipeline has quited")
             return
@@ -56,7 +62,11 @@ class EventPipeline private constructor(name: String) {
         mHandlerThread.quitSafely()
     }
 
-    fun started(): Boolean {
+    override fun started(): Boolean {
         return start
+    }
+
+    override fun getName(): String {
+        return mHandlerThread.name
     }
 }

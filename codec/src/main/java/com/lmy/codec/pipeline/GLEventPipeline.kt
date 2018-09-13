@@ -1,45 +1,43 @@
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 package com.lmy.codec.pipeline
-
-import com.lmy.codec.loge
 
 /**
  * Created by lmyooyo@gmail.com on 2018/6/20.
  */
-class GLEventPipeline private constructor() {
+class GLEventPipeline private constructor() : Pipeline {
+
     private object Holder {
-        val INSTANCE = GLEventPipeline()
+        val INSTANCE: Pipeline = GLEventPipeline()
     }
 
     companion object {
-        val INSTANCE: GLEventPipeline by lazy { Holder.INSTANCE }
+        val INSTANCE: Pipeline by lazy { Holder.INSTANCE }
     }
 
-    private lateinit var eventPipeline: EventPipeline
-    private var start = false
+    private var eventPipeline: EventPipeline = EventPipeline.create("GLEventPipeline")
 
-    fun start() {
-        if (start) {
-            loge("GLEventPipeline has started")
-            return
-        }
-        eventPipeline = EventPipeline.create("GLEventPipeline")
-        start = true
-    }
-
-    fun queueEvent(event: Runnable) {
-        if (!start) {
-            loge("GLEventPipeline has quited. Please call GLEventPipeline.INSTANCE.start() before.")
-            return
-        }
+    override fun queueEvent(event: Runnable) {
         eventPipeline.queueEvent(event)
     }
 
-    fun quit() {
-        if (!start) {
-            loge("GLEventPipeline has quited")
-            return
-        }
-        start = false
+    override fun quit() {
         eventPipeline.quit()
+    }
+
+    override fun queueEvent(event: Runnable, delayed: Long) {
+        eventPipeline.queueEvent(event, delayed)
+    }
+
+    override fun started(): Boolean {
+        return eventPipeline.started()
+    }
+
+    override fun getName(): String {
+        return eventPipeline.getName()
     }
 }
