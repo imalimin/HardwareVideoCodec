@@ -148,6 +148,10 @@ class Egl(private val name: String,
         }
     }
 
+    fun setPresentationTime(nsecs: Long) {
+        EGLExt.eglPresentationTimeANDROID(eglDisplay, eglSurface, nsecs)
+    }
+
     fun release() {
         makeCurrent()
         EGL14.eglDestroySurface(eglDisplay, eglSurface)
