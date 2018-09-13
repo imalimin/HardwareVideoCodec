@@ -155,13 +155,11 @@ class MuxerImpl(var path: String,
     }
 
     private fun stop() {
-        if (mStart) {
-            mStart = false
-            try {
-                muxer?.release()
-            } catch (e: IllegalStateException) {
-                e.printStackTrace()
-            }
+        mStart = false
+        try {
+            muxer?.release()
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
         }
     }
 
