@@ -10,7 +10,6 @@ import android.opengl.GLES20
 import com.lmy.codec.helper.Resources
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.util.debug_e
-import java.nio.FloatBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/25.
@@ -53,7 +52,7 @@ abstract class BaseFilter(width: Int = 0,
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)
-        GLES20.glFinish()
+        GLES20.glFlush()
     }
 
 

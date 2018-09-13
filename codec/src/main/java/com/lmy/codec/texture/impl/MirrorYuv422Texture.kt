@@ -63,11 +63,11 @@ class MirrorYuv422Texture(width: Int, height: Int,
         setUniform1f(widthLocation, width.toFloat())
         drawer.draw()
 
-        GLES20.glFinish()
         GLES20.glDisableVertexAttribArray(aPositionLocation)
         GLES20.glDisableVertexAttribArray(aTextureCoordinateLocation)
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
+        GLES20.glFlush()
     }
 }

@@ -49,10 +49,10 @@ class NormalTexture(textureId: IntArray) : BaseTexture(textureId) {
 
         drawer.draw()
 
-        GLES20.glFinish()
         GLES20.glDisableVertexAttribArray(aPositionLocation)
         GLES20.glDisableVertexAttribArray(aTextureCoordinateLocation)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)
+        GLES20.glFlush()
     }
 }
