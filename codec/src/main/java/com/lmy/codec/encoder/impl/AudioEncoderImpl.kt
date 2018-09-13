@@ -15,7 +15,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
-import com.lmy.codec.pipeline.EventPipeline
+import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.AudioRecordWrapper

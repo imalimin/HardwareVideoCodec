@@ -10,7 +10,7 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES20
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.PixelsReader
-import com.lmy.codec.pipeline.GLEventPipeline
+import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter

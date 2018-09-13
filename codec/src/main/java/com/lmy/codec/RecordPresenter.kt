@@ -16,7 +16,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.helper.MuxerFactory
 import com.lmy.codec.muxer.Muxer
-import com.lmy.codec.pipeline.GLEventPipeline
+import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl

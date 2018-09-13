@@ -13,7 +13,7 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.muxer.Muxer
-import com.lmy.codec.pipeline.EventPipeline
+import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
 import java.io.File
 import java.nio.ByteBuffer

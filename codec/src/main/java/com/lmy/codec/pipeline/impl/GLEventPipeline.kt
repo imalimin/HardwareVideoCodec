@@ -4,7 +4,9 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec.pipeline
+package com.lmy.codec.pipeline.impl
+
+import com.lmy.codec.pipeline.Pipeline
 
 /**
  * Created by lmyooyo@gmail.com on 2018/6/20.

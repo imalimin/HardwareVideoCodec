@@ -10,7 +10,7 @@ import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CameraHelper
-import com.lmy.codec.pipeline.GLEventPipeline
+import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 

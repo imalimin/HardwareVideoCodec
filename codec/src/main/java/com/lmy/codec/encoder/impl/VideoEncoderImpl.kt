@@ -17,8 +17,8 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
-import com.lmy.codec.pipeline.EventPipeline
-import com.lmy.codec.pipeline.GLEventPipeline
+import com.lmy.codec.pipeline.impl.EventPipeline
+import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v

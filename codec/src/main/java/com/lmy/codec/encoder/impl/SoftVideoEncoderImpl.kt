@@ -17,7 +17,7 @@ import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.helper.Resources
-import com.lmy.codec.pipeline.EventPipeline
+import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.util.debug_e
