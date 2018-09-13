@@ -89,7 +89,8 @@ class X265Encoder(private var format: MediaFormat,
             outFormat?.setInteger(MediaFormat.KEY_COLOR_STANDARD, 4)
             outFormat?.setInteger(MediaFormat.KEY_COLOR_TRANSFER, 3)
         }
-        val spsAndPps = parseSpecialData(specialData) ?: throw RuntimeException("Special data is empty")
+        val spsAndPps = parseSpecialData(specialData)
+                ?: throw RuntimeException("Special data is empty")
         ppsLength = spsAndPps[0].size
         outFormat?.setByteBuffer(CSD_0, ByteBuffer.wrap(spsAndPps[0]))
         outFormat?.setByteBuffer(CSD_1, ByteBuffer.wrap(spsAndPps[1]))
@@ -141,6 +142,14 @@ class X265Encoder(private var format: MediaFormat,
 
     override fun getHeight(): Int {
         return format.getInteger(MediaFormat.KEY_HEIGHT)
+    }
+
+    override fun setProfile(profile: String) {
+
+    }
+
+    override fun setLevel(level: Int) {
+
     }
 
     override fun release() {
