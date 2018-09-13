@@ -14,9 +14,12 @@ import android.opengl.EGLContext
 import android.opengl.GLES20
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
+import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
 import com.lmy.codec.pipeline.EventPipeline
+import com.lmy.codec.pipeline.GLEventPipeline
+import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CodecTextureWrapper
@@ -28,6 +31,7 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
 class VideoEncoderImpl(var context: CodecContext,
                        private var textureId: IntArray,
                        private var eglContext: EGLContext,
+                       private var asyn: Boolean = false,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
@@ -41,7 +45,11 @@ class VideoEncoderImpl(var context: CodecContext,
     }
 
     private lateinit var format: MediaFormat
-    private var mPipeline = EventPipeline.create("VideoEncodePipeline")
+    private var mPipeline: Pipeline = if (asyn) {
+        EventPipeline.create("VideoEncodePipeline")
+    } else {
+        GLEventPipeline.INSTANCE
+    }
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var mFrameCount = 0
@@ -62,7 +70,7 @@ class VideoEncoderImpl(var context: CodecContext,
             loge("Unsupport codec type")
             return
         }
-        format = f!!
+        format = f
         debug_v("create codec: ${format.getString(MediaFormat.KEY_MIME)}")
         try {
             codec = MediaCodec.createEncoderByType(format.getString(MediaFormat.KEY_MIME))
@@ -192,28 +200,5 @@ class VideoEncoderImpl(var context: CodecContext,
             codecWrapper = null
         })
         mPipeline.quit()
-    }
-
-    class PresentationTimer(var fps: Int,
-                            var presentationTimeUs: Long = 0,
-                            private var timestamp: Long = 0) {
-
-        fun start() {
-            timestamp = 0
-        }
-
-        fun record() {
-            val timeTmp = System.nanoTime() / 1000
-            presentationTimeUs += if (0L != timestamp)
-                timeTmp - timestamp
-            else
-                1000000L / fps
-            timestamp = timeTmp
-        }
-
-        fun reset() {
-            presentationTimeUs = 0
-            timestamp = 0
-        }
     }
 }
