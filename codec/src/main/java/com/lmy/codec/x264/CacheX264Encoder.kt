@@ -2,6 +2,7 @@ package com.lmy.codec.x264
 
 import android.media.MediaCodec
 import android.media.MediaFormat
+import com.lmy.codec.entity.Egl
 import com.lmy.codec.entity.RecycleQueue
 import java.nio.ByteBuffer
 
@@ -16,7 +17,7 @@ class CacheX264Encoder(private val codec: X264Encoder,
     private var mEncodeThread = Thread(this).apply { name = "CacheX264Encoder" }
 
     init {
-        cache = Cache(codec.getWidth() * codec.getHeight() * 4, 5)
+        cache = Cache(codec.getWidth() * codec.getHeight() * Egl.COLOR_CHANNELS, 5)
         codec.start()
         mEncodeThread.start()
     }

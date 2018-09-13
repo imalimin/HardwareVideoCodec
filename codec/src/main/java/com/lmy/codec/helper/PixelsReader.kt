@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_FRAMEBUFFER
 import android.opengl.GLES30
+import com.lmy.codec.entity.Egl
 import com.lmy.codec.entity.PixelsBuffer
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
@@ -44,10 +45,10 @@ class PixelsReader private constructor(private var usePbo: Boolean,
 
     private fun initPBOs() {
         if (!enablePBO()) {
-            pixelsBuffer = PixelsBuffer.allocate(width * height * 4)
+            pixelsBuffer = PixelsBuffer.allocate(width * height * Egl.COLOR_CHANNELS)
             return
         }
-        val size = width * height * 4
+        val size = width * height * Egl.COLOR_CHANNELS
         pbos = IntArray(PBO_COUNT)
         GLES30.glGenBuffers(PBO_COUNT, pbos, 0)
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos!![0])
@@ -84,7 +85,7 @@ class PixelsReader private constructor(private var usePbo: Boolean,
         GLES20.glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer)
 //        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
 //                GLES30.GL_TEXTURE_2D, texture.frameBufferTexture!!, 0)
-        GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA,
+        GLES20.glReadPixels(0, 0, width, height, Egl.GL_CLOLR_DEFAULT,
                 GLES20.GL_UNSIGNED_BYTE, pixelsBuffer!!.buffer)
         GLES20.glBindFramebuffer(GL_FRAMEBUFFER, GLES20.GL_NONE)
     }
@@ -95,13 +96,13 @@ class PixelsReader private constructor(private var usePbo: Boolean,
 //                GLES30.GL_TEXTURE_2D, texture.frameBufferTexture!!, 0)
         //绑定到第一个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos!![index])
-        GLHelper.glReadPixels(0, 0, width, height, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE)
+        GLHelper.glReadPixels(0, 0, width, height, Egl.GL_CLOLR_DEFAULT, GLES30.GL_UNSIGNED_BYTE)
         //绑定到第二个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos!![nextIndex])
         //glMapBufferRange会等待DMA传输完成，所以需要交替使用pbo
         //映射内存
         pixelsBuffer = PixelsBuffer.wrap(GLES30.glMapBufferRange(GLES30.GL_PIXEL_PACK_BUFFER,
-                0, width * height * 4, GLES30.GL_MAP_READ_BIT) as ByteBuffer)
+                0, width * height * Egl.COLOR_CHANNELS, GLES30.GL_MAP_READ_BIT) as ByteBuffer)
         //            PushLog.e("glMapBufferRange: " + GLES30.glGetError());
         //解除映射
         GLES30.glUnmapBuffer(GLES30.GL_PIXEL_PACK_BUFFER)
@@ -236,7 +237,7 @@ class PixelsReader private constructor(private var usePbo: Boolean,
     }
 
     fun shoot(path: String) {
-        val src = ByteArray(width * height * 4)
+        val src = ByteArray(width * height * 3)
         getPixelsBuffer().get(src)
         save(src, path)
     }

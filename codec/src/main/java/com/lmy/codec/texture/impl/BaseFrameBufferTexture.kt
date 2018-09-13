@@ -7,6 +7,7 @@
 package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
+import com.lmy.codec.entity.Egl
 import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.util.debug_e
 
@@ -27,8 +28,8 @@ abstract class BaseFrameBufferTexture(var width: Int,
         this.width = width
         this.height = height
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture[0])
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, this.width, this.height,
-                0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null)
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, Egl.GL_CLOLR_DEFAULT, this.width, this.height,
+                0, Egl.GL_CLOLR_DEFAULT, GLES20.GL_UNSIGNED_BYTE, null)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
     }
 
@@ -39,7 +40,8 @@ abstract class BaseFrameBufferTexture(var width: Int,
         GLES20.glGenFramebuffers(1, frameBuffer, 0)
         GLES20.glGenTextures(1, frameBufferTexture, 0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, frameBufferTexture[0])
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null)
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, Egl.GL_CLOLR_DEFAULT, width, height, 0,
+                Egl.GL_CLOLR_DEFAULT, GLES20.GL_UNSIGNED_BYTE, null)
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR.toFloat())
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,

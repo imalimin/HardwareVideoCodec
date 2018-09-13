@@ -270,7 +270,7 @@ bool X264Encoder::fillSrc(char *argb) {
                                     0, 0,
                                     width, height,
                                     width, height,
-                                    libyuv::kRotate0, libyuv::FOURCC_ABGR);
+                                    libyuv::kRotate0, libyuv::FOURCC_RAW);
     return ret >= 0;
 }
 
