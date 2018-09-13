@@ -13,6 +13,7 @@ import android.opengl.EGLContext
 import android.opengl.GLES20
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
+import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.helper.Resources
@@ -32,7 +33,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
                            private var eglContext: EGLContext,
                            var codec: CacheX264Encoder? = null,
                            var reader: PixelsReader? = null,
-                           private var pTimer: VideoEncoderImpl.PresentationTimer = VideoEncoderImpl.PresentationTimer(context.video.fps),
+                           private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
                            override var onPreparedListener: Encoder.OnPreparedListener? = null,
                            override var onRecordListener: Encoder.OnRecordListener? = null)
     : Encoder, CacheX264Encoder.OnSampleListener {
