@@ -68,30 +68,6 @@ abstract class BaseFilter(width: Int = 0,
     abstract fun getVertex(): String
     abstract fun getFragment(): String
 
-    fun setUniform1i(location: Int, value: Int) {
-        GLES20.glUniform1i(location, value)
-    }
-
-    fun setUniform1f(location: Int, floatValue: Float) {
-        GLES20.glUniform1f(location, floatValue)
-    }
-
-    fun setUniform2fv(location: Int, arrayValue: FloatArray) {
-        GLES20.glUniform2fv(location, 1, FloatBuffer.wrap(arrayValue))
-    }
-
-    fun setUniform3fv(location: Int, arrayValue: FloatArray) {
-        GLES20.glUniform3fv(location, 1, FloatBuffer.wrap(arrayValue))
-    }
-
-    fun setUniform4fv(location: Int, arrayValue: FloatArray) {
-        GLES20.glUniform4fv(location, 1, FloatBuffer.wrap(arrayValue))
-    }
-
-    fun setUniformMatrix4fv(location: Int, arrayValue: FloatArray) {
-        GLES20.glUniformMatrix4fv(location, 1, false, FloatBuffer.wrap(arrayValue))
-    }
-
     override fun release() {
         if (null != shaderProgram)
             GLES20.glDeleteProgram(shaderProgram!!)
