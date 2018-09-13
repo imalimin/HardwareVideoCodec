@@ -118,14 +118,12 @@ class PixelsReader private constructor(private var usePbo: Boolean,
         if (null == pbos) return
         debug_i("releasePBO")
         if (null != pbos) {
-            GLES30.glUnmapBuffer(pbos!![0])
-            GLES30.glUnmapBuffer(pbos!![1])
+            GLES20.glDeleteBuffers(pbos!!.size, pbos, 0)
         }
         if (pixelsBuffer != null) {
             pixelsBuffer!!.clear()
             pixelsBuffer = null
         }
-        GLES20.glDeleteBuffers(pbos!!.size, pbos, 0)
     }
 
     fun enablePBO(): Boolean {
