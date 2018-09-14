@@ -6,6 +6,7 @@
  */
 package com.lmy.codec.pipeline.impl
 
+import android.os.Handler
 import com.lmy.codec.pipeline.Pipeline
 
 /**
@@ -52,5 +53,9 @@ class GLEventPipeline private constructor() : Pipeline {
     override fun getName(): String {
         if (null == eventPipeline) return "UNKNOWN"
         return eventPipeline!!.getName()
+    }
+
+    override fun getHandler(): Handler {
+        return eventPipeline!!.getHandler()
     }
 }
