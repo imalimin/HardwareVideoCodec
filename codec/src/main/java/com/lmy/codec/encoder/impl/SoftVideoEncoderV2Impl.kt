@@ -11,8 +11,6 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
-import com.lmy.codec.helper.PixelsReader
-import com.lmy.codec.helper.Resources
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CodecTextureWrapper
@@ -26,11 +24,10 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
                              var codecWrapper: CodecTextureWrapper? = null,
                              private var imageReader: ImageReader? = null,
                              var codec: CacheX264Encoder? = null,
-                             var reader: PixelsReader? = null,
                              private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
                              override var onPreparedListener: Encoder.OnPreparedListener? = null,
                              override var onRecordListener: Encoder.OnRecordListener? = null)
-    : Encoder, CacheX264Encoder.OnSampleListener {
+    : Encoder, CacheX264Encoder.OnSampleListener, ImageReader.OnImageAvailableListener {
 
     override fun onFormatChanged(format: MediaFormat) {
         onSampleListener?.onFormatChanged(this, format)
@@ -55,12 +52,19 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
     }
 
     init {
-        initPixelsCache()
+        initImageReader()
         mPipeline.queueEvent(Runnable {
             initCodec()
             pTimer.reset()
             inited = true
         })
+    }
+
+    private fun initImageReader() {
+        imageReader = ImageReader.newInstance(context.video.width, context.video.height,
+                PixelFormat.RGBA_8888, 10)
+        imageReader?.setOnImageAvailableListener(this, mPipeline.getHandler())
+        codecWrapper = CodecTextureWrapper(imageReader!!.surface, textureId, eglContext)
     }
 
     private fun initCodec() {
@@ -72,15 +76,10 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
         codec?.onSampleListener = this
     }
 
-    private fun initPixelsCache() {
-        reader = PixelsReader.create(Resources.instance.isSupportPBO(), context.video.width, context.video.height)
-        reader?.start()
-    }
-
-    private fun encode() {
+    private fun encode(buffer: ByteBuffer) {
         synchronized(mEncodingSyn) {
-            if (reader == null || !mEncoding) return
-            codec?.encode(reader!!.getPixelsBuffer())
+            if (!mEncoding) return
+            codec?.encode(buffer)
         }
     }
 
@@ -102,25 +101,21 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
         debug_e("Video encoder stopping")
         codec?.release()
         imageReader?.close()
-        reader?.stop()
         mPipeline.quit()
+        codecWrapper?.release()
+        codecWrapper = null
         debug_e("Video encoder stop")
+    }
+
+    override fun onImageAvailable(reader: ImageReader) {
+        val image = reader.acquireNextImage()
+        val planes = image.planes
+        encode(planes[0].buffer)
+        image?.close()
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
-            if (null == imageReader) {
-                imageReader = ImageReader.newInstance(context.video.width, context.video.height,
-                        PixelFormat.RGBA_8888, 25)
-                imageReader?.setOnImageAvailableListener(object : ImageReader.OnImageAvailableListener {
-                    override fun onImageAvailable(reader: ImageReader) {
-                        val image = reader.acquireNextImage()
-                        debug_e("onImageAvailable ${null != image}")
-                        image?.close()
-                    }
-                }, null)
-                codecWrapper = CodecTextureWrapper(imageReader!!.surface, textureId, eglContext)
-            }
             if (mEncoding && inited) {
                 codecWrapper?.egl?.makeCurrent()
                 GLES20.glViewport(0, 0, context.video.width, context.video.height)
