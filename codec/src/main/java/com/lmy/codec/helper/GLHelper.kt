@@ -10,6 +10,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.opengl.GLES20
 import android.util.Log
+import java.nio.ByteBuffer
 
 /**
  * Created by lmyooyo@gmail.com on 2018/8/6.
@@ -27,6 +28,12 @@ object GLHelper {
                               height: Int,
                               format: Int,
                               type: Int)
+
+    external fun memcpy(src: ByteBuffer,
+                        dest: ByteArray,
+                        row: Int,
+                        stride: Int,
+                        stridePadding: Int)
 
     /**
      * @param context
