@@ -4,6 +4,7 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import com.lmy.codec.entity.Egl
 import com.lmy.codec.entity.RecycleQueue
+import com.lmy.codec.helper.GLHelper
 import java.nio.ByteBuffer
 
 /**
@@ -36,11 +37,7 @@ class CacheX264Encoder(private val codec: X264Encoder,
             offset = 0
             val width = getWidth()
             val height = getHeight()
-            for (i in 0 until height) {
-                buffer.get(data, offset, width * 4)
-                offset += width * 4
-                buffer.position(offset + i * rowPadding)
-            }
+            GLHelper.memcpy(buffer, data, height, width * 4, rowPadding)
         }
         cache?.offer(data)
     }
