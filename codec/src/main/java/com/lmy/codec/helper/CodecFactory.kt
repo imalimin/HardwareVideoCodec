@@ -8,7 +8,7 @@ package com.lmy.codec.helper
 
 import android.opengl.EGLContext
 import com.lmy.codec.encoder.Encoder
-import com.lmy.codec.encoder.impl.SoftVideoEncoderImpl
+import com.lmy.codec.encoder.impl.SoftVideoEncoderV2Impl
 import com.lmy.codec.encoder.impl.VideoEncoderImpl
 import com.lmy.codec.entity.CodecContext
 
@@ -23,7 +23,7 @@ class CodecFactory {
             return if (CodecContext.CodecType.HARD == context.codecType) {
                 VideoEncoderImpl(context, textureId, eglContext)
             } else {
-                SoftVideoEncoderImpl(context, textureId, eglContext)
+                SoftVideoEncoderV2Impl(context, textureId, eglContext)
             }
         }
     }
