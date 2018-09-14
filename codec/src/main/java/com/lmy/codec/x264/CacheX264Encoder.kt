@@ -23,9 +23,25 @@ class CacheX264Encoder(private val codec: X264Encoder,
     }
 
     fun encode(buffer: ByteBuffer) {
+        encode(buffer, 0)
+    }
+
+    private var offset = 0
+    fun encode(buffer: ByteBuffer, rowPadding: Int) {
         val data = cache?.pollCache() ?: return
         buffer.rewind()
-        buffer.get(data)
+        if (rowPadding <= 0) {
+            buffer.get(data)
+        } else {
+            offset = 0
+            val width = getWidth()
+            val height = getHeight()
+            for (i in 0 until height) {
+                buffer.get(data, offset, width * 4)
+                offset += width * 4
+                buffer.position(offset + i * rowPadding)
+            }
+        }
         cache?.offer(data)
     }
 
