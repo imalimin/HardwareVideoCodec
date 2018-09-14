@@ -18,6 +18,14 @@ ifeq ($(TARGET_ARCH_ABI),$(filter $(TARGET_ARCH_ABI), armeabi-v7a x86))
 LOCAL_ARM_NEON := true
 endif
 
+# native_window_set_buffers_geometry
+LOCAL_SHARED_LIBRARIES := \
+    libcutils \
+    libutils \
+    libbinder \
+    libui \
+    libgui \
+
 LOCAL_CFLAGS += -DNO_CRYPTO
 LOCAL_MODULE := libglhelper
 LOCAL_LDLIBS := -llog -lGLESv2
