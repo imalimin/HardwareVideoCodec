@@ -76,10 +76,10 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
         codec?.onSampleListener = this
     }
 
-    private fun encode(buffer: ByteBuffer) {
+    private fun encode(buffer: ByteBuffer, rowPadding: Int) {
         synchronized(mEncodingSyn) {
             if (!mEncoding) return
-            codec?.encode(buffer)
+            codec?.encode(buffer, rowPadding)
         }
     }
 
@@ -107,22 +107,29 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
         debug_e("Video encoder stop")
     }
 
+//    private var start = 0L
     override fun onImageAvailable(reader: ImageReader) {
         val image = reader.acquireNextImage()
         val planes = image.planes
-        encode(planes[0].buffer)
+        val width = image.width
+        val rowStride = planes[0].rowStride
+        val pixelStride = planes[0].pixelStride
+        val rowPadding = rowStride - pixelStride * width
+        encode(planes[0].buffer, rowPadding)
         image?.close()
+//        debug_e("Encode cost ${System.currentTimeMillis() - start}")
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
             if (mEncoding && inited) {
+//                start = System.currentTimeMillis()
                 codecWrapper?.egl?.makeCurrent()
                 GLES20.glViewport(0, 0, context.video.width, context.video.height)
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
                 GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
                 codecWrapper?.drawTexture(null)
-                codecWrapper?.egl?.setPresentationTime(System.nanoTime())
+//                codecWrapper?.egl?.setPresentationTime(System.nanoTime())
                 codecWrapper?.egl?.swapBuffers()
             }
         }
