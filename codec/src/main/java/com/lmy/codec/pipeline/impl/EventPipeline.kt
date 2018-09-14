@@ -16,6 +16,7 @@ import com.lmy.codec.pipeline.Pipeline
  * Created by lmyooyo@gmail.com on 2018/6/21.
  */
 class EventPipeline private constructor(name: String) : Pipeline {
+
     companion object {
         fun create(name: String): EventPipeline {
             return EventPipeline(name)
@@ -69,5 +70,9 @@ class EventPipeline private constructor(name: String) : Pipeline {
 
     override fun getName(): String {
         return mHandlerThread.name
+    }
+
+    override fun getHandler(): Handler {
+        return mHandler
     }
 }
