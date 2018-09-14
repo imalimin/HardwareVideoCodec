@@ -62,7 +62,7 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
 
     private fun initImageReader() {
         imageReader = ImageReader.newInstance(context.video.width, context.video.height,
-                PixelFormat.RGBA_8888, 10)
+                PixelFormat.RGBA_8888, 5)
         imageReader?.setOnImageAvailableListener(this, mPipeline.getHandler())
         codecWrapper = CodecTextureWrapper(imageReader!!.surface, textureId, eglContext)
     }
@@ -107,8 +107,9 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
         debug_e("Video encoder stop")
     }
 
-//    private var start = 0L
+    private var start = 0L
     override fun onImageAvailable(reader: ImageReader) {
+        start = System.currentTimeMillis()
         val image = reader.acquireNextImage()
         val planes = image.planes
         val width = image.width
@@ -123,7 +124,6 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
             if (mEncoding && inited) {
-//                start = System.currentTimeMillis()
                 codecWrapper?.egl?.makeCurrent()
                 GLES20.glViewport(0, 0, context.video.width, context.video.height)
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
