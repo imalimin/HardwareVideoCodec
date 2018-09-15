@@ -9,6 +9,7 @@ package com.lmy.codec.x264
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
+import com.lmy.codec.helper.Libyuv
 import com.lmy.codec.util.debug_e
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -17,6 +18,7 @@ import java.nio.ByteOrder
  * Created by lmyooyo@gmail.com on 2018/4/3.
  */
 class X264Encoder(private var format: MediaFormat,
+                  val colorFormat: Int = Libyuv.COLOR_RGBA,
                   var buffer: ByteBuffer? = null,
                   private var size: IntArray = IntArray(1),
                   private var type: IntArray = IntArray(1),
@@ -44,7 +46,7 @@ class X264Encoder(private var format: MediaFormat,
         System.loadLibrary("x264")
         System.loadLibrary("codec")
         initCacheBuffer()
-        init()
+        init(colorFormat)
         setVideoSize(getWidth(), getHeight())
         setBitrate(format.getInteger(MediaFormat.KEY_BIT_RATE))
         setFrameFormat(FrameFormat.X264_CSP_I420)
@@ -112,7 +114,7 @@ class X264Encoder(private var format: MediaFormat,
         ++mFrameCount
         buffer?.clear()
         buffer?.position(0)
-        val result = encode(src, buffer!!.array(), size, type)
+        val result = encode(src, buffer!!.array(), size, type, colorFormat)
         if (!result) {
             debug_e("Encode failed. size = ${size[0]}")
             return null
@@ -167,10 +169,10 @@ class X264Encoder(private var format: MediaFormat,
         outFormat = null
     }
 
-    private external fun init()
+    private external fun init(fmt: Int)
     external fun start()
     external override fun stop()
-    external fun encode(src: ByteArray, dest: ByteArray, size: IntArray, type: IntArray): Boolean
+    external fun encode(src: ByteArray, dest: ByteArray, size: IntArray, type: IntArray, fmt: Int): Boolean
     external fun setVideoSize(width: Int, height: Int)
     external fun setBitrate(bitrate: Int)
     external fun setFrameFormat(format: Int)
