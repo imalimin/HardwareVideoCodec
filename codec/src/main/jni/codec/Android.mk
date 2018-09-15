@@ -44,6 +44,7 @@ endif
 LOCAL_MODULE := codec
 LOCAL_SRC_FILES := $(LOCAL_PATH)/Java_com_lmy_codec_x264_X264Encoder.cpp \
     $(LOCAL_PATH)/X264Encoder.cpp \
+    $(LOCAL_PATH)/Java_com_lmy_codec_helper_Libyuv.cpp \
 
 ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
     # 采用NEON优化技术
