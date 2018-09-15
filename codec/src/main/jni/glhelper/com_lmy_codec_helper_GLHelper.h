@@ -19,8 +19,11 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_glReadPixels
         (JNIEnv *, jobject, jint, jint, jint, jint, jint, jint);
 
-JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_memcpy
+JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_copyToByteArray
         (JNIEnv *, jobject, jobject, jbyteArray, jint, jint, jint);
+
+JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_memcpy
+        (JNIEnv *, jobject, jbyteArray, jbyteArray, jint);
 
 #ifdef __cplusplus
 }

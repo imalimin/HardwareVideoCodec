@@ -45,7 +45,7 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_glReadPixels
     glReadPixels(x, y, width, height, format, type, 0);
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_memcpy
+JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_copyToByteArray
         (JNIEnv *env, jobject thiz, jobject src, jbyteArray dest, jint row, jint stride,
          jint stride_padding) {
     jbyte *srcBuffer = (*env)->GetDirectBufferAddress(env, src);
@@ -64,5 +64,23 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_memcpy
 #endif
         offset += stride;
     }
+    (*env)->ReleaseByteArrayElements(env, dest, destBuffer, JNI_FALSE);
+}
+
+JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_memcpy
+        (JNIEnv *env, jobject thiz, jbyteArray src, jbyteArray dest, jint length) {
+    jbyte *srcBuffer = (*env)->GetByteArrayElements(env, src, JNI_FALSE);
+    jbyte *destBuffer = (*env)->GetByteArrayElements(env, dest, JNI_FALSE);
+#ifdef  __ARM__
+    if (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM &&
+            (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0){//支持NEON
+            neon_memcpy(destBuffer, srcBuffer, length);
+        }else{
+            memcpy(destBuffer, srcBuffer, length);
+        }
+#else
+    memcpy(destBuffer, srcBuffer, length);
+#endif
+    (*env)->ReleaseByteArrayElements(env, src, srcBuffer, JNI_FALSE);
     (*env)->ReleaseByteArrayElements(env, dest, destBuffer, JNI_FALSE);
 }
