@@ -170,6 +170,11 @@ void X264Encoder::stop() {
     }
     state = STOP;
     if (encoder->picture) {
+        if (X264_CSP_I420 == encoder->fmt) {
+            encoder->picture->img.plane[0] = NULL;
+            encoder->picture->img.plane[1] = NULL;
+            encoder->picture->img.plane[2] = NULL;
+        }
         x264_picture_clean(encoder->picture);
         free(encoder->picture);
         encoder->picture = NULL;
