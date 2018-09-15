@@ -18,8 +18,8 @@ static bool encode(jbyte *src, jbyte *dest, int *size, int *type) {
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
-        (JNIEnv *env, jobject thiz) {
-    encoder = new X264Encoder();
+        (JNIEnv *env, jobject thiz, jint fmt) {
+    encoder = new X264Encoder(fmt);
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start

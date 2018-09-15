@@ -11,6 +11,7 @@ typedef struct {
     x264_t *handle;
     x264_picture_t *picture;
     x264_nal_t *nal;
+    int fmt;
 } Encoder;
 static Encoder *encoder = NULL;
 static int state = INVALID;
@@ -117,12 +118,13 @@ static void config() {
     quality();
 }
 
-X264Encoder::X264Encoder() {
+X264Encoder::X264Encoder(int fmt) {
     LOGE("X264Encoder");
     reset();
     encoder = (Encoder *) malloc(sizeof(Encoder));
     encoder->param = (x264_param_t *) malloc(sizeof(x264_param_t));
     encoder->picture = (x264_picture_t *) malloc(sizeof(x264_picture_t));
+    encoder->fmt = fmt;
     config();
 }
 
@@ -147,15 +149,17 @@ bool X264Encoder::start() {
                        encoder->param->i_height);
 
     int y_size = encoder->param->i_width * encoder->param->i_height;
-    uint8_t *buff = (uint8_t *) malloc(y_size * 3 / 2);
     encoder->picture->img.i_csp = X264_CSP_I420;
     encoder->picture->img.i_plane = 3;
-    encoder->picture->img.plane[0] = buff;//Y
-    encoder->picture->img.plane[1] = buff + y_size;//U
-    encoder->picture->img.plane[2] = buff + y_size * 5 / 4;//V
     encoder->picture->img.i_stride[0] = encoder->param->i_width;
     encoder->picture->img.i_stride[1] = encoder->param->i_width / 2;
     encoder->picture->img.i_stride[2] = encoder->param->i_width / 2;
+    if (X264_CSP_I420 != encoder->fmt) {
+        uint8_t *buff = (uint8_t *) malloc(y_size * 3 / 2);
+        encoder->picture->img.plane[0] = buff;//Y
+        encoder->picture->img.plane[1] = buff + y_size;//U
+        encoder->picture->img.plane[2] = buff + y_size * 5 / 4;//V
+    }
     return true;
 }
 
@@ -180,6 +184,32 @@ void X264Encoder::stop() {
     LOGI("X264Encoder stop");
 }
 
+/**
+ * 使用libyuv把rgb转为i420，并填充到encoder->picture
+ * @param argb
+ * @return
+ */
+static bool fillInputPicture(Encoder *encoder, char *src) {
+    int width = encoder->param->i_width;
+    int height = encoder->param->i_height;
+    if (X264_CSP_I420 == encoder->fmt) {
+        int y_size = width * height;
+        encoder->picture->img.plane[0] = reinterpret_cast<uint8_t *>(src);
+        encoder->picture->img.plane[1] = encoder->picture->img.plane[0] + y_size;
+        encoder->picture->img.plane[2] = encoder->picture->img.plane[0] + y_size * 5 / 4;
+        return true;
+    }
+    int ret = libyuv::ConvertToI420((const uint8 *) src, width * height,
+                                    encoder->picture->img.plane[0], width,
+                                    encoder->picture->img.plane[1], width / 2,
+                                    encoder->picture->img.plane[2], width / 2,
+                                    0, 0,
+                                    width, height,
+                                    width, height,
+                                    libyuv::kRotate0, libyuv::FOURCC_ABGR);
+    return ret >= 0;
+}
+
 bool X264Encoder::encode(char *src, char *dest, int *s, int *type) {
     if (START != state) {
         LOGI("Start failed. Invalid state, encoder is not start");
@@ -198,8 +228,8 @@ bool X264Encoder::encode(char *src, char *dest, int *s, int *type) {
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
-    if (!fillSrc(src)) {
-        LOGE("Convert failed");
+    if (!fillInputPicture(encoder, src)) {
+        LOGE("fillInputPicture failed");
         return false;
     }
     gettimeofday(&end, NULL);
@@ -253,25 +283,6 @@ void X264Encoder::setProfile(char *profile) {
 
 void X264Encoder::setLevel(int level) {
     encoder->param->i_level_idc = level;// 11 12 13 20 for CIF;31 for 720P
-}
-
-/**
- * 使用libyuv把rgb转为i420，并填充到encoder->picture
- * @param argb
- * @return
- */
-bool X264Encoder::fillSrc(char *argb) {
-    int width = encoder->param->i_width;
-    int height = encoder->param->i_height;
-    int ret = libyuv::ConvertToI420((const uint8 *) argb, width * height,
-                                    encoder->picture->img.plane[0], width,
-                                    encoder->picture->img.plane[1], width / 2,
-                                    encoder->picture->img.plane[2], width / 2,
-                                    0, 0,
-                                    width, height,
-                                    width, height,
-                                    libyuv::kRotate0, libyuv::FOURCC_ABGR);
-    return ret >= 0;
 }
 
 /**

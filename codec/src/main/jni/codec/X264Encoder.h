@@ -15,12 +15,13 @@
 #define INVALID 0//未初始化
 #define START 1//开始
 #define STOP 1//停止
+#define X264_CSP_RGBA 0x0100
 #ifndef HARDWAREVIDEOCODEC_X264_ENCODER_H
 #define HARDWAREVIDEOCODEC_X264_ENCODER_H
 
 class X264Encoder {
 public:
-    X264Encoder();
+    X264Encoder(int fmt);
 
     ~X264Encoder();
 
@@ -45,7 +46,6 @@ public:
     void setLevel(int level);
 
 private:
-    bool fillSrc(char *argb);
 
     bool encodeHeader(char *dest, int *size, int *type);
 

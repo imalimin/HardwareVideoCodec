@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_init
-        (JNIEnv *, jobject);
+        (JNIEnv *, jobject, jint);
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_start
         (JNIEnv *, jobject);
@@ -26,7 +26,7 @@ JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_stop
         (JNIEnv *, jobject);
 
 JNIEXPORT jboolean JNICALL Java_com_lmy_codec_x264_X264Encoder_encode
-        (JNIEnv *, jobject, jbyteArray, jbyteArray, jintArray , jintArray);
+        (JNIEnv *, jobject, jbyteArray, jbyteArray, jintArray, jintArray);
 
 JNIEXPORT void JNICALL Java_com_lmy_codec_x264_X264Encoder_setVideoSize
         (JNIEnv *, jobject, jint, jint);
