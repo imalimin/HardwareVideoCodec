@@ -24,8 +24,11 @@ class CacheX264Encoder(private val codec: X264Encoder,
             size = codec.getWidth() * codec.getHeight() * 3 / 2
         }
         cache = Cache(size, maxCache)
-        codec.start()
         mEncodeThread.start()
+    }
+
+    override fun start() {
+        codec.start()
     }
 
     fun encode(buffer: ByteBuffer) {
@@ -94,6 +97,11 @@ class CacheX264Encoder(private val codec: X264Encoder,
         override fun newCacheEntry(): ByteArray {
             return ByteArray(size)
         }
+    }
+
+    override fun post(event: Runnable): X264 {
+        event.run()
+        return this
     }
 
     interface OnSampleListener {

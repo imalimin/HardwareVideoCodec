@@ -3,6 +3,7 @@ package com.lmy.codec.x264
 import android.graphics.PixelFormat
 import android.media.ImageReader
 import android.media.MediaCodec
+import android.media.MediaFormat
 import android.view.Surface
 import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.GLHelper
@@ -12,36 +13,44 @@ import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
 import java.nio.ByteBuffer
 
-class SurfaceX264Encoder(private val codec: CacheX264Encoder,
+class SurfaceX264Encoder(private var format: MediaFormat,
                          var onSampleListener: CacheX264Encoder.OnSampleListener,
                          private val maxCache: Int = 5,
                          private var cache: Cache? = null,
                          private var running: Boolean = true,
                          private var imageReader: ImageReader? = null,
-                         private var mPipeline: Pipeline = EventPipeline.create("SurfaceX264Encoder"),
+                         private var mPipeline: Pipeline = EventPipeline.create("SfX264Encoder"),
                          private var width: Int = 0,
                          private var height: Int = 0
 ) : X264, Runnable, ImageReader.OnImageAvailableListener {
 
-    private var mEncodeThread = Thread(this).apply { name = "SurfaceX264Encoder1" }
+    private var mEncodeThread = Thread(this).apply { name = "SfX264Encoder1" }
 
+    private lateinit var codec: CacheX264Encoder
     var surface: Surface
     private val data: ByteArray
     private lateinit var yuv: ByteArray
 
     init {
-        data = ByteArray(codec.getWidth() * codec.getHeight() * 4)
-        codec.onSampleListener = onSampleListener
+        data = ByteArray(getWidth() * getHeight() * 4)
         imageReader = ImageReader.newInstance(getWidth(), getHeight(),
                 PixelFormat.RGBA_8888, 5)
         imageReader?.setOnImageAvailableListener(this, mPipeline.getHandler())
         surface = imageReader!!.surface
         if (!asyn()) {
-            yuv = ByteArray(codec.getWidth() * codec.getHeight() * 3 / 2)
+            yuv = ByteArray(getWidth() * getHeight() * 3 / 2)
         } else {
-            cache = Cache(codec.getWidth() * codec.getHeight() * 3 / 2, maxCache)
+            cache = Cache(getWidth() * getHeight() * 3 / 2, maxCache)
             mEncodeThread.start()
         }
+        mPipeline.queueEvent(Runnable {
+            codec = CacheX264Encoder(X264Encoder(format, Libyuv.COLOR_I420))
+            codec.onSampleListener = onSampleListener
+        })
+    }
+
+    override fun start() {
+        codec.start()
     }
 
     private fun asyn(): Boolean = maxCache > 0
@@ -85,17 +94,22 @@ class SurfaceX264Encoder(private val codec: CacheX264Encoder,
         debug_e("Encode cost ${System.currentTimeMillis() - ttt}")
     }
 
+    override fun post(event: Runnable): SurfaceX264Encoder {
+        mPipeline.queueEvent(event)
+        return this
+    }
+
     override fun encode(src: ByteArray): MediaCodec.BufferInfo? {
         return null
     }
 
     override fun getWidth(): Int {
-        if (width <= 0) width = codec.getWidth()
+        if (width <= 0) width = format.getInteger(MediaFormat.KEY_WIDTH)
         return width
     }
 
     override fun getHeight(): Int {
-        if (height <= 0) height = codec.getHeight()
+        if (height <= 0) height = format.getInteger(MediaFormat.KEY_HEIGHT)
         return height
     }
 
@@ -117,8 +131,10 @@ class SurfaceX264Encoder(private val codec: CacheX264Encoder,
         if (asyn()) {
             stop()
         } else {
-            codec.release()
-            cache?.release()
+            mPipeline.queueEvent(Runnable {
+                codec.release()
+                cache?.release()
+            })
         }
         mPipeline.quit()
     }

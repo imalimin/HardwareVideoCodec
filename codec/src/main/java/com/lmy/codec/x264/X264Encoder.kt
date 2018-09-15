@@ -169,8 +169,13 @@ class X264Encoder(private var format: MediaFormat,
         outFormat = null
     }
 
+    override fun post(event: Runnable): X264 {
+        event.run()
+        return this
+    }
+
     private external fun init(fmt: Int)
-    external fun start()
+    external override fun start()
     external override fun stop()
     external fun encode(src: ByteArray, dest: ByteArray, size: IntArray, type: IntArray, fmt: Int): Boolean
     external fun setVideoSize(width: Int, height: Int)

@@ -5,17 +5,14 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
-import android.os.Handler
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
-import com.lmy.codec.helper.Libyuv
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CodecTextureWrapper
 import com.lmy.codec.x264.CacheX264Encoder
 import com.lmy.codec.x264.SurfaceX264Encoder
-import com.lmy.codec.x264.X264Encoder
 import java.nio.ByteBuffer
 
 class SoftVideoEncoderV2Impl(var context: CodecContext,
@@ -58,15 +55,14 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
 
     private fun initCodec() {
         format = CodecHelper.createVideoFormat(context, true)!!
-        codec = SurfaceX264Encoder(CacheX264Encoder(X264Encoder(format, Libyuv.COLOR_I420)),
-                this)
-        codec!!.setProfile("high")
-        codec!!.setLevel(31)
-        codec?.onSampleListener = this
-        Handler().postDelayed({
-            debug_e("onPreparedListener ${null == onPreparedListener}")
-            onPreparedListener?.onPrepared(this)
-        }, 1000)
+        codec = SurfaceX264Encoder(format, this)
+                .post(Runnable {
+                    codec!!.setProfile("high")
+                    codec!!.setLevel(31)
+                    codec?.onSampleListener = this
+                    codec?.start()
+                    onPreparedListener?.onPrepared(this)
+                })
     }
 
     override fun start() {

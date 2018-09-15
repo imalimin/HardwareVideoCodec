@@ -19,6 +19,7 @@ class X265Encoder(private var format: MediaFormat,
                   private var ppsLength: Int = 0,
                   private var outFormat: MediaFormat? = null,
                   private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()) : X264 {
+
     companion object {
         private val CSD_0 = "csd-0"
         private val CSD_1 = "csd-1"
@@ -158,8 +159,13 @@ class X265Encoder(private var format: MediaFormat,
         outFormat = null
     }
 
+    override fun post(event: Runnable): X264 {
+        event.run()
+        return this
+    }
+
     external fun init()
-    external fun start()
+    override external fun start()
     override external fun stop()
     external fun encode(src: ByteArray, dest: ByteArray, size: IntArray, type: IntArray): Boolean
     external fun setVideoSize(width: Int, height: Int)

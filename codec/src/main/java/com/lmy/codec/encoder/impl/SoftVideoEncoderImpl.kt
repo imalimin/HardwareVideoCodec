@@ -77,8 +77,9 @@ class SoftVideoEncoderImpl(var context: CodecContext,
         codec = CacheX264Encoder(X264Encoder(format))
         codec!!.setProfile("high")
         codec!!.setLevel(31)
-        onPreparedListener?.onPrepared(this)
         codec?.onSampleListener = this
+        codec?.start()
+        onPreparedListener?.onPrepared(this)
     }
 
     private fun initPixelsCache() {
