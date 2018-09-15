@@ -29,11 +29,15 @@ object GLHelper {
                               format: Int,
                               type: Int)
 
-    external fun memcpy(src: ByteBuffer,
+    external fun copyToByteArray(src: ByteBuffer,
+                                 dest: ByteArray,
+                                 row: Int,
+                                 stride: Int,
+                                 stridePadding: Int)
+
+    external fun memcpy(src: ByteArray,
                         dest: ByteArray,
-                        row: Int,
-                        stride: Int,
-                        stridePadding: Int)
+                        length: Int)
 
     /**
      * @param context
