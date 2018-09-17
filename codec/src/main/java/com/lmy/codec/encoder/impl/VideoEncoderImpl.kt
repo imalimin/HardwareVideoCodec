@@ -31,7 +31,7 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
 class VideoEncoderImpl(var context: CodecContext,
                        private var textureId: IntArray,
                        private var eglContext: EGLContext,
-                       private var asyn: Boolean = true,
+                       asyn: Boolean = false,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
@@ -49,6 +49,11 @@ class VideoEncoderImpl(var context: CodecContext,
         EventPipeline.create("VideoEncodePipeline")
     } else {
         GLEventPipeline.INSTANCE
+    }
+    private var mDequeuePipeline: Pipeline = if (GLEventPipeline.isMe(mPipeline)) {
+        EventPipeline.create("VideoEncodePipeline")
+    } else {
+        mPipeline
     }
     private val mEncodingSyn = Any()
     private var mEncoding = false
@@ -109,7 +114,7 @@ class VideoEncoderImpl(var context: CodecContext,
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             codecWrapper?.drawTexture(null)
             codecWrapper?.egl?.swapBuffers()
-            dequeue()
+            mDequeuePipeline.queueEvent(Runnable { dequeue() })
         }
     }
 
@@ -201,6 +206,9 @@ class VideoEncoderImpl(var context: CodecContext,
         })
         if (!GLEventPipeline.isMe(mPipeline)) {
             mPipeline.quit()
+        }
+        if (!GLEventPipeline.isMe(mDequeuePipeline)) {
+            mDequeuePipeline.quit()
         }
     }
 }
