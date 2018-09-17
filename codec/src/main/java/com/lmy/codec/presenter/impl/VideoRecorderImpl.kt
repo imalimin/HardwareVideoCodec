@@ -50,8 +50,10 @@ class VideoRecorderImpl(ctx: Context,
         }
         if (null != textureView && textureView!!.isAvailable) {
             render?.post(Runnable {
-                render?.updateSize(context.video.width, context.video.height)
                 startEncoder()
+            })
+            render?.post(Runnable {
+                render?.updateSize(context.video.width, context.video.height)
             })
             return
         }

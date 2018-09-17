@@ -128,9 +128,13 @@ class DefaultRenderImpl(var context: CodecContext,
         GLEventPipeline.INSTANCE.queueEvent(Runnable {
             initReader()
             cameraWrapper.updateLocation(context)
+        })
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             synchronized(filterLock) {
                 filter?.updateFrameBuffer(this.width, this.height)
             }
+        })
+        GLEventPipeline.INSTANCE.queueEvent(Runnable {
             initScreen()
         })
     }
