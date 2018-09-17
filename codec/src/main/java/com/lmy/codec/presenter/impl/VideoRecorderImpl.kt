@@ -17,6 +17,7 @@ import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraWrapper
 
 /**
@@ -237,6 +238,7 @@ class VideoRecorderImpl(ctx: Context,
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!).apply {
             onPreparedListener = object : Encoder.OnPreparedListener {
                 override fun onPrepared(encoder: Encoder) {
+                    debug_i("VideoRecorder prepared")
                     status = Status.PREPARED
                     onStateListener?.onPrepared(encoder)
                 }
