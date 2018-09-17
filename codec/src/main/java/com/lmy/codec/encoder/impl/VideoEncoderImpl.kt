@@ -17,9 +17,9 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.loge
+import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.pipeline.impl.GLEventPipeline
-import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.CodecTextureWrapper
@@ -199,6 +199,8 @@ class VideoEncoderImpl(var context: CodecContext,
             codecWrapper?.release()
             codecWrapper = null
         })
-        mPipeline.quit()
+        if (!GLEventPipeline.isMe(mPipeline)) {
+            mPipeline.quit()
+        }
     }
 }

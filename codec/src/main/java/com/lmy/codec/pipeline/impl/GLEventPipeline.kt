@@ -7,6 +7,7 @@
 package com.lmy.codec.pipeline.impl
 
 import android.os.Handler
+import com.lmy.codec.loge
 import com.lmy.codec.pipeline.Pipeline
 
 /**
@@ -20,6 +21,9 @@ class GLEventPipeline private constructor() : Pipeline {
 
     companion object {
         val INSTANCE: Pipeline by lazy { Holder.INSTANCE }
+        fun isMe(pipeline: Pipeline): Boolean {
+            return INSTANCE == pipeline
+        }
     }
 
     private var eventPipeline: EventPipeline? = null
@@ -42,11 +46,13 @@ class GLEventPipeline private constructor() : Pipeline {
         if (null != eventPipeline) {
             eventPipeline?.quit()
             eventPipeline = null
+            loge("GLEventPipeline quited")
         }
     }
 
     override fun started(): Boolean {
         if (null == eventPipeline) return false
+        loge("GLEventPipeline started")
         return eventPipeline!!.started()
     }
 
