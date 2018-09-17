@@ -10,6 +10,7 @@ import android.graphics.SurfaceTexture
 import android.opengl.*
 import android.view.Surface
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
 import javax.microedition.khronos.egl.EGL10
 
 
@@ -138,15 +139,24 @@ class Egl(private val name: String,
     }
 
     fun makeCurrent() {
-        if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
-            //            throw new RuntimeException("eglMakeCurrent,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
-            debug_e("$name makeCurrent failed: ${GLUtils.getEGLErrorString(EGL14.eglGetError())}")
+        synchronized(this) {
+            if (EGL14.EGL_NO_CONTEXT == eglContext) {
+                debug_i("$name egl failed had release!")
+                return
+            }
+            if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
+                //            throw new RuntimeException("eglMakeCurrent,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
+                debug_e("$name makeCurrent failed: ${GLUtils.getEGLErrorString(EGL14.eglGetError())}")
+            }
+
         }
     }
 
     fun swapBuffers() {
-        if (!EGL14.eglSwapBuffers(eglDisplay, eglSurface)) {
-            debug_e("$name swapBuffers,failed!")
+        synchronized(this) {
+            if (!EGL14.eglSwapBuffers(eglDisplay, eglSurface)) {
+                debug_e("$name swapBuffers,failed!")
+            }
         }
     }
 
@@ -155,10 +165,15 @@ class Egl(private val name: String,
     }
 
     fun release() {
-        makeCurrent()
-        EGL14.eglDestroySurface(eglDisplay, eglSurface)
-        EGL14.eglDestroyContext(eglDisplay, eglContext)
-        EGL14.eglTerminate(eglDisplay)
-        EGL14.eglMakeCurrent(eglDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
+        synchronized(this) {
+            makeCurrent()
+            EGL14.eglDestroySurface(eglDisplay, eglSurface)
+            EGL14.eglDestroyContext(eglDisplay, eglContext)
+            EGL14.eglTerminate(eglDisplay)
+            EGL14.eglMakeCurrent(eglDisplay, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)
+            eglContext = EGL14.EGL_NO_CONTEXT
+            eglDisplay = EGL14.EGL_NO_DISPLAY
+            eglSurface = EGL14.EGL_NO_SURFACE
+        }
     }
 }
