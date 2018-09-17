@@ -31,7 +31,7 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
 class VideoEncoderImpl(var context: CodecContext,
                        private var textureId: IntArray,
                        private var eglContext: EGLContext,
-                       asyn: Boolean = false,
+                       private var asyn: Boolean = true,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
