@@ -21,7 +21,6 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
                              var codecWrapper: CodecTextureWrapper? = null,
                              var codec: SurfaceX264Encoder? = null,
                              private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
-                             override var onPreparedListener: Encoder.OnPreparedListener? = null,
                              override var onRecordListener: Encoder.OnRecordListener? = null)
     : Encoder, CacheX264Encoder.OnSampleListener {
 
@@ -40,6 +39,11 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var inited = false
+    override var onPreparedListener: Encoder.OnPreparedListener? = null
+        set(value) {
+            if (null != codec?.onSampleListener)
+                value?.onPrepared(this@SoftVideoEncoderV2Impl)
+        }
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -59,8 +63,8 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
                 .post(Runnable {
                     codec!!.setProfile("high")
                     codec!!.setLevel(31)
-                    codec?.onSampleListener = this
                     codec?.start()
+                    codec?.onSampleListener = this
                     onPreparedListener?.onPrepared(this)
                 })
     }

@@ -36,8 +36,8 @@ class VideoEncoderImpl(var context: CodecContext,
                        private var codec: MediaCodec? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
-                       override var onPreparedListener: Encoder.OnPreparedListener? = null,
-                       override var onRecordListener: Encoder.OnRecordListener? = null)
+                       override var onRecordListener: Encoder.OnRecordListener? = null,
+                       private var inited: Boolean = false)
     : Encoder {
 
     companion object {
@@ -58,6 +58,12 @@ class VideoEncoderImpl(var context: CodecContext,
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var mFrameCount = 0
+    override var onPreparedListener: Encoder.OnPreparedListener? = null
+        set(value) {
+            if (inited) {
+                value?.onPrepared(this@VideoEncoderImpl)
+            }
+        }
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -97,6 +103,7 @@ class VideoEncoderImpl(var context: CodecContext,
         codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), textureId, eglContext)
         codecWrapper?.egl?.makeCurrent()
         codec!!.start()
+        inited = true
         onPreparedListener?.onPrepared(this)
     }
 
