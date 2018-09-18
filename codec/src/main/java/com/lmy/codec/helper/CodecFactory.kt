@@ -13,8 +13,11 @@ import com.lmy.codec.encoder.impl.VideoEncoderImpl
 import com.lmy.codec.entity.CodecContext
 
 /**
+ * Instead by Encoder.Builder
+ * @see Encoder.Builder
  * Created by lmyooyo@gmail.com on 2018/4/25.
  */
+@Deprecated("Instead by Encoder.Builder")
 class CodecFactory {
     companion object {
         fun getEncoder(context: CodecContext,
