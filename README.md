@@ -7,10 +7,11 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_2.gif)
 ## Latest release
-[V1.6.2](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.6.2)
+[V1.6.3](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.6.3)
 
-* More filters.
-* Fix the problem of camera frame rate selection error.
+* More efficient x264 encoder. Raise about 3 frames to 27 fps under Stable and 19 fps under Motion.(Nokia 7, 720p)
+* More and more filters.
+* Fix some encoder problems.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
@@ -19,7 +20,7 @@ With it, you can encode a video at any resolution, no longer need to care about 
 * Support hard & soft encode.
 * Record video & audio. Pack mp4 through MediaMuxer.
 * Use OpenGL to render and support filter.
-* Supports 20 filters
+* Supports 40+ filters
 * Support beauty filter.
 * Support for changing resolution without restarting the camera.
 * More features.
@@ -44,8 +45,8 @@ allprojects {
 * Module build.gradle
 ```
 dependencies {
-    implementation 'com.lmy.codec:hardwarevideocodec:1.6.1'
-    implementation 'com.lmy.codec:rtmp:1.6.1'//If you want to use RTMP stream.
+    implementation 'com.lmy.codec:hardwarevideocodec:1.6.3'
+    implementation 'com.lmy.codec:rtmp:1.6.3'//If you want to use RTMP stream.
 }
 ```
 * For record mp4
