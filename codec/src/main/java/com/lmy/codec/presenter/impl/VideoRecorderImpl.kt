@@ -7,7 +7,6 @@ import android.view.TextureView
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.helper.MuxerFactory
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.impl.GLEventPipeline
@@ -32,7 +31,9 @@ class VideoRecorderImpl(ctx: Context,
                         private var onStateListener: VideoRecorder.OnStateListener? = null,
                         private var textureView: TextureView? = null,
                         private var status: Status = Status.IDL,
-                        private var filter: Class<*>? = NormalFilter::class.java) : VideoRecorder {
+                        private var filter: Class<*>? = NormalFilter::class.java
+) : VideoRecorder, Encoder.OnPreparedListener {
+
     enum class Status {
         IDL, PREPARED, STARTED
     }
@@ -234,24 +235,24 @@ class VideoRecorderImpl(ctx: Context,
         if (context.video.bitrate <= 0)
             setVideoBitrate(context.video.width * context.video.height * CodecContext.Video.MEDIUM * context.video.fps / 24)
         context.check()
-        encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
-                cameraWrapper!!.textureWrapper.egl!!.eglContext!!).apply {
-            onPreparedListener = object : Encoder.OnPreparedListener {
-                override fun onPrepared(encoder: Encoder) {
-                    debug_i("VideoRecorder prepared")
-                    status = Status.PREPARED
-                    onStateListener?.onPrepared(encoder)
-                }
-            }
-            if (null != muxer)
-                setOnSampleListener(muxer!!)
-        }
+        encoder = Encoder.Builder(context, render!!.getFrameBufferTexture(),
+                cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+                .setOnPreparedListener(this)
+                .build()
+        if (null != muxer)
+            encoder?.setOnSampleListener(muxer!!)
         audioEncoder = AudioEncoderImpl(context).apply {
             if (null != muxer)
                 setOnSampleListener(muxer!!)
         }
         if (null != onStateListener)
             setOnStateListener(onStateListener!!)
+    }
+
+    override fun onPrepared(encoder: Encoder) {
+        debug_i("VideoRecorder prepared")
+        status = Status.PREPARED
+        onStateListener?.onPrepared(encoder)
     }
 
     override fun setOnStateListener(listener: VideoRecorder.OnStateListener) {
