@@ -31,6 +31,7 @@ import java.nio.ByteBuffer
 class SoftVideoEncoderImpl(var context: CodecContext,
                            textureId: IntArray,
                            private var eglContext: EGLContext,
+                           override var onPreparedListener: Encoder.OnPreparedListener? = null,
                            var codec: CacheX264Encoder? = null,
                            var reader: PixelsReader? = null,
                            private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
@@ -54,11 +55,6 @@ class SoftVideoEncoderImpl(var context: CodecContext,
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var inited = false
-    override var onPreparedListener: Encoder.OnPreparedListener? = null
-        set(value) {
-            if (null != codec?.onSampleListener)
-                value?.onPrepared(this@SoftVideoEncoderImpl)
-        }
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {

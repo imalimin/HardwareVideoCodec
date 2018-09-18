@@ -31,13 +31,13 @@ import com.lmy.codec.wrapper.CodecTextureWrapper
 class VideoEncoderImpl(var context: CodecContext,
                        private var textureId: IntArray,
                        private var eglContext: EGLContext,
+                       override var onPreparedListener: Encoder.OnPreparedListener? = null,
                        asyn: Boolean = false,
                        var codecWrapper: CodecTextureWrapper? = null,
                        private var codec: MediaCodec? = null,
                        private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
                        private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
-                       override var onRecordListener: Encoder.OnRecordListener? = null,
-                       private var inited: Boolean = false)
+                       override var onRecordListener: Encoder.OnRecordListener? = null)
     : Encoder {
 
     companion object {
@@ -58,12 +58,6 @@ class VideoEncoderImpl(var context: CodecContext,
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var mFrameCount = 0
-    override var onPreparedListener: Encoder.OnPreparedListener? = null
-        set(value) {
-            if (inited) {
-                value?.onPrepared(this@VideoEncoderImpl)
-            }
-        }
 
     private var onSampleListener: Encoder.OnSampleListener? = null
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
@@ -103,7 +97,6 @@ class VideoEncoderImpl(var context: CodecContext,
         codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), textureId, eglContext)
         codecWrapper?.egl?.makeCurrent()
         codec!!.start()
-        inited = true
         onPreparedListener?.onPrepared(this)
     }
 
