@@ -33,8 +33,8 @@ class NormalTexture(textureId: IntArray) : BaseTexture(textureId) {
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_normal.sh"),
-                Resources.instance.readAssetsAsString("shader/fragment_normal.sh"))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_normal.glsl"),
+                Resources.instance.readAssetsAsString("shader/fragment_normal.glsl"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

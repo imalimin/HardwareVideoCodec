@@ -40,11 +40,11 @@ class BeautyV4Filter(width: Int = 0,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_beauty_v4.sh"
+        return "shader/vertex_beauty_v4.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_beauty_v4.sh"
+        return "shader/fragment_beauty_v4.glsl"
     }
 
     override fun setValue(index: Int, value: Int) {

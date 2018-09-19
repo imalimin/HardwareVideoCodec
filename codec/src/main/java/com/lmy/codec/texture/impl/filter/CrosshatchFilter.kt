@@ -41,11 +41,11 @@ class CrosshatchFilter(width: Int = 0,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_normal.sh"
+        return "shader/vertex_normal.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_crosshatch.sh"
+        return "shader/fragment_crosshatch.glsl"
     }
 
     /**

@@ -37,11 +37,11 @@ class SmoothFilter(width: Int = 0,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_normal.sh"
+        return "shader/vertex_normal.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_smooth.sh"
+        return "shader/fragment_smooth.glsl"
     }
 
     override fun setValue(index: Int, value: Int) {

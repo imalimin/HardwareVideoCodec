@@ -53,8 +53,8 @@ class MirrorTexture(width: Int, height: Int,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_mirror.sh"),
-                Resources.instance.readAssetsAsString("shader/fragment_mirror.sh"))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_mirror.glsl"),
+                Resources.instance.readAssetsAsString("shader/fragment_mirror.glsl"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

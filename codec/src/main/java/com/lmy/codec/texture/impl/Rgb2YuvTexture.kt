@@ -29,8 +29,8 @@ class Rgb2YuvTexture(width: Int, height: Int,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_rgb2yuv.sh"),
-                Resources.instance.readAssetsAsString("shader/fragment_rgb2yuv.sh"))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_rgb2yuv.glsl"),
+                Resources.instance.readAssetsAsString("shader/fragment_rgb2yuv.glsl"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

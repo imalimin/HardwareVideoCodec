@@ -1,4 +1,3 @@
-
 precision lowp float;
 
 varying highp vec2 vTextureCoord;

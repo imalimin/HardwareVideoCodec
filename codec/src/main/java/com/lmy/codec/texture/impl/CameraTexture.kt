@@ -28,8 +28,8 @@ class CameraTexture(width: Int, height: Int,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_camera.sh"),
-                Resources.instance.readAssetsAsString("shader/fragment_camera.sh"))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_camera.glsl"),
+                Resources.instance.readAssetsAsString("shader/fragment_camera.glsl"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

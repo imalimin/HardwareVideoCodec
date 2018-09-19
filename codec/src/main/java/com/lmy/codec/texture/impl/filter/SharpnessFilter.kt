@@ -48,11 +48,11 @@ class SharpnessFilter(width: Int = 0,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_sharpness.sh"
+        return "shader/vertex_sharpness.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_sharpness.sh"
+        return "shader/fragment_sharpness.glsl"
     }
 
     /**

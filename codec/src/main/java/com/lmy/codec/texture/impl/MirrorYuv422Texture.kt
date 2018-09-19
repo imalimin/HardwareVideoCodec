@@ -48,8 +48,8 @@ class MirrorYuv422Texture(width: Int, height: Int,
     }
 
     private fun createProgram() {
-        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_mirror.sh"),
-                Resources.instance.readAssetsAsString("shader/fragment_rgba_to_yuv422.sh"))
+        shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_mirror.glsl"),
+                Resources.instance.readAssetsAsString("shader/fragment_rgba_to_yuv422.glsl"))
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")

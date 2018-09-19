@@ -33,10 +33,10 @@ class GreyFilter(width: Int = 0,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_grey.sh"
+        return "shader/vertex_grey.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_grey.sh"
+        return "shader/fragment_grey.glsl"
     }
 }

@@ -39,11 +39,11 @@ class BrightnessFilter(width: Int = 0,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_normal.sh"
+        return "shader/vertex_normal.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_brightness.sh"
+        return "shader/fragment_brightness.glsl"
     }
 
     override fun setValue(index: Int, value: Int) {

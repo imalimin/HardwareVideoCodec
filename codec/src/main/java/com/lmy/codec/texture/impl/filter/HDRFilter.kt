@@ -33,10 +33,10 @@ class HDRFilter(width: Int,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_hdr.sh"
+        return "shader/vertex_hdr.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_hdr.sh"
+        return "shader/fragment_hdr.glsl"
     }
 }

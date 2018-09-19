@@ -44,11 +44,11 @@ class SketchFilter(width: Int = 0,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_sketch.sh"
+        return "shader/vertex_sketch.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_sketch.sh"
+        return "shader/fragment_sketch.glsl"
     }
 
     override fun setValue(index: Int, value: Int) {

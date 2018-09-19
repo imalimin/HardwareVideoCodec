@@ -46,11 +46,11 @@ class BeautyFilter(width: Int = 0,
     }
 
     override fun getVertex(): String {
-        return "shader/vertex_beauty.sh"
+        return "shader/vertex_beauty.glsl"
     }
 
     override fun getFragment(): String {
-        return "shader/fragment_beauty.sh"
+        return "shader/fragment_beauty.glsl"
     }
 
     private var brightLevel = 0.55f
