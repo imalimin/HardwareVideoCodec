@@ -7,6 +7,7 @@
 package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
+import android.opengl.GLES30
 import com.lmy.codec.texture.Texture
 import com.lmy.codec.util.debug_i
 import java.nio.ByteBuffer
@@ -30,6 +31,8 @@ abstract class BaseTexture(var textureId: IntArray,
     }
 
     private val lock = Any()
+    private var enableVAO = false
+    private var vao: IntArray? = null
 
     init {
         createVBOs()
@@ -118,8 +121,34 @@ abstract class BaseTexture(var textureId: IntArray,
         return program
     }
 
+    private fun enableVertexVAO(posLoc: Int, texLoc: Int) {
+        if (null == vao) {
+            vao = IntArray(1)
+            GLES30.glGenVertexArrays(vao!!.size, vao!!, 0)
+            GLES30.glBindVertexArray(vao!![0])
+
+            GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0])
+            GLES30.glEnableVertexAttribArray(posLoc)
+            GLES30.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
+                    GLES20.GL_FLOAT, false,
+                    COORDS_PER_VERTEX * 4, 0)
+
+            GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[1])
+            GLES30.glEnableVertexAttribArray(texLoc)
+            GLES30.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
+                    GLES20.GL_FLOAT, false,
+                    TEXTURE_COORDS_PER_VERTEX * 4, 0)
+            GLES30.glBindVertexArray(GLES30.GL_NONE)
+        }
+        GLES30.glBindVertexArray(vao!![0])
+    }
+
     fun enableVertex(posLoc: Int, texLoc: Int) {
         updateVBOs()
+        if (enableVAO) {
+            enableVertexVAO(posLoc, texLoc)
+            return
+        }
         //xy
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0])
         GLES20.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
@@ -136,6 +165,10 @@ abstract class BaseTexture(var textureId: IntArray,
     }
 
     fun disableVertex(position: Int, coordinate: Int) {
+        if (enableVAO) {
+            GLES30.glBindVertexArray(GLES30.GL_NONE)
+            return
+        }
         GLES20.glDisableVertexAttribArray(position)
         GLES20.glDisableVertexAttribArray(coordinate)
     }
