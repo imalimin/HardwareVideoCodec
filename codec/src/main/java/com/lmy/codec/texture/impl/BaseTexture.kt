@@ -18,20 +18,21 @@ import java.nio.FloatBuffer
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 abstract class BaseTexture(var textureId: IntArray,
-                           var shaderProgram: Int? = null,
-                           var drawer: GLDrawer = GLDrawer(),
-                           var name: String = "BaseTexture",
-                           private var position: FloatBuffer? = null,
-                           private var texCoordinate: FloatBuffer? = null,
-                           private var requestUpdateLocation: Boolean = false,
-                           private var vbos: IntArray = IntArray(2)) : Texture {
+                           var name: String = "BaseTexture") : Texture {
     companion object {
         var COORDS_PER_VERTEX = 2
         var TEXTURE_COORDS_PER_VERTEX = 2
+        val COORDS_BYTE_SIZE = COORDS_PER_VERTEX * 4 * 4
     }
 
     private val lock = Any()
     private var enableVAO = false
+    var shaderProgram: Int? = null
+    var drawer: GLDrawer = GLDrawer()
+    private var position: FloatBuffer? = null
+    private var texCoordinate: FloatBuffer? = null
+    private var requestUpdateLocation: Boolean = false
+    private var vbos: IntArray = IntArray(1)
     private var vao: IntArray? = null
 
     init {
@@ -52,10 +53,7 @@ abstract class BaseTexture(var textureId: IntArray,
     private fun createVBOs() {
         GLES20.glGenBuffers(vbos.size, vbos, 0)
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0])
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, TEXTURE_COORDS_PER_VERTEX * 4 * 4
-                , null, GLES20.GL_STATIC_DRAW)
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[1])
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, TEXTURE_COORDS_PER_VERTEX * 4 * 4
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, COORDS_BYTE_SIZE * 2
                 , null, GLES20.GL_STATIC_DRAW)
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, GLES20.GL_NONE)
     }
@@ -66,11 +64,8 @@ abstract class BaseTexture(var textureId: IntArray,
             requestUpdateLocation = false
         }
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0])
-        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0,
-                TEXTURE_COORDS_PER_VERTEX * 4 * 4, position!!)
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[1])
-        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0,
-                TEXTURE_COORDS_PER_VERTEX * 4 * 4, texCoordinate!!)
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, 0, COORDS_BYTE_SIZE, position!!)
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, COORDS_BYTE_SIZE, COORDS_BYTE_SIZE, texCoordinate!!)
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, GLES20.GL_NONE)
     }
 
@@ -121,23 +116,22 @@ abstract class BaseTexture(var textureId: IntArray,
         return program
     }
 
-    private fun enableVertexVAO(posLoc: Int, texLoc: Int) {
+    private fun enableVAO(posLoc: Int, texLoc: Int) {
         if (null == vao) {
             vao = IntArray(1)
             GLES30.glGenVertexArrays(vao!!.size, vao!!, 0)
             GLES30.glBindVertexArray(vao!![0])
-
             GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0])
+
             GLES30.glEnableVertexAttribArray(posLoc)
+            GLES30.glEnableVertexAttribArray(texLoc)
+
             GLES30.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
                     GLES20.GL_FLOAT, false,
                     COORDS_PER_VERTEX * 4, 0)
-
-            GLES30.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[1])
-            GLES30.glEnableVertexAttribArray(texLoc)
             GLES30.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
                     GLES20.GL_FLOAT, false,
-                    TEXTURE_COORDS_PER_VERTEX * 4, 0)
+                    TEXTURE_COORDS_PER_VERTEX * 4, COORDS_BYTE_SIZE)
             GLES30.glBindVertexArray(GLES30.GL_NONE)
         }
         GLES30.glBindVertexArray(vao!![0])
@@ -146,21 +140,20 @@ abstract class BaseTexture(var textureId: IntArray,
     fun enableVertex(posLoc: Int, texLoc: Int) {
         updateVBOs()
         if (enableVAO) {
-            enableVertexVAO(posLoc, texLoc)
+            enableVAO(posLoc, texLoc)
             return
         }
-        //xy
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[0])
+        GLES20.glEnableVertexAttribArray(posLoc)
+        GLES20.glEnableVertexAttribArray(texLoc)
+        //xy
         GLES20.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 COORDS_PER_VERTEX * 4, 0)
-        GLES20.glEnableVertexAttribArray(posLoc)
         //st
-        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbos[1])
         GLES20.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
-                TEXTURE_COORDS_PER_VERTEX * 4, 0)
-        GLES20.glEnableVertexAttribArray(texLoc)
+                TEXTURE_COORDS_PER_VERTEX * 4, COORDS_BYTE_SIZE)
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, GLES20.GL_NONE)
     }
 
@@ -207,6 +200,9 @@ abstract class BaseTexture(var textureId: IntArray,
 
     open fun release() {
         GLES20.glDeleteBuffers(vbos.size, vbos, 0)
+        if (null != vao) {
+            GLES30.glDeleteVertexArrays(vao!!.size, vao!!, 0)
+        }
         if (null != shaderProgram)
             GLES20.glDeleteProgram(shaderProgram!!)
     }
