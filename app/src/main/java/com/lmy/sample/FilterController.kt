@@ -16,15 +16,15 @@ class FilterController(private val mVideoRecorder: VideoRecorder,
     : SeekBar.OnSeekBarChangeListener {
     companion object {
         private val FILTERS = arrayOf(
-                "Normal", "Beauty", "Beauty V4", "Grey", "Pixelation",
+                "Normal", "Beauty", "Beauty V4", "Nature ", "Clean ",
+                "Vivid ", "Beach", "Brannan", "Coral", "Crisp",
+                "Fresh", "Grass", "Inkwell", "Lolita", "Pink",
+                "Sunset", "Sweet", "Urban", "Valencia", "Vintage",
+                "Walden", "Pixar", "Chromatic", "Grey", "Pixelation",
                 "Hue", "Gamma", "Brightness", "Sepia", "Sharpness",
                 "Saturation", "Exposure", "Highlight Shadow", "Monochrome", "White Balance",
                 "Vignette", "Crosshatch", "Smooth", "Sketch", "Halftone",
-                "Haze", "NatureFilter", "CleanFilter", "VividFilter", "Beach",
-                "Brannan", "Coral", "Crisp", "Fresh", "Grass",
-                "Inkwell", "Lolita", "Pink", "Sunset", "Sweet",
-                "Urban", "Valencia", "Vintage", "Walden", "Pixar",
-                "Chromatic")
+                "Haze")
     }
 
     private var oneBar: SeekBar = progressLayout.getChildAt(0) as SeekBar
@@ -81,56 +81,137 @@ class FilterController(private val mVideoRecorder: VideoRecorder,
                 thBar.progress = 7
             }
             3 -> {
-                mVideoRecorder.setFilter(GreyFilter::class.java)
+                mVideoRecorder.setFilter(NatureFilter::class.java)
                 show(0)
             }
             4 -> {
+                mVideoRecorder.setFilter(CleanFilter::class.java)
+                show(0)
+            }
+            5 -> {
+                mVideoRecorder.setFilter(VividFilter::class.java)
+                show(0)
+            }
+            6 -> {
+                mVideoRecorder.setFilter(BeachFilter::class.java)
+                show(0)
+            }
+            7 -> {
+                mVideoRecorder.setFilter(BrannanFilter::class.java)
+                show(0)
+            }
+            8 -> {
+                mVideoRecorder.setFilter(CoralFilter::class.java)
+                show(0)
+            }
+            9 -> {
+                mVideoRecorder.setFilter(CrispFilter::class.java)
+                show(0)
+            }
+            10 -> {
+                mVideoRecorder.setFilter(FreshFilter::class.java)
+                show(0)
+            }
+            11 -> {
+                mVideoRecorder.setFilter(GrassFilter::class.java)
+                show(0)
+            }
+            12 -> {
+                mVideoRecorder.setFilter(InkwellFilter::class.java)
+                show(0)
+            }
+            13 -> {
+                mVideoRecorder.setFilter(LolitaFilter::class.java)
+                show(0)
+            }
+            14 -> {
+                mVideoRecorder.setFilter(PinkFilter::class.java)
+                show(0)
+            }
+            15 -> {
+                mVideoRecorder.setFilter(SunsetFilter::class.java)
+                show(0)
+            }
+            16 -> {
+                mVideoRecorder.setFilter(SweetFilter::class.java)
+                show(0)
+            }
+            17 -> {
+                mVideoRecorder.setFilter(UrbanFilter::class.java)
+                show(0)
+            }
+            18 -> {
+                mVideoRecorder.setFilter(ValenciaFilter::class.java)
+                show(0)
+            }
+            19 -> {
+                mVideoRecorder.setFilter(VintageFilter::class.java)
+                show(0)
+            }
+            20 -> {
+                mVideoRecorder.setFilter(WaldenFilter::class.java)
+                show(0)
+            }
+            21 -> {
+                mVideoRecorder.setFilter(PixarFilter::class.java)
+                show(0)
+            }
+            22 -> {
+                mVideoRecorder.setFilter(ChromaticFilter::class.java)
+                show(1)
+                oneBar.progress = 10
+            }
+            23 -> {
+                mVideoRecorder.setFilter(GreyFilter::class.java)
+                show(0)
+            }
+            24 -> {
                 mVideoRecorder.setFilter(PixelationFilter::class.java)
                 show(1)
                 oneBar.progress = 0
             }
-            5 -> {
+            25 -> {
                 mVideoRecorder.setFilter(HueFilter::class.java)
                 show(1)
                 oneBar.progress = 0
             }
-            6 -> {
+            26 -> {
                 mVideoRecorder.setFilter(GammaFilter::class.java)
                 show(1)
                 oneBar.progress = 33
             }
-            7 -> {
+            27 -> {
                 mVideoRecorder.setFilter(BrightnessFilter::class.java)
                 show(1)
                 oneBar.progress = 50
             }
-            8 -> {
+            28 -> {
                 mVideoRecorder.setFilter(SepiaFilter::class.java)
                 show(1)
                 oneBar.progress = 0
             }
-            9 -> {
+            29 -> {
                 mVideoRecorder.setFilter(SharpnessFilter::class.java)
                 show(1)
                 oneBar.progress = 50
             }
-            10 -> {
+            30 -> {
                 mVideoRecorder.setFilter(SaturationFilter::class.java)
                 show(1)
                 oneBar.progress = 50
             }
-            11 -> {
+            31 -> {
                 mVideoRecorder.setFilter(ExposureFilter::class.java)
                 show(1)
                 oneBar.progress = 50
             }
-            12 -> {
+            32 -> {
                 mVideoRecorder.setFilter(HighlightShadowFilter::class.java)
                 show(2)
                 oneBar.progress = 0
                 twoBar.progress = 0
             }
-            13 -> {
+            33 -> {
                 mVideoRecorder.setFilter(MonochromeFilter::class.java)
                 show(4)
                 oneBar.progress = 0
@@ -138,13 +219,13 @@ class FilterController(private val mVideoRecorder: VideoRecorder,
                 thBar.progress = 45
                 fBar.progress = 30
             }
-            14 -> {
+            34 -> {
                 mVideoRecorder.setFilter(WhiteBalanceFilter::class.java)
                 show(2)
                 oneBar.progress = 50
                 twoBar.progress = 0
             }
-            15 -> {
+            35 -> {
                 mVideoRecorder.setFilter(VignetteFilter::class.java)
                 show(4)
                 oneBar.progress = 50
@@ -152,114 +233,33 @@ class FilterController(private val mVideoRecorder: VideoRecorder,
                 thBar.progress = 50
                 fBar.progress = 100
             }
-            16 -> {
+            36 -> {
                 mVideoRecorder.setFilter(CrosshatchFilter::class.java)
                 show(2)
                 oneBar.progress = 30
                 twoBar.progress = 30
             }
-            17 -> {
+            37 -> {
                 mVideoRecorder.setFilter(SmoothFilter::class.java)
                 show(1)
                 oneBar.progress = 30
             }
-            18 -> {
+            38 -> {
                 mVideoRecorder.setFilter(SketchFilter::class.java)
                 show(1)
                 oneBar.progress = 30
             }
-            19 -> {
+            39 -> {
                 mVideoRecorder.setFilter(HalftoneFilter::class.java)
                 show(2)
                 oneBar.progress = 30
                 twoBar.progress = 10
             }
-            20 -> {
+            40 -> {
                 mVideoRecorder.setFilter(HazeFilter::class.java)
                 show(2)
                 oneBar.progress = 50
                 twoBar.progress = 50
-            }
-            21 -> {
-                mVideoRecorder.setFilter(NatureFilter::class.java)
-                show(0)
-            }
-            22 -> {
-                mVideoRecorder.setFilter(CleanFilter::class.java)
-                show(0)
-            }
-            23 -> {
-                mVideoRecorder.setFilter(VividFilter::class.java)
-                show(0)
-            }
-            24 -> {
-                mVideoRecorder.setFilter(BeachFilter::class.java)
-                show(0)
-            }
-            25 -> {
-                mVideoRecorder.setFilter(BrannanFilter::class.java)
-                show(0)
-            }
-            26 -> {
-                mVideoRecorder.setFilter(CoralFilter::class.java)
-                show(0)
-            }
-            27 -> {
-                mVideoRecorder.setFilter(CrispFilter::class.java)
-                show(0)
-            }
-            28 -> {
-                mVideoRecorder.setFilter(FreshFilter::class.java)
-                show(0)
-            }
-            29 -> {
-                mVideoRecorder.setFilter(GrassFilter::class.java)
-                show(0)
-            }
-            30 -> {
-                mVideoRecorder.setFilter(InkwellFilter::class.java)
-                show(0)
-            }
-            31 -> {
-                mVideoRecorder.setFilter(LolitaFilter::class.java)
-                show(0)
-            }
-            32 -> {
-                mVideoRecorder.setFilter(PinkFilter::class.java)
-                show(0)
-            }
-            33 -> {
-                mVideoRecorder.setFilter(SunsetFilter::class.java)
-                show(0)
-            }
-            34 -> {
-                mVideoRecorder.setFilter(SweetFilter::class.java)
-                show(0)
-            }
-            35 -> {
-                mVideoRecorder.setFilter(UrbanFilter::class.java)
-                show(0)
-            }
-            36 -> {
-                mVideoRecorder.setFilter(ValenciaFilter::class.java)
-                show(0)
-            }
-            37 -> {
-                mVideoRecorder.setFilter(VintageFilter::class.java)
-                show(0)
-            }
-            38 -> {
-                mVideoRecorder.setFilter(WaldenFilter::class.java)
-                show(0)
-            }
-            39 -> {
-                mVideoRecorder.setFilter(PixarFilter::class.java)
-                show(0)
-            }
-            40 -> {
-                mVideoRecorder.setFilter(ChromaticFilter::class.java)
-                show(1)
-                oneBar.progress = 10
             }
             else -> {
                 mVideoRecorder.setFilter(NormalFilter::class.java)
