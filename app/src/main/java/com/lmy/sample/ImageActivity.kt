@@ -37,7 +37,7 @@ class ImageActivity : BaseActivity() {
     private fun initView() {
         var uri = intent.data
         if (uri == null)
-            uri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+            uri = intent.getParcelableExtra(Intent.EXTRA_STREAM)
         if (uri == null) {
             finish()
             Toast.makeText(this, "没有找到该文件", Toast.LENGTH_SHORT).show()
@@ -66,7 +66,7 @@ class ImageActivity : BaseActivity() {
         mProcessor?.release()
     }
 
-    fun getRealFilePath(context: Context, uri: Uri?): String? {
+    private fun getRealFilePath(context: Context, uri: Uri?): String? {
         if (null == uri) return null
         val scheme = uri.scheme
         var data: String? = null
