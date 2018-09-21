@@ -15,7 +15,7 @@ import com.lmy.codec.wrapper.CameraWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/8/9.
  */
-interface VideoRecorder : SurfaceTexture.OnFrameAvailableListener {
+interface VideoRecorder : FilterSupport, SurfaceTexture.OnFrameAvailableListener {
     fun prepare()
     fun start()
     fun pause()
@@ -30,8 +30,6 @@ interface VideoRecorder : SurfaceTexture.OnFrameAvailableListener {
     fun setFps(fps: Int)
     fun getWidth(): Int
     fun getHeight(): Int
-    fun setFilter(filter: Class<*>)
-    fun getFilter(): BaseFilter?
     /**
      * File or rtmp url
      */

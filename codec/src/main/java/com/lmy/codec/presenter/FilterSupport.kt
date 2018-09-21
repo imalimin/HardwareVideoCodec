@@ -6,16 +6,12 @@
  */
 package com.lmy.codec.presenter
 
-import android.view.TextureView
 import com.lmy.codec.texture.impl.filter.BaseFilter
-import java.io.File
 
 /**
  * Created by lmyooyo@gmail.com on 2018/9/21.
  */
-interface ImageProcessor : FilterSupport {
-    fun prepare()
-    fun setInputImage(file: File)
-    fun setPreviewDisplay(view: TextureView)
-    fun release()
+interface FilterSupport {
+    fun setFilter(filter: Class<*>)
+    fun getFilter(): BaseFilter?
 }
