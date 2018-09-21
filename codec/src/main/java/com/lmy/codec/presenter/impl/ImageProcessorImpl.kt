@@ -88,8 +88,19 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
             filter?.height = context.video.height
             filter?.textureId = srcInputTexture
             filter?.init()
-            screenInputTexture[0] = filter!!.frameBufferTexture[0]
+            filter?.updateLocation(floatArrayOf(
+                    0f, 0f,//LEFT,BOTTOM
+                    1f, 0f,//RIGHT,BOTTOM
+                    0f, 1f,//LEFT,TOP
+                    1f, 1f//RIGHT,TOP
+            ), floatArrayOf(
+                    -1f, 1f,//LEFT,TOP
+                    1f, 1f,//RIGHT,TOP
+                    -1f, -1f,//LEFT,BOTTOM
+                    1f, -1f//RIGHT,BOTTOM
+            ))
         }
+        screenInputTexture[0] = filter!!.frameBufferTexture[0]
     }
 
     private fun invalidate() {
