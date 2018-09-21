@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 package com.lmy.sample
 
 import android.os.Bundle
@@ -5,7 +11,7 @@ import android.view.TextureView
 import android.widget.FrameLayout
 import com.lmy.codec.presenter.ImageProcessor
 import com.lmy.codec.presenter.impl.ImageProcessorImpl
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
 
 /**
@@ -13,6 +19,7 @@ import java.io.File
  */
 class ImageActivity : BaseActivity() {
     private var mProcessor: ImageProcessor? = null
+    private var mFilterController: FilterController? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
@@ -32,6 +39,10 @@ class ImageActivity : BaseActivity() {
             prepare()
         }
         mProcessor?.setInputImage(File("/sdcard/DSC00059.jpg"))
+        mFilterController = FilterController(mProcessor!!, progressLayout)
+        effectBtn.setOnClickListener({
+            mFilterController?.chooseFilter(this)
+        })
     }
 
     override fun onDestroy() {

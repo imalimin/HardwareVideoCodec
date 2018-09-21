@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,4 +8,71 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="false" />
-</RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="32dp">
+
+        <Button
+            android:id="@+id/effectBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:text="EFFECT"
+            android:textColor="@color/colorAccent" />
+
+        <LinearLayout
+            android:id="@+id/progressLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical">
+
+            <SeekBar
+                android:id="@+id/oneBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:progress="0"
+                android:visibility="gone" />
+
+            <SeekBar
+                android:id="@+id/twoBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:progress="0"
+                android:visibility="gone" />
+
+            <SeekBar
+                android:id="@+id/thBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:progress="0"
+                android:visibility="gone" />
+
+            <SeekBar
+                android:id="@+id/fBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:progress="0"
+                android:visibility="gone" />
+        </LinearLayout>
+
+    </FrameLayout>
+</FrameLayout>
