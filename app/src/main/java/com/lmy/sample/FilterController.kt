@@ -5,13 +5,13 @@ import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
-import com.lmy.codec.presenter.VideoRecorder
+import com.lmy.codec.presenter.FilterSupport
 import com.lmy.codec.texture.impl.filter.*
 
 /**
  * Created by lmyooyo@gmail.com on 2018/7/24.
  */
-class FilterController(private val mVideoRecorder: VideoRecorder,
+class FilterController(private val mVideoRecorder: FilterSupport,
                        private val progressLayout: ViewGroup)
     : SeekBar.OnSeekBarChangeListener {
     companion object {
