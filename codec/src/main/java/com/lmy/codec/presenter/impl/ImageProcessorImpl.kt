@@ -54,13 +54,13 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
         debug_i("createEGL")
         if (null == screenWrapper) {
             screenWrapper = ScreenTextureWrapper(screenTexture, screenInputTexture, null)
+            screenWrapper?.egl?.makeCurrent()
         }
         screenWrapper?.updateLocation(context)
     }
 
     private fun createSrcTexture() {
         debug_i("createSrcTexture")
-        screenWrapper?.egl?.makeCurrent()
         GLES20.glGenTextures(srcInputTexture.size, srcInputTexture, 0)
         GLES20.glBindTexture(GL10.GL_TEXTURE_2D, srcInputTexture[0])
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
@@ -76,7 +76,6 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
 
     private fun createFilter(clazz: Class<*>) {
         debug_i("createFilter")
-        screenWrapper?.egl?.makeCurrent()
         synchronized(filterLock) {
             filter?.release()
             try {
@@ -94,15 +93,19 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
     }
 
     private fun invalidate() {
-        synchronized(filterLock) {
-            filter?.drawTexture(null)
-        }
-        GLES20.glViewport(0, 0, context.viewSize.width, context.viewSize.height)
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-        GLES20.glClearColor(0f, 0f, 0f, 0f)
-        screenWrapper?.drawTexture(null)
-        screenWrapper?.egl?.swapBuffers()
-        debug_i("invalidate")
+        mPipeline.queueEvent(Runnable {
+            synchronized(filterLock) {
+                GLES20.glViewport(0, 0, context.video.width, context.video.height)
+                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+                filter?.drawTexture(null)
+            }
+            GLES20.glViewport(0, 0, context.viewSize.width, context.viewSize.height)
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            GLES20.glClearColor(0f, 0f, 0f, 0f)
+            screenWrapper?.drawTexture(null)
+            screenWrapper?.egl?.swapBuffers()
+            debug_i("invalidate")
+        })
     }
 
     private fun updateSrcTexture(bitmap: Bitmap) {
@@ -110,8 +113,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
         context.video.height = bitmap.height
         debug_i("updateSrcTexture ${context.video.width}x${context.video.height}, " +
                 "${context.viewSize.width}x${context.viewSize.height}, " +
-                "${srcInputTexture[0]}")
-        screenWrapper?.egl?.makeCurrent()
+                "src=${srcInputTexture[0]}, screen=${screenInputTexture[0]}")
         screenWrapper?.updateLocation(context)
         synchronized(filterLock) {
             filter?.updateFrameBuffer(context.video.width, context.video.height)
@@ -133,8 +135,9 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
             featureFile = file
             return
         }
+        val path = file.absolutePath
         mPipeline.queueEvent(Runnable {
-            updateSrcTexture(BitmapFactory.decodeFile(file.absolutePath))
+            updateSrcTexture(BitmapFactory.decodeFile(path))
         })
     }
 
@@ -188,7 +191,6 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
 
     override fun release() {
         mPipeline.queueEvent(Runnable {
-            screenWrapper?.egl?.makeCurrent()
             GLES20.glDeleteTextures(srcInputTexture.size, srcInputTexture, 0)
             synchronized(filterLock) {
                 filter?.release()
