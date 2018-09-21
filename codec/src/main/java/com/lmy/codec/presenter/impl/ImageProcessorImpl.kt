@@ -201,14 +201,17 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
     }
 
     override fun release() {
+        debug_i("release")
         mPipeline.queueEvent(Runnable {
             GLES20.glDeleteTextures(srcInputTexture.size, srcInputTexture, 0)
             synchronized(filterLock) {
                 filter?.release()
+                filter = null
                 screenWrapper?.release()
+                screenWrapper = null
             }
+            mPipeline.quit()
         })
-        mPipeline.quit()
         context.release()
     }
 
@@ -222,7 +225,9 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
         textureView?.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
 
             override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
-                updatePreview(p1, p2)
+                mPipeline.queueEvent(Runnable {
+                    updatePreview(p1, p2)
+                })
             }
 
             override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
