@@ -7,11 +7,9 @@
 package com.lmy.sample
 
 import android.annotation.SuppressLint
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
@@ -28,7 +26,7 @@ import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnCheckedChangeListener {
+class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedChangeListener {
 
     private lateinit var mRecorder: VideoRecorderImpl
     private lateinit var mFilterController: FilterController
@@ -217,13 +215,5 @@ class MainActivity : AppCompatActivity(), View.OnTouchListener, RadioGroup.OnChe
         super.onDestroy()
         mRecorder.release()
         debug_e("onDestroy")
-    }
-
-    private fun fillStatusBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.decorView.systemUiVisibility = (window.decorView.systemUiVisibility
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
-        }
     }
 }
