@@ -40,7 +40,7 @@ class FilterController(private val mVideoRecorder: FilterSupport,
     }
 
     fun chooseFilter(context: Context) {
-        AlertDialog.Builder(context).apply {
+        AlertDialog.Builder(context, R.style.BaseAlertDialog_Bottom).apply {
             setTitle("EFFECT")
             setItems(FILTERS) { dialog, which ->
                 choose(which)
