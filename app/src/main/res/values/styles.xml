@@ -25,6 +25,7 @@
     </style>
 
     <style name="BaseAlertDialog.Bottom">
+        <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowMinWidthMajor">65%</item>
