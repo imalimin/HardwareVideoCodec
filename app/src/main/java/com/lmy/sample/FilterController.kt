@@ -2,11 +2,17 @@ package com.lmy.sample
 
 import android.content.Context
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import android.widget.TextView
 import com.lmy.codec.presenter.FilterSupport
 import com.lmy.codec.texture.impl.filter.*
+import com.lmy.sample.adapter.RecyclerAdapter
+import java.util.*
 
 /**
  * Created by lmyooyo@gmail.com on 2018/7/24.
@@ -39,13 +45,21 @@ class FilterController(private val mVideoRecorder: FilterSupport,
         fBar.setOnSeekBarChangeListener(this)
     }
 
+    private fun createView(): View {
+        val layout = LayoutInflater.from(progressLayout.context).inflate(R.layout.dialog_filter, null)
+        val recyclerView = layout.findViewById<RecyclerView>(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(recyclerView.context,
+                LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.adapter = Adapter().apply {
+            bindData(Filter.from(FILTERS))
+        }
+        return layout
+    }
+
     fun chooseFilter(context: Context) {
         AlertDialog.Builder(context, R.style.BaseAlertDialog_Bottom).apply {
             setTitle("EFFECT")
-            setItems(FILTERS) { dialog, which ->
-                choose(which)
-                dialog.dismiss()
-            }
+            setView(createView())
         }.show()
     }
 
@@ -274,5 +288,41 @@ class FilterController(private val mVideoRecorder: FilterSupport,
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
 
+    }
+
+    private class Adapter : RecyclerAdapter<Filter, ViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_filter, null))
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder?, item: Filter?, position: Int) {
+            holder?.onBind(item, position)
+        }
+
+    }
+
+    private class ViewHolder(itemView: View) : RecyclerAdapter.BaseViewHolder<Filter>(itemView) {
+        private val nameView: TextView = itemView.findViewById(R.id.name)
+        override fun onBind(item: Filter?, position: Int) {
+            if (null == item) {
+                nameView.text = "Unknown"
+                return
+            }
+            nameView.text = item.name
+        }
+
+    }
+
+    private data class Filter(var name: String,
+                              var clazz: Class<Any>?) {
+        companion object {
+            fun from(array: Array<String>): List<Filter> {
+                val list = ArrayList<Filter>()
+                array.forEach {
+                    list.add(Filter(it, null))
+                }
+                return list
+            }
+        }
     }
 }
