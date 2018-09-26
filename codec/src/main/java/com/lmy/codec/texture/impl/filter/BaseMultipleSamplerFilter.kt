@@ -61,4 +61,10 @@ abstract class BaseMultipleSamplerFilter(width: Int = 0,
 
     abstract fun getSamplers(): Array<Sampler>?
     class Sampler(var name: String, var path: String)
+
+    override fun release() {
+        super.release()
+        if (null != textures)
+            GLES20.glDeleteTextures(textures!!.size, textures!!, 0)
+    }
 }
