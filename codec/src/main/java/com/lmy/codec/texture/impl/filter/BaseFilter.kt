@@ -9,7 +9,6 @@ package com.lmy.codec.texture.impl.filter
 import android.opengl.GLES20
 import com.lmy.codec.helper.Resources
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
-import com.lmy.codec.util.debug_e
 
 /**
  * Created by lmyooyo@gmail.com on 2018/4/25.
@@ -22,18 +21,6 @@ abstract class BaseFilter(width: Int = 0,
         shaderProgram = createProgram(Resources.instance.readAssetsAsString(getVertex()),
                 Resources.instance.readAssetsAsString(getFragment()))
         initFrameBuffer()
-    }
-
-    override fun initFrameBuffer() {
-        if (null != shareFrameBuffer && null != shareFrameBufferTexture) {
-            this.frameBuffer = shareFrameBuffer!!
-            this.frameBufferTexture = shareFrameBufferTexture!!
-            debug_e("enable share frame buffer: ${this.frameBuffer[0]}, ${this.frameBufferTexture[0]}")
-            return
-        }
-        super.initFrameBuffer()
-        shareFrameBuffer = this.frameBuffer
-        shareFrameBufferTexture = this.frameBufferTexture
     }
 
     open fun active(samplerLocation: Int) {
@@ -67,14 +54,9 @@ abstract class BaseFilter(width: Int = 0,
     abstract fun getVertex(): String
     abstract fun getFragment(): String
 
-    override fun release() {
-        if (null != shaderProgram)
-            GLES20.glDeleteProgram(shaderProgram!!)
-    }
-
     companion object {
-        private var shareFrameBuffer: IntArray? = null
-        private var shareFrameBufferTexture: IntArray? = null
+        //        private var shareFrameBuffer: IntArray? = null
+//        private var shareFrameBufferTexture: IntArray? = null
         private val VERTICES = floatArrayOf(
                 0.0f, 0.0f,//LEFT,BOTTOM
                 1.0f, 0.0f,//RIGHT,BOTTOM
@@ -87,12 +69,12 @@ abstract class BaseFilter(width: Int = 0,
          * please make sure to release at the last moment
          */
         fun release() {
-            if (null != shareFrameBuffer)
-                GLES20.glDeleteFramebuffers(1, shareFrameBuffer, 0)
-            if (null != shareFrameBufferTexture)
-                GLES20.glDeleteTextures(1, shareFrameBufferTexture, 0)
-            shareFrameBuffer = null
-            shareFrameBufferTexture = null
+//            if (null != shareFrameBuffer)
+//                GLES20.glDeleteFramebuffers(1, shareFrameBuffer, 0)
+//            if (null != shareFrameBufferTexture)
+//                GLES20.glDeleteTextures(1, shareFrameBufferTexture, 0)
+//            shareFrameBuffer = null
+//            shareFrameBufferTexture = null
         }
     }
 }
