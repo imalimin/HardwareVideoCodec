@@ -45,6 +45,7 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun initFilter(clazz: Class<*>) {
         synchronized(filterLock) {
+            cameraWrapper.egl?.makeCurrent()
             filter?.release()
             try {
                 filter = clazz.newInstance() as BaseFilter
@@ -73,6 +74,7 @@ class DefaultRenderImpl(var context: CodecContext,
             screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
                     cameraWrapper.egl!!.eglContext!!)
         }
+        screenWrapper?.egl?.makeCurrent()
         screenWrapper?.updateLocation(context)
     }
 
@@ -90,6 +92,7 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun drawFilter() {
         synchronized(filterLock) {
+            cameraWrapper.egl?.makeCurrent()
             GLES20.glViewport(0, 0, this.width, this.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
