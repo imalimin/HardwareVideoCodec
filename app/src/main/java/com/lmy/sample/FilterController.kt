@@ -4,6 +4,7 @@ import android.content.Context
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import com.lmy.codec.presenter.FilterSupport
 import com.lmy.codec.texture.impl.filter.*
+import com.lmy.sample.adapter.OnRecyclerItemClickListener
 import com.lmy.sample.adapter.RecyclerAdapter
 import java.util.*
 
@@ -19,7 +21,8 @@ import java.util.*
  */
 class FilterController(private val mVideoRecorder: FilterSupport,
                        private val progressLayout: ViewGroup)
-    : SeekBar.OnSeekBarChangeListener {
+    : SeekBar.OnSeekBarChangeListener, OnRecyclerItemClickListener.OnItemClickListener {
+
     companion object {
         private val FILTERS = arrayOf(
                 "Normal", "Beauty", "Beauty V4", "Nature ", "Clean ",
@@ -37,6 +40,7 @@ class FilterController(private val mVideoRecorder: FilterSupport,
     private var twoBar: SeekBar = progressLayout.getChildAt(1) as SeekBar
     private var thBar: SeekBar = progressLayout.getChildAt(2) as SeekBar
     private var fBar: SeekBar = progressLayout.getChildAt(3) as SeekBar
+    private var dialog: AlertDialog? = null
 
     init {
         oneBar.setOnSeekBarChangeListener(this)
@@ -53,14 +57,18 @@ class FilterController(private val mVideoRecorder: FilterSupport,
         recyclerView.adapter = Adapter().apply {
             bindData(Filter.from(FILTERS))
         }
+        recyclerView.addOnItemTouchListener(OnRecyclerItemClickListener(progressLayout.context, this))
         return layout
     }
 
     fun chooseFilter(context: Context) {
-        AlertDialog.Builder(context, R.style.BaseAlertDialog_Bottom).apply {
+        if (null != dialog && dialog!!.isShowing) dialog?.dismiss()
+        dialog = AlertDialog.Builder(context, R.style.BaseAlertDialog_Bottom_Wide).apply {
             setTitle("EFFECT")
             setView(createView())
-        }.show()
+        }.create()
+        dialog?.window?.setGravity(Gravity.BOTTOM)
+        dialog?.show()
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -72,6 +80,11 @@ class FilterController(private val mVideoRecorder: FilterSupport,
         twoBar.visibility = if (count > 1) View.VISIBLE else View.GONE
         thBar.visibility = if (count > 2) View.VISIBLE else View.GONE
         fBar.visibility = if (count > 3) View.VISIBLE else View.GONE
+    }
+
+    override fun onItemClick(parent: RecyclerView?, view: View?, position: Int) {
+        dialog?.dismiss()
+        choose(position)
     }
 
     private fun choose(which: Int) {
