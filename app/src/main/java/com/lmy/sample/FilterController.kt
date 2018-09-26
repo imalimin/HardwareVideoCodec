@@ -4,10 +4,7 @@ import android.content.Context
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.SeekBar
 import android.widget.TextView
 import com.lmy.codec.presenter.FilterSupport
@@ -63,11 +60,11 @@ class FilterController(private val mVideoRecorder: FilterSupport,
 
     fun chooseFilter(context: Context) {
         if (null != dialog && dialog!!.isShowing) dialog?.dismiss()
-        dialog = AlertDialog.Builder(context, R.style.BaseAlertDialog_Bottom_Wide).apply {
-            setTitle("EFFECT")
-            setView(createView())
-        }.create()
+        dialog = AlertDialog.Builder(context, R.style.BaseAlertDialog_Bottom_Wide)
+                .setView(createView())
+                .create()
         dialog?.window?.setGravity(Gravity.BOTTOM)
+        dialog?.window?.requestFeature(Window.FEATURE_NO_TITLE)
         dialog?.show()
     }
 
