@@ -207,11 +207,12 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
             synchronized(filterLock) {
                 filter?.release()
                 filter = null
+                BaseFilter.release()
                 screenWrapper?.release()
                 screenWrapper = null
             }
-            mPipeline.quit()
         })
+        mPipeline.quit()
         context.release()
     }
 
