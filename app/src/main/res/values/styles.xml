@@ -33,6 +33,11 @@
         <item name="android:windowAnimationStyle">@style/BottomDialogAnimation</item>
     </style>
 
+    <style name="BaseAlertDialog.Bottom.Wide">
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+    </style>
+
     <style name="BottomDialogAnimation" parent="android:Animation">
         <item name="android:windowEnterAnimation">@anim/dialog_enter</item>
         <item name="android:windowExitAnimation">@anim/dialog_exit</item>
