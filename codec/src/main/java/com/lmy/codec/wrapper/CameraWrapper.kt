@@ -12,6 +12,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CameraHelper
 import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
 import com.lmy.codec.util.debug_v
 
 /**
@@ -175,5 +176,6 @@ class CameraWrapper(private var context: CodecContext,
 
     private fun releaseTexture() {
         textureWrapper.release()
+        debug_i("releaseTexture")
     }
 }
