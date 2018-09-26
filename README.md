@@ -9,9 +9,9 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ## Latest release
 [V1.6.3](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.6.3)
 
-* More efficient x264 encoder. Raise about 3 frames to 27 fps under Stable and 19 fps under Motion.(Nokia 7, 720p)
+* Support picture filter.
+* Fix some memory leaks.
 * More and more filters.
-* Fix some encoder problems.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
