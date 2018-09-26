@@ -15,6 +15,7 @@ import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
 
@@ -144,9 +145,11 @@ class DefaultRenderImpl(var context: CodecContext,
 
     override fun stop() {
         GLEventPipeline.INSTANCE.queueEvent(Runnable {
+            cameraWrapper.egl?.makeCurrent()
+            BaseFilter.release()
             screenWrapper?.release()
             screenWrapper = null
-            BaseFilter.release()
+            debug_i("release")
         })
     }
 

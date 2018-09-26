@@ -269,10 +269,10 @@ class VideoRecorderImpl(ctx: Context,
     override fun release() {
         stop()
         try {
-            cameraWrapper?.release()
-            cameraWrapper = null
             render?.release()
             render = null
+            cameraWrapper?.release()
+            cameraWrapper = null
         } catch (e: Exception) {
             e.printStackTrace()
         }
