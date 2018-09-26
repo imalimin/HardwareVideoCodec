@@ -54,7 +54,7 @@ class ImageActivity : BaseActivity() {
             setPreviewDisplay(mTextureView)
             prepare()
         }
-        mProcessor?.setInputImage(File(path))
+        mProcessor?.setInputResource(File(path))
         mFilterController = FilterController(mProcessor!!, progressLayout)
         effectBtn.setOnClickListener({
             mFilterController?.chooseFilter(this)

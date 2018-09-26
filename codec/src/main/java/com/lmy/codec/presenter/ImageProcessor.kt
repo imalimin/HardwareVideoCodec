@@ -15,7 +15,7 @@ import java.io.File
  */
 interface ImageProcessor : FilterSupport {
     fun prepare()
-    fun setInputImage(file: File)
+    fun setInputResource(file: File)
     fun setPreviewDisplay(view: TextureView)
     fun release()
 }

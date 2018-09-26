@@ -137,7 +137,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
     }
 
     private var featureFile: File? = null
-    override fun setInputImage(file: File) {
+    override fun setInputResource(file: File) {
         if (!file.exists()) {
             debug_e("Input file is not exists")
             return
@@ -170,7 +170,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
             createFilter(NormalFilter::class.java)
             isPrepare = true
             if (null != featureFile) {
-                setInputImage(featureFile!!)
+                setInputResource(featureFile!!)
                 featureFile = null
             }
         })
