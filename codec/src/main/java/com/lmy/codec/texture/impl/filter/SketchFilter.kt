@@ -6,7 +6,7 @@
  */
 package com.lmy.codec.texture.impl.filter
 
-import com.lmy.codec.util.debug_v
+import com.lmy.codec.texture.IParams
 
 /**
  * Created by lmyooyo@gmail.com on 2018/6/6.
@@ -51,14 +51,27 @@ class SketchFilter(width: Int = 0,
         return "shader/fragment_sketch.glsl"
     }
 
-    override fun setValue(index: Int, value: Int) {
-        debug_v(index, value)
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                val size = value / 100f * 10
-                mTexelWidth = size / width
-                mTexelHeight = size / height
+                setParams(floatArrayOf(
+                        PARAM_STROKE, progress / 100f * 10,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_STROKE == cursor -> {
+                this.mTexelWidth = value / width
+                this.mTexelHeight = value / height
+            }
+        }
+    }
+
+    companion object {
+        const val PARAM_STROKE = 100f
     }
 }

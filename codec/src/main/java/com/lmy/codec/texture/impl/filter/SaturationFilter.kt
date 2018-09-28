@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * 饱和度
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -45,11 +47,24 @@ class SaturationFilter(width: Int = 0,
         return "shader/fragment_saturation.glsl"
     }
 
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mSaturation = value / 100f * 2
+                setParams(floatArrayOf(
+                        PARAM_SATURATION, progress / 100f * 2,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_SATURATION == cursor -> this.mSaturation = value
+        }
+    }
+
+    companion object {
+        const val PARAM_SATURATION = 100f
     }
 }

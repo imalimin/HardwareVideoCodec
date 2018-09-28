@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * 单色
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -55,20 +57,48 @@ class MonochromeFilter(width: Int = 0,
      * 2 == index: G
      * 3 == index: B
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mIntensity = value / 100f
+                setParams(floatArrayOf(
+                        PARAM_IDTENSITY, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
             }
             1 -> {
-                mColor[0] = value / 100f
+                setParams(floatArrayOf(
+                        PARAM_R, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
             }
             2 -> {
-                mColor[1] = value / 100f
+                setParams(floatArrayOf(
+                        PARAM_G, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
             }
             3 -> {
-                mColor[2] = value / 100f
+                setParams(floatArrayOf(
+                        PARAM_B, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_IDTENSITY == cursor -> this.mIntensity = value
+            PARAM_R == cursor -> this.mColor[0] = value
+            PARAM_G == cursor -> this.mColor[1] = value
+            PARAM_B == cursor -> this.mColor[2] = value
+        }
+    }
+
+    companion object {
+        const val PARAM_IDTENSITY = 100f
+        const val PARAM_R = PARAM_IDTENSITY + 1
+        const val PARAM_G = PARAM_IDTENSITY + 2
+        const val PARAM_B = PARAM_IDTENSITY + 4
     }
 }

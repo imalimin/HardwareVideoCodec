@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * Gamma滤镜
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -48,11 +50,24 @@ class GammaFilter(width: Int = 0,
     /**
      * 0 == index: gamma
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                gamma = value / 100f * 3f
+                setParams(floatArrayOf(
+                        PARAM_GMMA, progress / 100f * 3f,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_GMMA == cursor -> this.gamma = value
+        }
+    }
+
+    companion object {
+        const val PARAM_GMMA = 100f
     }
 }

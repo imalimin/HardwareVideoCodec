@@ -6,20 +6,22 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * Created by lmyooyo@gmail.com on 2018/6/6.
  */
 class CrosshatchFilter(width: Int = 0,
                        height: Int = 0,
-                       textureId: IntArray = IntArray(1),
-                       private var mCrossHatchSpacing: Float = 0f,
-                       private var mLineWidth: Float = 0f) : BaseFilter(width, height, textureId) {
+                       textureId: IntArray = IntArray(1)) : BaseFilter(width, height, textureId) {
 
     private var aPositionLocation = 0
     private var uTextureLocation = 0
     private var aTextureCoordinateLocation = 0
     private var mCrossHatchSpacingLocation = 0
     private var mLineWidthLocation = 0
+    private var mCrossHatchSpacing: Float = 0f
+    private var mLineWidth: Float = 0f
 
     override fun init() {
         super.init()
@@ -52,25 +54,43 @@ class CrosshatchFilter(width: Int = 0,
      * 0 == index: CrossHatchSpacing
      * 1 == index: LineWidth
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                val crossHatchSpacing = value / 100f * 0.06f
+                val crossHatchSpacing = progress / 100f * 0.06f
                 val singlePixelSpacing: Float = if (width != 0) {
                     1.0f / width
                 } else {
                     1.0f / 2048.0f
                 }
-                mCrossHatchSpacing = if (crossHatchSpacing < singlePixelSpacing) {
+                val space = if (crossHatchSpacing < singlePixelSpacing) {
                     singlePixelSpacing
                 } else {
                     crossHatchSpacing
                 }
-
+                setParams(floatArrayOf(
+                        PARAM_SPACE, space,
+                        IParams.PARAM_NONE
+                ))
             }
             1 -> {
-                mLineWidth = value / 100f * 0.006f
+                setParams(floatArrayOf(
+                        PARAM_STROKE, progress / 100f * 0.006f,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_STROKE == cursor -> this.mLineWidth = value
+            PARAM_SPACE == cursor -> this.mCrossHatchSpacing = value
+        }
+    }
+
+    companion object {
+        const val PARAM_STROKE = 100f
+        const val PARAM_SPACE = PARAM_STROKE + 1
     }
 }

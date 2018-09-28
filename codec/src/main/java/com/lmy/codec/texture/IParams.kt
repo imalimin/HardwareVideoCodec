@@ -5,9 +5,9 @@ package com.lmy.codec.texture
  */
 interface IParams {
     companion object {
-        const val PARAM_NONE = Int.MIN_VALUE.toFloat()
+        const val PARAM_NONE = 0f
     }
 
     fun setParams(params: FloatArray)
-    fun setParams(cursor: Float, value: Float)
+    fun setParam(cursor: Float, value: Float)
 }

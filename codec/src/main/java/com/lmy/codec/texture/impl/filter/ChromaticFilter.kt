@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 class ChromaticFilter(width: Int = 0,
                       height: Int = 0,
                       textureId: IntArray = IntArray(1)) : BaseFilter(width, height, textureId) {
@@ -37,10 +39,19 @@ class ChromaticFilter(width: Int = 0,
         inactive()
     }
 
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 ->
-                speed = value / 100f * 10
+                setParams(floatArrayOf(
+                        SPEED, progress / 100f * 10,
+                        IParams.PARAM_NONE
+                ))
+        }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            SPEED == cursor -> this.speed = value
         }
     }
 
@@ -50,5 +61,9 @@ class ChromaticFilter(width: Int = 0,
 
     override fun getFragment(): String {
         return "shader/fragment_chromatic.glsl"
+    }
+
+    companion object {
+        const val SPEED = 100f
     }
 }

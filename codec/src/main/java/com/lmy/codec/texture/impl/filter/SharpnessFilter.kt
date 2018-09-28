@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * 描边滤镜
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -58,11 +60,24 @@ class SharpnessFilter(width: Int = 0,
     /**
      * 0 == index: Sharpness
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mSharpness = (value - 50) / 100f * 8
+                setParams(floatArrayOf(
+                        PARAM_SHARPNESS, (progress - 50) / 100f * 8,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_SHARPNESS == cursor -> this.mSharpness = value
+        }
+    }
+
+    companion object {
+        const val PARAM_SHARPNESS = 100f
     }
 }

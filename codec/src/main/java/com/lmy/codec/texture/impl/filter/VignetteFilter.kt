@@ -7,6 +7,7 @@
 package com.lmy.codec.texture.impl.filter
 
 import android.graphics.PointF
+import com.lmy.codec.texture.IParams
 
 /**
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -14,7 +15,7 @@ import android.graphics.PointF
 class VignetteFilter(width: Int = 0,
                      height: Int = 0,
                      textureId: IntArray = IntArray(1),
-                     private var mVignetteCenter: PointF = PointF(0.5f,0.5f),
+                     private var mVignetteCenter: PointF = PointF(0.5f, 0.5f),
                      private var mVignetteColor: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f),
                      private var mVignetteStart: Float = 0.5f,
                      private var mVignetteEnd: Float = 1f) : BaseFilter(width, height, textureId) {
@@ -64,12 +65,48 @@ class VignetteFilter(width: Int = 0,
      * 2 == index: VignetteStart
      * 3 == index: VignetteEnd
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
-            0 -> mVignetteCenter.x = value / 100f
-            1 -> mVignetteCenter.y = value / 100f
-            2 -> mVignetteStart = value / 100f
-            3 -> mVignetteEnd = value / 100f
+            0 -> {
+                setParams(floatArrayOf(
+                        PARAM_CENTER_X, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
+            }
+            1 -> {
+                setParams(floatArrayOf(
+                        PARAM_CENTER_Y, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
+            }
+            2 -> {
+                setParams(floatArrayOf(
+                        PARAM_START, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
+            }
+            3 -> {
+                setParams(floatArrayOf(
+                        PARAM_END, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
+            }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_CENTER_X == cursor -> this.mVignetteCenter.x = value
+            PARAM_CENTER_Y == cursor -> this.mVignetteCenter.y = value
+            PARAM_START == cursor -> this.mVignetteStart = value
+            PARAM_END == cursor -> this.mVignetteEnd = value
+        }
+    }
+
+    companion object {
+        const val PARAM_CENTER_X = 100f
+        const val PARAM_CENTER_Y = PARAM_CENTER_X + 1
+        const val PARAM_START = PARAM_CENTER_X + 2
+        const val PARAM_END = PARAM_CENTER_X + 3
     }
 }

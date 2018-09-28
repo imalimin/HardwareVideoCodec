@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * 曝光度
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -45,11 +47,24 @@ class ExposureFilter(width: Int = 0,
         return "shader/fragment_exposure.glsl"
     }
 
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mExposure = (value - 50) / 100f * 10
+                setParams(floatArrayOf(
+                        PARAM_EXPOSURE, (progress - 50) / 100f * 10,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_EXPOSURE == cursor -> this.mExposure = value
+        }
+    }
+
+    companion object {
+        const val PARAM_EXPOSURE = 100f
     }
 }

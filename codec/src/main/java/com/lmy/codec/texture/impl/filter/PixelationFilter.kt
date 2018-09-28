@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * 像素化滤镜
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -57,10 +59,13 @@ class PixelationFilter(width: Int = 0,
     /**
      * 0 == index: pixel
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                setValue(value.toFloat())
+                setParams(floatArrayOf(
+                        PARAM_SIZE, if (progress < 1) 1f else progress.toFloat(),
+                        IParams.PARAM_NONE
+                ))
             }
         }
     }
@@ -68,13 +73,14 @@ class PixelationFilter(width: Int = 0,
     private var valueWidthFactor = 1f / width
     private var valueHeightFactor = 1f / height
     private var valuePixel = 1f
-    /**
-     * 0 == index: valuePixel
-     */
-    private fun setValue(value: Float) {
-        this.valuePixel = if (value < 1)
-            1f
-        else
-            value
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_SIZE == cursor -> this.valuePixel = value
+        }
+    }
+
+    companion object {
+        const val PARAM_SIZE = 100f
     }
 }

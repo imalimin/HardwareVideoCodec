@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * Created by lmyooyo@gmail.com on 2018/6/6.
  */
@@ -48,14 +50,32 @@ class HazeFilter(width: Int = 0,
         return "shader/fragment_haze.glsl"
     }
 
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mDistance = (value - 50) / 100f * 0.6f
+                setParams(floatArrayOf(
+                        PARAM_DISTANCE, (progress - 50) / 100f * 0.6f,
+                        IParams.PARAM_NONE
+                ))
             }
             1 -> {
-                mSlope = (value - 50) / 100f * 0.6f
+                setParams(floatArrayOf(
+                        PARAM_SLOPE, (progress - 50) / 100f * 0.6f,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_DISTANCE == cursor -> this.mDistance = value
+            PARAM_SLOPE == cursor -> this.mSlope = value
+        }
+    }
+
+    companion object {
+        const val PARAM_DISTANCE = 100f
+        const val PARAM_SLOPE = PARAM_DISTANCE + 1
     }
 }

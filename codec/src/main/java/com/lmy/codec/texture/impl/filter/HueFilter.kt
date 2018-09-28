@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * 色调滤镜
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -30,7 +32,7 @@ class HueFilter(width: Int = 0,
 
     override fun drawTexture(transformMatrix: FloatArray?) {
         active(uTextureLocation)
-        setUniform1f(mHueLocation, hueAdjust)
+        setUniform1f(mHueLocation, hue)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)
@@ -46,16 +48,27 @@ class HueFilter(width: Int = 0,
     }
 
     private var hue = 0f
-    private var hueAdjust = 0f
     /**
      * 0 == index: hue
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                hue = value.toFloat()
-                hueAdjust = hue % 360.0f * Math.PI.toFloat() / 180.0f
+                setParams(floatArrayOf(
+                        PARAM_HUE, progress % 360.0f * Math.PI.toFloat() / 180.0f,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_HUE == cursor -> this.hue = value
+        }
+    }
+
+    companion object {
+        const val PARAM_HUE = 100f
     }
 }

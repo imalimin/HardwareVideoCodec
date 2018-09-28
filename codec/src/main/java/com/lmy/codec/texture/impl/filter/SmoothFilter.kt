@@ -6,13 +6,15 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * Created by lmyooyo@gmail.com on 2018/6/6.
  */
 class SmoothFilter(width: Int = 0,
-                     height: Int = 0,
+                   height: Int = 0,
                    textureId: IntArray = IntArray(1),
-                     private var mRadius: Int = 0) : BaseFilter(width, height, textureId) {
+                   private var mRadius: Int = 0) : BaseFilter(width, height, textureId) {
 
     private var aPositionLocation = 0
     private var uTextureLocation = 0
@@ -44,11 +46,24 @@ class SmoothFilter(width: Int = 0,
         return "shader/fragment_smooth.glsl"
     }
 
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mRadius = (value / 100f * 10).toInt()
+                setParams(floatArrayOf(
+                        PARAM_SMOOTH, (progress / 100f * 10),
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_SMOOTH == cursor -> this.mRadius = value.toInt()
+        }
+    }
+
+    companion object {
+        const val PARAM_SMOOTH = 100f
     }
 }

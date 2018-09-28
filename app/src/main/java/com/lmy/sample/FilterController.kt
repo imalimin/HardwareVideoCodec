@@ -275,9 +275,8 @@ class FilterController(private val mVideoRecorder: FilterSupport,
             }
             39 -> {
                 mVideoRecorder.setFilter(HalftoneFilter::class.java)
-                show(2)
+                show(1)
                 oneBar.progress = 30
-                twoBar.progress = 10
             }
             40 -> {
                 mVideoRecorder.setFilter(HazeFilter::class.java)

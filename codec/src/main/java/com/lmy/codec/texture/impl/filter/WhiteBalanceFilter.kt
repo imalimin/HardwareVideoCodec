@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * Created by lmyooyo@gmail.com on 2018/5/30.
  */
@@ -52,14 +54,32 @@ class WhiteBalanceFilter(width: Int = 0,
      * 0 == index: Temperature
      * 1 == index: Tint
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mTemperature = (value - 50) / 100f * 2
+                setParams(floatArrayOf(
+                        PARAM_TEMPERATURE, (progress - 50) / 100f * 2,
+                        IParams.PARAM_NONE
+                ))
             }
             1 -> {
-                mTint = value / 100f
+                setParams(floatArrayOf(
+                        PARAM_TINT, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_TEMPERATURE == cursor -> this.mTemperature = value
+            PARAM_TINT == cursor -> this.mTint = value
+        }
+    }
+
+    companion object {
+        const val PARAM_TEMPERATURE = 100f
+        const val PARAM_TINT = PARAM_TEMPERATURE + 1
     }
 }

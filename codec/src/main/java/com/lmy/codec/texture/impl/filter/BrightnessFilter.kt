@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * 亮度滤镜
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -46,11 +48,24 @@ class BrightnessFilter(width: Int = 0,
         return "shader/fragment_brightness.glsl"
     }
 
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                brightness = (value - 50) / 100f * 2
+                setParams(floatArrayOf(
+                        PARAM_BRIGHT, (progress - 50) / 100f * 2,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_BRIGHT == cursor -> this.brightness = value
+        }
+    }
+
+    companion object {
+        const val PARAM_BRIGHT = 100f
     }
 }

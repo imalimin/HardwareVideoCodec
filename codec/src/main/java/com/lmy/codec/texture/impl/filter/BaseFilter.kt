@@ -8,6 +8,7 @@ package com.lmy.codec.texture.impl.filter
 
 import android.opengl.GLES20
 import com.lmy.codec.helper.Resources
+import com.lmy.codec.texture.IParams
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 
 /**
@@ -15,7 +16,7 @@ import com.lmy.codec.texture.impl.BaseFrameBufferTexture
  */
 abstract class BaseFilter(width: Int = 0,
                           height: Int = 0,
-                          textureId: IntArray) : BaseFrameBufferTexture(width, height, textureId) {
+                          textureId: IntArray) : BaseFrameBufferTexture(width, height, textureId), IParams {
     open fun init() {
         name = "BaseFilter"
         shaderProgram = createProgram(Resources.instance.readAssetsAsString(getVertex()),
@@ -47,7 +48,29 @@ abstract class BaseFilter(width: Int = 0,
         return VERTICES
     }
 
-    open fun setValue(index: Int, value: Int) {
+    /**
+     * Use {@link #setParams}
+     * @see setParams
+     */
+    @Deprecated("Replaced by setParams")
+    open fun setValue(index: Int, progress: Int) {
+
+    }
+
+    override fun setParams(params: FloatArray) {
+        if (params.isEmpty() || 1 != params.size % 2) throw RuntimeException("Params error")
+        var cursor = IParams.PARAM_NONE
+        params.forEachIndexed { index, value ->
+            if (0 == index % 2) {
+                cursor = value
+                if (IParams.PARAM_NONE == cursor) return@forEachIndexed
+            } else {
+                setParam(cursor, value)
+            }
+        }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
 
     }
 

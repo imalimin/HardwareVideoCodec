@@ -1,5 +1,7 @@
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * Created by lmyooyo@gmail.com on 2018/9/5.
  */
@@ -47,17 +49,40 @@ class BeautyV4Filter(width: Int = 0,
         return "shader/fragment_beauty_v4.glsl"
     }
 
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                this.params = value / 100f * 2
+                setParams(floatArrayOf(
+                        PARAM_SMOOTH, progress / 100f * 2,
+                        IParams.PARAM_NONE
+                ))
             }
             1 -> {
-                this.distance = value / 100f * 10
+                setParams(floatArrayOf(
+                        PARAM_TEXEL_OFFSET, progress / 100f * 10,
+                        IParams.PARAM_NONE
+                ))
             }
             2 -> {
-                this.brightness = value / 100f * 0.2f
+                setParams(floatArrayOf(
+                        PARAM_BRIGHT, progress / 100f * 0.2f,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_BRIGHT == cursor -> this.brightness = value
+            PARAM_TEXEL_OFFSET == cursor -> this.distance = value
+            PARAM_SMOOTH == cursor -> this.params = value
+        }
+    }
+
+    companion object {
+        const val PARAM_BRIGHT = 100f
+        const val PARAM_TEXEL_OFFSET = PARAM_BRIGHT + 1
+        const val PARAM_SMOOTH = PARAM_BRIGHT + 2
     }
 }

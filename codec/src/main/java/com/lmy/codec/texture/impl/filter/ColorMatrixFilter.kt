@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * Created by lmyooyo@gmail.com on 2018/5/30.
  */
@@ -50,11 +52,20 @@ open class ColorMatrixFilter(width: Int = 0,
         return "shader/fragment_color_matrix.glsl"
     }
 
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mIntensity = value / 100f * 2
+                setParams(floatArrayOf(
+                        PARAM_INTENSITY, progress / 100f * 2,
+                        IParams.PARAM_NONE
+                ))
             }
+        }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_INTENSITY == cursor -> this.mIntensity = value
         }
     }
 
@@ -63,6 +74,7 @@ open class ColorMatrixFilter(width: Int = 0,
     }
 
     companion object {
+        const val PARAM_INTENSITY = 100f
         val MATRIX: FloatArray = floatArrayOf(
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,

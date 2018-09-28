@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * Created by lmyooyo@gmail.com on 2018/5/29.
  */
@@ -36,7 +38,7 @@ class BeautyFilter(width: Int = 0,
 
     override fun drawTexture(transformMatrix: FloatArray?) {
         active(uTextureLocation)
-        setParams(rgba)
+        setRgba(rgba)
         setBrightLevel(brightLevel)
         setTexelOffset(texelOffset)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
@@ -62,17 +64,34 @@ class BeautyFilter(width: Int = 0,
      * 1==index: texelOffset/磨皮
      * 2==index: rosy/红润
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                this.brightLevel = value / 100f
+                setParams(floatArrayOf(
+                        PARAM_BRIGHT, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
             }
             1 -> {
-                texelOffset = value / 100f * 2
+                setParams(floatArrayOf(
+                        PARAM_TEXEL_OFFSET, progress / 100f * 2,
+                        IParams.PARAM_NONE
+                ))
             }
             2 -> {
-                this.rgba[3] = value / 100f
+                setParams(floatArrayOf(
+                        PARAM_ROSY, progress / 100f,
+                        IParams.PARAM_NONE
+                ))
             }
+        }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_BRIGHT == cursor -> this.brightLevel = value
+            PARAM_TEXEL_OFFSET == cursor -> this.texelOffset = value
+            PARAM_ROSY == cursor -> this.rgba[3] = value
         }
     }
 
@@ -86,7 +105,7 @@ class BeautyFilter(width: Int = 0,
     /**
      * beauty: 0 - 2.5, tone: -5 - 5
      */
-    private fun setParams(rgba: FloatArray) {
+    private fun setRgba(rgba: FloatArray) {
         setUniform4fv(paramsLocation, rgba)
     }
 
@@ -96,5 +115,11 @@ class BeautyFilter(width: Int = 0,
     private fun setTexelOffset(texelOffset: Float) {
         setUniform1f(texelWidthLocation, texelOffset / width)
         setUniform1f(texelHeightLocation, texelOffset / height)
+    }
+
+    companion object {
+        const val PARAM_BRIGHT = 100f
+        const val PARAM_TEXEL_OFFSET = PARAM_BRIGHT + 1
+        const val PARAM_ROSY = PARAM_BRIGHT + 2
     }
 }

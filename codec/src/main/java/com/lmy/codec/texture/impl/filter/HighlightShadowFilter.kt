@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.IParams
+
 /**
  * 高光阴影
  * Created by lmyooyo@gmail.com on 2018/5/30.
@@ -54,14 +56,32 @@ class HighlightShadowFilter(width: Int = 0,
      * 0 == index: Highlights
      * 1 == index: Shadows
      */
-    override fun setValue(index: Int, value: Int) {
+    override fun setValue(index: Int, progress: Int) {
         when (index) {
             0 -> {
-                mHighlights = value / 100f * 2
+                setParams(floatArrayOf(
+                        PARAM_HIGHLIGHTS, progress / 100f * 2,
+                        IParams.PARAM_NONE
+                ))
             }
             1 -> {
-                mShadows = value / 100f * 2
+                setParams(floatArrayOf(
+                        PARAM_SHADOWS, progress / 100f * 2,
+                        IParams.PARAM_NONE
+                ))
             }
         }
+    }
+
+    override fun setParam(cursor: Float, value: Float) {
+        when {
+            PARAM_HIGHLIGHTS == cursor -> this.mHighlights = value
+            PARAM_SHADOWS == cursor -> this.mShadows = value
+        }
+    }
+
+    companion object {
+        const val PARAM_HIGHLIGHTS = 100f
+        const val PARAM_SHADOWS = PARAM_HIGHLIGHTS + 1
     }
 }
