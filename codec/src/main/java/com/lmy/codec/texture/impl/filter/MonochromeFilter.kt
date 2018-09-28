@@ -33,7 +33,7 @@ class MonochromeFilter(width: Int = 0,
         mFilterColorLocation = getUniformLocation("filterColor")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mIntensityLocation, mIntensity)
         setUniform3fv(mFilterColorLocation, mColor)

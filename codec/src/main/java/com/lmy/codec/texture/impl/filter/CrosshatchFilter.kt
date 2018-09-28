@@ -32,7 +32,7 @@ class CrosshatchFilter(width: Int = 0,
         mLineWidthLocation = getUniformLocation("lineWidth")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mCrossHatchSpacingLocation, mCrossHatchSpacing)
         setUniform1f(mLineWidthLocation, mLineWidth)

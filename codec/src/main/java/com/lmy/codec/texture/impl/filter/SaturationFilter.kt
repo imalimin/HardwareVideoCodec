@@ -30,7 +30,7 @@ class SaturationFilter(width: Int = 0,
         mSaturationLocation = getUniformLocation("saturation")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mSaturationLocation, mSaturation)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)

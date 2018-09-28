@@ -108,12 +108,12 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
             synchronized(filterLock) {
                 GLES20.glViewport(0, 0, context.video.width, context.video.height)
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-                filter?.drawTexture(null)
+                filter?.draw(null)
             }
             GLES20.glViewport(0, 0, context.viewSize.width, context.viewSize.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0f, 0f, 0f, 0f)
-            screenWrapper?.drawTexture(null)
+            screenWrapper?.draw(null)
             screenWrapper?.egl?.swapBuffers()
             debug_i("invalidate")
         })

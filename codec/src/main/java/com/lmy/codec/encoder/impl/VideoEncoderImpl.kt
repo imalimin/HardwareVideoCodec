@@ -112,7 +112,7 @@ class VideoEncoderImpl(var context: CodecContext,
             GLES20.glViewport(0, 0, context.video.width, context.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-            codecWrapper?.drawTexture(null)
+            codecWrapper?.draw(null)
             codecWrapper?.egl?.swapBuffers()
             mDequeuePipeline.queueEvent(Runnable { dequeue() })
         }

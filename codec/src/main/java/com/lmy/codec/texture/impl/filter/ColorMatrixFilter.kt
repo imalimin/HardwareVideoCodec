@@ -34,7 +34,7 @@ open class ColorMatrixFilter(width: Int = 0,
         mIntensityLocation = getUniformLocation("intensity")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mIntensityLocation, mIntensity)
         setUniformMatrix4fv(mColorMatrixLocation, mColorMatrix)

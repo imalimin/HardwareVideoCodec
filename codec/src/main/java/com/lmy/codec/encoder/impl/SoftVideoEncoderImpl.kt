@@ -101,7 +101,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
 
     private fun readPixels() {
         GLES20.glViewport(0, 0, context.video.width, context.video.height)
-        mirrorTexture.drawTexture(null)
+        mirrorTexture.draw(null)
         reader?.readPixels(mirrorTexture.frameBuffer[0])
     }
 

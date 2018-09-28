@@ -21,7 +21,7 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
                               open var textureId: IntArray? = null,
                               var egl: Egl? = null) {
 
-    abstract fun drawTexture(transformMatrix: FloatArray?)
+    abstract fun draw(transformMatrix: FloatArray?)
 
     fun createTexture(target: Int) {
         if (null == textureId) {

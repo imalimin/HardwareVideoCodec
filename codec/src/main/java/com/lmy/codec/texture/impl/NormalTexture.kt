@@ -40,7 +40,7 @@ class NormalTexture(textureId: IntArray) : BaseTexture(textureId) {
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])

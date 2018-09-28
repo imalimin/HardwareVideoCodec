@@ -87,7 +87,7 @@ class DefaultRenderImpl(var context: CodecContext,
         GLES20.glViewport(0, 0, context.viewSize.width, context.viewSize.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0f, 0f, 0f, 0f)
-        screenWrapper?.drawTexture(transformMatrix)
+        screenWrapper?.draw(transformMatrix)
         screenWrapper?.egl?.swapBuffers()
     }
 
@@ -97,7 +97,7 @@ class DefaultRenderImpl(var context: CodecContext,
             GLES20.glViewport(0, 0, this.width, this.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-            filter?.drawTexture(null)
+            filter?.draw(null)
 //            ++count
 //            if (0 == count % 60) {
 //                reader?.readPixels(filter!!.frameBuffer[0])
@@ -115,7 +115,7 @@ class DefaultRenderImpl(var context: CodecContext,
         }
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        cameraWrapper.drawTexture(transformMatrix)
+        cameraWrapper.draw(transformMatrix)
     }
 
     override fun start(texture: SurfaceTexture, width: Int, height: Int) {

@@ -36,7 +36,7 @@ class BeautyFilter(width: Int = 0,
         texelHeightLocation = getUniformLocation("texelHeightOffset")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setRgba(rgba)
         setBrightLevel(brightLevel)

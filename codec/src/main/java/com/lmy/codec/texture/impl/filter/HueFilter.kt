@@ -30,7 +30,7 @@ class HueFilter(width: Int = 0,
         mHueLocation = getUniformLocation("hueAdjust")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mHueLocation, hue)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)

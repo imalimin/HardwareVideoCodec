@@ -31,12 +31,12 @@ class CodecTextureWrapper(var surface: Surface,
         }
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         if (null == texture) {
             debug_e("Render failed. Texture is null")
             return
         }
-        texture?.drawTexture(transformMatrix)
+        texture?.draw(transformMatrix)
     }
 
     override fun release() {

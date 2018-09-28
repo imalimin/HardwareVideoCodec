@@ -33,7 +33,7 @@ class SketchFilter(width: Int = 0,
         setValue(0, 30)
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mUniformTexelWidthLocation, mTexelWidth)
         setUniform1f(mUniformTexelHeightLocation, mTexelHeight)

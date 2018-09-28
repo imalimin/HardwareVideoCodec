@@ -39,7 +39,7 @@ class VignetteFilter(width: Int = 0,
         mVignetteEndLocation = getUniformLocation("vignetteEnd")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform2fv(mVignetteCenterLocation, floatArrayOf(mVignetteCenter.x, mVignetteCenter.y))
         setUniform3fv(mVignetteColorLocation, mVignetteColor)

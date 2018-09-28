@@ -30,7 +30,7 @@ class ExposureFilter(width: Int = 0,
         mExposureLocation = getUniformLocation("exposure")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mExposureLocation, mExposure)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)

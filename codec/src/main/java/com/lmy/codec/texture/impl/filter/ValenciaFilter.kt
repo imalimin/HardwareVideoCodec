@@ -21,7 +21,7 @@ class ValenciaFilter(width: Int = 0,
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()

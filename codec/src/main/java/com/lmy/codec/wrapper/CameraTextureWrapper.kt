@@ -53,12 +53,12 @@ class CameraTextureWrapper(private val width: Int,
         throw RuntimeException("CameraTextureWrapper`s texture must be BaseFrameBufferTexture and texture must not be null")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         if (null == texture) {
             debug_e("Render failed. Texture is null")
             return
         }
-        texture?.drawTexture(transformMatrix)
+        texture?.draw(transformMatrix)
     }
 
     fun getFrameBuffer(): IntArray {

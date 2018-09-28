@@ -24,7 +24,7 @@ class HDRFilter(width: Int,
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
         draw()

@@ -29,7 +29,7 @@ class ChromaticFilter(width: Int = 0,
         startTime = System.currentTimeMillis()
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         time = (System.currentTimeMillis() - startTime) / 1000f * speed
         active(uTextureLocation)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)

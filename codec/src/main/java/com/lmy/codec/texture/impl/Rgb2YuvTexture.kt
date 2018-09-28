@@ -36,7 +36,7 @@ class Rgb2YuvTexture(width: Int, height: Int,
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)

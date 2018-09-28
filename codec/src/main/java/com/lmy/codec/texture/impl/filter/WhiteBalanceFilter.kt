@@ -32,7 +32,7 @@ class WhiteBalanceFilter(width: Int = 0,
         mTintLocation = getUniformLocation("tint")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mTemperatureLocation, mTemperature)
         setUniform1f(mTintLocation, mTint)

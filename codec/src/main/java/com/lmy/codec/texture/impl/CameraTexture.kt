@@ -36,7 +36,7 @@ class CameraTexture(width: Int, height: Int,
         uTextureMatrix = getUniformLocation("uTextureMatrix")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         if (null == transformMatrix)
             throw RuntimeException("TransformMatrix can not be null")
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])

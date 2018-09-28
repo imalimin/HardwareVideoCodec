@@ -38,7 +38,7 @@ class SharpnessFilter(width: Int = 0,
         mImageHeightFactorLocation = getUniformLocation("imageHeightFactor")
     }
 
-    override fun drawTexture(transformMatrix: FloatArray?) {
+    override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
         setUniform1f(mImageWidthFactorLocation, mImageWidth)
         setUniform1f(mImageHeightFactorLocation, mImageHeight)
