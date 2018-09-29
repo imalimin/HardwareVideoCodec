@@ -1,7 +1,7 @@
-# HardwareVideoCodec
+# HWVC(HardwareVideoCodec)
 [ ![Download](https://api.bintray.com/packages/lmylr/maven/hardwarevideocodec/images/download.svg) ](https://bintray.com/lmylr/maven/hardwarevideocodec/_latestVersion)
 
-HardwareVideoCodec is an efficient video encoding library for Android. Supports `software` and `hardware` encode.
+HWVC is an efficient video encoding library for Android. Supports `software` and `hardware` encode.
 With it, you can encode a video at any resolution, no longer need to care about camera resolution. Everything is so easy.
 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
@@ -125,8 +125,8 @@ class MainActivity : AppCompatActivity() {
     }
 }
 ```
-## Join the HardwareVideoCodec community
+## Join the HWVC community
 Please use our [issues page](https://github.com/lmylr/HardwareVideoCodec/issues) to let us know of any problems.
 
 ## License
-HardwareVideoCodec is [GPL-licensed](https://github.com/lmylr/HardwareVideoCodec/tree/master/LICENSE).
+HWVC(HardwareVideoCodec) is [GPL-licensed](https://github.com/lmylr/HardwareVideoCodec/tree/master/LICENSE).
