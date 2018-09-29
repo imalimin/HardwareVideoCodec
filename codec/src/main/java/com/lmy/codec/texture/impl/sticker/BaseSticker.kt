@@ -47,17 +47,24 @@ abstract class BaseSticker(var frameBuffer: IntArray,
         GLES20.glBindTexture(GL10.GL_TEXTURE_2D, texture[0])
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0)
         GLES20.glBindTexture(GL10.GL_TEXTURE_2D, GLES20.GL_NONE)
+        bitmap.recycle()
     }
 
-    fun active(samplerLocation: Int) {
+    fun active() {
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
-        setUniform1i(samplerLocation, 0)
+        setUniform1i(uTextureLocation, 0)
+        enableVertex(aPositionLocation, aTextureCoordinateLocation)
+    }
+
+    protected fun draw() {
+        drawer.draw()
     }
 
     fun inactive() {
+        disableVertex(aPositionLocation, aTextureCoordinateLocation)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
         GLES20.glUseProgram(GLES20.GL_NONE)

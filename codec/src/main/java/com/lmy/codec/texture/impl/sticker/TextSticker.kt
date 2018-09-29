@@ -1,10 +1,8 @@
 package com.lmy.codec.texture.impl.sticker
 
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Rect
+import android.graphics.*
 import android.text.TextUtils
+import com.lmy.codec.util.debug_e
 
 class TextSticker(frameBuffer: IntArray,
                   width: Int,
@@ -15,13 +13,19 @@ class TextSticker(frameBuffer: IntArray,
     private var bitmap: Bitmap? = null
 
     init {
-        paint.strokeWidth = 23f
+        paint.strokeWidth = 46f
         paint.color = Color.WHITE
+        paint.textAlign = Paint.Align.LEFT
     }
 
     fun setText(text: String, size: Float) {
         this.text = text
         paint.strokeWidth = size
+        bitmap = createBitmap()
+    }
+
+    fun getText(): String {
+        return text
     }
 
     private fun createBitmap(): Bitmap {
@@ -29,17 +33,29 @@ class TextSticker(frameBuffer: IntArray,
         val bitmap = Bitmap.createBitmap(Math.ceil(size[0].toDouble()).toInt(),
                 Math.ceil(size[1].toDouble()).toInt(),
                 Bitmap.Config.ARGB_8888)
+        debug_e("createBitmap " + bitmap.width + "x" + bitmap.height)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.RED)
+        canvas.drawText(getText(), 0f, size[1], paint)
+//        val out = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/ttttt.jpg")
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
+//        out.close()
         return bitmap
     }
 
     override fun init() {
         super.init()
+        bitmap = createBitmap()
     }
 
     override fun draw(transformMatrix: FloatArray?) {
         if (null != bitmap && !bitmap!!.isRecycled) {
-
+            debug_e("bindTexture")
+            bindTexture(bitmap!!)
         }
+        active()
+        draw()
+        inactive()
     }
 
     /**
