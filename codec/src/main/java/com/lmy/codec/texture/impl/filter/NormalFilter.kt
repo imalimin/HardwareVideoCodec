@@ -6,6 +6,9 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.texture.impl.sticker.BaseSticker
+import com.lmy.codec.texture.impl.sticker.TextSticker
+
 /**
  * Created by lmyooyo@gmail.com on 2018/4/23.
  */
@@ -16,9 +19,12 @@ class NormalFilter(width: Int = 0,
     private var aPositionLocation = 0
     private var uTextureLocation = 0
     private var aTextureCoordinateLocation = 0
+    private var mask: BaseSticker? = null
 
     override fun init() {
         super.init()
+        mask = TextSticker(frameBuffer, width, height)
+        mask?.init()
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
@@ -30,6 +36,12 @@ class NormalFilter(width: Int = 0,
         draw()
         disableVertex(aPositionLocation, aTextureCoordinateLocation)
         inactive()
+        mask?.draw(null)
+    }
+
+    override fun release() {
+        super.release()
+        mask?.release()
     }
 
     override fun getVertex(): String {
