@@ -9,6 +9,7 @@ package com.lmy.codec.render.impl
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
 import com.lmy.codec.entity.CodecContext
+import com.lmy.codec.helper.FpsMeasurer
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.render.Render
@@ -32,10 +33,16 @@ class DefaultRenderImpl(var context: CodecContext,
                         var reader: PixelsReader? = null,
                         private var width: Int = 0,
                         private var height: Int = 0)
-    : Render {
+    : Render, FpsMeasurer.OnUpdateListener {
 
     private val filterLock = Any()
     private var filter: BaseFilter? = null
+    private val videoMeasurer: FpsMeasurer = FpsMeasurer.create().apply {
+        onUpdateListener = this@DefaultRenderImpl
+    }
+    private val renderMeasurer: FpsMeasurer = FpsMeasurer.create().apply {
+        onUpdateListener = this@DefaultRenderImpl
+    }
 
     fun init() {
         this.width = context.video.width
@@ -81,6 +88,9 @@ class DefaultRenderImpl(var context: CodecContext,
 
     override fun draw() {
         if (null == screenWrapper) return
+        videoMeasurer.end()
+        videoMeasurer.start()
+        renderMeasurer.start()
         drawCamera()
         drawFilter()
         screenWrapper?.egl?.makeCurrent()
@@ -89,6 +99,7 @@ class DefaultRenderImpl(var context: CodecContext,
         GLES20.glClearColor(0f, 0f, 0f, 0f)
         screenWrapper?.draw(transformMatrix)
         screenWrapper?.egl?.swapBuffers()
+        renderMeasurer.end()
     }
 
     private fun drawFilter() {
@@ -197,5 +208,13 @@ class DefaultRenderImpl(var context: CodecContext,
             if (null != filter) return filter!!.frameBufferTexture
         }
         return cameraWrapper.getFrameBufferTexture()
+    }
+
+    override fun onUpdate(measurer: FpsMeasurer, fps: Float) {
+        if (measurer == videoMeasurer) {
+            debug_i("Video fps $fps")
+        } else {
+            debug_i("Render fps $fps")
+        }
     }
 }
