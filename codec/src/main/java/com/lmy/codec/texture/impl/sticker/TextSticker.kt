@@ -7,7 +7,10 @@ class TextSticker(frameBuffer: IntArray,
                   width: Int,
                   height: Int,
                   name: String = "BaseSticker") : BaseSticker(frameBuffer, width, height, name) {
-    private var textInfo: Text = Text("HWVC", 46f, Color.WHITE)
+    private var textInfo: Text = Text("HWVC", 56f).apply {
+        x = 0.8f
+        y = 0.03f
+    }
     private var bitmap: Bitmap? = null
     private val bitmapLock = Any()
 
@@ -56,26 +59,26 @@ class TextSticker(frameBuffer: IntArray,
     }
 
     class Text(var text: String,
-               var size: Float,
-               var color: Int,
-               var backgroundColor: Int = Color.TRANSPARENT) : BaseSticker.Sticker() {
+               var textSize: Float,
+               var color: Int = Color.WHITE,
+               var backgroundColor: Int = Color.TRANSPARENT,
+               var typeface: Typeface = Typeface.DEFAULT_BOLD) : BaseSticker.Sticker() {
         private var paint: Paint = Paint()
-        private var textSize: FloatArray = FloatArray(2)
 
         private fun updatePaint() {
             paint.isAntiAlias = true
-            paint.textSize = size
+            paint.textSize = textSize
             paint.color = color
             paint.textAlign = Paint.Align.LEFT
+            paint.typeface = typeface
         }
 
         fun create(): Bitmap {
             updatePaint()
             val size = measureTextSize(paint, text)
-            textSize[0] = size[0]
-            textSize[1] = size[1]
-            val bitmap = Bitmap.createBitmap(Math.ceil(size[0].toDouble()).toInt(),
-                    Math.ceil(size[1].toDouble()).toInt(),
+            this.size.width = Math.ceil(size[0].toDouble()).toInt()
+            this.size.height = Math.ceil(size[1].toDouble()).toInt()
+            val bitmap = Bitmap.createBitmap(this.size.width, this.size.height,
                     Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             canvas.drawFilter = PaintFlagsDrawFilter(0,
@@ -83,16 +86,6 @@ class TextSticker(frameBuffer: IntArray,
             canvas.drawColor(backgroundColor)
             canvas.drawText(text, 0f, size[1], paint)
             return bitmap
-        }
-
-        fun getRect(width: Int, height: Int): RectF {
-            val rect = RectF()
-            rect.left = -1f
-            rect.bottom = 1f
-            rect.right = rect.left + textSize[0] / width.toFloat()
-            rect.top = rect.bottom - textSize[1] / height.toFloat()
-            rect.offset(x, y)
-            return rect
         }
 
         /**
