@@ -15,7 +15,6 @@ import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
-import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import com.lmy.codec.wrapper.ScreenTextureWrapper
@@ -26,6 +25,7 @@ import com.lmy.codec.wrapper.ScreenTextureWrapper
  */
 class DefaultRenderImpl(var context: CodecContext,
                         var cameraWrapper: CameraTextureWrapper,
+                        private var filter: BaseFilter? = null,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
@@ -33,7 +33,6 @@ class DefaultRenderImpl(var context: CodecContext,
     : Render, FpsMeasurer.OnUpdateListener {
 
     private val filterLock = Any()
-    private var filter: BaseFilter? = null
     private var width: Int = 0
     private var height: Int = 0
     private val videoMeasurer: FpsMeasurer = FpsMeasurer.create().apply {
@@ -57,7 +56,7 @@ class DefaultRenderImpl(var context: CodecContext,
             filter = f
             filter?.width = this.width
             filter?.height = this.height
-            debug_e("camera texture: ${cameraWrapper.getFrameBuffer()[0]}, ${cameraWrapper.getFrameBufferTexture()[0]}")
+            debug_i("Camera texture: ${cameraWrapper.getFrameBuffer()[0]}, ${cameraWrapper.getFrameBufferTexture()[0]}")
             filter?.textureId = cameraWrapper.getFrameBufferTexture()
             filter?.init()
         }
@@ -75,6 +74,7 @@ class DefaultRenderImpl(var context: CodecContext,
             screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
                     cameraWrapper.egl!!.eglContext!!)
         }
+        screenWrapper?.updateInputTexture(getFrameBufferTexture())
         screenWrapper?.egl?.makeCurrent()
         screenWrapper?.updateLocation(context)
     }
@@ -152,7 +152,6 @@ class DefaultRenderImpl(var context: CodecContext,
     override fun stop() {
         GLEventPipeline.INSTANCE.queueEvent(Runnable {
             cameraWrapper.egl?.makeCurrent()
-            BaseFilter.release()
             screenWrapper?.release()
             screenWrapper = null
             debug_i("release")
