@@ -74,7 +74,7 @@ abstract class BaseSticker(var frameBuffer: IntArray,
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
         GLES20.glDisable(GLES20.GL_BLEND)
         GLES20.glUseProgram(GLES20.GL_NONE)
-        GLES20.glFinish()
+        GLES20.glFlush()
     }
 
     override fun release() {
