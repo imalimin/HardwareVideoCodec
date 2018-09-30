@@ -36,7 +36,6 @@ abstract class BaseTexture(var textureId: IntArray,
     private var vao: IntArray? = null
 
     init {
-        createVBOs()
         updateLocation(floatArrayOf(
                 0f, 0f,//LEFT,BOTTOM
                 1f, 0f,//RIGHT,BOTTOM
@@ -48,6 +47,10 @@ abstract class BaseTexture(var textureId: IntArray,
                 -1f, 1f,//LEFT,TOP
                 1f, 1f//RIGHT,TOP
         ))
+    }
+
+    override fun init() {
+        createVBOs()
     }
 
     private fun createVBOs() {
@@ -213,7 +216,7 @@ abstract class BaseTexture(var textureId: IntArray,
      * @param position  顶点位置
      */
     fun updateLocation(texCoordinate: FloatArray, position: FloatArray) {
-        debug_i("location(${texCoordinate[0]}, ${texCoordinate[1]},\n" +
+        debug_i("$name location(${texCoordinate[0]}, ${texCoordinate[1]},\n" +
                 "${texCoordinate[2]}, ${texCoordinate[3]},\n" +
                 "${texCoordinate[4]}, ${texCoordinate[5]},\n" +
                 "${texCoordinate[6]}, ${texCoordinate[7]})\n" +
