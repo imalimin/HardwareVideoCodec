@@ -10,5 +10,6 @@ package com.lmy.codec.texture
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 interface Texture {
+    fun init()
     fun draw(transformMatrix: FloatArray?)
 }
