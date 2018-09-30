@@ -40,14 +40,15 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
     }
 
     open fun release() {
-        egl?.release()
-        egl = null
+        egl?.makeCurrent()
         texture?.release()
         texture = null
+        egl?.release()
+        egl = null
 //        surfaceTexture?.release()
 //        surfaceTexture = null
-        if (null != textureId)
-            GLES20.glDeleteTextures(1, textureId, 0)
+//        if (null != textureId)
+//            GLES20.glDeleteTextures(1, textureId, 0)
     }
 
     //更新xyst坐标
