@@ -23,6 +23,7 @@ abstract class BaseFilter(width: Int = 0,
 
     override fun init() {
         super.init()
+        if (width <= 0 || height <= 0) throw RuntimeException("Width and height cannot be 0")
         shaderProgram = createProgram(Resources.instance.readAssetsAsString(getVertex()),
                 Resources.instance.readAssetsAsString(getFragment()))
         initFrameBuffer()
