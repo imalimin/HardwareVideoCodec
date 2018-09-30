@@ -19,7 +19,8 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.loge
 import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.presenter.impl.VideoRecorderImpl
-import com.lmy.codec.texture.impl.filter.BeautyV4Filter
+import com.lmy.codec.texture.impl.filter.GroupFilter
+import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraWrapper
 import com.lmy.sample.helper.PermissionHelper
@@ -66,7 +67,7 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
             setFps(30)
             enableHardware(true)
             setCameraIndex(CameraWrapper.CameraIndex.FRONT)
-            setFilter(BeautyV4Filter())//Default NormalFilter
+            setFilter(GroupFilter.create(NormalFilter()))//Default NormalFilter
             setPreviewDisplay(mTextureView)
             setOnStateListener(onStateListener)
         }
