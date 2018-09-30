@@ -36,11 +36,6 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
         }
     }
 
-    fun updateInputTexture(textureId: IntArray) {
-        this.textureId = textureId
-        texture?.textureId = textureId
-    }
-
     override fun draw(transformMatrix: FloatArray?) {
         if (null == texture) {
             debug_e("Render failed. Texture is null")

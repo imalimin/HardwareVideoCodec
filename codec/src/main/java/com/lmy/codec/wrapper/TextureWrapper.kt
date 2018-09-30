@@ -53,4 +53,9 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
 
     //更新xyst坐标
     abstract fun updateLocation(context: CodecContext)
+
+    fun updateInputTexture(textureId: IntArray) {
+        this.textureId = textureId
+        texture?.textureId = textureId
+    }
 }
