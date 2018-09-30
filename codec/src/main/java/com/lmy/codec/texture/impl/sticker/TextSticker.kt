@@ -36,21 +36,7 @@ class TextSticker(width: Int = 0,
         updateSize(width, height)
     }
 
-    override fun updateSize(width: Int, height: Int) {
-        super.updateSize(width, height)
-        val rect = textInfo.getRect(width, height)
-        updateLocation(floatArrayOf(
-                0f, 0f,//LEFT,BOTTOM
-                1f, 0f,//RIGHT,BOTTOM
-                0f, 1f,//LEFT,TOP
-                1f, 1f//RIGHT,TOP
-        ), floatArrayOf(
-                rect.left, rect.bottom,//LEFT,BOTTOM
-                rect.right, rect.bottom,//RIGHT,BOTTOM
-                rect.left, rect.top,//LEFT,TOP
-                rect.right, rect.top//RIGHT,TOP
-        ))
-    }
+    override fun getRect(): RectF = textInfo.getRect(width, height)
 
     override fun init() {
         super.init()

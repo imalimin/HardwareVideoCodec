@@ -56,7 +56,21 @@ abstract class BaseSticker(var width: Int,
     open fun updateSize(width: Int, height: Int) {
         this.width = width
         this.height = height
+        val rect = getRect()
+        updateLocation(floatArrayOf(
+                0f, 1f,//LEFT,TOP
+                1f, 1f,//RIGHT,TOP
+                0f, 0f,//LEFT,BOTTOM
+                1f, 0f//RIGHT,BOTTOM
+        ), floatArrayOf(
+                rect.left, rect.bottom,//LEFT,BOTTOM
+                rect.right, rect.bottom,//RIGHT,BOTTOM
+                rect.left, rect.top,//LEFT,TOP
+                rect.right, rect.top//RIGHT,TOP
+        ))
     }
+
+    abstract fun getRect(): RectF
 
     fun bindTexture(bitmap: Bitmap) {
         GLES20.glBindTexture(GL10.GL_TEXTURE_2D, texture[0])
@@ -102,9 +116,9 @@ abstract class BaseSticker(var width: Int,
         fun getRect(width: Int, height: Int): RectF {
             val rect = RectF()
             rect.left = -1f
-            rect.bottom = 1f
+            rect.top = 1f
             rect.right = rect.left + size.width / width.toFloat() * scale
-            rect.top = rect.bottom - size.height / height.toFloat() * scale
+            rect.bottom = rect.top - size.height / height.toFloat() * scale
             rect.offset(x * 2, -y * 2)
             return rect
         }
