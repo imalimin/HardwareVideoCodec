@@ -54,6 +54,9 @@ class VideoRecorderImpl(ctx: Context,
             cameraWrapper = CameraWrapper.open(context, this)
                     .post(Runnable {
                         render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper)
+                        if (null != filter) {
+                            render?.setFilter(filter!!)
+                        }
                     })
         }
         if (null != textureView && textureView!!.isAvailable) {
@@ -186,6 +189,7 @@ class VideoRecorderImpl(ctx: Context,
             if (null == this.filter)
                 this.filter = NormalFilter()
         } else {
+            this.filter = null
             render?.setFilter(filter)
         }
 
