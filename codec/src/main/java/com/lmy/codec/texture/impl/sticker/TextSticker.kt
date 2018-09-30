@@ -24,7 +24,7 @@ class TextSticker(width: Int = 0,
     }
 
     fun setText(text: Text) {
-        this.textInfo = textInfo
+        this.textInfo = text
         updateTexture()
     }
 
