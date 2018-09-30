@@ -29,13 +29,13 @@ class DefaultRenderImpl(var context: CodecContext,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
-                        var reader: PixelsReader? = null,
-                        private var width: Int = 0,
-                        private var height: Int = 0)
+                        var reader: PixelsReader? = null)
     : Render, FpsMeasurer.OnUpdateListener {
 
     private val filterLock = Any()
     private var filter: BaseFilter? = null
+    private var width: Int = 0
+    private var height: Int = 0
     private val videoMeasurer: FpsMeasurer = FpsMeasurer.create().apply {
         onUpdateListener = this@DefaultRenderImpl
     }
