@@ -29,6 +29,7 @@ class NormalTexture(textureId: IntArray) : BaseTexture(textureId) {
     private var uTextureLocation = 0
 
     init {
+        init()
         createProgram()
     }
 

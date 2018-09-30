@@ -36,6 +36,7 @@ class MirrorYuv422Texture(width: Int, height: Int,
     private var widthLocation = 0
 
     init {
+        init()
         updateLocation(if (MirrorTexture.Direction.VERTICAL == direction) VERTICES_VERTICAL
         else VERTICES_HORIZONTAL, floatArrayOf(
                 -1f, -1f,//LEFT,BOTTOM

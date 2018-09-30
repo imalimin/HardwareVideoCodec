@@ -41,6 +41,7 @@ class MirrorTexture(width: Int, height: Int,
     private var aTextureCoordinateLocation = 0
 
     init {
+        init()
         updateLocation(if (Direction.VERTICAL == direction) VERTICES_VERTICAL
         else VERTICES_HORIZONTAL, floatArrayOf(
                 -1f, -1f,//LEFT,BOTTOM

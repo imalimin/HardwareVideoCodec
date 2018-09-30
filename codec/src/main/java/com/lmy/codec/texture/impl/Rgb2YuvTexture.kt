@@ -24,6 +24,7 @@ class Rgb2YuvTexture(width: Int, height: Int,
     private var uTextureLocation = 0
 
     init {
+        init()
         createProgram()
         initFrameBuffer()
     }

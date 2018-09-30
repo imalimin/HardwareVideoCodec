@@ -23,6 +23,7 @@ class CameraTexture(width: Int, height: Int,
 
     init {
         name = "CameraTexture"
+        init()
         createProgram()
         initFrameBuffer()
     }
