@@ -36,8 +36,7 @@ class VideoRecorderImpl(ctx: Context,
                         private var muxer: Muxer? = null,
                         private var onStateListener: VideoRecorder.OnStateListener? = null,
                         private var textureView: TextureView? = null,
-                        private var status: Status = Status.IDL,
-                        private var filter: Class<*>? = NormalFilter::class.java
+                        private var status: Status = Status.IDL
 ) : VideoRecorder, Encoder.OnPreparedListener {
 
     enum class Status {
@@ -45,6 +44,7 @@ class VideoRecorderImpl(ctx: Context,
     }
 
     private var context: CodecContext = CodecContext(ctx)
+    private var filter: BaseFilter? = NormalFilter()
 
     override fun prepare() {
         if (TextUtils.isEmpty(context.ioContext.path)) {
@@ -53,7 +53,7 @@ class VideoRecorderImpl(ctx: Context,
         if (null == cameraWrapper) {
             cameraWrapper = CameraWrapper.open(context, this)
                     .post(Runnable {
-                        render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper, filter)
+                        render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper)
                     })
         }
         if (null != textureView && textureView!!.isAvailable) {
@@ -180,14 +180,15 @@ class VideoRecorderImpl(ctx: Context,
         return context.video.height
     }
 
-    override fun setFilter(filter: Class<*>) {
+    override fun setFilter(filter: BaseFilter) {
         if (null == render) {
             this.filter = filter
             if (null == this.filter)
-                this.filter = NormalFilter::class.java
+                this.filter = NormalFilter()
         } else {
             render?.setFilter(filter)
         }
+
     }
 
     override fun getFilter(): BaseFilter? {

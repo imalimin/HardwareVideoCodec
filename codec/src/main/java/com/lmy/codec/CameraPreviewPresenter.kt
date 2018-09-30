@@ -42,7 +42,7 @@ class CameraPreviewPresenter(var context: CodecContext,
     }
 
     fun setFilter(filter: Class<*>) {
-        render?.setFilter(filter)
+        render?.setFilter(filter.newInstance() as BaseFilter)
     }
 
     fun getFilter(): BaseFilter? {

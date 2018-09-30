@@ -29,6 +29,7 @@ import javax.microedition.khronos.opengles.GL10
  * Created by lmyooyo@gmail.com on 2018/9/21.
  */
 class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
+
     companion object {
         fun create(ctx: Context): ImageProcessor = ImageProcessorImpl(ctx)
     }
@@ -74,16 +75,11 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
         GLES20.glBindTexture(GL10.GL_TEXTURE_2D, GLES20.GL_NONE)
     }
 
-    private fun createFilter(clazz: Class<*>) {
+    private fun createFilter(f: BaseFilter) {
         debug_i("createFilter")
         synchronized(filterLock) {
             filter?.release()
-            try {
-                filter = clazz.newInstance() as BaseFilter
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return
-            }
+            filter = f
             filter?.width = context.video.width
             filter?.height = context.video.height
             filter?.textureId = srcInputTexture
@@ -167,7 +163,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
         mPipeline.queueEvent(Runnable {
             createEGL()
             createSrcTexture()
-            createFilter(NormalFilter::class.java)
+            createFilter(NormalFilter())
             isPrepare = true
             if (null != featureFile) {
                 setInputResource(featureFile!!)
@@ -187,7 +183,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
         this.textureView = view
     }
 
-    override fun setFilter(filter: Class<*>) {
+    override fun setFilter(filter: BaseFilter) {
         mPipeline.queueEvent(Runnable {
             createFilter(filter)
             invalidate()

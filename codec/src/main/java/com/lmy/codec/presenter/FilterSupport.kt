@@ -12,6 +12,6 @@ import com.lmy.codec.texture.impl.filter.BaseFilter
  * Created by lmyooyo@gmail.com on 2018/9/21.
  */
 interface FilterSupport {
-    fun setFilter(filter: Class<*>)
+    fun setFilter(filter: BaseFilter)
     fun getFilter(): BaseFilter?
 }

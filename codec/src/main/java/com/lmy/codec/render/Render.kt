@@ -7,12 +7,12 @@
 package com.lmy.codec.render
 
 import android.graphics.SurfaceTexture
-import com.lmy.codec.texture.impl.filter.BaseFilter
+import com.lmy.codec.presenter.FilterSupport
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
-interface Render {
+interface Render : FilterSupport {
     fun onFrameAvailable()
     fun draw()
     fun start(texture: SurfaceTexture, width: Int, height: Int)
@@ -21,8 +21,6 @@ interface Render {
     fun release()
     fun post(runnable: Runnable)
 
-    fun setFilter(filter: Class<*>)
-    fun getFilter(): BaseFilter?
     fun getFrameBuffer(): IntArray
     fun getFrameBufferTexture(): IntArray
 }

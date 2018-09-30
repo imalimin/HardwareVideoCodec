@@ -26,7 +26,6 @@ import com.lmy.codec.wrapper.ScreenTextureWrapper
  */
 class DefaultRenderImpl(var context: CodecContext,
                         var cameraWrapper: CameraTextureWrapper,
-                        private var filterClass: Class<*>? = null,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
                         var screenWrapper: ScreenTextureWrapper? = null,
@@ -48,20 +47,14 @@ class DefaultRenderImpl(var context: CodecContext,
         this.width = context.video.width
         this.height = context.video.height
         initReader()
-        initFilter(if (null != filterClass) filterClass!! else NormalFilter::class.java)
+        initFilter(if (null != filter) filter!! else NormalFilter())
     }
 
-    private fun initFilter(clazz: Class<*>) {
+    private fun initFilter(f: BaseFilter) {
         synchronized(filterLock) {
             cameraWrapper.egl?.makeCurrent()
             filter?.release()
-            try {
-                filter = clazz.newInstance() as BaseFilter
-            } catch (e: Exception) {
-                e.printStackTrace()
-                initScreen()
-                return
-            }
+            filter = f
             filter?.width = this.width
             filter?.height = this.height
             debug_e("camera texture: ${cameraWrapper.getFrameBuffer()[0]}, ${cameraWrapper.getFrameBufferTexture()[0]}")
@@ -183,7 +176,7 @@ class DefaultRenderImpl(var context: CodecContext,
         GLEventPipeline.INSTANCE.queueEvent(runnable)
     }
 
-    override fun setFilter(filter: Class<*>) {
+    override fun setFilter(filter: BaseFilter) {
         GLEventPipeline.INSTANCE.queueEvent(Runnable {
             initFilter(filter)
         })

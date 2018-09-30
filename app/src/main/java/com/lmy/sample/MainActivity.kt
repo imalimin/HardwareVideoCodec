@@ -66,7 +66,7 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
             setFps(30)
             enableHardware(true)
             setCameraIndex(CameraWrapper.CameraIndex.FRONT)
-            setFilter(BeautyV4Filter::class.java)//Default NormalFilter
+            setFilter(BeautyV4Filter())//Default NormalFilter
             setPreviewDisplay(mTextureView)
             setOnStateListener(onStateListener)
         }
