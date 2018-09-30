@@ -9,10 +9,9 @@ package com.lmy.codec.texture.impl.sticker
 import android.graphics.*
 import android.text.TextUtils
 
-class TextSticker(frameBuffer: IntArray,
-                  width: Int,
-                  height: Int,
-                  name: String = "BaseSticker") : BaseSticker(frameBuffer, width, height, name) {
+class TextSticker(width: Int = 0,
+                  height: Int = 0,
+                  textureId: IntArray = IntArray(1)) : BaseSticker(width, height, textureId) {
     private var textInfo: Text = Text("HWVC", 56f).apply {
         x = 0.8f
         y = 0.03f
