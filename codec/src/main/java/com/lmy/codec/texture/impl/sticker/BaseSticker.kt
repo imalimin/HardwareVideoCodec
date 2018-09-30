@@ -1,8 +1,10 @@
 package com.lmy.codec.texture.impl.sticker
 
 import android.graphics.Bitmap
+import android.graphics.RectF
 import android.opengl.GLES20
 import android.opengl.GLUtils
+import com.lmy.codec.entity.Size
 import com.lmy.codec.helper.Resources
 import com.lmy.codec.texture.impl.BaseTexture
 import javax.microedition.khronos.opengles.GL10
@@ -81,5 +83,17 @@ abstract class BaseSticker(var frameBuffer: IntArray,
     }
 
     open class Sticker(var x: Float = 0f,
-                       var y: Float = 0f)
+                       var y: Float = 0f,
+                       internal var size: Size = Size(0, 0)) {
+
+        fun getRect(width: Int, height: Int): RectF {
+            val rect = RectF()
+            rect.left = -1f
+            rect.bottom = 1f
+            rect.right = rect.left + size.width / width.toFloat()
+            rect.top = rect.bottom - size.height / height.toFloat()
+            rect.offset(x * 2, -y * 2)
+            return rect
+        }
+    }
 }
