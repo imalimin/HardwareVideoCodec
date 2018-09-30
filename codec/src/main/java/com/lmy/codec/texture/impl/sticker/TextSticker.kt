@@ -33,6 +33,11 @@ class TextSticker(width: Int = 0,
         synchronized(bitmapLock) {
             bitmap = tmp
         }
+        updateSize(width, height)
+    }
+
+    override fun updateSize(width: Int, height: Int) {
+        super.updateSize(width, height)
         val rect = textInfo.getRect(width, height)
         updateLocation(floatArrayOf(
                 0f, 0f,//LEFT,BOTTOM

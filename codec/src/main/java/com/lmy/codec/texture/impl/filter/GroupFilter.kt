@@ -198,6 +198,12 @@ class GroupFilter private constructor(filter: BaseFilter,
                 it.updateFrameBuffer(width, height)
             }
         }
+        synchronized(stickers) {
+            if (stickers.isEmpty()) return
+            stickers.forEach {
+                it.updateSize(width, height)
+            }
+        }
     }
 
     override fun release() {

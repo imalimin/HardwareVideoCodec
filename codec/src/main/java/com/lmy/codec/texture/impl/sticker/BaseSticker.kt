@@ -53,6 +53,11 @@ abstract class BaseSticker(var width: Int,
         GLES20.glBindTexture(GL10.GL_TEXTURE_2D, GLES20.GL_NONE)
     }
 
+    open fun updateSize(width: Int, height: Int) {
+        this.width = width
+        this.height = height
+    }
+
     fun bindTexture(bitmap: Bitmap) {
         GLES20.glBindTexture(GL10.GL_TEXTURE_2D, texture[0])
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0)
@@ -91,14 +96,15 @@ abstract class BaseSticker(var width: Int,
 
     open class Sticker(var x: Float = 0f,
                        var y: Float = 0f,
+                       var scale: Float = 1f,
                        internal var size: Size = Size(0, 0)) {
 
         fun getRect(width: Int, height: Int): RectF {
             val rect = RectF()
             rect.left = -1f
             rect.bottom = 1f
-            rect.right = rect.left + size.width / width.toFloat()
-            rect.top = rect.bottom - size.height / height.toFloat()
+            rect.right = rect.left + size.width / width.toFloat() * scale
+            rect.top = rect.bottom - size.height / height.toFloat() * scale
             rect.offset(x * 2, -y * 2)
             return rect
         }
