@@ -16,7 +16,8 @@ abstract class BaseSticker(var frameBuffer: IntArray,
     private var uTextureLocation = 0
     private var texture: IntArray = IntArray(1)
 
-    open fun init() {
+    override fun init() {
+        super.init()
         createProgram()
         createTexture(texture)
     }
@@ -54,9 +55,11 @@ abstract class BaseSticker(var frameBuffer: IntArray,
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0])
         setUniform1i(uTextureLocation, 0)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
+        GLES20.glEnable(GLES20.GL_BLEND)
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA)
     }
 
     protected fun draw() {
@@ -67,12 +70,16 @@ abstract class BaseSticker(var frameBuffer: IntArray,
         disableVertex(aPositionLocation, aTextureCoordinateLocation)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_NONE)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, GLES20.GL_NONE)
+        GLES20.glDisable(GLES20.GL_BLEND)
         GLES20.glUseProgram(GLES20.GL_NONE)
-        GLES20.glFlush()
+        GLES20.glFinish()
     }
 
     override fun release() {
         super.release()
         GLES20.glDeleteTextures(texture.size, texture, 0)
     }
+
+    open class Sticker(var x: Float = 0f,
+                       var y: Float = 0f)
 }
