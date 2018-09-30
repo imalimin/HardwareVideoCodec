@@ -189,6 +189,15 @@ class GroupFilter private constructor(filter: BaseFilter,
         }
     }
 
+    override fun updateFrameBuffer(width: Int, height: Int) {
+        synchronized(filters) {
+            if (filters.isEmpty()) return
+            filters.forEach {
+                it.updateFrameBuffer(width, height)
+            }
+        }
+    }
+
     override fun release() {
         releaseStickers()
         releaseFilters()
