@@ -19,6 +19,10 @@ class TextSticker(width: Int = 0,
     private var bitmap: Bitmap? = null
     private val bitmapLock = Any()
 
+    init {
+        name = "TextSticker"
+    }
+
     fun setText(text: Text) {
         this.textInfo = textInfo
         updateTexture()
