@@ -15,10 +15,10 @@ import com.lmy.codec.helper.Resources
 import com.lmy.codec.texture.impl.BaseTexture
 import javax.microedition.khronos.opengles.GL10
 
-abstract class BaseSticker(var frameBuffer: IntArray,
-                           var width: Int,
+abstract class BaseSticker(var width: Int,
                            var height: Int,
-                           name: String = "BaseSticker") : BaseTexture(frameBuffer, name) {
+                           textureId: IntArray,
+                           name: String = "BaseSticker") : BaseTexture(textureId, name) {
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0
     private var uTextureLocation = 0
@@ -26,6 +26,7 @@ abstract class BaseSticker(var frameBuffer: IntArray,
 
     override fun init() {
         super.init()
+        if (width <= 0 || height <= 0) throw RuntimeException("Width and height cannot be 0")
         createProgram()
         createTexture(texture)
     }
@@ -61,7 +62,7 @@ abstract class BaseSticker(var frameBuffer: IntArray,
 
     fun active() {
         GLES20.glUseProgram(shaderProgram!!)
-        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, textureId[0])
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0])
         setUniform1i(uTextureLocation, 0)
