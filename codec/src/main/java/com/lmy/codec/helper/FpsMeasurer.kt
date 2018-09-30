@@ -8,6 +8,7 @@ class FpsMeasurer private constructor(private var intervalMs: Int) {
     }
 
     var onUpdateListener: OnUpdateListener? = null
+    private var startTime = 0L
     private var total = 0L
     private var count = 0
     private var start = 0L
@@ -18,6 +19,9 @@ class FpsMeasurer private constructor(private var intervalMs: Int) {
 
     fun start() {
         synchronized(this) {
+            if (startTime <= 0) {
+                startTime = System.currentTimeMillis()
+            }
             start = System.currentTimeMillis()
         }
     }
@@ -28,8 +32,9 @@ class FpsMeasurer private constructor(private var intervalMs: Int) {
             if (delta < 0) return
             total += delta
             ++count
-            if (total > intervalMs) {
+            if (System.currentTimeMillis() - startTime > intervalMs) {
                 fps = calculate()
+                startTime = 0
                 total = 0
                 count = 0
                 onUpdateListener?.onUpdate(this, fps)
@@ -38,6 +43,7 @@ class FpsMeasurer private constructor(private var intervalMs: Int) {
     }
 
     fun reset() {
+        startTime = 0
         total = 0
         count = 0
         start = 0L
