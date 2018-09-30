@@ -78,12 +78,12 @@ class GroupFilter private constructor(filter: BaseFilter,
                 }
             }
             frameBufferTexture[0] = lastFrameBufferTexture[0]
-            printLink()
-        }
-        synchronized(stickers) {
-            stickers.forEach {
-                it.textureId = frameBufferTexture
+            synchronized(stickers) {
+                stickers.forEach {
+                    it.textureId = filters.last().frameBuffer
+                }
             }
+            printLink()
         }
     }
 
@@ -107,18 +107,20 @@ class GroupFilter private constructor(filter: BaseFilter,
         if (width <= 0 || height <= 0) throw RuntimeException("Width and height cannot be 0")
         synchronized(initList) {
             val texture = initList.poll()
-            if (texture is BaseFilter) {
-                texture.width = this.width
-                texture.height = this.height
-            }
-            texture.init()
             when (texture) {
                 is BaseFilter -> synchronized(filters) {
+                    texture.width = this.width
+                    texture.height = this.height
+                    texture.init()
                     filters.add(texture)
                     updateLink()
                 }
                 is BaseSticker -> synchronized(stickers) {
+                    texture.width = this.width
+                    texture.height = this.height
+                    texture.init()
                     stickers.add(texture)
+                    updateLink()
                 }
                 else -> {
                     texture.release()
