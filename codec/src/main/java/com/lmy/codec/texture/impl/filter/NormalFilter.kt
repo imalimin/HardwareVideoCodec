@@ -6,6 +6,8 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import android.opengl.GLES20
+
 /**
  * Created by lmyooyo@gmail.com on 2018/4/23.
  */
@@ -17,11 +19,16 @@ class NormalFilter(width: Int = 0,
     private var uTextureLocation = 0
     private var aTextureCoordinateLocation = 0
 
+    init {
+        name = "NormalFilter"
+    }
+
     override fun init() {
         super.init()
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
+        GLES20.glUseProgram(GLES20.GL_NONE)
     }
 
     override fun draw(transformMatrix: FloatArray?) {

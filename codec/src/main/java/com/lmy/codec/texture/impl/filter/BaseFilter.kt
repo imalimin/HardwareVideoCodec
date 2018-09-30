@@ -17,9 +17,12 @@ import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 abstract class BaseFilter(width: Int = 0,
                           height: Int = 0,
                           textureId: IntArray) : BaseFrameBufferTexture(width, height, textureId), IParams {
+    init {
+        name = "BaseFilter"
+    }
+
     override fun init() {
         super.init()
-        name = "BaseFilter"
         shaderProgram = createProgram(Resources.instance.readAssetsAsString(getVertex()),
                 Resources.instance.readAssetsAsString(getFragment()))
         initFrameBuffer()

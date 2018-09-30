@@ -28,6 +28,7 @@ class FpsMeasurer private constructor(private var intervalMs: Int) {
 
     fun end() {
         synchronized(this) {
+            if (startTime <= 0) return
             val delta = System.currentTimeMillis() - start
             if (delta < 0) return
             total += delta
