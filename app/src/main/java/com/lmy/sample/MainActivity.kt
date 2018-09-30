@@ -20,6 +20,7 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.loge
 import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.presenter.impl.VideoRecorderImpl
+import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.BeautyV4Filter
 import com.lmy.codec.texture.impl.filter.GroupFilter
 import com.lmy.codec.texture.impl.sticker.ImageSticker
@@ -61,21 +62,6 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
         }
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
-        //Init filter group
-        val filter = GroupFilter.create(BeautyV4Filter())
-                .addSticker(TextSticker().apply {
-                    setText(TextSticker.Text("HWVC", 56f).apply {
-                        x = 0.8f
-                        y = 0.03f
-                    })
-                })
-                .addSticker(ImageSticker().apply {
-                    setImage(ImageSticker.Image().apply {
-                        x = 0.03f
-                        y = 0.03f
-                        bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_logo)
-                    })
-                })
         //Init VideoRecorderImpl
         mRecorder = VideoRecorderImpl(this).apply {
             reset()
@@ -85,7 +71,7 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
             setFps(30)
             enableHardware(true)
             setCameraIndex(CameraWrapper.CameraIndex.FRONT)
-            setFilter(filter)//Default NormalFilter
+            setFilter(getDefaultFilter())
             setPreviewDisplay(mTextureView)
             setOnStateListener(onStateListener)
         }
@@ -104,6 +90,23 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
             mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${count++}.mp4")
             mRecorder.prepare()
         }
+    }
+
+    private fun getDefaultFilter(): BaseFilter {
+        return GroupFilter.create(BeautyV4Filter())
+                .addSticker(TextSticker().apply {
+                    setText(TextSticker.Text("HWVC", 56f).apply {
+                        x = 0.8f
+                        y = 0.03f
+                    })
+                })
+                .addSticker(ImageSticker().apply {
+                    setImage(ImageSticker.Image().apply {
+                        x = 0.03f
+                        y = 0.03f
+                        bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_logo)
+                    })
+                })
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
