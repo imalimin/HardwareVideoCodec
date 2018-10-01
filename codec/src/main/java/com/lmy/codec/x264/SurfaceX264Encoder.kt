@@ -136,6 +136,7 @@ class SurfaceX264Encoder(private var format: MediaFormat,
                 cache?.release()
             })
         }
+        imageReader?.close()
         mPipeline.quit()
     }
 
