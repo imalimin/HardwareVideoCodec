@@ -25,6 +25,9 @@ class ScreenTextureWrapper(override var surfaceTexture: SurfaceTexture? = null,
         if (null != surfaceTexture) {
             egl = Egl("Screen")
             egl!!.initEGL(surfaceTexture!!, eglContext)
+            if (null == eglContext) {
+                eglContext = egl!!.eglContext
+            }
             egl!!.makeCurrent()
             if (null == textureId)
                 throw RuntimeException("textureId can not be null")
