@@ -57,6 +57,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
     private var isPrepare = false
     private var reader: SurfacePixelsReader? = null
     private var outputPath: String? = null
+    private var saveEnd: Runnable? = null
 
     private fun createEGL() {
         debug_i("createEGL")
@@ -214,10 +215,12 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
         } catch (e: IOException) {
             debug_e("Image save failed!")
         }
+        this.saveEnd?.run()
     }
 
-    override fun save(path: String) {
+    override fun save(path: String, end: Runnable?) {
         this.outputPath = path
+        this.saveEnd = end
         updateReader()
         mPipeline.queueEvent(Runnable {
             reader?.read()

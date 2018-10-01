@@ -67,7 +67,12 @@ class ImageActivity : BaseActivity() {
             mFilterController?.chooseFilter(this)
         })
         saveBtn.setOnClickListener {
-            mProcessor?.save(getOutputPath(path!!))
+            val out = getOutputPath(path!!)
+            mProcessor?.save(out, Runnable {
+                runOnUiThread {
+                    Toast.makeText(this, "Saved to $out", Toast.LENGTH_SHORT).show()
+                }
+            })
         }
     }
 

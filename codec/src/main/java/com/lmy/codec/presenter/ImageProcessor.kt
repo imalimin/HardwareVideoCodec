@@ -16,6 +16,6 @@ interface ImageProcessor : FilterSupport {
     fun prepare()
     fun setInputResource(file: File)
     fun setPreviewDisplay(view: TextureView)
-    fun save(path: String)
+    fun save(path: String, end: Runnable? = null)
     fun release()
 }
