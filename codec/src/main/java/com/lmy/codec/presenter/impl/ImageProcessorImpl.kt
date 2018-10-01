@@ -14,6 +14,7 @@ import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.view.TextureView
 import com.lmy.codec.entity.CodecContext
+import com.lmy.codec.helper.SurfacePixelsReader
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.presenter.ImageProcessor
@@ -23,12 +24,16 @@ import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.ScreenTextureWrapper
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.nio.ByteBuffer
 import javax.microedition.khronos.opengles.GL10
 
 /**
  * Created by lmyooyo@gmail.com on 2018/9/21.
  */
-class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
+class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
+        SurfacePixelsReader.OnReadListener {
 
     companion object {
         fun create(ctx: Context): ImageProcessor = ImageProcessorImpl(ctx)
@@ -50,6 +55,8 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
     private var screenTexture: SurfaceTexture? = null
     private var screenWrapper: ScreenTextureWrapper? = null
     private var isPrepare = false
+    private var reader: SurfacePixelsReader? = null
+    private var outputPath: String? = null
 
     private fun createEGL() {
         debug_i("createEGL")
@@ -116,6 +123,9 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
     }
 
     private fun updateSrcTexture(bitmap: Bitmap) {
+        if (context.video.width != bitmap.width || context.video.height != bitmap.height) {
+            releaseReader()
+        }
         context.video.width = bitmap.width
         context.video.height = bitmap.height
         debug_i("updateSrcTexture ${context.video.width}x${context.video.height}, " +
@@ -183,6 +193,37 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
         this.textureView = view
     }
 
+    private fun updateReader() {
+        if (null == reader) {
+            mPipeline.queueEvent(Runnable {
+                reader = SurfacePixelsReader.build(context.video.width, context.video.height,
+                        filter!!.frameBufferTexture, screenWrapper!!.eglContext!!)
+                reader?.prepare()
+                reader?.onReadListener = this
+            })
+        }
+    }
+
+    override fun onRead(data: ByteArray) {
+        val bitmap = Bitmap.createBitmap(context.video.width, context.video.height, Bitmap.Config.ARGB_8888)
+        bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(data))
+        try {
+            val out = FileOutputStream(this.outputPath)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
+            out.close()
+        } catch (e: IOException) {
+            debug_e("Image save failed!")
+        }
+    }
+
+    override fun save(path: String) {
+        this.outputPath = path
+        updateReader()
+        mPipeline.queueEvent(Runnable {
+            reader?.read()
+        })
+    }
+
     override fun setFilter(filter: BaseFilter) {
         mPipeline.queueEvent(Runnable {
             createFilter(filter)
@@ -196,8 +237,16 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor {
         }
     }
 
+    private fun releaseReader() {
+        mPipeline.queueEvent(Runnable {
+            reader?.stop()
+            reader = null
+        })
+    }
+
     override fun release() {
         debug_i("release")
+        releaseReader()
         mPipeline.queueEvent(Runnable {
             GLES20.glDeleteTextures(srcInputTexture.size, srcInputTexture, 0)
             synchronized(filterLock) {

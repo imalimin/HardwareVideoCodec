@@ -7,7 +7,6 @@
 package com.lmy.codec.presenter
 
 import android.view.TextureView
-import com.lmy.codec.texture.impl.filter.BaseFilter
 import java.io.File
 
 /**
@@ -17,5 +16,6 @@ interface ImageProcessor : FilterSupport {
     fun prepare()
     fun setInputResource(file: File)
     fun setPreviewDisplay(view: TextureView)
+    fun save(path: String)
     fun release()
 }

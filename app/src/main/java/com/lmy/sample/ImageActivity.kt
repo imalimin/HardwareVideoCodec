@@ -12,6 +12,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.TextUtils
 import android.view.TextureView
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -41,9 +42,15 @@ class ImageActivity : BaseActivity() {
         if (uri == null) {
             finish()
             Toast.makeText(this, "没有找到该文件", Toast.LENGTH_SHORT).show()
+            finish()
             return
         }
         val path = getRealFilePath(this, uri)
+        if (TextUtils.isEmpty(path)) {
+            Toast.makeText(this, "没有找到该文件", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
         val mTextureView = TextureView(this).apply {
             fitsSystemWindows = true
             keepScreenOn = true
@@ -59,6 +66,9 @@ class ImageActivity : BaseActivity() {
         effectBtn.setOnClickListener({
             mFilterController?.chooseFilter(this)
         })
+        saveBtn.setOnClickListener {
+            mProcessor?.save(getOutputPath(path!!))
+        }
     }
 
     override fun onDestroy() {
@@ -87,5 +97,9 @@ class ImageActivity : BaseActivity() {
             }
         }
         return data
+    }
+
+    private fun getOutputPath(input: String): String {
+        return "${input.substring(0, input.lastIndexOf("."))}_${System.currentTimeMillis()}.jpg"
     }
 }

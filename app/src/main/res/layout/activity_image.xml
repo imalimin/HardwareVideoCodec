@@ -17,14 +17,28 @@
         android:paddingRight="16dp"
         android:paddingTop="32dp">
 
-        <Button
-            android:id="@+id/effectBtn"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:text="EFFECT"
-            android:textColor="@color/colorAccent" />
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/effectBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:text="EFFECT"
+                android:textColor="@color/colorAccent" />
+
+            <Button
+                android:id="@+id/saveBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:text="SAVE"
+                android:textColor="@color/colorAccent" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/progressLayout"
