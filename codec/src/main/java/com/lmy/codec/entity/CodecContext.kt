@@ -46,7 +46,9 @@ class CodecContext(ctx: Context,
             throw RuntimeException("Orientation must be 0, 90, 180 or 270")
         if ((isVertical() && (video.width > cameraSize.height || video.height > cameraSize.width))
                 || (isHorizontal() && (video.width > cameraSize.width || video.height > cameraSize.height)))
-            throw RuntimeException("Video size can not be greater than preview size")
+            throw RuntimeException("Video size can not be greater than preview size " +
+                    "Video(${video.width}x${video.height})," +
+                    "Preview(${cameraSize.width}x${cameraSize.height})")
         if (0 != video.width % 2 || 0 != video.height % 2)
             throw RuntimeException("Video width and height must be a multiple of 2")
         if (video.fps < 1)
