@@ -54,7 +54,6 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
     private var screenInputTexture = IntArray(1)
     private var screenTexture: SurfaceTexture? = null
     private var screenWrapper: ScreenTextureWrapper? = null
-    private var isPrepare = false
     private var reader: SurfacePixelsReader? = null
     private var outputPath: String? = null
     private var saveEnd: Runnable? = null
@@ -143,18 +142,14 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
         invalidate()
     }
 
-    private var featureFile: File? = null
     override fun setInputResource(file: File) {
         if (!file.exists()) {
             debug_e("Input file is not exists")
             return
         }
-        if (!isPrepare) {
-            featureFile = file
-            return
-        }
         val path = file.absolutePath
         mPipeline.queueEvent(Runnable {
+            debug_e("updateSrcTexture")
             updateSrcTexture(BitmapFactory.decodeFile(path))
         })
     }
@@ -175,12 +170,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
             createEGL()
             createSrcTexture()
             createFilter(NormalFilter())
-            isPrepare = true
-            if (null != featureFile) {
-                setInputResource(featureFile!!)
-                featureFile = null
-            }
-        })
+        }, true)
     }
 
     private fun updatePreview(width: Int, height: Int) {
@@ -266,11 +256,10 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
 
     private fun createPreview() {
         if (null != textureView && textureView!!.isAvailable) {
-            mPipeline.queueEvent(Runnable {
-                prepareOpenGL(textureView!!.surfaceTexture, textureView!!.width, textureView!!.height)
-            })
+            prepareOpenGL(textureView!!.surfaceTexture, textureView!!.width, textureView!!.height)
             return
         }
+        mPipeline.sleep()
         textureView?.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
 
             override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
@@ -289,9 +278,8 @@ class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
 
             override fun onSurfaceTextureAvailable(p0: SurfaceTexture?, p1: Int, p2: Int) {
                 if (null != p0) {
-                    mPipeline.queueEvent(Runnable {
-                        prepareOpenGL(p0, p1, p2)
-                    })
+                    prepareOpenGL(p0, p1, p2)
+                    mPipeline.wake()
                 }
                 debug_e("onSurfaceTextureAvailable")
             }
