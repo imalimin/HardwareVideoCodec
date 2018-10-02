@@ -81,8 +81,8 @@ class CameraTextureWrapper(private val width: Int,
 
     private fun calculateBestLocation(context: CodecContext,
                                       location: FloatArray, textureLocation: FloatArray) {
-        val previewWidth = context.cameraSize.height
-        val previewHeight = context.cameraSize.width
+        val previewWidth = if (context.isHorizontal()) context.cameraSize.width else context.cameraSize.height
+        val previewHeight = if (context.isHorizontal()) context.cameraSize.height else context.cameraSize.width
         val videoWidth = context.video.width
         val videoHeight = context.video.height
         val previewScale = previewWidth / previewHeight.toFloat()
