@@ -10,8 +10,8 @@ android {
         applicationId "com.lmy.sample"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters "armeabi-v7a", "x86"
@@ -36,8 +36,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation 'com.tencent.bugly:crashreport:latest.release'
     implementation 'com.tencent.bugly:nativecrashreport:latest.release'
-//    implementation 'com.lmy.codec:hardwarevideocodec:1.6.3'
-//    implementation 'com.lmy.codec:rtmp:1.6.3'
+//    implementation 'com.lmy.codec:hardwarevideocodec:1.7.0'
+//    implementation 'com.lmy.codec:rtmp:1.7.0'
     implementation project(':codec')
     implementation project(':rtmp')
 }
