@@ -6,7 +6,6 @@
  */
 package com.lmy.codec.texture.impl.filter
 
-import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.texture.impl.BaseTexture
 import com.lmy.codec.texture.impl.sticker.BaseSticker
 import com.lmy.codec.util.debug_i
@@ -16,6 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue
  * Created by lmyooyo@gmail.com on 2018/9/30.
  */
 class GroupFilter private constructor(filter: BaseFilter,
+                                      private var deFlashing: Boolean,
                                       width: Int = 0,
                                       height: Int = 0,
                                       textureId: IntArray = IntArray(1))
@@ -24,6 +24,8 @@ class GroupFilter private constructor(filter: BaseFilter,
     private val releaseList = LinkedBlockingQueue<BaseTexture>()
     private val filters = ArrayList<BaseFilter>()
     private val stickers = ArrayList<BaseSticker>()
+    //For resolve flash
+    private var lastFilter: NormalFilter? = null
 
     init {
         addFilter(filter)
@@ -77,7 +79,12 @@ class GroupFilter private constructor(filter: BaseFilter,
                     lastFrameBufferTexture = filter.frameBufferTexture
                 }
             }
-            frameBufferTexture[0] = lastFrameBufferTexture[0]
+            if (null == lastFilter) {
+                frameBufferTexture[0] = lastFrameBufferTexture[0]
+            } else {
+                lastFilter?.textureId = lastFrameBufferTexture
+                frameBufferTexture[0] = lastFilter!!.frameBufferTexture[0]
+            }
             synchronized(stickers) {
                 stickers.forEach {
                     it.textureId = filters.last().frameBuffer
@@ -96,6 +103,13 @@ class GroupFilter private constructor(filter: BaseFilter,
     private fun addToReleaseList(texture: BaseTexture) {
         synchronized(releaseList) {
             releaseList.offer(texture)
+        }
+    }
+
+    private fun initDeFlashing() {
+        if (deFlashing && null == lastFilter) {
+            lastFilter = NormalFilter(width, height, textureId)
+            lastFilter?.init()
         }
     }
 
@@ -141,16 +155,17 @@ class GroupFilter private constructor(filter: BaseFilter,
     }
 
     override fun init() {
+        if (width <= 0 || height <= 0) throw RuntimeException("Width and height cannot be 0")
+        initDeFlashing()
         initList()
     }
 
     override fun draw(transformMatrix: FloatArray?) {
         initList()
         releaseList()
-        GLHelper.checkGLES2Error("GroupFilter releaseList")
         drawFilters()
-        GLHelper.checkGLES2Error("GroupFilter drawFilters")
         drawStickers()
+        lastFilter?.draw(null)
     }
 
     private fun drawFilters() {
@@ -197,6 +212,7 @@ class GroupFilter private constructor(filter: BaseFilter,
             filters.forEach {
                 it.updateFrameBuffer(width, height)
             }
+            lastFilter?.updateFrameBuffer(width, height)
         }
         synchronized(stickers) {
             if (stickers.isEmpty()) return
@@ -209,19 +225,31 @@ class GroupFilter private constructor(filter: BaseFilter,
     override fun release() {
         releaseStickers()
         releaseFilters()
+        lastFilter?.release()
     }
 
+    /**
+     * Not use
+     */
     override fun getVertex(): String {
         return "shader/vertex_normal.glsl"
     }
 
+    /**
+     * Not use
+     */
     override fun getFragment(): String {
         return "shader/fragment_normal.glsl"
     }
 
     companion object {
-        fun create(filter: BaseFilter): GroupFilter {
-            return GroupFilter(filter)
+        /**
+         * Create a GroupFilter.
+         * @param filter At least one filter.
+         * @param deFlashing If the sticker is flashing, please open this.Performance may drop slightly
+         */
+        fun create(filter: BaseFilter, deFlashing: Boolean = true): GroupFilter {
+            return GroupFilter(filter, deFlashing)
         }
     }
 }
