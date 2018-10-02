@@ -17,6 +17,7 @@ import java.io.File
 
 class VideoActivity : BaseActivity() {
     private var player: VideoPlay? = null
+    private var mFilterController: FilterController? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
@@ -46,12 +47,19 @@ class VideoActivity : BaseActivity() {
         }
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
-        player = VideoPlayImpl().apply {
+        player = VideoPlayImpl(applicationContext).apply {
             setInputResource(File(path))
             setPreviewDisplay(mTextureView)
             prepare()
         }
         player?.start()
+        mFilterController = FilterController(player!!, progressLayout)
+        effectBtn.setOnClickListener({
+            mFilterController?.chooseFilter(this)
+        })
+        saveBtn.setOnClickListener {
+            //TODO
+        }
     }
 
     override fun onDestroy() {
