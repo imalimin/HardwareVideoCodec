@@ -12,10 +12,12 @@ import android.os.Handler
  * Created by lmyooyo@gmail.com on 2018/9/13.
  */
 interface Pipeline {
-    fun queueEvent(event: Runnable)
+    fun queueEvent(event: Runnable, front: Boolean = false)
     fun queueEvent(event: Runnable, delayed: Long)
     fun quit()
     fun started(): Boolean
     fun getName(): String
     fun getHandler(): Handler
+    fun sleep()
+    fun wake()
 }

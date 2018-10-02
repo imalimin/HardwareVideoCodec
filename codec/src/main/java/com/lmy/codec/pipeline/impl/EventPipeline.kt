@@ -23,6 +23,7 @@ class EventPipeline private constructor(name: String) : Pipeline {
         }
     }
 
+    private val lock = Object()
     private var mHandlerThread: HandlerThread = HandlerThread(name)
     private var mHandler: Handler
     private var start = false
@@ -38,12 +39,17 @@ class EventPipeline private constructor(name: String) : Pipeline {
         start = true
     }
 
-    override fun queueEvent(event: Runnable) {
+    override fun queueEvent(event: Runnable, front: Boolean) {
         if (!start) {
             debug_e("EventPipeline has quited")
             return
         }
-        mHandler.sendMessage(mHandler.obtainMessage(0, event))
+        if (front) {
+            mHandler.sendMessageAtFrontOfQueue(mHandler.obtainMessage(0, event))
+        } else {
+            mHandler.sendMessage(mHandler.obtainMessage(0, event))
+        }
+
     }
 
     override fun queueEvent(event: Runnable, delayed: Long) {
@@ -74,5 +80,19 @@ class EventPipeline private constructor(name: String) : Pipeline {
 
     override fun getHandler(): Handler {
         return mHandler
+    }
+
+    override fun sleep() {
+        queueEvent(Runnable {
+            synchronized(lock) {
+                lock.wait()
+            }
+        })
+    }
+
+    override fun wake() {
+        synchronized(lock) {
+            lock.notifyAll()
+        }
     }
 }

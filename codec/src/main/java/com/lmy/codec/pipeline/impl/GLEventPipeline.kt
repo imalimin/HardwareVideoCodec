@@ -32,7 +32,7 @@ class GLEventPipeline private constructor() : Pipeline {
             eventPipeline = EventPipeline.create("GLEventPipeline")
     }
 
-    override fun queueEvent(event: Runnable) {
+    override fun queueEvent(event: Runnable, front: Boolean) {
         check()
         eventPipeline?.queueEvent(event)
     }
@@ -63,5 +63,13 @@ class GLEventPipeline private constructor() : Pipeline {
 
     override fun getHandler(): Handler {
         return eventPipeline!!.getHandler()
+    }
+
+    override fun sleep() {
+        eventPipeline?.sleep()
+    }
+
+    override fun wake() {
+        eventPipeline?.wake()
     }
 }
