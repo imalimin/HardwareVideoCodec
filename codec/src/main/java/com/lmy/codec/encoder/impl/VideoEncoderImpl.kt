@@ -16,7 +16,6 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
-import com.lmy.codec.loge
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.pipeline.impl.GLEventPipeline
@@ -72,7 +71,7 @@ class VideoEncoderImpl(var context: CodecContext,
     private fun initCodec() {
         val f = CodecHelper.createVideoFormat(context)
         if (null == f) {
-            loge("Unsupport codec type")
+            debug_e("Unsupport codec type")
             return
         }
         format = f

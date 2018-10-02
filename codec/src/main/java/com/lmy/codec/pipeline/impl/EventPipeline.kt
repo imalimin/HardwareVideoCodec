@@ -9,8 +9,8 @@ package com.lmy.codec.pipeline.impl
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
-import com.lmy.codec.loge
 import com.lmy.codec.pipeline.Pipeline
+import com.lmy.codec.util.debug_e
 
 /**
  * Created by lmyooyo@gmail.com on 2018/6/21.
@@ -40,7 +40,7 @@ class EventPipeline private constructor(name: String) : Pipeline {
 
     override fun queueEvent(event: Runnable) {
         if (!start) {
-            loge("EventPipeline has quited")
+            debug_e("EventPipeline has quited")
             return
         }
         mHandler.sendMessage(mHandler.obtainMessage(0, event))
@@ -48,7 +48,7 @@ class EventPipeline private constructor(name: String) : Pipeline {
 
     override fun queueEvent(event: Runnable, delayed: Long) {
         if (!start) {
-            loge("EventPipeline has quited")
+            debug_e("EventPipeline has quited")
             return
         }
         mHandler.sendMessageDelayed(mHandler.obtainMessage(0, event), delayed)
@@ -56,7 +56,7 @@ class EventPipeline private constructor(name: String) : Pipeline {
 
     override fun quit() {
         if (!start) {
-            loge("EventPipeline has quited")
+            debug_e("EventPipeline has quited")
             return
         }
         start = false

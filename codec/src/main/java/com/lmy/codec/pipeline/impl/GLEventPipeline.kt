@@ -7,8 +7,8 @@
 package com.lmy.codec.pipeline.impl
 
 import android.os.Handler
-import com.lmy.codec.loge
 import com.lmy.codec.pipeline.Pipeline
+import com.lmy.codec.util.debug_e
 
 /**
  * Created by lmyooyo@gmail.com on 2018/6/20.
@@ -46,13 +46,13 @@ class GLEventPipeline private constructor() : Pipeline {
         if (null != eventPipeline) {
             eventPipeline?.quit()
             eventPipeline = null
-            loge("GLEventPipeline quited")
+            debug_e("GLEventPipeline quited")
         }
     }
 
     override fun started(): Boolean {
         if (null == eventPipeline) return false
-        loge("GLEventPipeline started")
+        debug_e("GLEventPipeline started")
         return eventPipeline!!.started()
     }
 

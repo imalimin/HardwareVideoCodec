@@ -14,7 +14,6 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.CodecHelper
-import com.lmy.codec.loge
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
@@ -58,7 +57,7 @@ class AudioEncoderImpl(var context: CodecContext,
     private fun initCodec() {
         val f = CodecHelper.createAudioFormat(context)
         if (null == f) {
-            loge("Unsupport codec type")
+            debug_e("Unsupport codec type")
             return
         }
         format = f!!

@@ -7,7 +7,6 @@
 package com.lmy.codec.util
 
 import android.util.Log
-import com.lmy.codec.logv
 import java.util.*
 
 /**

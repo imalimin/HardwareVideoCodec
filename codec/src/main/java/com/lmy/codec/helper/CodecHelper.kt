@@ -12,8 +12,8 @@ import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.os.Build
 import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.loge
-import com.lmy.codec.logi
+import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
 
 
 /**
@@ -69,7 +69,7 @@ class CodecHelper {
                         .filter { it.isEncoder == isEncode }
                         .forEach { info ->
                             info.supportedTypes.forEach {
-                                logi(it)
+                                debug_i(it)
                                 if (it.equals(mime, ignoreCase = true)) {
                                     return info
                                 }
@@ -82,7 +82,7 @@ class CodecHelper {
                         .filter { it.isEncoder == isEncode }
                         .forEach { info ->
                             info.supportedTypes.forEach {
-                                logi(it)
+                                debug_i(it)
                                 if (it.equals(mime, ignoreCase = true)) {
                                     return info
                                 }
@@ -103,7 +103,7 @@ class CodecHelper {
             selected.level = -1
             //查找支持的最佳配置
             for (p in profileLevels) {
-                logi("profile item: " + p.profile + ", " + p.level)
+                debug_i("profile item: " + p.profile + ", " + p.level)
                 if (supportsProfileLevel(p.profile, p.level, profileLevels, mime)) {
                     if (MediaCodecInfo.CodecProfileLevel.AVCProfileHigh == p.profile
                             && p.profile > selected.profile
@@ -115,7 +115,7 @@ class CodecHelper {
                     }
                 }
             }
-            loge("selected: " + selected.profile + ", " + selected.level + ", " + supportsProfileLevel(selected.profile, selected.level, profileLevels, mime))
+            debug_e("selected: " + selected.profile + ", " + selected.level + ", " + supportsProfileLevel(selected.profile, selected.level, profileLevels, mime))
             //如果找不到则默认
             if (-1 == selected.profile) return
             setProfileLevel(context, format, selected.profile, selected.level)
