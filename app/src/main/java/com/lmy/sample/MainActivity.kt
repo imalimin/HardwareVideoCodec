@@ -104,7 +104,8 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
                     setImage(ImageSticker.Image().apply {
                         x = 0.03f
                         y = 0.03f
-                        bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_logo)
+                        scale = 1.6f
+                        bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_logo_hwvc)
                     })
                 })
     }
