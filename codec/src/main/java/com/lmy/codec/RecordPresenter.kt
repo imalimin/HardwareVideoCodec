@@ -40,7 +40,8 @@ class RecordPresenter(var context: CodecContext,
     init {
         cameraWrapper = CameraWrapper.open(context, this)
                 .post(Runnable {
-                    render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper)
+                    render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper,
+                            GLEventPipeline.INSTANCE)
                 })
     }
 

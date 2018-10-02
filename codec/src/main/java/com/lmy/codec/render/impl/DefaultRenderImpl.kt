@@ -11,7 +11,7 @@ import android.opengl.GLES20
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.FpsMeasurer
 import com.lmy.codec.helper.PixelsReader
-import com.lmy.codec.pipeline.impl.GLEventPipeline
+import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
@@ -25,6 +25,7 @@ import com.lmy.codec.wrapper.ScreenTextureWrapper
  */
 class DefaultRenderImpl(var context: CodecContext,
                         var cameraWrapper: CameraTextureWrapper,
+                        private var pipeline: Pipeline,
                         private var filter: BaseFilter? = null,
                         var transformMatrix: FloatArray = FloatArray(16),
                         var screenTexture: SurfaceTexture? = null,
@@ -126,31 +127,31 @@ class DefaultRenderImpl(var context: CodecContext,
         updateScreenTexture(texture)
         context.viewSize.width = width
         context.viewSize.height = height
-        GLEventPipeline.INSTANCE.queueEvent(Runnable { init() })
+        pipeline?.queueEvent(Runnable { init() })
     }
 
     override fun updateSize(width: Int, height: Int) {
         if (width == this.width && this.height == height) return
         this.width = width
         this.height = height
-        GLEventPipeline.INSTANCE.queueEvent(Runnable {
+        pipeline?.queueEvent(Runnable {
             cameraWrapper.egl?.makeCurrent()
             initReader()
             cameraWrapper.updateLocation(context)
         })
-        GLEventPipeline.INSTANCE.queueEvent(Runnable {
+        pipeline?.queueEvent(Runnable {
             synchronized(filterLock) {
                 cameraWrapper.egl?.makeCurrent()
                 filter?.updateFrameBuffer(this.width, this.height)
             }
         })
-        GLEventPipeline.INSTANCE.queueEvent(Runnable {
+        pipeline?.queueEvent(Runnable {
             initScreen()
         })
     }
 
     override fun stop() {
-        GLEventPipeline.INSTANCE.queueEvent(Runnable {
+        pipeline?.queueEvent(Runnable {
             cameraWrapper.egl?.makeCurrent()
             screenWrapper?.release()
             screenWrapper = null
@@ -164,7 +165,7 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     override fun onFrameAvailable() {
-        GLEventPipeline.INSTANCE.queueEvent(Runnable { draw() })
+        pipeline?.queueEvent(Runnable { draw() })
     }
 
     fun updateScreenTexture(texture: SurfaceTexture?) {
@@ -172,11 +173,11 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     override fun post(runnable: Runnable) {
-        GLEventPipeline.INSTANCE.queueEvent(runnable)
+        pipeline?.queueEvent(runnable)
     }
 
     override fun setFilter(filter: BaseFilter) {
-        GLEventPipeline.INSTANCE.queueEvent(Runnable {
+        pipeline?.queueEvent(Runnable {
             initFilter(filter)
         })
     }
