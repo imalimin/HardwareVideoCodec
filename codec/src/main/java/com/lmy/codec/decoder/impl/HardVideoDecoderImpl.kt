@@ -14,18 +14,20 @@ import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import java.io.IOException
 
-class HardVideoDecoderImpl(val texture: SurfaceTexture) : Decoder {
+
+class HardVideoDecoderImpl(val texture: SurfaceTexture,
+                           private val forPlay: Boolean = false) : Decoder {
     override var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener? = null
     private var extractor: MediaExtractor? = null
     private var videoTrack: Track? = null
     private var audioTrack: Track? = null
     private var codec: MediaCodec? = null
-    private var format: MediaFormat? = null
     private var path: String? = null
     private var pipeline: Pipeline? = EventPipeline.create("HVDecoderImpl")
     private var videoInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var startting = false
     private var eos = false
+    private var lastPts = 0L
 
     override fun setInputResource(path: String) {
         this.path = path
@@ -33,6 +35,7 @@ class HardVideoDecoderImpl(val texture: SurfaceTexture) : Decoder {
 
     override fun reset() {
         eos = false
+        lastPts = 0
     }
 
     override fun prepare() {
@@ -61,7 +64,13 @@ class HardVideoDecoderImpl(val texture: SurfaceTexture) : Decoder {
         })
     }
 
-    private fun decode() {
+    @Synchronized
+    private fun next() {
+        val delay = if (forPlay) {
+            val d = videoInfo.presentationTimeUs / 1000 - lastPts
+            lastPts = videoInfo.presentationTimeUs / 1000
+            d
+        } else 0
         pipeline?.queueEvent(Runnable {
             if (!startting) return@Runnable
             val index = codec!!.dequeueInputBuffer(WAIT_TIME)
@@ -81,12 +90,27 @@ class HardVideoDecoderImpl(val texture: SurfaceTexture) : Decoder {
                     codec!!.queueInputBuffer(index, 0, size, extractor!!.sampleTime, 0)
                     extractor!!.advance()
                 }
-                debug_i("decode $size")
+                dequeue()
             } else {
                 debug_e("Cannot get input buffer!")
             }
-            decode()
-        })
+            if (!eos) {
+                next()
+            }
+        }, delay)
+    }
+
+    private fun dequeue() {
+        val index = codec!!.dequeueOutputBuffer(videoInfo, WAIT_TIME)
+        when (index) {
+            MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> debug_i("INFO_OUTPUT_FORMAT_CHANGED")
+            MediaCodec.INFO_TRY_AGAIN_LATER -> debug_i("INFO_TRY_AGAIN_LATER")
+            MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> debug_i("INFO_OUTPUT_BUFFERS_CHANGED")
+            else -> codec!!.releaseOutputBuffer(index, true)
+        }
+        if (videoInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+            debug_i("buffer stream end")
+        }
     }
 
     override fun start() {
@@ -95,7 +119,7 @@ class HardVideoDecoderImpl(val texture: SurfaceTexture) : Decoder {
             return
         }
         startting = true
-        decode()
+        next()
     }
 
     override fun pause() {
@@ -106,6 +130,7 @@ class HardVideoDecoderImpl(val texture: SurfaceTexture) : Decoder {
         startting = false
     }
 
+    @Synchronized
     override fun stop() {
         pause()
         pipeline?.queueEvent(Runnable {

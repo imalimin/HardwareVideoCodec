@@ -26,7 +26,7 @@ class VideoPlayImpl : VideoPlay {
     }
 
     private fun initDecoder(texture: SurfaceTexture, width: Int, height: Int) {
-        decoder = HardVideoDecoderImpl(texture)
+        decoder = HardVideoDecoderImpl(texture,true)
         decoder?.setInputResource(file!!.absolutePath)
         decoder?.prepare()
     }
@@ -52,7 +52,6 @@ class VideoPlayImpl : VideoPlay {
                 }
 
                 override fun onSurfaceTextureDestroyed(p0: SurfaceTexture?): Boolean {
-                    stop()
                     return true
                 }
 
