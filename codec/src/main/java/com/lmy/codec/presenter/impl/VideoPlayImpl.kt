@@ -6,6 +6,7 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.view.TextureView
 import com.lmy.codec.decoder.Decoder
+import com.lmy.codec.decoder.impl.AudioDecoderImpl
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Track
@@ -26,6 +27,7 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     private var context: CodecContext = CodecContext(ctx)
     private var render: Render? = null
     private var decoder: Decoder? = null
+    private var audioDecoder: Decoder? = null
     private var extractor: MediaExtractor? = null
     private var videoTrack: Track? = null
     private var audioTrack: Track? = null
@@ -76,7 +78,9 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
 
     private fun prepareDecoder() {
         decoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!, pipeline!!, true)
+        audioDecoder = AudioDecoderImpl(context, audioTrack!!, true)
         decoder?.prepare()
+        audioDecoder?.prepare()
     }
 
     private fun prepareRender(texture: SurfaceTexture, width: Int, height: Int) {
@@ -133,18 +137,21 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     override fun start() {
         pipeline?.queueEvent(Runnable {
             decoder?.start()
+            audioDecoder?.start()
         })
     }
 
     override fun pause() {
         pipeline?.queueEvent(Runnable {
             decoder?.pause()
+            audioDecoder?.pause()
         })
     }
 
     override fun stop() {
         pipeline?.queueEvent(Runnable {
             decoder?.stop()
+            audioDecoder?.stop()
         })
     }
 
@@ -166,6 +173,8 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
             textureWrapper = null
             decoder?.release()
             decoder = null
+            audioDecoder?.release()
+            audioDecoder = null
         })
         pipeline?.quit()
         pipeline = null

@@ -4,7 +4,7 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
 import android.view.Surface
-import com.lmy.codec.decoder.Decoder
+import com.lmy.codec.decoder.VideoDecoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Track
 import com.lmy.codec.pipeline.Pipeline
@@ -18,9 +18,9 @@ class HardVideoDecoderImpl(val context: CodecContext,
                            private val track: Track,
                            private val textureWrapper: CameraTextureWrapper,
                            private val pipeline: Pipeline,
-                           private val forPlay: Boolean = false) : Decoder {
+                           private val forPlay: Boolean = false) : VideoDecoder {
     private var codec: MediaCodec? = null
-    private var videoInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
+    private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var starting = false
     private var eos = false
     private var lastPts = 0L
@@ -32,7 +32,6 @@ class HardVideoDecoderImpl(val context: CodecContext,
 
     override fun prepare() {
         pipeline?.queueEvent(Runnable {
-            track.select(track.extractor)
             try {
                 codec = MediaCodec.createDecoderByType(track.format.getString(MediaFormat.KEY_MIME))
                 codec!!.configure(track.format, Surface(textureWrapper.surfaceTexture), null, 0)
@@ -47,13 +46,14 @@ class HardVideoDecoderImpl(val context: CodecContext,
     @Synchronized
     private fun next() {
         val delay = if (forPlay) {
-            val d = videoInfo.presentationTimeUs / 1000 - lastPts
-            lastPts = videoInfo.presentationTimeUs / 1000
+            val d = bufferInfo.presentationTimeUs / 1000 - lastPts
+            lastPts = bufferInfo.presentationTimeUs / 1000
             d
         } else 0
         pipeline?.queueEvent(Runnable {
             synchronized(this@HardVideoDecoderImpl) {
                 if (!starting) return@Runnable
+                val ttt = System.currentTimeMillis()
                 textureWrapper.egl?.makeCurrent()
                 val index = codec!!.dequeueInputBuffer(WAIT_TIME)
                 if (index >= 0) {
@@ -62,20 +62,25 @@ class HardVideoDecoderImpl(val context: CodecContext,
                     } else {
                         codec!!.inputBuffers[index]
                     }
-                    val size = track.extractor.readSampleData(buffer, 0)
-                    if (size < 0) {
-                        codec!!.queueInputBuffer(index, 0, 0, 0,
-                                MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                        eos = true
-                        starting = false
-                    } else {
-                        codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
-                        track.extractor.advance()
+                    synchronized(track.extractor) {
+                        track.select()
+                        val size = track.extractor.readSampleData(buffer, 0)
+                        if (size < 0) {
+                            codec!!.queueInputBuffer(index, 0, 0, 0,
+                                    MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            eos = true
+                            starting = false
+                        } else {
+                            codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
+                            track.extractor.advance()
+                        }
+                        track.unselect()
                     }
                     dequeue()
                 } else {
                     debug_e("Cannot get input buffer!")
                 }
+                lastPts += System.currentTimeMillis() - ttt
 //            debug_i("next ${videoInfo.presentationTimeUs}")
                 if (!eos) {
                     next()
@@ -85,14 +90,14 @@ class HardVideoDecoderImpl(val context: CodecContext,
     }
 
     private fun dequeue() {
-        val index = codec!!.dequeueOutputBuffer(videoInfo, WAIT_TIME)
+        val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
         when (index) {
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> debug_i("INFO_OUTPUT_FORMAT_CHANGED")
             MediaCodec.INFO_TRY_AGAIN_LATER -> debug_i("INFO_TRY_AGAIN_LATER")
             MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> debug_i("INFO_OUTPUT_BUFFERS_CHANGED")
             else -> codec!!.releaseOutputBuffer(index, true)
         }
-        if (videoInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+        if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
             debug_i("buffer stream end")
         }
     }
