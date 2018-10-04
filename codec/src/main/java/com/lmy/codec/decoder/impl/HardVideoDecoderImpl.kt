@@ -1,8 +1,6 @@
 package com.lmy.codec.decoder.impl
 
-import android.graphics.SurfaceTexture
 import android.media.MediaCodec
-import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.os.Build
 import android.view.Surface
@@ -17,80 +15,27 @@ import java.io.IOException
 
 
 class HardVideoDecoderImpl(val context: CodecContext,
+                           private val track: Track,
+                           private val textureWrapper: CameraTextureWrapper,
                            private val pipeline: Pipeline,
                            private val forPlay: Boolean = false) : Decoder {
-    override var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener? = null
-    override var textureWrapper: CameraTextureWrapper? = null
-    private var extractor: MediaExtractor? = null
-    private var videoTrack: Track? = null
-    private var audioTrack: Track? = null
     private var codec: MediaCodec? = null
-    private var path: String? = null
     private var videoInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
-    private var startting = false
+    private var starting = false
     private var eos = false
     private var lastPts = 0L
-
-    override fun setInputResource(path: String) {
-        this.path = path
-    }
 
     override fun reset() {
         eos = false
         lastPts = 0
     }
 
-    private fun prepareExtractor() {
-        pipeline?.queueEvent(Runnable {
-            extractor = MediaExtractor()
-            try {
-                extractor?.setDataSource(this.path)
-            } catch (e: IOException) {
-                debug_e("File($path) not found")
-                return@Runnable
-            }
-            videoTrack = Track.getVideoTrack(extractor!!)
-            context.orientation = videoTrack!!.format.getInteger(KEY_ROTATION)
-            if (context.isHorizontal()) {
-                context.video.width = getWidth()
-                context.video.height = getHeight()
-                context.cameraSize.width = context.video.width
-                context.cameraSize.height = context.video.height
-            } else {
-                context.video.width = getHeight()
-                context.video.height = getWidth()
-                context.cameraSize.width = context.video.height
-                context.cameraSize.height = context.video.width
-            }
-        })
-    }
-
-    private fun updateTexture() {
-        textureWrapper?.updateTexture()
-        textureWrapper?.updateLocation(context)
-        textureWrapper?.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
-    }
-
-    private fun prepareWrapper() {
-        pipeline?.queueEvent(Runnable {
-            debug_i("prepareWrapper ${getWidth()}x${getHeight()}")
-            textureWrapper = CameraTextureWrapper(getWidth(), getHeight())
-            updateTexture()
-        })
-    }
-
     override fun prepare() {
-        prepareExtractor()
-        prepareWrapper()
         pipeline?.queueEvent(Runnable {
-            if (null == videoTrack) {
-                debug_e("Video track not found")
-                return@Runnable
-            }
-            videoTrack!!.select(extractor!!)
+            track.select(track.extractor)
             try {
-                codec = MediaCodec.createDecoderByType(videoTrack!!.format.getString(MediaFormat.KEY_MIME))
-                codec!!.configure(videoTrack!!.format, Surface(textureWrapper!!.surfaceTexture), null, 0)
+                codec = MediaCodec.createDecoderByType(track.format.getString(MediaFormat.KEY_MIME))
+                codec!!.configure(track.format, Surface(textureWrapper.surfaceTexture), null, 0)
             } catch (e: IOException) {
                 debug_e("Cannot open decoder")
                 return@Runnable
@@ -107,32 +52,34 @@ class HardVideoDecoderImpl(val context: CodecContext,
             d
         } else 0
         pipeline?.queueEvent(Runnable {
-            if (!startting) return@Runnable
-            textureWrapper?.egl?.makeCurrent()
-            val index = codec!!.dequeueInputBuffer(WAIT_TIME)
-            if (index >= 0) {
-                val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    codec!!.getInputBuffer(index)
+            synchronized(this@HardVideoDecoderImpl) {
+                if (!starting) return@Runnable
+                textureWrapper.egl?.makeCurrent()
+                val index = codec!!.dequeueInputBuffer(WAIT_TIME)
+                if (index >= 0) {
+                    val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        codec!!.getInputBuffer(index)
+                    } else {
+                        codec!!.inputBuffers[index]
+                    }
+                    val size = track.extractor.readSampleData(buffer, 0)
+                    if (size < 0) {
+                        codec!!.queueInputBuffer(index, 0, 0, 0,
+                                MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                        eos = true
+                        starting = false
+                    } else {
+                        codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
+                        track.extractor.advance()
+                    }
+                    dequeue()
                 } else {
-                    codec!!.inputBuffers[index]
+                    debug_e("Cannot get input buffer!")
                 }
-                val size = extractor!!.readSampleData(buffer, 0)
-                if (size < 0) {
-                    codec!!.queueInputBuffer(index, 0, 0, 0,
-                            MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                    eos = true
-                    startting = false
-                } else {
-                    codec!!.queueInputBuffer(index, 0, size, extractor!!.sampleTime, 0)
-                    extractor!!.advance()
-                }
-                dequeue()
-            } else {
-                debug_e("Cannot get input buffer!")
-            }
 //            debug_i("next ${videoInfo.presentationTimeUs}")
-            if (!eos) {
-                next()
+                if (!eos) {
+                    next()
+                }
             }
         }, delay)
     }
@@ -155,7 +102,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
             debug_i("EOS!")
             return
         }
-        startting = true
+        starting = true
         next()
     }
 
@@ -164,15 +111,13 @@ class HardVideoDecoderImpl(val context: CodecContext,
             debug_i("EOS!")
             return
         }
-        startting = false
+        starting = false
     }
 
     @Synchronized
     override fun stop() {
         pause()
         pipeline?.queueEvent(Runnable {
-            extractor?.release()
-            extractor = null
             codec?.stop()
             codec?.release()
             codec = null
@@ -187,17 +132,16 @@ class HardVideoDecoderImpl(val context: CodecContext,
         pipeline.queueEvent(event)
     }
 
-    override fun getWidth(): Int = if (null != videoTrack)
-        videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH) else 0
+    override fun getWidth(): Int = if (null != track)
+        track!!.format.getInteger(MediaFormat.KEY_WIDTH) else 0
 
-    override fun getHeight(): Int = if (null != videoTrack)
-        videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT) else 0
+    override fun getHeight(): Int = if (null != track)
+        track!!.format.getInteger(MediaFormat.KEY_HEIGHT) else 0
 
-    override fun getDuration(): Int = if (null != videoTrack)
-        videoTrack!!.format.getInteger(MediaFormat.KEY_DURATION) / 1000 else 0
+    override fun getDuration(): Int = if (null != track)
+        track!!.format.getInteger(MediaFormat.KEY_DURATION) / 1000 else 0
 
     companion object {
         private const val WAIT_TIME = 10000L
-        private const val KEY_ROTATION = "rotation-degrees"
     }
 }
