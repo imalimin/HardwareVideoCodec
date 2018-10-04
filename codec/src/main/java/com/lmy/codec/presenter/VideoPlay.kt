@@ -6,7 +6,7 @@ import java.io.File
 interface VideoPlay : FilterSupport {
     fun reset()
     fun prepare()
-    fun setInputResource(file: File)
+    fun setInputResource(path: String)
     fun setPreviewDisplay(view: TextureView)
     fun start()
     fun pause()

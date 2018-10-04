@@ -2,44 +2,89 @@ package com.lmy.codec.presenter.impl
 
 import android.content.Context
 import android.graphics.SurfaceTexture
+import android.media.MediaExtractor
+import android.media.MediaFormat
 import android.view.TextureView
 import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
 import com.lmy.codec.entity.CodecContext
+import com.lmy.codec.entity.Track
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.presenter.VideoPlay
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
-import java.io.File
+import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
+import com.lmy.codec.wrapper.CameraTextureWrapper
+import java.io.IOException
 
 class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableListener {
+    private var pipeline: Pipeline? = EventPipeline.create("VideoPlayImpl")
+    private var textureWrapper: CameraTextureWrapper? = null
     private var context: CodecContext = CodecContext(ctx)
     private var render: Render? = null
-    private var pipeline: Pipeline? = EventPipeline.create("VideoPlayImpl")
-    private var decoder: Decoder? = HardVideoDecoderImpl(context, pipeline!!, true)
-            .apply {
-                onFrameAvailableListener = this@VideoPlayImpl
-            }
+    private var decoder: Decoder? = null
+    private var extractor: MediaExtractor? = null
+    private var videoTrack: Track? = null
+    private var audioTrack: Track? = null
     private var view: TextureView? = null
-    private var file: File? = null
     private var filter: BaseFilter? = null
 
     private fun check() {
-        if (null == file) {
-            throw RuntimeException("Please call setInputResource before call prepare.")
-        }
         if (null == view) {
             throw RuntimeException("Please call setPreviewDisplay before call prepare.")
         }
     }
 
-    private fun initDecoder(texture: SurfaceTexture, width: Int, height: Int) {
-        decoder?.setInputResource(file!!.absolutePath)
+    private fun updateTexture() {
+        textureWrapper?.updateTexture()
+        textureWrapper?.updateLocation(context)
+        textureWrapper?.surfaceTexture!!.setOnFrameAvailableListener(this)
+    }
+
+    private fun prepareWrapper() {
+        debug_i("prepareWrapper ${context.video.width}x${context.video.height}")
+        textureWrapper = CameraTextureWrapper(context.video.width, context.video.height)
+        updateTexture()
+    }
+
+    private fun prepareExtractor() {
+        extractor = MediaExtractor()
+        try {
+            extractor?.setDataSource(context.ioContext.path)
+        } catch (e: IOException) {
+            debug_e("File(${context.ioContext.path}) not found")
+            return
+        }
+        videoTrack = Track.getVideoTrack(extractor!!)
+        audioTrack = Track.getAudioTrack(extractor!!)
+        context.orientation = videoTrack!!.format.getInteger(KEY_ROTATION)
+        if (context.isHorizontal()) {
+            context.video.width = videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH)
+            context.video.height = videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT)
+            context.cameraSize.width = context.video.width
+            context.cameraSize.height = context.video.height
+        } else {
+            context.video.width = videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT)
+            context.video.height = videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH)
+            context.cameraSize.width = context.video.height
+            context.cameraSize.height = context.video.width
+        }
+    }
+
+    private fun prepareDecoder() {
+        decoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!, pipeline!!, true)
         decoder?.prepare()
-        decoder?.post(Runnable {
-            render = DefaultRenderImpl(context, decoder!!.textureWrapper!!, pipeline!!, filter)
+    }
+
+    private fun prepareRender(texture: SurfaceTexture, width: Int, height: Int) {
+        prepareExtractor()
+        prepareWrapper()
+        prepareDecoder()
+        decoder!!.post(Runnable {
+            render = DefaultRenderImpl(context, textureWrapper!!, pipeline!!, filter)
             render?.start(texture, width, height)
             render?.updateSize(width, height)
         })
@@ -53,7 +98,7 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
         check()
         if (this.view!!.isAvailable) {
             pipeline?.queueEvent(Runnable {
-                initDecoder(this.view!!.surfaceTexture, this.view!!.width, this.view!!.height)
+                prepareRender(this.view!!.surfaceTexture, this.view!!.width, this.view!!.height)
             }, true)
         } else {
             pipeline?.sleep()
@@ -72,7 +117,7 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
                 override fun onSurfaceTextureAvailable(texture: SurfaceTexture?, width: Int, height: Int) {
                     if (null != texture) {
                         pipeline?.queueEvent(Runnable {
-                            initDecoder(texture, width, height)
+                            prepareRender(texture, width, height)
                         }, true)
                         pipeline?.wake()
                     }
@@ -103,8 +148,8 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
         })
     }
 
-    override fun setInputResource(file: File) {
-        this.file = file
+    override fun setInputResource(path: String) {
+        context.ioContext.path = path
     }
 
     override fun setPreviewDisplay(view: TextureView) {
@@ -112,9 +157,13 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     }
 
     override fun release() {
+        extractor?.release()
+        extractor = null
         render?.release()
         render = null
         pipeline?.queueEvent(Runnable {
+            textureWrapper?.release()
+            textureWrapper = null
             decoder?.release()
             decoder = null
         })
@@ -139,5 +188,9 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
         } else {
             render!!.getFilter()
         }
+    }
+
+    companion object {
+        private const val KEY_ROTATION = "rotation-degrees"
     }
 }
