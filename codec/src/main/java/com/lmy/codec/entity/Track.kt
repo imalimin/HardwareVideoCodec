@@ -4,7 +4,8 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 
 data class Track(var index: Int,
-                 var format: MediaFormat) {
+                 var format: MediaFormat,
+                 var extractor: MediaExtractor) {
     fun select(extractor: MediaExtractor) {
         extractor.selectTrack(index)
     }
@@ -23,7 +24,7 @@ data class Track(var index: Int,
                 val format = extractor.getTrackFormat(i)
                 val mime = format.getString(MediaFormat.KEY_MIME)
                 if (mime.startsWith(type))
-                    return Track(i, format)
+                    return Track(i, format, extractor)
             }
             return null
         }
