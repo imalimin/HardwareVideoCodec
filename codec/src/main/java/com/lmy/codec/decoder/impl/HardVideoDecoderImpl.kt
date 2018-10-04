@@ -50,10 +50,18 @@ class HardVideoDecoderImpl(val context: CodecContext,
                 return@Runnable
             }
             videoTrack = Track.getVideoTrack(extractor!!)
-            context.video.width = getWidth()
-            context.video.height = getHeight()
-            context.cameraSize.width = context.video.width
-            context.cameraSize.height = context.video.height
+            context.orientation = videoTrack!!.format.getInteger(KEY_ROTATION)
+            if (context.isHorizontal()) {
+                context.video.width = getWidth()
+                context.video.height = getHeight()
+                context.cameraSize.width = context.video.width
+                context.cameraSize.height = context.video.height
+            } else {
+                context.video.width = getHeight()
+                context.video.height = getWidth()
+                context.cameraSize.width = context.video.height
+                context.cameraSize.height = context.video.width
+            }
         })
     }
 
@@ -190,5 +198,6 @@ class HardVideoDecoderImpl(val context: CodecContext,
 
     companion object {
         private const val WAIT_TIME = 10000L
+        private const val KEY_ROTATION = "rotation-degrees"
     }
 }

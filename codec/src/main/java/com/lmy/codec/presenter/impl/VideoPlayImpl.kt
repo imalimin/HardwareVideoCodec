@@ -15,9 +15,7 @@ import com.lmy.codec.texture.impl.filter.BaseFilter
 import java.io.File
 
 class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableListener {
-    private var context: CodecContext = CodecContext(ctx).apply {
-        orientation = 0
-    }
+    private var context: CodecContext = CodecContext(ctx)
     private var render: Render? = null
     private var pipeline: Pipeline? = EventPipeline.create("VideoPlayImpl")
     private var decoder: Decoder? = HardVideoDecoderImpl(context, pipeline!!, true)
