@@ -5,19 +5,19 @@ import android.media.MediaFormat
 
 data class Track(var index: Int,
                  var format: MediaFormat,
-                 var extractor: MediaExtractor) {
-    fun select(extractor: MediaExtractor) {
+                 val extractor: MediaExtractor) {
+    fun select() {
         extractor.selectTrack(index)
     }
 
-    companion object {
-        fun getVideoTrack(extractor: MediaExtractor): Track? {
-            return getTrack(extractor, "video")
-        }
+    fun unselect() {
+        extractor.unselectTrack(index)
+    }
 
-        fun getAudioTrack(extractor: MediaExtractor): Track? {
-            return getTrack(extractor, "audio")
-        }
+    companion object {
+        fun getVideoTrack(extractor: MediaExtractor): Track? = getTrack(extractor, "video")
+
+        fun getAudioTrack(extractor: MediaExtractor): Track? = getTrack(extractor, "audio")
 
         fun getTrack(extractor: MediaExtractor, type: String): Track? {
             for (i in 0 until extractor.trackCount) {
