@@ -164,8 +164,6 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     }
 
     override fun release() {
-        extractor?.release()
-        extractor = null
         render?.release()
         render = null
         pipeline?.queueEvent(Runnable {
@@ -175,6 +173,8 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
             decoder = null
             audioDecoder?.release()
             audioDecoder = null
+            extractor?.release()
+            extractor = null
         })
         pipeline?.quit()
         pipeline = null
