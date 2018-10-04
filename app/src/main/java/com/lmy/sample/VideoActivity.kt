@@ -48,7 +48,7 @@ class VideoActivity : BaseActivity() {
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
         player = VideoPlayImpl(applicationContext).apply {
-            setInputResource(File(path))
+            setInputResource(path!!)
             setPreviewDisplay(mTextureView)
             prepare()
         }
