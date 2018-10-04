@@ -6,8 +6,6 @@ interface Decoder {
     fun start()
     fun pause()
     fun stop()
-    fun getWidth(): Int
-    fun getHeight(): Int
     fun getDuration(): Int
     fun release()
     fun post(event: Runnable)
