@@ -27,7 +27,6 @@ class AudioDecoderImpl(val context: CodecContext,
     private var eos = false
     private var lastPts = 0L
     private var player: AudioPlayer? = null
-    private var dequeueLoop = true
 
     override fun reset() {
         eos = false
@@ -36,7 +35,8 @@ class AudioDecoderImpl(val context: CodecContext,
 
     override fun prepare() {
         pipeline?.queueEvent(Runnable {
-            player = AudioPlayer(getSampleRateInHz(), when (getChannel()) {
+            debug_i("AudioDecoder channel=${getChannel()}")
+            player = AudioPlayer(getSampleRateInHz() * getChannel(), when (getChannel()) {
                 2 -> AudioFormat.CHANNEL_OUT_STEREO
                 else -> AudioFormat.CHANNEL_OUT_MONO
             }, AudioFormat.ENCODING_PCM_16BIT)
@@ -90,11 +90,11 @@ class AudioDecoderImpl(val context: CodecContext,
     }
 
     private fun next() {
-        val delay = if (forPlay) {
-            val d = bufferInfo.presentationTimeUs / 1000 - lastPts
-            lastPts = bufferInfo.presentationTimeUs / 1000
-            d
-        } else 0
+//        val delay = if (forPlay) {
+//            val d = bufferInfo.presentationTimeUs / 1000 - lastPts
+//            lastPts = bufferInfo.presentationTimeUs / 1000
+//            d
+//        } else 0
         pipeline?.queueEvent(Runnable {
             synchronized(this@AudioDecoderImpl) {
                 if (!starting) return@Runnable
@@ -129,8 +129,7 @@ class AudioDecoderImpl(val context: CodecContext,
                     next()
                 }
             }
-        }, delay)
-
+        })
     }
 
     override fun start() {
@@ -152,9 +151,9 @@ class AudioDecoderImpl(val context: CodecContext,
 
     override fun stop() {
         pause()
+        player?.release()
+        player = null
         pipeline?.queueEvent(Runnable {
-            player?.release()
-            player = null
             codec?.stop()
             codec?.release()
             codec = null
