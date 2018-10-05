@@ -62,7 +62,8 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
         }
         videoTrack = Track.getVideoTrack(extractor!!)
         audioTrack = Track.getAudioTrack(extractor!!)
-        context.orientation = videoTrack!!.format.getInteger(KEY_ROTATION)
+        context.orientation = if (videoTrack!!.format.containsKey(KEY_ROTATION))
+            videoTrack!!.format.getInteger(KEY_ROTATION) else 0
         if (context.isHorizontal()) {
             context.video.width = videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH)
             context.video.height = videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT)
@@ -78,9 +79,13 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
 
     private fun prepareDecoder() {
         decoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!, pipeline!!, true)
-        audioDecoder = AudioDecoderImpl(context, audioTrack!!, true)
         decoder?.prepare()
-        audioDecoder?.prepare()
+        if (null != audioTrack) {
+            audioDecoder = AudioDecoderImpl(context, audioTrack!!, true)
+            audioDecoder?.prepare()
+        } else {
+            debug_i("No audio track")
+        }
     }
 
     private fun prepareRender(texture: SurfaceTexture, width: Int, height: Int) {
