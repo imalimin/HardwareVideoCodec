@@ -36,7 +36,8 @@ class AudioDecoderImpl(val context: CodecContext,
     override fun prepare() {
         pipeline?.queueEvent(Runnable {
             debug_i("AudioDecoder channel=${getChannel()}")
-            player = AudioPlayer(getSampleRateInHz() * getChannel(), when (getChannel()) {
+            debug_i("AudioDecoder ${track.format}")
+            player = AudioPlayer(getSampleRateInHz(), when (getChannel()) {
                 2 -> AudioFormat.CHANNEL_OUT_STEREO
                 else -> AudioFormat.CHANNEL_OUT_MONO
             }, AudioFormat.ENCODING_PCM_16BIT)
@@ -118,7 +119,7 @@ class AudioDecoderImpl(val context: CodecContext,
                             codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
                             track.extractor.advance()
                         }
-                        track.unselect()
+//                        track.unselect()
                     }
                     dequeue()
                 } else {
@@ -174,7 +175,32 @@ class AudioDecoderImpl(val context: CodecContext,
         pipeline?.queueEvent(event)
     }
 
-    override fun getSampleRateInHz(): Int = track.format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+    /**
+     * {@link https://blog.csdn.net/supermanwg/article/details/52798445}
+     * {@link https://blog.csdn.net/jay100500/article/details/52955232}
+     */
+    override fun getSampleRateInHz(): Int {
+        val sampleRate = when (track.format.getString(MediaFormat.KEY_MIME)) {
+            MediaFormat.MIMETYPE_AUDIO_AAC -> {
+                when (track.format.getInteger(MediaFormat.KEY_AAC_PROFILE)) {
+                    0 -> track.format.getInteger(MediaFormat.KEY_SAMPLE_RATE) * 2
+                    else -> track.format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                }
+//                val csd0 = track.format.getByteBuffer("csd-0")
+//                csd0.rewind()
+//                val data = ByteArray(csd0.capacity())
+//                csd0.get(data, 0, data.size)
+//                csd0.rewind()
+//                val h = data[0] and 0x7
+//                val l = data[1].toInt().shr(7) and 0x1
+//                val index = h.toInt().shl(1) and 0x0e or l
+//                AudioDecoder.AAC_SAMPLING_FREQUENCIES[index]
+            }
+            else -> track.format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+        }
+        debug_e("Sample rate: $sampleRate")
+        return sampleRate
+    }
 
     override fun getChannel(): Int = track.format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
 
