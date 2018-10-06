@@ -74,7 +74,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
                             codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
                             track.extractor.advance()
                         }
-                        track.unselect()
+//                        track.unselect()
                     }
                     dequeue()
                 } else {

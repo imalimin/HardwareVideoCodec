@@ -29,6 +29,7 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     private var decoder: Decoder? = null
     private var audioDecoder: Decoder? = null
     private var extractor: MediaExtractor? = null
+    private var audioExtractor: MediaExtractor? = null
     private var videoTrack: Track? = null
     private var audioTrack: Track? = null
     private var view: TextureView? = null
@@ -54,14 +55,16 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
 
     private fun prepareExtractor() {
         extractor = MediaExtractor()
+        audioExtractor=MediaExtractor()
         try {
             extractor?.setDataSource(context.ioContext.path)
+            audioExtractor?.setDataSource(context.ioContext.path)
         } catch (e: IOException) {
             debug_e("File(${context.ioContext.path}) not found")
             return
         }
         videoTrack = Track.getVideoTrack(extractor!!)
-        audioTrack = Track.getAudioTrack(extractor!!)
+        audioTrack = Track.getAudioTrack(audioExtractor!!)
         context.orientation = if (videoTrack!!.format.containsKey(KEY_ROTATION))
             videoTrack!!.format.getInteger(KEY_ROTATION) else 0
         if (context.isHorizontal()) {
@@ -180,6 +183,8 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
             audioDecoder = null
             extractor?.release()
             extractor = null
+            audioExtractor?.release()
+            audioExtractor = null
         })
         pipeline?.quit()
         pipeline = null
