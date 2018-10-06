@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 
 interface AudioDecoder : Decoder {
     val onSampleListener: OnSampleListener?
-    fun getSampleRateInHz(): Int
+    fun getSampleRate(): Int
     fun getChannel(): Int
     interface OnSampleListener {
         fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer)

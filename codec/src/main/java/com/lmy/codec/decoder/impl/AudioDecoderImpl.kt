@@ -37,7 +37,7 @@ class AudioDecoderImpl(val context: CodecContext,
         pipeline?.queueEvent(Runnable {
             debug_i("AudioDecoder channel=${getChannel()}")
             debug_i("AudioDecoder ${track.format}")
-            player = AudioPlayer(getSampleRateInHz(), when (getChannel()) {
+            player = AudioPlayer(getSampleRate(), when (getChannel()) {
                 2 -> AudioFormat.CHANNEL_OUT_STEREO
                 else -> AudioFormat.CHANNEL_OUT_MONO
             }, AudioFormat.ENCODING_PCM_16BIT)
@@ -179,7 +179,7 @@ class AudioDecoderImpl(val context: CodecContext,
      * {@link https://blog.csdn.net/supermanwg/article/details/52798445}
      * {@link https://blog.csdn.net/jay100500/article/details/52955232}
      */
-    override fun getSampleRateInHz(): Int {
+    override fun getSampleRate(): Int {
         val sampleRate = when (track.format.getString(MediaFormat.KEY_MIME)) {
             MediaFormat.MIMETYPE_AUDIO_AAC -> {
                 when (track.format.getInteger(MediaFormat.KEY_AAC_PROFILE)) {
