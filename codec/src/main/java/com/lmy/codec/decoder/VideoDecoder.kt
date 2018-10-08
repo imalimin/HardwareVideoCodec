@@ -1,6 +1,6 @@
 package com.lmy.codec.decoder
 
-interface VideoDecoder:Decoder {
+interface VideoDecoder : Decoder {
     fun getWidth(): Int
     fun getHeight(): Int
 }
