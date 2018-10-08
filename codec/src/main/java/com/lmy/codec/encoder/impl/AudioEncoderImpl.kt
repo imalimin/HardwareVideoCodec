@@ -16,7 +16,6 @@ import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.util.debug_i
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.AudioRecordWrapper
 import java.nio.ByteBuffer
@@ -168,7 +167,6 @@ class AudioEncoderImpl(var context: CodecContext,
 //                            bufferInfo.presentationTimeUs = timestamp
                             pTimer.record()
                             bufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-                            debug_i("Write ${bufferInfo.presentationTimeUs}")
                             onSampleListener?.onSample(this, bufferInfo, data)
                         }
                         // 一定要记得释放
