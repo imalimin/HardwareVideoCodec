@@ -16,6 +16,7 @@ import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
 import com.lmy.codec.util.debug_v
 import com.lmy.codec.wrapper.AudioRecordWrapper
 import java.nio.ByteBuffer
@@ -167,6 +168,7 @@ class AudioEncoderImpl(var context: CodecContext,
 //                            bufferInfo.presentationTimeUs = timestamp
                             pTimer.record()
                             bufferInfo.presentationTimeUs = pTimer.presentationTimeUs
+                            debug_i("Write ${bufferInfo.presentationTimeUs}")
                             onSampleListener?.onSample(this, bufferInfo, data)
                         }
                         // 一定要记得释放
@@ -221,24 +223,24 @@ class AudioEncoderImpl(var context: CodecContext,
 
     class PresentationTimer(var sampleRateInHz: Int,
                             var presentationTimeUs: Long = 0,
-                            private var timestamp: Long = 0) {
+                            var highPrecisionTimeUs: Double = 0.0,
+                            private var interval: Double = 0.0) {
+
+        init {
+            interval = 1000000000L / sampleRateInHz.toDouble()
+        }
 
         fun start() {
-            timestamp = 0
         }
 
         fun record() {
-            val timeTmp = System.nanoTime() / 1000
-            presentationTimeUs += if (0L != timestamp)
-                timeTmp - timestamp
-            else
-                1000000000L / sampleRateInHz
-            timestamp = timeTmp
+            highPrecisionTimeUs += interval
+            presentationTimeUs = highPrecisionTimeUs.toLong()
         }
 
         fun reset() {
             presentationTimeUs = 0
-            timestamp = 0
+            highPrecisionTimeUs = 0.0
         }
     }
 
