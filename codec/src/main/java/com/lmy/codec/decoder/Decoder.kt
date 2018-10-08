@@ -14,6 +14,6 @@ interface Decoder {
     fun release()
     fun post(event: Runnable)
     interface OnSampleListener {
-        fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer)
+        fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?)
     }
 }
