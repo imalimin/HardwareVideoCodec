@@ -17,7 +17,7 @@ class AudioDecoderImpl(val context: CodecContext,
                        private val track: Track,
                        private val forPlay: Boolean = false,
                        override val onSampleListener: Decoder.OnSampleListener? = null) : AudioDecoder {
-
+    override var onStateListener: Decoder.OnStateListener? = null
     private var pipeline: Pipeline? = EventPipeline.create("AudioDecoderPipeline")
     private var mDequeuePipeline: Pipeline? = EventPipeline.create("AudioDequeuePipeline")
     private var codec: MediaCodec? = null
@@ -121,6 +121,8 @@ class AudioDecoderImpl(val context: CodecContext,
 //            debug_i("next ${videoInfo.presentationTimeUs}")
                 if (!eos) {
                     next()
+                } else {
+                    onStateListener?.onEnd(this)
                 }
             }
         })
@@ -132,6 +134,7 @@ class AudioDecoderImpl(val context: CodecContext,
             return
         }
         starting = true
+        onStateListener?.onStart(this)
         next()
     }
 
@@ -141,6 +144,7 @@ class AudioDecoderImpl(val context: CodecContext,
             return
         }
         starting = false
+        onStateListener?.onPause(this)
     }
 
     override fun stop() {

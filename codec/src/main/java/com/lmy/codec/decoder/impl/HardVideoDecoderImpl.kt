@@ -14,7 +14,6 @@ import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import java.io.IOException
-import java.nio.ByteBuffer
 
 
 class HardVideoDecoderImpl(val context: CodecContext,
@@ -25,6 +24,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
                            private val forPlay: Boolean = false,
                            override val onSampleListener: Decoder.OnSampleListener? = null) : VideoDecoder,
         SurfaceTexture.OnFrameAvailableListener {
+    override var onStateListener: Decoder.OnStateListener? = null
     private var codec: MediaCodec? = null
     private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var starting = false
@@ -79,6 +79,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
                         if (size < 0) {
                             codec!!.queueInputBuffer(index, 0, 0, 0,
                                     MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            debug_e("eos!")
                             eos = true
                             starting = false
                         } else {
@@ -95,6 +96,8 @@ class HardVideoDecoderImpl(val context: CodecContext,
 //            debug_i("next ${videoInfo.presentationTimeUs}")
                 if (!eos) {
                     next()
+                } else {
+                    onStateListener?.onEnd(this)
                 }
             }
         }, delay)
@@ -122,6 +125,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
             return
         }
         starting = true
+        onStateListener?.onStart(this)
         next()
     }
 
@@ -130,6 +134,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
             debug_i("EOS!")
             return
         }
+        onStateListener?.onPause(this)
         starting = false
     }
 
