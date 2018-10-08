@@ -110,6 +110,10 @@ class AudioEncoderImpl(var context: CodecContext,
         mPipeline.queueEvent(Runnable { encode() })
     }
 
+    override fun setPresentationTime(nsecs: Long) {
+
+    }
+
     private fun encode() {
         try {
             val cache = mCache!!.take()

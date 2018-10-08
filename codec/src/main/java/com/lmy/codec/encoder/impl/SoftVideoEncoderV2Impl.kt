@@ -93,6 +93,9 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
         debug_e("Video encoder stop")
     }
 
+    override fun setPresentationTime(nsecs: Long) {
+
+    }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {

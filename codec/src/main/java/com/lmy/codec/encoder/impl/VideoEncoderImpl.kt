@@ -57,8 +57,8 @@ class VideoEncoderImpl(var context: CodecContext,
     private val mEncodingSyn = Any()
     private var mEncoding = false
     private var mFrameCount = 0
-
     private var onSampleListener: Encoder.OnSampleListener? = null
+    private var nsecs: Long = Long.MIN_VALUE
     override fun setOnSampleListener(listener: Encoder.OnSampleListener) {
         onSampleListener = listener
     }
@@ -104,6 +104,12 @@ class VideoEncoderImpl(var context: CodecContext,
         mPipeline.queueEvent(Runnable { encode() })
     }
 
+    override fun setPresentationTime(nsecs: Long) {
+        mPipeline.queueEvent(Runnable {
+            this.nsecs = nsecs
+        })
+    }
+
     private fun encode() {
         synchronized(mEncodingSyn) {
             pTimer.record()
@@ -112,6 +118,8 @@ class VideoEncoderImpl(var context: CodecContext,
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             codecWrapper?.draw(null)
+            codecWrapper?.egl?.setPresentationTime(if (Long.MIN_VALUE == nsecs)
+                nsecs else pTimer.presentationTimeUs)
             codecWrapper?.egl?.swapBuffers()
             mDequeuePipeline.queueEvent(Runnable { dequeue() })
         }
@@ -154,7 +162,7 @@ class VideoEncoderImpl(var context: CodecContext,
                                 ++mFrameCount
                                 buffer.position(mBufferInfo.offset)
                                 buffer.limit(mBufferInfo.offset + mBufferInfo.size)
-                                mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
+//                                mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
                                 onSampleListener?.onSample(this, mBufferInfo, buffer)
                                 onRecordListener?.onRecord(this, mBufferInfo.presentationTimeUs)
                             }
@@ -196,6 +204,7 @@ class VideoEncoderImpl(var context: CodecContext,
             //编码结束，发送结束信号，让surface不在提供数据
             codec!!.signalEndOfInputStream()
         }
+        this.nsecs = 0
         mFrameCount = 0
         codec!!.stop()
         codec!!.release()

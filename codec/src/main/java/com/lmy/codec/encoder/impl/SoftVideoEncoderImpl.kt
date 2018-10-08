@@ -87,6 +87,10 @@ class SoftVideoEncoderImpl(var context: CodecContext,
         reader?.start()
     }
 
+    override fun setPresentationTime(nsecs: Long) {
+
+    }
+
     private fun encode() {
         synchronized(mEncodingSyn) {
             if (reader == null || !mEncoding) return
