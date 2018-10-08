@@ -1,5 +1,6 @@
 package com.lmy.codec.decoder.impl
 
+import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
@@ -7,25 +8,32 @@ import android.view.Surface
 import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.decoder.VideoDecoder
 import com.lmy.codec.entity.CodecContext
+import com.lmy.codec.entity.Egl
 import com.lmy.codec.entity.Track
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.CameraTextureWrapper
 import java.io.IOException
+import java.nio.ByteBuffer
 
 
 class HardVideoDecoderImpl(val context: CodecContext,
                            private val track: Track,
-                           private val textureWrapper: CameraTextureWrapper,
+                           private val egl: Egl,
+                           private val surfaceTexture: SurfaceTexture,
                            private val pipeline: Pipeline,
                            private val forPlay: Boolean = false,
-                           override val onSampleListener: Decoder.OnSampleListener? = null) : VideoDecoder {
+                           override val onSampleListener: Decoder.OnSampleListener? = null) : VideoDecoder,
+        SurfaceTexture.OnFrameAvailableListener {
     private var codec: MediaCodec? = null
     private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var starting = false
     private var eos = false
     private var lastPts = 0L
+
+    override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
+
+    }
 
     override fun reset() {
         eos = false
@@ -33,10 +41,11 @@ class HardVideoDecoderImpl(val context: CodecContext,
     }
 
     override fun prepare() {
+        surfaceTexture.setOnFrameAvailableListener(this)
         pipeline?.queueEvent(Runnable {
             try {
                 codec = MediaCodec.createDecoderByType(track.format.getString(MediaFormat.KEY_MIME))
-                codec!!.configure(track.format, Surface(textureWrapper.surfaceTexture), null, 0)
+                codec!!.configure(track.format, Surface(surfaceTexture), null, 0)
             } catch (e: IOException) {
                 debug_e("Cannot open decoder")
                 return@Runnable
@@ -56,7 +65,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
             synchronized(this@HardVideoDecoderImpl) {
                 if (!starting) return@Runnable
                 val ttt = System.currentTimeMillis()
-                textureWrapper.egl?.makeCurrent()
+                egl.makeCurrent()
                 val index = codec!!.dequeueInputBuffer(WAIT_TIME)
                 if (index >= 0) {
                     val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -97,7 +106,10 @@ class HardVideoDecoderImpl(val context: CodecContext,
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> debug_i("INFO_OUTPUT_FORMAT_CHANGED")
             MediaCodec.INFO_TRY_AGAIN_LATER -> debug_i("INFO_TRY_AGAIN_LATER")
             MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> debug_i("INFO_OUTPUT_BUFFERS_CHANGED")
-            else -> codec!!.releaseOutputBuffer(index, true)
+            else -> {
+                onSampleListener?.onSample(this, bufferInfo, null)
+                codec!!.releaseOutputBuffer(index, true)
+            }
         }
         if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
             debug_i("buffer stream end")

@@ -26,14 +26,13 @@ import com.lmy.codec.wrapper.CameraTextureWrapper
 import java.io.IOException
 import java.nio.ByteBuffer
 
-class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableListener,
-        Decoder.OnSampleListener {
+class VideoPlayImpl(ctx: Context) : VideoPlay, Decoder.OnSampleListener {
 
     private var pipeline: Pipeline? = EventPipeline.create("VideoPlayImpl")
     private var textureWrapper: CameraTextureWrapper? = null
     private var context: CodecContext = CodecContext(ctx)
     private var render: Render? = null
-    private var decoder: Decoder? = null
+    private var videoDecoder: Decoder? = null
     private var audioDecoder: AudioDecoder? = null
     private var player: AudioPlayer? = null
     private var extractor: MediaExtractor? = null
@@ -43,9 +42,11 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     private var view: TextureView? = null
     private var filter: BaseFilter? = null
 
-    override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer) {
+    override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
-            player?.play(data, info.size)
+            player?.play(data!!, info.size)
+        } else if (decoder == this.videoDecoder) {
+            render?.onFrameAvailable()
         }
     }
 
@@ -58,7 +59,6 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     private fun updateTexture() {
         textureWrapper?.updateTexture()
         textureWrapper?.updateLocation(context)
-        textureWrapper?.surfaceTexture!!.setOnFrameAvailableListener(this)
     }
 
     private fun prepareWrapper() {
@@ -95,8 +95,9 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     }
 
     private fun prepareDecoder() {
-        decoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!, pipeline!!, true)
-        decoder?.prepare()
+        videoDecoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!.egl!!,
+                textureWrapper!!.surfaceTexture!!, pipeline!!, true, this)
+        videoDecoder?.prepare()
         if (null != audioTrack) {
             audioDecoder = AudioDecoderImpl(context, audioTrack!!, true, this)
             audioDecoder?.prepare()
@@ -113,7 +114,7 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
         prepareExtractor()
         prepareWrapper()
         prepareDecoder()
-        decoder!!.post(Runnable {
+        videoDecoder!!.post(Runnable {
             render = DefaultRenderImpl(context, textureWrapper!!, pipeline!!, filter)
             render?.start(texture, width, height)
             render?.updateSize(width, height)
@@ -156,27 +157,23 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
         }
     }
 
-    override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
-        render?.onFrameAvailable()
-    }
-
     override fun start() {
         pipeline?.queueEvent(Runnable {
-            decoder?.start()
+            videoDecoder?.start()
             audioDecoder?.start()
         })
     }
 
     override fun pause() {
         pipeline?.queueEvent(Runnable {
-            decoder?.pause()
+            videoDecoder?.pause()
             audioDecoder?.pause()
         })
     }
 
     override fun stop() {
         pipeline?.queueEvent(Runnable {
-            decoder?.stop()
+            videoDecoder?.stop()
             audioDecoder?.stop()
         })
     }
@@ -197,8 +194,8 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
         pipeline?.queueEvent(Runnable {
             textureWrapper?.release()
             textureWrapper = null
-            decoder?.release()
-            decoder = null
+            videoDecoder?.release()
+            videoDecoder = null
             audioDecoder?.release()
             audioDecoder = null
             extractor?.release()
