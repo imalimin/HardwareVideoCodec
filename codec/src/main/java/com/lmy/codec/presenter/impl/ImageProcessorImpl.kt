@@ -17,7 +17,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.SurfacePixelsReader
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
-import com.lmy.codec.presenter.ImageProcessor
+import com.lmy.codec.presenter.Processor
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
@@ -32,11 +32,11 @@ import javax.microedition.khronos.opengles.GL10
 /**
  * Created by lmyooyo@gmail.com on 2018/9/21.
  */
-class ImageProcessorImpl private constructor(ctx: Context) : ImageProcessor,
+class ImageProcessorImpl private constructor(ctx: Context) : Processor,
         SurfacePixelsReader.OnReadListener {
 
     companion object {
-        fun create(ctx: Context): ImageProcessor = ImageProcessorImpl(ctx)
+        fun create(ctx: Context): Processor = ImageProcessorImpl(ctx)
     }
 
     private val filterLock = Any()

@@ -12,7 +12,7 @@ import java.io.File
 /**
  * Created by lmyooyo@gmail.com on 2018/9/21.
  */
-interface ImageProcessor : FilterSupport {
+interface Processor : FilterSupport {
     fun prepare()
     fun setInputResource(file: File)
     fun setPreviewDisplay(view: TextureView)

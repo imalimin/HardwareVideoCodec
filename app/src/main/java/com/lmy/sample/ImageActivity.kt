@@ -16,7 +16,7 @@ import android.text.TextUtils
 import android.view.TextureView
 import android.widget.FrameLayout
 import android.widget.Toast
-import com.lmy.codec.presenter.ImageProcessor
+import com.lmy.codec.presenter.Processor
 import com.lmy.codec.presenter.impl.ImageProcessorImpl
 import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
@@ -26,7 +26,7 @@ import java.io.File
  * Created by lmyooyo@gmail.com on 2018/9/21.
  */
 class ImageActivity : BaseActivity() {
-    private var mProcessor: ImageProcessor? = null
+    private var mProcessor: Processor? = null
     private var mFilterController: FilterController? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
