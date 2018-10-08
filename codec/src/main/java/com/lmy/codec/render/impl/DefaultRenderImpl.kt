@@ -26,14 +26,14 @@ import com.lmy.codec.wrapper.ScreenTextureWrapper
 class DefaultRenderImpl(var context: CodecContext,
                         var cameraWrapper: CameraTextureWrapper,
                         private var pipeline: Pipeline,
-                        private var filter: BaseFilter? = null,
-                        var transformMatrix: FloatArray = FloatArray(16),
-                        var screenTexture: SurfaceTexture? = null,
-                        var screenWrapper: ScreenTextureWrapper? = null,
-                        var reader: PixelsReader? = null)
+                        private var filter: BaseFilter? = null)
     : Render, FpsMeasurer.OnUpdateListener {
 
     private val filterLock = Any()
+    private var transformMatrix: FloatArray = FloatArray(16)
+    private var screenTexture: SurfaceTexture? = null
+    private var screenWrapper: ScreenTextureWrapper? = null
+    private var reader: PixelsReader? = null
     private var width: Int = 0
     private var height: Int = 0
     private val videoMeasurer: FpsMeasurer = FpsMeasurer.create().apply {
@@ -71,7 +71,7 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     private fun initScreen() {
-        if (null == screenWrapper) {
+        if (null == screenWrapper && null != screenTexture) {
             screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
                     cameraWrapper.egl!!.eglContext!!)
         }
@@ -81,12 +81,12 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     override fun draw() {
-        if (null == screenWrapper) return
         videoMeasurer.end()
         videoMeasurer.start()
         renderMeasurer.start()
         drawCamera()
         drawFilter()
+        if (null == screenWrapper) return
         screenWrapper?.egl?.makeCurrent()
         GLES20.glViewport(0, 0, context.viewSize.width, context.viewSize.height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
@@ -123,7 +123,7 @@ class DefaultRenderImpl(var context: CodecContext,
         cameraWrapper.draw(transformMatrix)
     }
 
-    override fun start(texture: SurfaceTexture, width: Int, height: Int) {
+    override fun start(texture: SurfaceTexture?, width: Int, height: Int) {
         updateScreenTexture(texture)
         context.viewSize.width = width
         context.viewSize.height = height

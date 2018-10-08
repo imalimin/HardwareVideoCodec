@@ -15,7 +15,7 @@ import com.lmy.codec.presenter.FilterSupport
 interface Render : FilterSupport {
     fun onFrameAvailable()
     fun draw()
-    fun start(texture: SurfaceTexture, width: Int, height: Int)
+    fun start(texture: SurfaceTexture?, width: Int, height: Int)
     fun updateSize(width: Int, height: Int)
     fun stop()
     fun release()
