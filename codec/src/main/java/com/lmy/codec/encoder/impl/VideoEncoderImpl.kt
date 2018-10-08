@@ -106,7 +106,7 @@ class VideoEncoderImpl(var context: CodecContext,
 
     override fun setPresentationTime(nsecs: Long) {
         mPipeline.queueEvent(Runnable {
-            this.nsecs = nsecs
+            this.nsecs = nsecs * 1000
         })
     }
 
