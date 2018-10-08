@@ -118,7 +118,7 @@ class VideoEncoderImpl(var context: CodecContext,
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             codecWrapper?.draw(null)
-            codecWrapper?.egl?.setPresentationTime(if (Long.MIN_VALUE == nsecs)
+            codecWrapper?.egl?.setPresentationTime(if (Long.MIN_VALUE != nsecs)
                 nsecs else pTimer.presentationTimeUs)
             codecWrapper?.egl?.swapBuffers()
             mDequeuePipeline.queueEvent(Runnable { dequeue() })
@@ -204,7 +204,7 @@ class VideoEncoderImpl(var context: CodecContext,
             //编码结束，发送结束信号，让surface不在提供数据
             codec!!.signalEndOfInputStream()
         }
-        this.nsecs = 0
+        this.nsecs = Long.MIN_VALUE
         mFrameCount = 0
         codec!!.stop()
         codec!!.release()
