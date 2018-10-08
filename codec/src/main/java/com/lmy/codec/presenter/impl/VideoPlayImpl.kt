@@ -9,6 +9,7 @@ import android.media.MediaFormat
 import android.view.TextureView
 import com.lmy.codec.decoder.AudioDecoder
 import com.lmy.codec.decoder.Decoder
+import com.lmy.codec.decoder.VideoDecoder
 import com.lmy.codec.decoder.impl.AudioDecoderImpl
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
 import com.lmy.codec.entity.CodecContext
@@ -79,8 +80,8 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, Decoder.OnSampleListener {
         }
         videoTrack = Track.getVideoTrack(extractor!!)
         audioTrack = Track.getAudioTrack(audioExtractor!!)
-        context.orientation = if (videoTrack!!.format.containsKey(KEY_ROTATION))
-            videoTrack!!.format.getInteger(KEY_ROTATION) else 0
+        context.orientation = if (videoTrack!!.format.containsKey(VideoDecoder.KEY_ROTATION))
+            videoTrack!!.format.getInteger(VideoDecoder.KEY_ROTATION) else 0
         if (context.isHorizontal()) {
             context.video.width = videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH)
             context.video.height = videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT)
@@ -224,9 +225,5 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, Decoder.OnSampleListener {
         } else {
             render!!.getFilter()
         }
-    }
-
-    companion object {
-        private const val KEY_ROTATION = "rotation-degrees"
     }
 }
