@@ -19,9 +19,11 @@ import com.lmy.codec.helper.MuxerFactory
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
+import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.presenter.Processor
+import com.lmy.codec.render.Render
+import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
-import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
@@ -33,12 +35,13 @@ import java.nio.ByteBuffer
  * Created by lmyooyo@gmail.com on 2018/10/8.
  */
 class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.OnSampleListener,
-        Encoder.OnPreparedListener {
-    private val filterLock = Any()
+        Decoder.OnStateListener, Encoder.OnPreparedListener {
+
     private val context: CodecContext = CodecContext(ctx)
     private var filter: BaseFilter? = null
     private var pipeline: Pipeline? = EventPipeline.create("ImageProcessor")
     private var textureWrapper: CameraTextureWrapper? = null
+    private var render: Render? = null
     private var videoDecoder: VideoDecoder? = null
     private var audioDecoder: AudioDecoder? = null
     private var extractor: MediaExtractor? = null
@@ -48,12 +51,16 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     private var videoTrack: Track? = null
     private var audioTrack: Track? = null
     private var inputPath: String? = null
+    private var flag: BooleanArray = booleanArrayOf(false, false)
 
     override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
+            debug_i("Write ${info.presentationTimeUs}")
             muxer?.writeAudioSample(Sample.wrap(info, data!!))
         } else if (decoder == this.videoDecoder) {
-            debug_i("Write ${info.presentationTimeUs}")
+            debug_e("Write ${info.presentationTimeUs}")
+            render?.onFrameAvailable()
+            encoder?.setPresentationTime(info.presentationTimeUs)
             encoder?.onFrameAvailable(null)
         }
     }
@@ -144,15 +151,12 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     private fun prepareDecoder() {
         videoDecoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!.egl!!,
                 textureWrapper!!.surfaceTexture!!, pipeline!!, false, this)
+        videoDecoder?.onStateListener = this
         videoDecoder?.prepare()
-        initFilter(NormalFilter())
         if (null != audioTrack) {
             audioDecoder = AudioDecoderImpl(context, audioTrack!!, false, this)
+            audioDecoder?.onStateListener = this
             audioDecoder?.prepare()
-//            player = AudioPlayer(audioDecoder!!.getSampleRate(), when (audioDecoder!!.getChannel()) {
-//                2 -> AudioFormat.CHANNEL_OUT_STEREO
-//                else -> AudioFormat.CHANNEL_OUT_MONO
-//            }, AudioFormat.ENCODING_PCM_16BIT)
         } else {
             debug_i("No audio track")
         }
@@ -163,6 +167,11 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
             prepareExtractor()
             prepareWrapper()
             prepareDecoder()
+            videoDecoder!!.post(Runnable {
+                render = DefaultRenderImpl(context, textureWrapper!!, pipeline!!, filter)
+                render?.start(null, getWidth(), getHeight())
+                render?.updateSize(getWidth(), getHeight())
+            })
         })
     }
 
@@ -190,6 +199,8 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     override fun release() {
         muxer?.release()
         muxer = null
+        render?.release()
+        render = null
         pipeline?.queueEvent(Runnable {
             textureWrapper?.release()
             textureWrapper = null
@@ -203,36 +214,55 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
             audioExtractor = null
             encoder?.stop()
             encoder = null
+            GLEventPipeline.INSTANCE.quit()
         })
         pipeline?.quit()
         pipeline = null
         context.release()
     }
 
-    private fun initFilter(f: BaseFilter) {
-        synchronized(filterLock) {
-            textureWrapper!!.egl?.makeCurrent()
-            filter?.release()
-            filter = f
-            filter?.width = videoDecoder!!.getWidth()
-            filter?.height = videoDecoder!!.getHeight()
-            debug_i("Camera texture: ${textureWrapper!!.getFrameBuffer()[0]}, ${textureWrapper!!.getFrameBufferTexture()[0]}")
-            filter?.textureId = textureWrapper!!.getFrameBufferTexture()
-            filter?.init()
+    override fun setFilter(filter: BaseFilter) {
+        if (null == render) {
+            this.filter = filter
+        } else {
+            this.filter = null
+            render!!.setFilter(filter)
         }
     }
 
-    override fun setFilter(filter: BaseFilter) {
-        pipeline?.queueEvent(Runnable {
-            synchronized(filterLock) {
-                initFilter(filter)
-            }
-        })
+    override fun getFilter(): BaseFilter? {
+        return if (null == render) {
+            this.filter
+        } else {
+            render!!.getFilter()
+        }
     }
 
-    override fun getFilter(): BaseFilter? {
-        synchronized(filterLock) {
-            return filter
+    private fun getWidth(): Int {
+        return videoDecoder!!.getWidth()
+    }
+
+    private fun getHeight(): Int {
+        return videoDecoder!!.getHeight()
+    }
+
+    override fun onStart(decoder: Decoder) {
+
+    }
+
+    override fun onPause(decoder: Decoder) {
+
+    }
+
+    override fun onEnd(decoder: Decoder) {
+        if (decoder == videoDecoder) {
+            flag[0] = true
+        } else if (decoder == audioDecoder) {
+            flag[1] = true
+        }
+        if (flag[0] && flag[1]) {
+            muxer?.release()
+            muxer = null
         }
     }
 
