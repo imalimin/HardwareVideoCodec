@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.view.TextureView
@@ -15,6 +14,7 @@ import com.lmy.codec.presenter.Processor
 import com.lmy.codec.presenter.VideoPlay
 import com.lmy.codec.presenter.impl.VideoPlayImpl
 import com.lmy.codec.presenter.impl.VideoProcessorImpl
+import com.lmy.codec.texture.impl.filter.NatureFilter
 import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
 
@@ -60,12 +60,13 @@ class VideoActivity : BaseActivity() {
         mFilterController = FilterController(player!!, progressLayout)
         processor = VideoProcessorImpl.create(applicationContext)
         processor?.setInputResource(File(path!!))
+        processor?.setFilter(NatureFilter())
         processor?.prepare()
         effectBtn.setOnClickListener({
             mFilterController?.chooseFilter(this)
         })
         saveBtn.setOnClickListener {
-            val outputPath = "${Environment.getExternalStorageDirectory().absolutePath}/test_filter.mp4"
+            val outputPath = getOutputPath(path!!)
             processor?.save(outputPath, Runnable {
                 runOnUiThread {
                     Toast.makeText(this, "Saved to $outputPath", Toast.LENGTH_SHORT).show()
@@ -101,5 +102,9 @@ class VideoActivity : BaseActivity() {
             }
         }
         return data
+    }
+
+    private fun getOutputPath(input: String): String {
+        return "${input.substring(0, input.lastIndexOf("."))}_filter.mp4"
     }
 }
