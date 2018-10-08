@@ -18,11 +18,11 @@ class PresentationTimer(var fps: Int,
     }
 
     fun record() {
-        val timeTmp = System.nanoTime() / 1000
+        val timeTmp = System.nanoTime()
         presentationTimeUs += if (0L != timestamp)
             timeTmp - timestamp
         else
-            1000000L / fps
+            1000000000L / fps
         timestamp = timeTmp
     }
 
