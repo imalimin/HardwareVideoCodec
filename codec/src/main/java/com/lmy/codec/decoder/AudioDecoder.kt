@@ -1,15 +1,8 @@
 package com.lmy.codec.decoder
 
-import android.media.MediaCodec
-import java.nio.ByteBuffer
-
 interface AudioDecoder : Decoder {
-    val onSampleListener: OnSampleListener?
     fun getSampleRate(): Int
     fun getChannel(): Int
-    interface OnSampleListener {
-        fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer)
-    }
 
     companion object {
         val AAC_SAMPLING_FREQUENCIES = intArrayOf(

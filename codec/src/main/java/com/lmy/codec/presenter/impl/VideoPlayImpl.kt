@@ -2,14 +2,18 @@ package com.lmy.codec.presenter.impl
 
 import android.content.Context
 import android.graphics.SurfaceTexture
+import android.media.AudioFormat
+import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.view.TextureView
+import com.lmy.codec.decoder.AudioDecoder
 import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.decoder.impl.AudioDecoderImpl
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Track
+import com.lmy.codec.media.AudioPlayer
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.presenter.VideoPlay
@@ -20,20 +24,30 @@ import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import java.io.IOException
+import java.nio.ByteBuffer
 
-class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableListener {
+class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableListener,
+        Decoder.OnSampleListener {
+
     private var pipeline: Pipeline? = EventPipeline.create("VideoPlayImpl")
     private var textureWrapper: CameraTextureWrapper? = null
     private var context: CodecContext = CodecContext(ctx)
     private var render: Render? = null
     private var decoder: Decoder? = null
-    private var audioDecoder: Decoder? = null
+    private var audioDecoder: AudioDecoder? = null
+    private var player: AudioPlayer? = null
     private var extractor: MediaExtractor? = null
     private var audioExtractor: MediaExtractor? = null
     private var videoTrack: Track? = null
     private var audioTrack: Track? = null
     private var view: TextureView? = null
     private var filter: BaseFilter? = null
+
+    override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer) {
+        if (decoder == audioDecoder) {
+            player?.play(data, info.size)
+        }
+    }
 
     private fun check() {
         if (null == view) {
@@ -55,7 +69,7 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
 
     private fun prepareExtractor() {
         extractor = MediaExtractor()
-        audioExtractor=MediaExtractor()
+        audioExtractor = MediaExtractor()
         try {
             extractor?.setDataSource(context.ioContext.path)
             audioExtractor?.setDataSource(context.ioContext.path)
@@ -84,8 +98,12 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
         decoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!, pipeline!!, true)
         decoder?.prepare()
         if (null != audioTrack) {
-            audioDecoder = AudioDecoderImpl(context, audioTrack!!, true)
+            audioDecoder = AudioDecoderImpl(context, audioTrack!!, true, this)
             audioDecoder?.prepare()
+            player = AudioPlayer(audioDecoder!!.getSampleRate(), when (audioDecoder!!.getChannel()) {
+                2 -> AudioFormat.CHANNEL_OUT_STEREO
+                else -> AudioFormat.CHANNEL_OUT_MONO
+            }, AudioFormat.ENCODING_PCM_16BIT)
         } else {
             debug_i("No audio track")
         }
@@ -172,6 +190,8 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, SurfaceTexture.OnFrameAvailableLi
     }
 
     override fun release() {
+        player?.release()
+        player = null
         render?.release()
         render = null
         pipeline?.queueEvent(Runnable {

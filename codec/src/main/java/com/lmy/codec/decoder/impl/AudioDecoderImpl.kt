@@ -1,13 +1,12 @@
 package com.lmy.codec.decoder.impl
 
-import android.media.AudioFormat
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
 import com.lmy.codec.decoder.AudioDecoder
+import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Track
-import com.lmy.codec.media.AudioPlayer
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
@@ -17,7 +16,7 @@ import java.io.IOException
 class AudioDecoderImpl(val context: CodecContext,
                        private val track: Track,
                        private val forPlay: Boolean = false,
-                       override val onSampleListener: AudioDecoder.OnSampleListener? = null) : AudioDecoder {
+                       override val onSampleListener: Decoder.OnSampleListener? = null) : AudioDecoder {
 
     private var pipeline: Pipeline? = EventPipeline.create("AudioDecoderPipeline")
     private var mDequeuePipeline: Pipeline? = EventPipeline.create("AudioDequeuePipeline")
@@ -26,7 +25,6 @@ class AudioDecoderImpl(val context: CodecContext,
     private var starting = false
     private var eos = false
     private var lastPts = 0L
-    private var player: AudioPlayer? = null
 
     override fun reset() {
         eos = false
@@ -37,10 +35,6 @@ class AudioDecoderImpl(val context: CodecContext,
         pipeline?.queueEvent(Runnable {
             debug_i("AudioDecoder channel=${getChannel()}")
             debug_i("AudioDecoder ${track.format}")
-            player = AudioPlayer(getSampleRate(), when (getChannel()) {
-                2 -> AudioFormat.CHANNEL_OUT_STEREO
-                else -> AudioFormat.CHANNEL_OUT_MONO
-            }, AudioFormat.ENCODING_PCM_16BIT)
             try {
                 codec = MediaCodec.createDecoderByType(track.format.getString(MediaFormat.KEY_MIME))
                 codec!!.configure(track.format, null, null, 0)
@@ -75,7 +69,6 @@ class AudioDecoderImpl(val context: CodecContext,
                         } else {
                             codec!!.outputBuffers[index]
                         }
-                        player?.play(buffer, bufferInfo.size)
                         onSampleListener?.onSample(this@AudioDecoderImpl, bufferInfo, buffer)
                         buffer.clear()
                         codec!!.releaseOutputBuffer(index, false)
@@ -152,8 +145,6 @@ class AudioDecoderImpl(val context: CodecContext,
 
     override fun stop() {
         pause()
-        player?.release()
-        player = null
         pipeline?.queueEvent(Runnable {
             codec?.stop()
             codec?.release()

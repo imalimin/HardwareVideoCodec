@@ -4,6 +4,7 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
 import android.view.Surface
+import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.decoder.VideoDecoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Track
@@ -18,7 +19,8 @@ class HardVideoDecoderImpl(val context: CodecContext,
                            private val track: Track,
                            private val textureWrapper: CameraTextureWrapper,
                            private val pipeline: Pipeline,
-                           private val forPlay: Boolean = false) : VideoDecoder {
+                           private val forPlay: Boolean = false,
+                           override val onSampleListener: Decoder.OnSampleListener? = null) : VideoDecoder {
     private var codec: MediaCodec? = null
     private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var starting = false
