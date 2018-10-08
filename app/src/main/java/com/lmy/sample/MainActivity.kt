@@ -128,6 +128,7 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
             object : VideoRecorder.OnStateListener {
                 override fun onError(error: Int, msg: String) {
                     AlertDialog.Builder(this@MainActivity)
+                            .setCancelable(true)
                             .setTitle("ERROR")
                             .setMessage(msg).show()
                 }
