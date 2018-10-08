@@ -44,7 +44,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
 
     override fun onSample(info: MediaCodec.BufferInfo, data: ByteBuffer) {
         pTimer.record()
-        info.presentationTimeUs = pTimer.presentationTimeUs
+        info.presentationTimeUs = pTimer.presentationTimeUs / 1000
         onSampleListener?.onSample(this, info, data)
         onRecordListener?.onRecord(this, info.presentationTimeUs)
     }
