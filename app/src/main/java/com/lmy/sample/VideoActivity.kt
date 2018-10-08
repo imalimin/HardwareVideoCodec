@@ -5,18 +5,22 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.view.TextureView
 import android.widget.FrameLayout
 import android.widget.Toast
+import com.lmy.codec.presenter.Processor
 import com.lmy.codec.presenter.VideoPlay
 import com.lmy.codec.presenter.impl.VideoPlayImpl
+import com.lmy.codec.presenter.impl.VideoProcessorImpl
 import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
 
 class VideoActivity : BaseActivity() {
     private var player: VideoPlay? = null
+    private var processor: Processor? = null
     private var mFilterController: FilterController? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,17 +58,26 @@ class VideoActivity : BaseActivity() {
         }
         player?.start()
         mFilterController = FilterController(player!!, progressLayout)
+        processor = VideoProcessorImpl.create(applicationContext)
+        processor?.setInputResource(File(path!!))
+        processor?.prepare()
         effectBtn.setOnClickListener({
             mFilterController?.chooseFilter(this)
         })
         saveBtn.setOnClickListener {
-            //TODO
+            val outputPath = "${Environment.getExternalStorageDirectory().absolutePath}/test_filter.mp4"
+            processor?.save(outputPath, Runnable {
+                runOnUiThread {
+                    Toast.makeText(this, "Saved to $outputPath", Toast.LENGTH_SHORT).show()
+                }
+            })
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         player?.release()
+        processor?.release()
     }
 
     private fun getRealFilePath(context: Context, uri: Uri?): String? {
