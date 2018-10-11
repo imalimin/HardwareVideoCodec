@@ -27,8 +27,8 @@ SET(CMAKE_FIND_ROOT_PATH  /home/lmy/android/android-ndk-r14b/toolchains/my/arm-l
 
 4. ./make-Makefiles.bash
 
-5. LIBDL /home/lmy/android/android-ndk-r14b/platforms/android-19/arch-arm/usr/lib/libdl.so
-or LIBDL /home/lmy/android/android-ndk-r14b/platforms/android-19/arch-x86/usr/lib/libdl.so
+5. LIBDL /home/lmy/android/android-ndk-r14b/toolchains/my/arm-linux-androideabi-4.9/sysroot/usr/lib/libdl.so
+or LIBDL /home/lmy/android/android-ndk-r14b/toolchains/my/x86-4.9/sysroot/usr/lib/libdl.so
 configure
 
 6. make clean
