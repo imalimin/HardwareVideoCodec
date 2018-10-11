@@ -1,6 +1,9 @@
 1. 安装工具
 sudo apt-get install cmake
 sudo apt-get install cmake-curses-gui
+sudo apt-get install numactl
+sudo apt-get install libnuma-dev
+
 2. 生成新的工具链
 cd ~/android/android-ndk-r14b/build/tools
 arm: ./make-standalone-toolchain.sh --force --platform=android-19 --toolchain=arm-linux-androideabi-4.9 --install-dir=/home/lmy/android/android-ndk-r14b/toolchains/my/arm-linux-androideabi-4.9/
@@ -23,3 +26,10 @@ set(CMAKE_CXX_COMPILER /home/lmy/android/android-ndk-r14b/toolchains/my/arm-linu
 SET(CMAKE_FIND_ROOT_PATH  /home/lmy/android/android-ndk-r14b/toolchains/my/arm-linux-androideabi-4.9/bin/)
 
 4. ./make-Makefiles.bash
+
+5. LIBDL /home/lmy/android/android-ndk-r14b/platforms/android-19/arch-arm/usr/lib/libdl.so
+or LIBDL /home/lmy/android/android-ndk-r14b/platforms/android-19/arch-x86/usr/lib/libdl.so
+configure
+
+6. make clean
+make -j4
