@@ -13,3 +13,4 @@ set(CMAKE_CXX_COMPILER /home/lmy/android/android-ndk-r14b/toolchains/my/x86-4.9/
 
 # specify the target environment
 SET(CMAKE_FIND_ROOT_PATH  /home/lmy/android/android-ndk-r14b/toolchains/my/x86-4.9/bin/)
+set(CMAKE_SYSROOT /home/lmy/android/android-ndk-r14b/toolchains/my/x86-4.9/sysroot)

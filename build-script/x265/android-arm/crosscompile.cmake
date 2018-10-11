@@ -5,11 +5,12 @@
 
 set(CROSS_COMPILE_ARM 1)
 set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR armv7a)
+set(CMAKE_SYSTEM_PROCESSOR armv6l)
 
 # specify the cross compiler
-set(CMAKE_C_COMPILER /home/lmy/android/android-ndk-r14b/toolchains/my/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-gcc)
-set(CMAKE_CXX_COMPILER /home/lmy/android/android-ndk-r14b/toolchains/my/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-g++)
+set(CMAKE_C_COMPILER arm-linux-androideabi-gcc)
+set(CMAKE_CXX_COMPILER arm-linux-androideabi-g++)
 
 # specify the target environment
 SET(CMAKE_FIND_ROOT_PATH  /home/lmy/android/android-ndk-r14b/toolchains/my/arm-linux-androideabi-4.9/bin/)
+set(CMAKE_SYSROOT /home/lmy/android/android-ndk-r14b/toolchains/my/arm-linux-androideabi-4.9/sysroot)
