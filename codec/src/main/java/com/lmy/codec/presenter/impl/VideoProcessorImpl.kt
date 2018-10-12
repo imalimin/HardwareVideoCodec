@@ -55,10 +55,10 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
 
     override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
-            debug_i("Write ${info.presentationTimeUs}")
+//            debug_i("Write ${info.presentationTimeUs}")
             muxer?.writeAudioSample(Sample.wrap(info, data!!))
         } else if (decoder == this.videoDecoder) {
-            debug_e("Write ${info.presentationTimeUs}")
+//            debug_e("Write ${info.presentationTimeUs}")
             render?.onFrameAvailable()
             encoder?.setPresentationTime(info.presentationTimeUs)
             encoder?.onFrameAvailable(null)
@@ -107,7 +107,9 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
         } else {
             muxer?.reset()
         }
-        muxer?.addAudioTrack(audioTrack!!.format)
+        if (null != audioDecoder) {
+            muxer?.addAudioTrack(audioTrack!!.format)
+        }
     }
 
     private fun updateTexture() {
