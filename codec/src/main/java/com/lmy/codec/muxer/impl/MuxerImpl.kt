@@ -15,6 +15,7 @@ import com.lmy.codec.entity.Sample
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
+import com.lmy.codec.util.debug_i
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.*
@@ -104,6 +105,7 @@ class MuxerImpl(var path: String,
     override fun addAudioTrack(format: MediaFormat) {
         try {
             audioTrack = muxer!!.addTrack(format)
+            debug_i("addAudioTrack ${format.getByteBuffer("csd-0").capacity()}")
         } catch (e: Exception) {
             debug_e("Add audio track failed")
             onMuxerListener?.onError(ERROR_ADD_TRACK, "Add audio track failed")
@@ -116,6 +118,7 @@ class MuxerImpl(var path: String,
 
     override fun writeVideoSample(sample: Sample) {
         if (!mStart) return
+        debug_e("writeVideoSample ${sample.bufferInfo.presentationTimeUs}")
         ++mFrameCount
         synchronized(mWriteSyn) {
             mQueue.push(sample)
@@ -131,6 +134,7 @@ class MuxerImpl(var path: String,
 
     override fun writeAudioSample(sample: Sample) {
         if (!mStart) return
+        debug_i("writeAudioSample ${sample.bufferInfo.presentationTimeUs}")
         mAudioPipeline.queueEvent(Runnable {
             writeSample(audioTrack, sample)
         })
