@@ -30,6 +30,8 @@ class DefaultRenderImpl(var context: CodecContext,
     : Render, FpsMeasurer.OnUpdateListener {
 
     private val filterLock = Any()
+    private val outputFrameBuffer = IntArray(1)
+    private val outputFrameBufferTexture = IntArray(1)
     private var transformMatrix: FloatArray = FloatArray(16)
     private var screenTexture: SurfaceTexture? = null
     private var screenWrapper: ScreenTextureWrapper? = null
@@ -55,11 +57,14 @@ class DefaultRenderImpl(var context: CodecContext,
             cameraWrapper.egl?.makeCurrent()
             filter?.release()
             filter = f
-            filter?.width = this.width
-            filter?.height = this.height
-            debug_i("Camera texture: ${cameraWrapper.getFrameBuffer()[0]}, ${cameraWrapper.getFrameBufferTexture()[0]}")
-            filter?.textureId = cameraWrapper.getFrameBufferTexture()
-            filter?.init()
+            filter!!.width = this.width
+            filter!!.height = this.height
+            debug_i("Camera texture: ${cameraWrapper.getFrameBuffer()[0]}," +
+                    " ${cameraWrapper.getFrameBufferTexture()[0]}")
+            filter!!.textureId = cameraWrapper.getFrameBufferTexture()
+            filter!!.init()
+            outputFrameBuffer[0] = filter!!.frameBuffer[0]
+            outputFrameBufferTexture[0] = filter!!.frameBufferTexture[0]
         }
         initScreen()
     }
@@ -190,17 +195,15 @@ class DefaultRenderImpl(var context: CodecContext,
 
     override fun getFrameBuffer(): IntArray {
         synchronized(filterLock) {
-            if (null != filter) return filter!!.frameBuffer
+            return outputFrameBuffer
         }
-        return cameraWrapper.getFrameBuffer()
 
     }
 
     override fun getFrameBufferTexture(): IntArray {
         synchronized(filterLock) {
-            if (null != filter) return filter!!.frameBufferTexture
+            return outputFrameBufferTexture
         }
-        return cameraWrapper.getFrameBufferTexture()
     }
 
     override fun onUpdate(measurer: FpsMeasurer, fps: Float) {
