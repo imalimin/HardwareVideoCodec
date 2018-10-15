@@ -12,8 +12,8 @@ import java.io.IOException
  */
 class VideoExtractor(private val context: CodecContext,
                      private val inputPath: String) {
-    private var extractor: MediaExtractor? = null
-    private var audioExtractor: MediaExtractor? = null
+    private val videoExtractor = MediaExtractor()
+    private val audioExtractor = MediaExtractor()
     private var videoTrack: Track? = null
     private var audioTrack: Track? = null
 
@@ -22,17 +22,15 @@ class VideoExtractor(private val context: CodecContext,
     }
 
     private fun prepareExtractor() {
-        extractor = MediaExtractor()
-        audioExtractor = MediaExtractor()
         try {
-            extractor?.setDataSource(this.inputPath)
-            audioExtractor?.setDataSource(this.inputPath)
+            videoExtractor.setDataSource(this.inputPath)
+            audioExtractor.setDataSource(this.inputPath)
         } catch (e: IOException) {
             debug_e("File(${context.ioContext.path}) not found")
             return
         }
-        videoTrack = Track.getVideoTrack(extractor!!)
-        audioTrack = Track.getAudioTrack(audioExtractor!!)
+        videoTrack = Track.getVideoTrack(videoExtractor)
+        audioTrack = Track.getAudioTrack(audioExtractor)
         context.orientation = if (videoTrack!!.format.containsKey(VideoDecoder.KEY_ROTATION))
             videoTrack!!.format.getInteger(VideoDecoder.KEY_ROTATION) else 0
         if (context.isHorizontal()) {
@@ -48,6 +46,22 @@ class VideoExtractor(private val context: CodecContext,
         }
     }
 
+    fun seekTo(startUs: Long) {
+        synchronized(videoExtractor) {
+            videoExtractor.seekTo(startUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+        }
+        synchronized(audioExtractor) {
+            videoExtractor.seekTo(startUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+        }
+    }
+
+    fun range(startUs: Long, endUs: Long) {
+        if (startUs >= endUs) {
+            throw RuntimeException("endUs cannot smaller than startUs")
+        }
+        seekTo(startUs)
+    }
+
     fun getVideoTrack(): Track? {
         return videoTrack
     }
@@ -61,10 +75,8 @@ class VideoExtractor(private val context: CodecContext,
     }
 
     fun release() {
-        extractor?.release()
-        extractor = null
-        audioExtractor?.release()
-        audioExtractor = null
+        videoExtractor.release()
+        audioExtractor.release()
         videoTrack = null
         audioTrack = null
     }
