@@ -90,7 +90,7 @@ class RecordPresenter(var context: CodecContext,
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
         if (null != onStateListener)
             setOnStateListener(onStateListener!!)
-        audioEncoder = AudioEncoderImpl(context)
+        audioEncoder = AudioEncoderImpl.fromDevice(context)
         if (null != muxer) {
             encoder!!.setOnSampleListener(muxer!!)
             audioEncoder!!.setOnSampleListener(muxer!!)

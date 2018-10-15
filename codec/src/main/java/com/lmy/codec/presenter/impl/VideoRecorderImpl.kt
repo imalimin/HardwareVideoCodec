@@ -250,7 +250,7 @@ class VideoRecorderImpl(ctx: Context,
                 .build()
         if (null != muxer)
             encoder?.setOnSampleListener(muxer!!)
-        audioEncoder = AudioEncoderImpl(context).apply {
+        audioEncoder = AudioEncoderImpl.fromDevice(context).apply {
             if (null != muxer)
                 setOnSampleListener(muxer!!)
         }
