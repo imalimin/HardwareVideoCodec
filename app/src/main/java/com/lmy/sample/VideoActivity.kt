@@ -67,6 +67,7 @@ class VideoActivity : BaseActivity() {
             mFilterController?.chooseFilter(this)
         })
         saveBtn.setOnClickListener {
+            Toast.makeText(this, "Rendering", Toast.LENGTH_SHORT).show()
             val outputPath = getOutputPath(path!!)
             processor?.save(outputPath, Runnable {
                 runOnUiThread {
