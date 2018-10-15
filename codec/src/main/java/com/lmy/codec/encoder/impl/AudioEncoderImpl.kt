@@ -98,17 +98,20 @@ class AudioEncoderImpl private constructor(var context: CodecContext,
 
     override fun getOutputFormat(): MediaFormat {
         mPipeline.queueEvent(Runnable {
-            val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
-            if (MediaCodec.INFO_OUTPUT_FORMAT_CHANGED != index) {
-                getOutputFormat()
-            } else {
-                synchronized(outputFormatLock) {
-                    outputFormatLock.notifyAll()
-                }
+            var index = 0
+            while (MediaCodec.INFO_OUTPUT_FORMAT_CHANGED != index) {
+                index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
+            }
+            synchronized(outputFormatLock) {
+                outputFormatLock.notifyAll()
             }
         })
         synchronized(outputFormatLock) {
-            outputFormatLock.wait()
+            try {
+                outputFormatLock.wait()
+            } catch (e: InterruptedException) {
+
+            }
         }
         return codec!!.outputFormat
     }
