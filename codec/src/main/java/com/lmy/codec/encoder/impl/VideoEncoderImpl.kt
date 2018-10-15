@@ -31,18 +31,20 @@ class VideoEncoderImpl(var context: CodecContext,
                        private var textureId: IntArray,
                        private var eglContext: EGLContext,
                        override var onPreparedListener: Encoder.OnPreparedListener? = null,
-                       asyn: Boolean = false,
-                       var codecWrapper: CodecTextureWrapper? = null,
-                       private var codec: MediaCodec? = null,
-                       private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
-                       private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
-                       override var onRecordListener: Encoder.OnRecordListener? = null)
+                       asyn: Boolean = false)
     : Encoder {
 
     companion object {
         private val WAIT_TIME = 10000L
     }
 
+    private val outputFormatLock = Object()
+    private val bufferInfo = MediaCodec.BufferInfo()
+    private var codecWrapper: CodecTextureWrapper? = null
+    private var codec: MediaCodec? = null
+    private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
+    private var pTimer: PresentationTimer = PresentationTimer(context.video.fps)
+    override var onRecordListener: Encoder.OnRecordListener? = null
     private lateinit var format: MediaFormat
     private var mPipeline: Pipeline = if (asyn) {
         EventPipeline.create("VideoEncodePipeline")
@@ -97,6 +99,23 @@ class VideoEncoderImpl(var context: CodecContext,
         codecWrapper?.egl?.makeCurrent()
         codec!!.start()
         onPreparedListener?.onPrepared(this)
+    }
+
+    override fun getOutputFormat(): MediaFormat {
+        mPipeline.queueEvent(Runnable {
+            val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
+            if (MediaCodec.INFO_OUTPUT_FORMAT_CHANGED != index) {
+                getOutputFormat()
+            } else {
+                synchronized(outputFormatLock) {
+                    outputFormatLock.notifyAll()
+                }
+            }
+        })
+        synchronized(outputFormatLock) {
+            outputFormatLock.wait()
+        }
+        return codec!!.outputFormat
     }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {

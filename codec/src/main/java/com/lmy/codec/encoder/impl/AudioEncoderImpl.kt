@@ -40,14 +40,15 @@ class AudioEncoderImpl private constructor(var context: CodecContext,
         }
     }
 
-    private var audioWrapper: AudioRecordWrapper? = null
-    private var codec: MediaCodec? = null
-    var inputBuffers: Array<ByteBuffer>? = null
-    var outputBuffers: Array<ByteBuffer>? = null
-    private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
-    private var pTimer: PresentationTimer = PresentationTimer(context.audio.sampleRateInHz)
     override var onPreparedListener: Encoder.OnPreparedListener? = null
     override var onRecordListener: Encoder.OnRecordListener? = null
+    private val outputFormatLock = Object()
+    private var audioWrapper: AudioRecordWrapper? = null
+    private var codec: MediaCodec? = null
+    private var inputBuffers: Array<ByteBuffer>? = null
+    private var outputBuffers: Array<ByteBuffer>? = null
+    private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
+    private var pTimer: PresentationTimer = PresentationTimer(context.audio.sampleRateInHz)
     private lateinit var format: MediaFormat
     private var mPipeline = EventPipeline.create("AudioEncodePipeline")
     private var mDequeuePipeline = EventPipeline.create("AudioDequeuePipeline")
@@ -93,6 +94,23 @@ class AudioEncoderImpl private constructor(var context: CodecContext,
         codec?.start()
         mCache = Cache(5, bufferSize)
         mCache?.ready()
+    }
+
+    override fun getOutputFormat(): MediaFormat {
+        mPipeline.queueEvent(Runnable {
+            val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
+            if (MediaCodec.INFO_OUTPUT_FORMAT_CHANGED != index) {
+                getOutputFormat()
+            } else {
+                synchronized(outputFormatLock) {
+                    outputFormatLock.notifyAll()
+                }
+            }
+        })
+        synchronized(outputFormatLock) {
+            outputFormatLock.wait()
+        }
+        return codec!!.outputFormat
     }
 
     private val looper = Runnable {

@@ -37,6 +37,9 @@ class SoftVideoEncoderImpl(var context: CodecContext,
                            private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
                            override var onRecordListener: Encoder.OnRecordListener? = null)
     : Encoder, CacheX264Encoder.OnSampleListener {
+    override fun getOutputFormat(): MediaFormat {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     override fun onFormatChanged(format: MediaFormat) {
         onSampleListener?.onFormatChanged(this, format)

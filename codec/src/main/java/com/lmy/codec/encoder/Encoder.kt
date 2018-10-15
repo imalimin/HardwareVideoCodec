@@ -26,6 +26,7 @@ interface Encoder : SurfaceTexture.OnFrameAvailableListener {
     fun stop()
     fun setOnSampleListener(listener: OnSampleListener)
     fun setPresentationTime(nsecs: Long)
+    fun getOutputFormat(): MediaFormat
 
     interface OnSampleListener {
         fun onFormatChanged(encoder: Encoder, format: MediaFormat)
