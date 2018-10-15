@@ -59,6 +59,7 @@ class VideoActivity : BaseActivity() {
         player?.start()
         mFilterController = FilterController(player!!, progressLayout)
         processor = VideoProcessorImpl.create(applicationContext)
+        processor?.reset()
         processor?.setInputResource(File(path!!))
         processor?.setFilter(NatureFilter())
         processor?.prepare()
