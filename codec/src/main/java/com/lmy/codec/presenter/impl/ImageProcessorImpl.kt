@@ -34,6 +34,9 @@ import javax.microedition.khronos.opengles.GL10
  */
 class ImageProcessorImpl private constructor(ctx: Context) : Processor,
         SurfacePixelsReader.OnReadListener {
+    override fun reset() {
+
+    }
 
     companion object {
         fun create(ctx: Context): Processor = ImageProcessorImpl(ctx)

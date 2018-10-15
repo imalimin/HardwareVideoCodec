@@ -2,19 +2,19 @@ package com.lmy.codec.presenter.impl
 
 import android.content.Context
 import android.media.MediaCodec
-import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.os.Build
+import android.text.TextUtils
 import android.view.TextureView
 import com.lmy.codec.decoder.AudioDecoder
 import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.decoder.VideoDecoder
+import com.lmy.codec.decoder.VideoExtractor
 import com.lmy.codec.decoder.impl.AudioDecoderImpl
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
 import com.lmy.codec.encoder.Encoder
+import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.entity.Sample
-import com.lmy.codec.entity.Track
 import com.lmy.codec.helper.MuxerFactory
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.Pipeline
@@ -28,7 +28,6 @@ import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import java.io.File
-import java.io.IOException
 import java.nio.ByteBuffer
 
 /**
@@ -42,58 +41,96 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     private var pipeline: Pipeline? = EventPipeline.create("ImageProcessor")
     private var textureWrapper: CameraTextureWrapper? = null
     private var render: Render? = null
+    private var extractor: VideoExtractor? = null
     private var videoDecoder: VideoDecoder? = null
     private var audioDecoder: AudioDecoder? = null
-    private var extractor: MediaExtractor? = null
-    private var audioExtractor: MediaExtractor? = null
-    private var encoder: Encoder? = null
+    private var videoEncoder: Encoder? = null
+    private var audioEncoder: Encoder? = null
     private var muxer: Muxer? = null
-    private var videoTrack: Track? = null
-    private var audioTrack: Track? = null
     private var inputPath: String? = null
     private var flag: BooleanArray = booleanArrayOf(false, false)
+    private var audioSample: ByteArray? = null
+    private var endEvent: Runnable? = null
 
     override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
-//            debug_i("Write ${info.presentationTimeUs}")
-            muxer?.writeAudioSample(Sample.wrap(info, data!!))
+//            debug_i("Write data size ${info.size}")
+//            muxer?.writeAudioSample(Sample.wrap(info, data!!))
+            if (null != data) {
+                data.get(audioSample)
+                data.rewind()
+                (audioEncoder as AudioEncoderImpl).onPCMSample(audioSample!!)
+            }
         } else if (decoder == this.videoDecoder) {
 //            debug_e("Write ${info.presentationTimeUs}")
             render?.onFrameAvailable()
-            encoder?.setPresentationTime(info.presentationTimeUs)
-            encoder?.onFrameAvailable(null)
+            videoEncoder?.setPresentationTime(info.presentationTimeUs)
+            videoEncoder?.onFrameAvailable(null)
         }
+    }
+
+    override fun reset() {
+        stop()
     }
 
     override fun onPrepared(encoder: Encoder) {
-        encoder.start()
-        videoDecoder?.start()
-        audioDecoder?.start()
+        pipeline?.queueEvent(Runnable {
+            videoEncoder?.start()
+            audioEncoder?.start()
+            videoDecoder?.start()
+            audioDecoder?.start()
+        })
     }
 
-    private fun prepareEncoder() {
+    private fun prepareAudioEncoder() {
+        if (null == audioDecoder) return
+        context.audio.mime = extractor!!.getAudioTrack()!!.format.getString(MediaFormat.KEY_MIME)
+        context.audio.channel = audioDecoder!!.getChannel()
+        context.audio.sampleRateInHz = audioDecoder!!.getSampleRate()
+        if (extractor!!.getAudioTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE))
+            context.audio.bitrate = extractor!!.getAudioTrack()!!
+                    .format.getInteger(MediaFormat.KEY_BIT_RATE)
+        if (extractor!!.getAudioTrack()!!.format.containsKey(MediaFormat.KEY_AAC_PROFILE))
+            context.audio.profile = extractor!!.getAudioTrack()!!
+                    .format.getInteger(MediaFormat.KEY_AAC_PROFILE)
+        audioSample = ByteArray(audioDecoder!!.getSampleSize())
+        debug_i("audioSample=${audioSample!!.size}")
+        audioEncoder = AudioEncoderImpl.fromArray(context, audioSample!!.size)
+        if (null != muxer) {
+            muxer!!.addAudioTrack(audioEncoder!!.getOutputFormat())
+            audioEncoder?.setOnSampleListener(muxer!!)
+        }
+    }
+
+    private fun prepareVideoEncoder() {
         context.video.width = videoDecoder!!.getWidth()
         context.video.height = videoDecoder!!.getHeight()
-        if (videoTrack!!.format.containsKey(MediaFormat.KEY_FRAME_RATE))
-            context.video.fps = videoTrack!!.format.getInteger(MediaFormat.KEY_FRAME_RATE)
-        if (videoTrack!!.format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL))
-            context.video.iFrameInterval = videoTrack!!.format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)
-        if (videoTrack!!.format.containsKey(MediaFormat.KEY_BIT_RATE))
-            context.video.bitrate = videoTrack!!.format.getInteger(MediaFormat.KEY_BIT_RATE)
+        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_FRAME_RATE))
+            context.video.fps = extractor!!.getVideoTrack()!!
+                    .format.getInteger(MediaFormat.KEY_FRAME_RATE)
+        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL))
+            context.video.iFrameInterval = extractor!!.getVideoTrack()!!
+                    .format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)
+        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE))
+            context.video.bitrate = extractor!!.getVideoTrack()!!
+                    .format.getInteger(MediaFormat.KEY_BIT_RATE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && videoTrack!!.format.containsKey(MediaFormat.KEY_PROFILE)) {
-            context.video.profile = videoTrack!!.format.getInteger(MediaFormat.KEY_PROFILE)
+                && extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_PROFILE)) {
+            context.video.profile = extractor!!.getVideoTrack()!!
+                    .format.getInteger(MediaFormat.KEY_PROFILE)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && videoTrack!!.format.containsKey(MediaFormat.KEY_LEVEL)) {
-            context.video.level = videoTrack!!.format.getInteger(MediaFormat.KEY_LEVEL)
+                && extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_LEVEL)) {
+            context.video.level = extractor!!.getVideoTrack()!!
+                    .format.getInteger(MediaFormat.KEY_LEVEL)
         }
-        encoder = Encoder.Builder(context, filter!!.frameBufferTexture,
+        videoEncoder = Encoder.Builder(context, filter!!.frameBufferTexture,
                 textureWrapper!!.egl!!.eglContext!!)
                 .setOnPreparedListener(this)
                 .build()
-        if (null != muxer)
-            encoder?.setOnSampleListener(muxer!!)
+        if (null != muxer) {
+            videoEncoder?.setOnSampleListener(muxer!!)
+        }
     }
 
     private fun prepareMuxer() {
@@ -106,9 +143,6 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
             }
         } else {
             muxer?.reset()
-        }
-        if (null != audioDecoder) {
-            muxer?.addAudioTrack(audioTrack!!.format)
         }
     }
 
@@ -123,40 +157,13 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
         updateTexture()
     }
 
-    private fun prepareExtractor() {
-        extractor = MediaExtractor()
-        audioExtractor = MediaExtractor()
-        try {
-            extractor?.setDataSource(this.inputPath)
-            audioExtractor?.setDataSource(this.inputPath)
-        } catch (e: IOException) {
-            debug_e("File(${context.ioContext.path}) not found")
-            return
-        }
-        videoTrack = Track.getVideoTrack(extractor!!)
-        audioTrack = Track.getAudioTrack(audioExtractor!!)
-        context.orientation = if (videoTrack!!.format.containsKey(VideoDecoder.KEY_ROTATION))
-            videoTrack!!.format.getInteger(VideoDecoder.KEY_ROTATION) else 0
-        if (context.isHorizontal()) {
-            context.video.width = videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH)
-            context.video.height = videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT)
-            context.cameraSize.width = context.video.width
-            context.cameraSize.height = context.video.height
-        } else {
-            context.video.width = videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT)
-            context.video.height = videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH)
-            context.cameraSize.width = context.video.height
-            context.cameraSize.height = context.video.width
-        }
-    }
-
     private fun prepareDecoder() {
-        videoDecoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!.egl!!,
+        videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, textureWrapper!!.egl!!,
                 textureWrapper!!.surfaceTexture!!, pipeline!!, false, this)
         videoDecoder?.onStateListener = this
         videoDecoder?.prepare()
-        if (null != audioTrack) {
-            audioDecoder = AudioDecoderImpl(context, audioTrack!!, false, this)
+        if (extractor!!.containAudio()) {
+            audioDecoder = AudioDecoderImpl(context, extractor!!.getAudioTrack()!!, false, this)
             audioDecoder?.onStateListener = this
             audioDecoder?.prepare()
         } else {
@@ -166,7 +173,10 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
 
     override fun prepare() {
         pipeline?.queueEvent(Runnable {
-            prepareExtractor()
+            if (TextUtils.isEmpty(this.inputPath)) {
+                throw IllegalStateException("Please prepared call setInputResource  before")
+            }
+            extractor = VideoExtractor(context, this.inputPath!!)
             prepareWrapper()
             prepareDecoder()
             videoDecoder!!.post(Runnable {
@@ -192,13 +202,17 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     override fun save(path: String, end: Runnable?) {
         context.ioContext.path = path
         pipeline?.queueEvent(Runnable {
+            if (null == extractor) {
+                throw IllegalStateException("Please prepared processor before")
+            }
             prepareMuxer()
-            prepareEncoder()
-            end?.run()
+            prepareAudioEncoder()
+            prepareVideoEncoder()
+            this.endEvent = end
         })
     }
 
-    override fun release() {
+    private fun stop() {
         muxer?.release()
         muxer = null
         render?.release()
@@ -212,12 +226,18 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
             audioDecoder = null
             extractor?.release()
             extractor = null
-            audioExtractor?.release()
-            audioExtractor = null
-            encoder?.stop()
-            encoder = null
+            videoEncoder?.stop()
+            videoEncoder = null
+            audioEncoder?.stop()
+            audioEncoder = null
+            audioSample = null
             GLEventPipeline.INSTANCE.quit()
+            endEvent?.run()
         })
+    }
+
+    override fun release() {
+        stop()
         pipeline?.quit()
         pipeline = null
         context.release()
@@ -265,6 +285,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
         if (flag[0] && flag[1]) {
             muxer?.release()
             muxer = null
+            endEvent?.run()
         }
     }
 
