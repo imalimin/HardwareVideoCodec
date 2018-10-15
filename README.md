@@ -7,12 +7,9 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_2.gif)
 ## Latest release
-[V1.7.0](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.7.0)
+[V1.7.1](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.7.1)
 
-* Support picture filter. You can process picture now.
-* Support filter group. You can combine any filters now.
-* Support watermark. Add a logo to your video.
-* Fix some memory leaks and bugs.
+* Fix after switched the filter, the video of some devices will become black.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
@@ -28,7 +25,7 @@ With it, you can encode a video at any resolution, no longer need to care about 
 
 ## Start
 If you are building with Gradle, simply add the following code to your project:
-* Project root build.gradle
+* You need to configure your kotlin environment. Project root build.gradle
 ```
 buildscript {
     ext.kotlin_version = '1.2.30'//Latest kotlin version
@@ -46,8 +43,8 @@ allprojects {
 * Module build.gradle
 ```
 dependencies {
-    implementation 'com.lmy.codec:hardwarevideocodec:1.7.0'
-    implementation 'com.lmy.codec:rtmp:1.7.0'//If you want to use RTMP stream.
+    implementation 'com.lmy.codec:hardwarevideocodec:1.7.1'
+    implementation 'com.lmy.codec:rtmp:1.7.1'//If you want to use RTMP stream.
 }
 ```
 * For record mp4
