@@ -118,7 +118,7 @@ class MuxerImpl(var path: String,
 
     override fun writeVideoSample(sample: Sample) {
         if (!mStart) return
-        debug_e("writeVideoSample ${sample.bufferInfo.presentationTimeUs}")
+//        debug_e("writeVideoSample ${sample.bufferInfo.presentationTimeUs}")
         ++mFrameCount
         synchronized(mWriteSyn) {
             mQueue.push(sample)
@@ -134,7 +134,7 @@ class MuxerImpl(var path: String,
 
     override fun writeAudioSample(sample: Sample) {
         if (!mStart) return
-        debug_i("writeAudioSample ${sample.bufferInfo.presentationTimeUs}")
+//        debug_i("writeAudioSample ${sample.bufferInfo.presentationTimeUs}")
         mAudioPipeline.queueEvent(Runnable {
             writeSample(audioTrack, sample)
         })
