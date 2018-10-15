@@ -1,6 +1,7 @@
 package com.lmy.codec.decoder
 
 interface AudioDecoder : Decoder {
+    fun getSampleSize(): Int
     fun getSampleRate(): Int
     fun getChannel(): Int
 

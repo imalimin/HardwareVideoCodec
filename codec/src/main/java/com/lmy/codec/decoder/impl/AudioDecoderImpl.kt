@@ -17,11 +17,13 @@ class AudioDecoderImpl(val context: CodecContext,
                        private val track: Track,
                        private val forPlay: Boolean = false,
                        override val onSampleListener: Decoder.OnSampleListener? = null) : AudioDecoder {
+
     override var onStateListener: Decoder.OnStateListener? = null
     private var pipeline: Pipeline? = EventPipeline.create("AudioDecoderPipeline")
     private var mDequeuePipeline: Pipeline? = EventPipeline.create("AudioDequeuePipeline")
     private var codec: MediaCodec? = null
     private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
+    private var sampleSize: Int = 0
     private var starting = false
     private var eos = false
     private var lastPts = 0L
@@ -64,6 +66,9 @@ class AudioDecoderImpl(val context: CodecContext,
                 }
                 else -> {
                     if (index >= 0) {
+                        if (sampleSize <= 0) {
+                            sampleSize = bufferInfo.size
+                        }
                         val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             codec!!.getOutputBuffer(index)
                         } else {
@@ -83,6 +88,32 @@ class AudioDecoderImpl(val context: CodecContext,
         }
     }
 
+    override fun getSampleSize(): Int {
+        synchronized(this@AudioDecoderImpl) {
+            if (encode()) {
+                while (true) {
+                    val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
+                    return if (index >= 0) {
+                        if (sampleSize <= 0) {
+                            sampleSize = bufferInfo.size
+                        }
+                        val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            codec!!.getOutputBuffer(index)
+                        } else {
+                            codec!!.outputBuffers[index]
+                        }
+                        buffer.clear()
+                        codec!!.releaseOutputBuffer(index, false)
+                        sampleSize
+                    } else {
+                        getSampleSize()
+                    }
+                }
+            }
+        }
+        return 0
+    }
+
     private fun next() {
 //        val delay = if (forPlay) {
 //            val d = bufferInfo.presentationTimeUs / 1000 - lastPts
@@ -92,31 +123,8 @@ class AudioDecoderImpl(val context: CodecContext,
         pipeline?.queueEvent(Runnable {
             synchronized(this@AudioDecoderImpl) {
                 if (!starting) return@Runnable
-                val index = codec!!.dequeueInputBuffer(WAIT_TIME)
-                if (index >= 0) {
-                    val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        codec!!.getInputBuffer(index)
-                    } else {
-                        codec!!.inputBuffers[index]
-                    }
-                    synchronized(track.extractor) {
-                        track.select()
-                        val size = track.extractor.readSampleData(buffer, 0)
-                        if (size < 0) {
-                            codec!!.queueInputBuffer(index, 0, 0, 0,
-                                    MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                            debug_e("eos!")
-                            eos = true
-                            starting = false
-                        } else {
-                            codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
-                            track.extractor.advance()
-                        }
-//                        track.unselect()
-                    }
+                if (encode()) {
                     dequeue()
-                } else {
-                    debug_e("Cannot get input buffer!")
                 }
 //            debug_i("next ${videoInfo.presentationTimeUs}")
                 if (!eos) {
@@ -126,6 +134,36 @@ class AudioDecoderImpl(val context: CodecContext,
                 }
             }
         })
+    }
+
+    private fun encode(): Boolean {
+        val index = codec!!.dequeueInputBuffer(WAIT_TIME)
+        if (index >= 0) {
+            val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                codec!!.getInputBuffer(index)
+            } else {
+                codec!!.inputBuffers[index]
+            }
+            synchronized(track.extractor) {
+                track.select()
+                val size = track.extractor.readSampleData(buffer, 0)
+                if (size < 0) {
+                    codec!!.queueInputBuffer(index, 0, 0, 0,
+                            MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                    debug_e("eos!")
+                    eos = true
+                    starting = false
+                } else {
+                    codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
+                    track.extractor.advance()
+                }
+//                        track.unselect()
+            }
+            return true
+        } else {
+            debug_e("Cannot get input buffer!")
+        }
+        return false
     }
 
     override fun start() {
