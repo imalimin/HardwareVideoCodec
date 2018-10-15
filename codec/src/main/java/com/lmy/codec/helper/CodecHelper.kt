@@ -48,7 +48,8 @@ class CodecHelper {
             return mediaFormat
         }
 
-        fun createAudioFormat(context: CodecContext, ignoreDevice: Boolean = false): MediaFormat? {
+        fun createAudioFormat(context: CodecContext, maxInputSize: Int = 0,
+                              ignoreDevice: Boolean = false): MediaFormat? {
             val codecInfo = getCodecInfo(context.audio.mime, true)
             if (!ignoreDevice && null == codecInfo) {//Unsupport codec type
                 return null
@@ -59,6 +60,8 @@ class CodecHelper {
             mediaFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, context.audio.sampleRateInHz)
             mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, context.audio.bitrate)
             mediaFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, context.audio.profile)
+            if (maxInputSize > 0)
+                mediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, maxInputSize)
             return mediaFormat
         }
 
