@@ -25,21 +25,29 @@ import java.nio.ByteBuffer
  * Project Name：HardwareVideoCodec.
  * @author lrlmy@foxmail.com
  */
-class AudioEncoderImpl(var context: CodecContext,
-                       private var codec: MediaCodec? = null,
-                       var inputBuffers: Array<ByteBuffer>? = null,
-                       var outputBuffers: Array<ByteBuffer>? = null,
-                       private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo(),
-                       private var audioWrapper: AudioRecordWrapper? = null,
-                       private var pTimer: PresentationTimer = PresentationTimer(context.audio.sampleRateInHz),
-                       override var onPreparedListener: Encoder.OnPreparedListener? = null,
-                       override var onRecordListener: Encoder.OnRecordListener? = null)
+class AudioEncoderImpl private constructor(var context: CodecContext,
+                                           private var bufferSize: Int = 0)
     : Encoder, AudioRecordWrapper.OnPCMListener {
 
     companion object {
         private val WAIT_TIME = 10000L
+        fun fromDevice(context: CodecContext): Encoder {
+            return AudioEncoderImpl(context)
+        }
+
+        fun fromArray(context: CodecContext, bufferSize: Int): Encoder {
+            return AudioEncoderImpl(context, bufferSize)
+        }
     }
 
+    private var audioWrapper: AudioRecordWrapper? = null
+    private var codec: MediaCodec? = null
+    var inputBuffers: Array<ByteBuffer>? = null
+    var outputBuffers: Array<ByteBuffer>? = null
+    private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
+    private var pTimer: PresentationTimer = PresentationTimer(context.audio.sampleRateInHz)
+    override var onPreparedListener: Encoder.OnPreparedListener? = null
+    override var onRecordListener: Encoder.OnRecordListener? = null
     private lateinit var format: MediaFormat
     private var mPipeline = EventPipeline.create("AudioEncodePipeline")
     private var mDequeuePipeline = EventPipeline.create("AudioDequeuePipeline")
@@ -50,12 +58,19 @@ class AudioEncoderImpl(var context: CodecContext,
     private var looping = false
 
     init {
+        bufferSize = if (bufferSize > 0) {
+            bufferSize
+        } else {
+            audioWrapper = AudioRecordWrapper(context)
+            audioWrapper?.setOnPCMListener(this)
+            audioWrapper!!.getBufferSize()
+        }
         initCodec()
         mPipeline.queueEvent(Runnable { init() })
     }
 
     private fun initCodec() {
-        val f = CodecHelper.createAudioFormat(context)
+        val f = CodecHelper.createAudioFormat(context, bufferSize)
         if (null == f) {
             debug_e("Unsupport codec type")
             return
@@ -76,9 +91,7 @@ class AudioEncoderImpl(var context: CodecContext,
         pTimer.reset()
         codec?.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         codec?.start()
-        audioWrapper = AudioRecordWrapper(context)
-        audioWrapper?.setOnPCMListener(this)
-        mCache = Cache(5, audioWrapper!!.getBufferSize())
+        mCache = Cache(5, bufferSize)
         mCache?.ready()
     }
 
