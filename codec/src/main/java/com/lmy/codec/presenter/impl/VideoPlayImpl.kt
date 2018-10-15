@@ -4,16 +4,13 @@ import android.content.Context
 import android.graphics.SurfaceTexture
 import android.media.AudioFormat
 import android.media.MediaCodec
-import android.media.MediaExtractor
-import android.media.MediaFormat
 import android.view.TextureView
 import com.lmy.codec.decoder.AudioDecoder
 import com.lmy.codec.decoder.Decoder
-import com.lmy.codec.decoder.VideoDecoder
+import com.lmy.codec.decoder.VideoExtractor
 import com.lmy.codec.decoder.impl.AudioDecoderImpl
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
 import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.entity.Track
 import com.lmy.codec.media.AudioPlayer
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
@@ -21,10 +18,8 @@ import com.lmy.codec.presenter.VideoPlay
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
-import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
-import java.io.IOException
 import java.nio.ByteBuffer
 
 class VideoPlayImpl(ctx: Context) : VideoPlay, Decoder.OnSampleListener {
@@ -36,10 +31,7 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, Decoder.OnSampleListener {
     private var videoDecoder: Decoder? = null
     private var audioDecoder: AudioDecoder? = null
     private var player: AudioPlayer? = null
-    private var extractor: MediaExtractor? = null
-    private var audioExtractor: MediaExtractor? = null
-    private var videoTrack: Track? = null
-    private var audioTrack: Track? = null
+    private var extractor: VideoExtractor? = null
     private var view: TextureView? = null
     private var filter: BaseFilter? = null
 
@@ -69,38 +61,15 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, Decoder.OnSampleListener {
     }
 
     private fun prepareExtractor() {
-        extractor = MediaExtractor()
-        audioExtractor = MediaExtractor()
-        try {
-            extractor?.setDataSource(context.ioContext.path)
-            audioExtractor?.setDataSource(context.ioContext.path)
-        } catch (e: IOException) {
-            debug_e("File(${context.ioContext.path}) not found")
-            return
-        }
-        videoTrack = Track.getVideoTrack(extractor!!)
-        audioTrack = Track.getAudioTrack(audioExtractor!!)
-        context.orientation = if (videoTrack!!.format.containsKey(VideoDecoder.KEY_ROTATION))
-            videoTrack!!.format.getInteger(VideoDecoder.KEY_ROTATION) else 0
-        if (context.isHorizontal()) {
-            context.video.width = videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH)
-            context.video.height = videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT)
-            context.cameraSize.width = context.video.width
-            context.cameraSize.height = context.video.height
-        } else {
-            context.video.width = videoTrack!!.format.getInteger(MediaFormat.KEY_HEIGHT)
-            context.video.height = videoTrack!!.format.getInteger(MediaFormat.KEY_WIDTH)
-            context.cameraSize.width = context.video.height
-            context.cameraSize.height = context.video.width
-        }
+        extractor = VideoExtractor(context, context.ioContext.path!!)
     }
 
     private fun prepareDecoder() {
-        videoDecoder = HardVideoDecoderImpl(context, videoTrack!!, textureWrapper!!.egl!!,
+        videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, textureWrapper!!.egl!!,
                 textureWrapper!!.surfaceTexture!!, pipeline!!, true, this)
         videoDecoder?.prepare()
-        if (null != audioTrack) {
-            audioDecoder = AudioDecoderImpl(context, audioTrack!!, true, this)
+        if (extractor!!.containAudio()) {
+            audioDecoder = AudioDecoderImpl(context, extractor!!.getAudioTrack()!!, true, this)
             audioDecoder?.prepare()
             player = AudioPlayer(audioDecoder!!.getSampleRate(), when (audioDecoder!!.getChannel()) {
                 2 -> AudioFormat.CHANNEL_OUT_STEREO
@@ -201,8 +170,6 @@ class VideoPlayImpl(ctx: Context) : VideoPlay, Decoder.OnSampleListener {
             audioDecoder = null
             extractor?.release()
             extractor = null
-            audioExtractor?.release()
-            audioExtractor = null
         })
         pipeline?.quit()
         pipeline = null
