@@ -11,15 +11,15 @@ import android.view.TextureView
 import android.widget.FrameLayout
 import android.widget.Toast
 import com.lmy.codec.presenter.Processor
-import com.lmy.codec.presenter.VideoPlay
-import com.lmy.codec.presenter.impl.VideoPlayImpl
+import com.lmy.codec.presenter.VideoPlayer
+import com.lmy.codec.presenter.impl.VideoPlayerImpl
 import com.lmy.codec.presenter.impl.VideoProcessorImpl
 import com.lmy.codec.texture.impl.filter.NatureFilter
 import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
 
 class VideoActivity : BaseActivity() {
-    private var player: VideoPlay? = null
+    private var player: VideoPlayer? = null
     private var processor: Processor? = null
     private var mFilterController: FilterController? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +51,7 @@ class VideoActivity : BaseActivity() {
         }
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
-        player = VideoPlayImpl(applicationContext).apply {
+        player = VideoPlayerImpl(applicationContext).apply {
             setInputResource(path!!)
             setPreviewDisplay(mTextureView)
             prepare()

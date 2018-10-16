@@ -14,7 +14,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.media.AudioPlayer
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
-import com.lmy.codec.presenter.VideoPlay
+import com.lmy.codec.presenter.VideoPlayer
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -22,7 +22,7 @@ import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import java.nio.ByteBuffer
 
-class VideoPlayImpl(ctx: Context) : VideoPlay, Decoder.OnSampleListener {
+class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
 
     private var pipeline: Pipeline? = EventPipeline.create("VideoPlayImpl")
     private var textureWrapper: CameraTextureWrapper? = null

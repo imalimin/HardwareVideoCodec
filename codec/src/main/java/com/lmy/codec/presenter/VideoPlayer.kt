@@ -3,7 +3,7 @@ package com.lmy.codec.presenter
 import android.view.TextureView
 import java.io.File
 
-interface VideoPlay : FilterSupport {
+interface VideoPlayer : FilterSupport {
     fun reset()
     fun prepare()
     fun setInputResource(path: String)
