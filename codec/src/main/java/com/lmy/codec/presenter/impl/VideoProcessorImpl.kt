@@ -183,6 +183,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
                 throw IllegalStateException("Please prepared call setInputResource  before")
             }
             extractor = VideoExtractor(context, this.inputPath!!)
+            extractor!!.range(30000, 50000)
             prepareWrapper()
             prepareDecoder()
             videoDecoder!!.post(Runnable {
