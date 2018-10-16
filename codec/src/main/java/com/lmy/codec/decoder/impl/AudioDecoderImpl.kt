@@ -150,21 +150,19 @@ class AudioDecoderImpl(val context: CodecContext,
             } else {
                 codec!!.inputBuffers[index]
             }
-            synchronized(track.extractor) {
-                track.select()
-                val size = track.extractor.readSampleData(buffer, 0)
-                if (size < 0) {
-                    codec!!.queueInputBuffer(index, 0, 0, 0,
-                            MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                    debug_e("eos!")
-                    eos = true
-                    starting = false
-                } else {
-                    codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
-                    track.extractor.advance()
-                }
-//                        track.unselect()
+            track.select()
+            val size = track.readSampleData(buffer, 0)
+            if (size < 0) {
+                codec!!.queueInputBuffer(index, 0, 0, 0,
+                        MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                debug_e("eos!")
+                eos = true
+                starting = false
+            } else {
+                codec!!.queueInputBuffer(index, 0, size, track.getSampleTime(), 0)
+                track.advance()
             }
+//            track.unselect()
             return true
         } else {
             debug_e("Cannot get input buffer!")
