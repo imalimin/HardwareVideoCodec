@@ -8,16 +8,53 @@ package com.lmy.codec.entity
 
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import java.nio.ByteBuffer
 
 data class Track(var index: Int,
                  var format: MediaFormat,
                  val extractor: MediaExtractor) {
+    private var endUs: Long = -1
+    @Synchronized
     fun select() {
         extractor.selectTrack(index)
     }
 
+    @Synchronized
     fun unselect() {
         extractor.unselectTrack(index)
+    }
+
+    @Synchronized
+    fun readSampleData(byteBuf: ByteBuffer, offset: Int): Int {
+        if (endUs > 0 && getSampleTime() > endUs) return 0
+        return extractor.readSampleData(byteBuf, 0)
+    }
+
+    @Synchronized
+    fun advance() {
+        extractor.advance()
+    }
+
+    fun getSampleTime(): Long {
+        return extractor.sampleTime
+    }
+
+    fun getSampleFlags(): Int {
+        return extractor.sampleFlags
+    }
+
+    @Synchronized
+    fun seekTo(startUs: Long) {
+        extractor.seekTo(startUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+    }
+
+    @Synchronized
+    fun range(startUs: Long, endUs: Long) {
+        if (startUs >= endUs) {
+            throw RuntimeException("endUs cannot smaller than startUs")
+        }
+        this.endUs = endUs
+        seekTo(startUs)
     }
 
     companion object {
