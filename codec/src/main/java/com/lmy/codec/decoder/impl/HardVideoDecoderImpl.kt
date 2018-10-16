@@ -81,7 +81,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
                     }
                     synchronized(track.extractor) {
                         track.select()
-                        val size = track.extractor.readSampleData(buffer, 0)
+                        val size = track.readSampleData(buffer, 0)
                         if (size < 0) {
                             codec!!.queueInputBuffer(index, 0, 0, 0,
                                     MediaCodec.BUFFER_FLAG_END_OF_STREAM)
@@ -89,8 +89,8 @@ class HardVideoDecoderImpl(val context: CodecContext,
                             eos = true
                             starting = false
                         } else {
-                            codec!!.queueInputBuffer(index, 0, size, track.extractor.sampleTime, 0)
-                            track.extractor.advance()
+                            codec!!.queueInputBuffer(index, 0, size, track.getSampleTime(), 0)
+                            track.advance()
                         }
 //                        track.unselect()
                     }
