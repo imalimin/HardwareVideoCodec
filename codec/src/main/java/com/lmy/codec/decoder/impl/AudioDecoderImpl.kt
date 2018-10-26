@@ -43,6 +43,8 @@ class AudioDecoderImpl(val context: CodecContext,
         pipeline?.queueEvent(Runnable {
             debug_i("AudioDecoder channel=${getChannel()}")
             debug_i("AudioDecoder ${track.format}")
+            debug_i("-----> Track selected")
+            track.select()
             try {
                 codec = MediaCodec.createDecoderByType(track.format.getString(MediaFormat.KEY_MIME))
                 codec!!.configure(track.format, null, null, 0)
@@ -150,7 +152,6 @@ class AudioDecoderImpl(val context: CodecContext,
             } else {
                 codec!!.inputBuffers[index]
             }
-            track.select()
             val size = track.readSampleData(buffer, 0)
             if (size < 0) {
                 codec!!.queueInputBuffer(index, 0, 0, 0,

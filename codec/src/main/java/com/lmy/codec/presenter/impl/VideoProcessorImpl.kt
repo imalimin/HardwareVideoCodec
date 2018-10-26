@@ -62,13 +62,14 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
         if (decoder == audioDecoder) {
 //            debug_i("Write data size ${info.size}")
 //            muxer?.writeAudioSample(Sample.wrap(info, data!!))
+            debug_i("Write audio ${info.presentationTimeUs}")
             if (null != data) {
                 data.get(audioSample)
                 data.rewind()
                 (audioEncoder as AudioEncoderImpl).onPCMSample(audioSample!!)
             }
         } else if (decoder == this.videoDecoder) {
-//            debug_e("Write ${info.presentationTimeUs}")
+            debug_e("Write video ${info.presentationTimeUs}")
             render?.onFrameAvailable()
             videoEncoder?.setPresentationTime(info.presentationTimeUs)
             videoEncoder?.onFrameAvailable(null)
@@ -183,13 +184,16 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
                 throw IllegalStateException("Please prepared call setInputResource  before")
             }
             extractor = VideoExtractor(context, this.inputPath!!)
-            extractor!!.range(30000, 50000)
             prepareWrapper()
             prepareDecoder()
             videoDecoder!!.post(Runnable {
                 render = DefaultRenderImpl(context, textureWrapper!!, pipeline!!, filter)
                 render?.start(null, getWidth(), getHeight())
                 render?.updateSize(getWidth(), getHeight())
+            })
+            pipeline?.queueEvent(Runnable {
+                debug_i("-----> range")
+                extractor!!.range(30000, 100000)
             })
         })
     }

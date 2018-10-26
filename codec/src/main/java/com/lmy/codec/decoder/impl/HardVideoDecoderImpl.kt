@@ -49,6 +49,8 @@ class HardVideoDecoderImpl(val context: CodecContext,
     override fun prepare() {
         surfaceTexture.setOnFrameAvailableListener(this)
         pipeline?.queueEvent(Runnable {
+            debug_i("-----> Track selected")
+            track.select()
             try {
                 codec = MediaCodec.createDecoderByType(track.format.getString(MediaFormat.KEY_MIME))
                 codec!!.configure(track.format, Surface(surfaceTexture), null, 0)
@@ -80,7 +82,6 @@ class HardVideoDecoderImpl(val context: CodecContext,
                         codec!!.inputBuffers[index]
                     }
                     synchronized(track.extractor) {
-                        track.select()
                         val size = track.readSampleData(buffer, 0)
                         if (size < 0) {
                             codec!!.queueInputBuffer(index, 0, 0, 0,
