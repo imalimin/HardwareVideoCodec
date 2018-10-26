@@ -26,7 +26,7 @@ data class Track(var index: Int,
 
     @Synchronized
     fun readSampleData(byteBuf: ByteBuffer, offset: Int): Int {
-        if (endUs > 0 && getSampleTime() > endUs) return 0
+        if (endUs > 0 && getSampleTime() > endUs) return -1
         return extractor.readSampleData(byteBuf, 0)
     }
 
