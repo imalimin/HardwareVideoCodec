@@ -193,7 +193,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
             })
             pipeline?.queueEvent(Runnable {
                 debug_i("-----> range")
-                extractor!!.range(30000, 100000)
+                extractor!!.range(3000000, 100000000)
             })
         })
     }
