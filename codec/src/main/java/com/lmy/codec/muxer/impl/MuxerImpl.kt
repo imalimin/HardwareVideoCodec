@@ -23,20 +23,20 @@ import java.util.*
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
-class MuxerImpl(var path: String,
-                private var muxer: MediaMuxer? = null,
-                var videoTrack: Int = 0,
-                var audioTrack: Int = 0,
-                private var mFrameCount: Int = 0,
-                private var mVideoTrackReady: Boolean = false,
-                private var mAudioTrackReady: Boolean = false,
-                private var mStart: Boolean = false,
-                override var onMuxerListener: Muxer.OnMuxerListener? = null) : Muxer {
+class MuxerImpl(var path: String) : Muxer {
 
     private val mQueue = LinkedList<Sample>()
     private val mWriteSyn = Any()
     private var mAudioPipeline = EventPipeline.create("AudioWritePipeline")
     private var mVideoPipeline = EventPipeline.create("VideoWritePipeline")
+    private var muxer: MediaMuxer? = null
+    var videoTrack: Int = 0
+    var audioTrack: Int = 0
+    private var mFrameCount: Int = 0
+    private var mVideoTrackReady: Boolean = false
+    private var mAudioTrackReady: Boolean = false
+    private var mStart: Boolean = false
+    override var onMuxerListener: Muxer.OnMuxerListener? = null
 
     init {
         start()
@@ -81,11 +81,12 @@ class MuxerImpl(var path: String,
         }
     }
 
-    private fun ready() {
+    private fun checkStart() {
         if (mVideoTrackReady && mAudioTrackReady) {
             muxer?.start()
             mStart = true
             debug_e("Muxer start")
+            onMuxerListener?.onStart()
         }
     }
 
@@ -99,7 +100,8 @@ class MuxerImpl(var path: String,
             return
         }
         mVideoTrackReady = true
-        ready()
+        debug_e("Muxer video start")
+        checkStart()
     }
 
     override fun addAudioTrack(format: MediaFormat) {
@@ -113,7 +115,8 @@ class MuxerImpl(var path: String,
             return
         }
         mAudioTrackReady = true
-        ready()
+        debug_e("Muxer audio start")
+        checkStart()
     }
 
     override fun writeVideoSample(sample: Sample) {

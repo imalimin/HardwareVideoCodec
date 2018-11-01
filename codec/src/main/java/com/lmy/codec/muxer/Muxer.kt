@@ -22,7 +22,9 @@ interface Muxer : Encoder.OnSampleListener {
     fun writeVideoSample(sample: Sample)
     fun writeAudioSample(sample: Sample)
     fun release()
+
     interface OnMuxerListener {
+        fun onStart()
         fun onError(error: Int, msg: String)
     }
 }
