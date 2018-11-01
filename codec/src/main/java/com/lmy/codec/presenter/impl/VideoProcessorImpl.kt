@@ -57,21 +57,25 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     private var flag: BooleanArray = booleanArrayOf(false, false)
     private var audioSample: ByteArray? = null
     private var endEvent: Runnable? = null
+    private var startVideoPts = 0L
 
     override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
 //            debug_i("Write data size ${info.size}")
 //            muxer?.writeAudioSample(Sample.wrap(info, data!!))
-            debug_i("Write audio ${info.presentationTimeUs}")
+//            debug_i("Write audio ${info.presentationTimeUs}")
             if (null != data) {
                 data.get(audioSample)
                 data.rewind()
                 (audioEncoder as AudioEncoderImpl).onPCMSample(audioSample!!)
             }
         } else if (decoder == this.videoDecoder) {
-            debug_e("Write video ${info.presentationTimeUs}")
+//            debug_e("Write video ${info.presentationTimeUs}")
             render?.onFrameAvailable()
-            videoEncoder?.setPresentationTime(info.presentationTimeUs)
+            if (startVideoPts <= 0 && 0L != info.presentationTimeUs) {
+                startVideoPts = info.presentationTimeUs
+            }
+            videoEncoder?.setPresentationTime(info.presentationTimeUs - startVideoPts)
             videoEncoder?.onFrameAvailable(null)
         }
     }
@@ -85,7 +89,6 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
             videoEncoder?.start()
             audioEncoder?.start()
             videoDecoder?.start()
-            audioDecoder?.start()
         })
     }
 
@@ -144,6 +147,10 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
         if (null == muxer) {
             muxer = MuxerFactory.getMuxer(context)
             muxer?.onMuxerListener = object : Muxer.OnMuxerListener {
+                override fun onStart() {
+                    audioDecoder?.start()
+                }
+
                 override fun onError(error: Int, msg: String) {
                     debug_e("Muxer error $error, $msg")
                 }
@@ -191,10 +198,6 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
                 render?.start(null, getWidth(), getHeight())
                 render?.updateSize(getWidth(), getHeight())
             })
-            pipeline?.queueEvent(Runnable {
-                debug_i("-----> range")
-                extractor!!.range(30000000, 100000000)
-            })
         })
     }
 
@@ -211,7 +214,17 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     }
 
     override fun save(path: String, end: Runnable?) {
+        save(path, 0, 0, end)
+    }
+
+    fun save(path: String, startMs: Int, endMs: Int, end: Runnable?) {
         context.ioContext.path = path
+        if (startMs > 0 && endMs > 0) {
+            pipeline?.queueEvent(Runnable {
+                debug_i("-----> range")
+                extractor!!.range(startMs * 1000L, endMs * 1000L)
+            })
+        }
         pipeline?.queueEvent(Runnable {
             if (null == extractor) {
                 throw IllegalStateException("Please prepared processor before")
@@ -224,6 +237,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     }
 
     private fun stop() {
+        startVideoPts = 0
         muxer?.release()
         muxer = null
         render?.release()
@@ -297,6 +311,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
             muxer?.release()
             muxer = null
             endEvent?.run()
+            endEvent = null
         }
     }
 

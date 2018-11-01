@@ -59,17 +59,17 @@ class VideoActivity : BaseActivity() {
         player?.start()
         mFilterController = FilterController(player!!, progressLayout)
         processor = VideoProcessorImpl.create(applicationContext)
-        processor?.reset()
-        processor?.setInputResource(File(path!!))
-        processor?.setFilter(NatureFilter())
-        processor?.prepare()
         effectBtn.setOnClickListener({
             mFilterController?.chooseFilter(this)
         })
         saveBtn.setOnClickListener {
+            processor?.reset()
+            processor?.setInputResource(File(path!!))
+            processor?.setFilter(NatureFilter())
+            processor?.prepare()
             Toast.makeText(this, "Rendering", Toast.LENGTH_SHORT).show()
             val outputPath = getOutputPath(path!!)
-            processor?.save(outputPath, Runnable {
+            (processor as VideoProcessorImpl).save(outputPath, 30000, 100000, Runnable {
                 runOnUiThread {
                     Toast.makeText(this, "Saved to $outputPath", Toast.LENGTH_SHORT).show()
                 }
