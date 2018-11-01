@@ -28,15 +28,7 @@ import com.lmy.codec.wrapper.CameraWrapper
 /**
  * Created by lmyooyo@gmail.com on 2018/8/9.
  */
-class VideoRecorderImpl(ctx: Context,
-                        private var encoder: Encoder? = null,
-                        private var audioEncoder: Encoder? = null,
-                        private var cameraWrapper: CameraWrapper? = null,
-                        private var render: Render? = null,
-                        private var muxer: Muxer? = null,
-                        private var onStateListener: VideoRecorder.OnStateListener? = null,
-                        private var textureView: TextureView? = null,
-                        private var status: Status = Status.IDL
+class VideoRecorderImpl(ctx: Context
 ) : VideoRecorder, Encoder.OnPreparedListener {
 
     enum class Status {
@@ -45,6 +37,14 @@ class VideoRecorderImpl(ctx: Context,
 
     private var context: CodecContext = CodecContext(ctx)
     private var filter: BaseFilter? = NormalFilter()
+    private var encoder: Encoder? = null
+    private var audioEncoder: Encoder? = null
+    private var cameraWrapper: CameraWrapper? = null
+    private var render: Render? = null
+    private var muxer: Muxer? = null
+    private var onStateListener: VideoRecorder.OnStateListener? = null
+    private var textureView: TextureView? = null
+    private var status: Status = Status.IDL
 
     override fun prepare() {
         if (TextUtils.isEmpty(context.ioContext.path)) {
