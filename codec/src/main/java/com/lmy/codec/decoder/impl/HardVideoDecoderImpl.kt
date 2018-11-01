@@ -49,6 +49,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
     override fun prepare() {
         surfaceTexture.setOnFrameAvailableListener(this)
         pipeline?.queueEvent(Runnable {
+            debug_i("VideoDecoder ${track.format}")
             debug_i("-----> Track selected")
             track.select()
             try {
