@@ -10,8 +10,8 @@ import android.text.TextUtils
 import android.view.TextureView
 import android.widget.FrameLayout
 import android.widget.Toast
-import com.lmy.codec.presenter.Processor
 import com.lmy.codec.presenter.VideoPlayer
+import com.lmy.codec.presenter.VideoProcessor
 import com.lmy.codec.presenter.impl.VideoPlayerImpl
 import com.lmy.codec.presenter.impl.VideoProcessorImpl
 import com.lmy.codec.texture.impl.filter.NatureFilter
@@ -20,7 +20,7 @@ import java.io.File
 
 class VideoActivity : BaseActivity() {
     private var player: VideoPlayer? = null
-    private var processor: Processor? = null
+    private var processor: VideoProcessor? = null
     private var mFilterController: FilterController? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +69,7 @@ class VideoActivity : BaseActivity() {
             processor?.prepare()
             Toast.makeText(this, "Rendering", Toast.LENGTH_SHORT).show()
             val outputPath = getOutputPath(path!!)
-            (processor as VideoProcessorImpl).save(outputPath, 30000, 100000, Runnable {
+            processor?.save(outputPath, 30000, 100000, Runnable {
                 runOnUiThread {
                     Toast.makeText(this, "Saved to $outputPath", Toast.LENGTH_SHORT).show()
                 }

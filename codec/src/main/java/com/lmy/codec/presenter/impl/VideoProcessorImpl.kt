@@ -26,7 +26,7 @@ import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.pipeline.impl.GLEventPipeline
-import com.lmy.codec.presenter.Processor
+import com.lmy.codec.presenter.VideoProcessor
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -39,7 +39,7 @@ import java.nio.ByteBuffer
 /**
  * Created by lmyooyo@gmail.com on 2018/10/8.
  */
-class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.OnSampleListener,
+class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Decoder.OnSampleListener,
         Decoder.OnStateListener, Encoder.OnPreparedListener {
 
     private val context: CodecContext = CodecContext(ctx)
@@ -63,14 +63,14 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
         if (decoder == audioDecoder) {
 //            debug_i("Write data size ${info.size}")
 //            muxer?.writeAudioSample(Sample.wrap(info, data!!))
-//            debug_i("Write audio ${info.presentationTimeUs}")
+            debug_i("Write audio ${info.presentationTimeUs}")
             if (null != data) {
                 data.get(audioSample)
                 data.rewind()
                 (audioEncoder as AudioEncoderImpl).onPCMSample(audioSample!!)
             }
         } else if (decoder == this.videoDecoder) {
-//            debug_e("Write video ${info.presentationTimeUs}")
+            debug_e("Write video ${info.presentationTimeUs}")
             render?.onFrameAvailable()
             if (startVideoPts <= 0 && 0L != info.presentationTimeUs) {
                 startVideoPts = info.presentationTimeUs
@@ -121,6 +121,10 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
         if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL))
             context.video.iFrameInterval = extractor!!.getVideoTrack()!!
                     .format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)
+        else {
+            context.video.iFrameInterval = 5
+            debug_i("Set iFrameInterval=${context.video.iFrameInterval}")
+        }
         if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE))
             context.video.bitrate = extractor!!.getVideoTrack()!!
                     .format.getInteger(MediaFormat.KEY_BIT_RATE)
@@ -217,7 +221,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
         save(path, 0, 0, end)
     }
 
-    fun save(path: String, startMs: Int, endMs: Int, end: Runnable?) {
+    override fun save(path: String, startMs: Int, endMs: Int, end: Runnable?) {
         context.ioContext.path = path
         if (startMs > 0 && endMs > 0) {
             pipeline?.queueEvent(Runnable {
@@ -316,6 +320,6 @@ class VideoProcessorImpl private constructor(ctx: Context) : Processor, Decoder.
     }
 
     companion object {
-        fun create(ctx: Context): Processor = VideoProcessorImpl(ctx)
+        fun create(ctx: Context): VideoProcessor = VideoProcessorImpl(ctx)
     }
 }
