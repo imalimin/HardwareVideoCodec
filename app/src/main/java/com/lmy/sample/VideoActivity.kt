@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.view.TextureView
 import android.widget.FrameLayout
@@ -22,6 +23,7 @@ class VideoActivity : BaseActivity() {
     private var player: VideoPlayer? = null
     private var processor: VideoProcessor? = null
     private var mFilterController: FilterController? = null
+    private var dialog: AlertDialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
@@ -63,14 +65,20 @@ class VideoActivity : BaseActivity() {
             mFilterController?.chooseFilter(this)
         })
         saveBtn.setOnClickListener {
+            dialog = AlertDialog.Builder(this@VideoActivity)
+                    .setMessage("Waiting...")
+                    .setCancelable(false)
+                    .create()
+            dialog?.show()
             processor?.reset()
             processor?.setInputResource(File(path!!))
             processor?.setFilter(NatureFilter())
             processor?.prepare()
             Toast.makeText(this, "Rendering", Toast.LENGTH_SHORT).show()
             val outputPath = getOutputPath(path!!)
-            processor?.save(outputPath, 30000, 100000, Runnable {
+            processor?.save(outputPath, Runnable {
                 runOnUiThread {
+                    dialog?.dismiss()
                     Toast.makeText(this, "Saved to $outputPath", Toast.LENGTH_SHORT).show()
                 }
             })
