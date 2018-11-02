@@ -234,6 +234,10 @@ class VideoRecorderImpl(ctx: Context
         if (null == muxer) {
             muxer = MuxerFactory.getMuxer(context)
             muxer?.onMuxerListener = object : Muxer.OnMuxerListener {
+                override fun onStart() {
+
+                }
+
                 override fun onError(error: Int, msg: String) {
                     onStateListener?.onError(error, msg)
                 }
