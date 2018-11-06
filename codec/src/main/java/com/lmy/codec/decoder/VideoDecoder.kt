@@ -11,6 +11,7 @@ interface VideoDecoder : Decoder {
         const val KEY_ROTATION = "rotation-degrees"
     }
 
+    fun delay(ns: Long)
     fun getWidth(): Int
     fun getHeight(): Int
 }

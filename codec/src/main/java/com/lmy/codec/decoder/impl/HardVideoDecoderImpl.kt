@@ -30,12 +30,14 @@ class HardVideoDecoderImpl(val context: CodecContext,
                            private val forPlay: Boolean = false,
                            override val onSampleListener: Decoder.OnSampleListener? = null) : VideoDecoder,
         SurfaceTexture.OnFrameAvailableListener {
+
     override var onStateListener: Decoder.OnStateListener? = null
     private var codec: MediaCodec? = null
     private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var starting = false
     private var eos = false
     private var lastPts = 0L
+    private var delay = 0L
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
 
@@ -44,6 +46,10 @@ class HardVideoDecoderImpl(val context: CodecContext,
     override fun reset() {
         eos = false
         lastPts = 0
+    }
+
+    override fun delay(ns: Long) {
+        delay = ns
     }
 
     override fun prepare() {
@@ -66,9 +72,10 @@ class HardVideoDecoderImpl(val context: CodecContext,
     @Synchronized
     private fun next() {
         val delay = if (forPlay) {
-            val d = bufferInfo.presentationTimeUs / 1000 - lastPts
+            val d = (bufferInfo.presentationTimeUs + delay) / 1000 - lastPts
             lastPts = bufferInfo.presentationTimeUs / 1000
-            d
+            delay = 0
+            if (d > 0) d else 0
         } else 0
         pipeline?.queueEvent(Runnable {
             synchronized(this@HardVideoDecoderImpl) {
