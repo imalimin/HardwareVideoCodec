@@ -72,7 +72,8 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
         } else if (decoder == this.videoDecoder) {
             debug_e("Write video ${info.presentationTimeUs}")
             render?.onFrameAvailable()
-            if (startVideoPts <= 0 && 0L != info.presentationTimeUs) {
+            if (startVideoPts <= 0 && 0L != info.presentationTimeUs
+                    && extractor!!.getVideoTrack()!!.getStartTime() != info.presentationTimeUs) {
                 startVideoPts = info.presentationTimeUs
             }
             videoEncoder?.setPresentationTime(info.presentationTimeUs - startVideoPts)
@@ -138,7 +139,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
             context.video.level = extractor!!.getVideoTrack()!!
                     .format.getInteger(MediaFormat.KEY_LEVEL)
         }
-        videoEncoder = Encoder.Builder(context, filter!!.frameBufferTexture,
+        videoEncoder = Encoder.Builder(context, render!!.getFrameBufferTexture(),
                 textureWrapper!!.egl!!.eglContext!!)
                 .setOnPreparedListener(this)
                 .build()
@@ -196,12 +197,12 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
             }
             extractor = VideoExtractor(context, this.inputPath!!)
             prepareWrapper()
+            render = DefaultRenderImpl(context, textureWrapper!!, pipeline!!, filter)
+            render?.start(null, getWidth(), getHeight())
+            render?.updateSize(getWidth(), getHeight())
+        })
+        pipeline?.queueEvent(Runnable {
             prepareDecoder()
-            videoDecoder!!.post(Runnable {
-                render = DefaultRenderImpl(context, textureWrapper!!, pipeline!!, filter)
-                render?.start(null, getWidth(), getHeight())
-                render?.updateSize(getWidth(), getHeight())
-            })
         })
     }
 
@@ -289,13 +290,11 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
         }
     }
 
-    private fun getWidth(): Int {
-        return videoDecoder!!.getWidth()
-    }
+    private fun getWidth(): Int = if (null == extractor) 0
+    else extractor!!.getVideoTrack()!!.format.getInteger(MediaFormat.KEY_WIDTH)
 
-    private fun getHeight(): Int {
-        return videoDecoder!!.getHeight()
-    }
+    private fun getHeight(): Int = if (null == extractor) 0
+    else extractor!!.getVideoTrack()!!.format.getInteger(MediaFormat.KEY_HEIGHT)
 
     override fun onStart(decoder: Decoder) {
 
