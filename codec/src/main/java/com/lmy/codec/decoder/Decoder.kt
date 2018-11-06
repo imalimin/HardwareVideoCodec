@@ -20,6 +20,7 @@ interface Decoder {
     fun getDuration(): Int
     fun release()
     fun post(event: Runnable)
+    fun flush()
     interface OnSampleListener {
         fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?)
     }

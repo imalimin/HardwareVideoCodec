@@ -99,7 +99,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
                     if (size < 0) {
                         codec!!.queueInputBuffer(index, 0, 0, 0,
                                 MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                        debug_e("eos!")
+                        debug_e("Track eos!")
                         eos = true
                         starting = false
                     } else {
@@ -117,7 +117,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
             if (!eos) {
                 next()
             } else {
-                onStateListener?.onEnd(this)
+                flush()
             }
         }
     }
@@ -129,13 +129,41 @@ class HardVideoDecoderImpl(val context: CodecContext,
             MediaCodec.INFO_TRY_AGAIN_LATER -> debug_i("INFO_TRY_AGAIN_LATER")
             MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> debug_i("INFO_OUTPUT_BUFFERS_CHANGED")
             else -> {
-                onSampleListener?.onSample(this, bufferInfo, null)
+                if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+                    debug_e("dequeue stream end")
+                    onStateListener?.onEnd(this)
+                } else {
+                    onSampleListener?.onSample(this, bufferInfo, null)
+                }
                 codec!!.releaseOutputBuffer(index, true)
             }
         }
-        if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
-            debug_i("buffer stream end")
-        }
+    }
+
+    override fun flush() {
+        pipeline.queueEvent(Runnable {
+            val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
+            debug_i("stream index=$index, flag=${bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM}")
+            when (index) {
+                MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> debug_i("INFO_OUTPUT_FORMAT_CHANGED")
+                MediaCodec.INFO_TRY_AGAIN_LATER -> {
+                    flush()
+                    debug_i("INFO_TRY_AGAIN_LATER")
+                }
+                MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> debug_i("INFO_OUTPUT_BUFFERS_CHANGED")
+                else -> {
+                    if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+                        debug_e("stream end")
+                        onStateListener?.onEnd(this)
+                    } else {
+                        debug_i("stream flush")
+                        onSampleListener?.onSample(this, bufferInfo, null)
+                        flush()
+                    }
+                    codec!!.releaseOutputBuffer(index, true)
+                }
+            }
+        })
     }
 
     override fun start() {
