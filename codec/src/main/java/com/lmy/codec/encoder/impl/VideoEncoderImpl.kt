@@ -163,16 +163,16 @@ class VideoEncoderImpl(var context: CodecContext,
 //                    debug_v("INFO_TRY_AGAIN_LATER")
                     return false
                 }
-            /**
-             * 输出格式改变，很重要
-             * 这里必须把outputFormat设置给MediaMuxer，而不能不能用inputFormat代替，它们时不一样的，不然无法正确生成mp4文件
-             */
+                /**
+                 * 输出格式改变，很重要
+                 * 这里必须把outputFormat设置给MediaMuxer，而不能不能用inputFormat代替，它们是不一样的，不然无法正确生成mp4文件
+                 */
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("INFO_OUTPUT_FORMAT_CHANGED")
                     onSampleListener?.onFormatChanged(this, codec!!.outputFormat)
                 }
                 else -> {
-                    if (flag < 0) return@dequeue false//如果小于零，则跳过
+                    if (flag < 0) return false//如果小于零，则跳过
                     val buffer = codec!!.outputBuffers[flag]//否则代表编码成功，可以从输出缓冲区队列取出数据
                     if (null != buffer) {
                         val endOfStream = mBufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM
@@ -182,7 +182,7 @@ class VideoEncoderImpl(var context: CodecContext,
                                 buffer.position(mBufferInfo.offset)
                                 buffer.limit(mBufferInfo.offset + mBufferInfo.size)
 //                                mBufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-                                onSampleListener?.onSample(this, mBufferInfo, buffer)
+                                onSampleListener?.onSample(this, CodecHelper.copy(mBufferInfo), buffer)
                                 onRecordListener?.onRecord(this, mBufferInfo.presentationTimeUs)
                             }
                         }

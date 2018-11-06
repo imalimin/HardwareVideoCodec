@@ -201,7 +201,7 @@ class AudioEncoderImpl private constructor(var context: CodecContext,
 //                            bufferInfo.presentationTimeUs = timestamp
                             pTimer.record()
                             bufferInfo.presentationTimeUs = pTimer.presentationTimeUs
-                            onSampleListener?.onSample(this, bufferInfo, data)
+                            onSampleListener?.onSample(this, CodecHelper.copy(bufferInfo), data)
                         }
                         // 一定要记得释放
                         codec!!.releaseOutputBuffer(flag, false)
