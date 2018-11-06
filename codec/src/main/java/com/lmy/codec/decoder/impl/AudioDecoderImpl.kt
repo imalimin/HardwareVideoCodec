@@ -63,35 +63,43 @@ class AudioDecoderImpl(val context: CodecContext,
     }
 
     private fun dequeue() {
-        val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
-        when (index) {
-            MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+        while (true) {
+            val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
+            when (index) {
+                MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
 //                    debug_i("INFO_OUTPUT_FORMAT_CHANGED")
-                return
-            }
-            MediaCodec.INFO_TRY_AGAIN_LATER -> {
-//                    debug_i("INFO_TRY_AGAIN_LATER")
-                return
-            }
-            MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
-//                    debug_i("INFO_OUTPUT_BUFFERS_CHANGED")
-                return
-            }
-            else -> {
-                if (index >= 0) {
-                    if (sampleSize <= 0) {
-                        sampleSize = bufferInfo.size
-                    }
-                    val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        codec!!.getOutputBuffer(index)
-                    } else {
-                        codec!!.outputBuffers[index]
-                    }
-                    onSampleListener?.onSample(this@AudioDecoderImpl, bufferInfo, buffer)
-                    buffer.clear()
-                    codec!!.releaseOutputBuffer(index, false)
-                } else {
                     return
+                }
+                MediaCodec.INFO_TRY_AGAIN_LATER -> {
+//                    debug_i("INFO_TRY_AGAIN_LATER")
+                    if (eos) {
+                        flush()
+                    }
+                    return
+                }
+                MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
+//                    debug_i("INFO_OUTPUT_BUFFERS_CHANGED")
+                    return
+                }
+                else -> {
+                    if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
+                        debug_e("stream end")
+                        onStateListener?.onEnd(this)
+                        codec!!.releaseOutputBuffer(index, false)
+                        return
+                    } else {
+                        if (sampleSize <= 0) {
+                            sampleSize = bufferInfo.size
+                        }
+                        val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            codec!!.getOutputBuffer(index)
+                        } else {
+                            codec!!.outputBuffers[index]
+                        }
+                        onSampleListener?.onSample(this@AudioDecoderImpl, bufferInfo, buffer)
+                        buffer.clear()
+                    }
+                    codec!!.releaseOutputBuffer(index, false)
                 }
             }
         }
@@ -179,9 +187,10 @@ class AudioDecoderImpl(val context: CodecContext,
 //            debug_i("next ${videoInfo.presentationTimeUs}")
                 if (!eos) {
                     next()
-                } else {
-                    flush()
                 }
+//                else {
+//                    flush()
+//                }
             }
         })
     }
