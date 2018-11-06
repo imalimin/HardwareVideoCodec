@@ -13,6 +13,7 @@ import android.media.MediaCodec
 import android.view.TextureView
 import com.lmy.codec.decoder.AudioDecoder
 import com.lmy.codec.decoder.Decoder
+import com.lmy.codec.decoder.VideoDecoder
 import com.lmy.codec.decoder.VideoExtractor
 import com.lmy.codec.decoder.impl.AudioDecoderImpl
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
@@ -24,6 +25,7 @@ import com.lmy.codec.presenter.VideoPlayer
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
+import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import java.nio.ByteBuffer
@@ -34,17 +36,23 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
     private var textureWrapper: CameraTextureWrapper? = null
     private var context: CodecContext = CodecContext(ctx)
     private var render: Render? = null
-    private var videoDecoder: Decoder? = null
+    private var videoDecoder: VideoDecoder? = null
     private var audioDecoder: AudioDecoder? = null
     private var player: AudioPlayer? = null
     private var extractor: VideoExtractor? = null
     private var view: TextureView? = null
     private var filter: BaseFilter? = null
+    private var audioPts = 0L
 
     override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
+            audioPts = info.presentationTimeUs
             player?.play(data!!, info.size)
         } else if (decoder == this.videoDecoder) {
+            if (audioPts > 0) {
+//                debug_e("Delay: ${info.presentationTimeUs - audioPts}")
+                videoDecoder?.delay(info.presentationTimeUs - audioPts)
+            }
             render?.onFrameAvailable()
         }
     }
