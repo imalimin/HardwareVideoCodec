@@ -25,7 +25,6 @@ import com.lmy.codec.presenter.VideoPlayer
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
-import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import java.nio.ByteBuffer
@@ -50,7 +49,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
             player?.play(data!!, info.size)
         } else if (decoder == this.videoDecoder) {
             if (audioPts > 0) {
-//                debug_e("Delay: ${info.presentationTimeUs - audioPts}")
+//                debug_e("Delay: ${(info.presentationTimeUs - audioPts) / 1000}")
                 videoDecoder?.delay(info.presentationTimeUs - audioPts)
             }
             render?.onFrameAvailable()
