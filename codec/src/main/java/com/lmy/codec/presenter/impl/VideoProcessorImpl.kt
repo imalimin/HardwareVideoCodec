@@ -58,6 +58,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
     private var audioSample: ByteArray? = null
     private var endEvent: Runnable? = null
     private var startVideoPts = 0L
+    private var frameCount = 0
 
     override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
@@ -70,7 +71,8 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
                 (audioEncoder as AudioEncoderImpl).onPCMSample(audioSample!!)
             }
         } else if (decoder == this.videoDecoder) {
-            debug_e("Write video ${info.presentationTimeUs}")
+            ++frameCount
+            debug_e("Write video ${info.presentationTimeUs}, count=$frameCount")
             render?.onFrameAvailable()
             if (startVideoPts <= 0 && 0L != info.presentationTimeUs
                     && extractor!!.getVideoTrack()!!.getStartTime() != info.presentationTimeUs) {
