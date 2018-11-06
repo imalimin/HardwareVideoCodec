@@ -14,6 +14,14 @@ data class Track(var index: Int,
                  var format: MediaFormat,
                  val extractor: MediaExtractor) {
     private var endUs: Long = -1
+    private val startTime: Long
+
+    init {
+        select()
+        startTime = getSampleTime()
+        unselect()
+    }
+
     @Synchronized
     fun select() {
         extractor.selectTrack(index)
@@ -55,6 +63,14 @@ data class Track(var index: Int,
         }
         this.endUs = endUs
         seekTo(startUs)
+    }
+
+    fun getStartTime(): Long {
+        return startTime
+    }
+
+    override fun toString(): String {
+        return "Track(startTime=$startTime, format=$format)"
     }
 
     companion object {
