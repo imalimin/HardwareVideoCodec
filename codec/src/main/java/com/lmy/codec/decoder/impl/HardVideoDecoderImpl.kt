@@ -55,7 +55,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
     override fun prepare() {
         surfaceTexture.setOnFrameAvailableListener(this)
         pipeline?.queueEvent(Runnable {
-            debug_i("VideoDecoder ${track.format}")
+            debug_i("VideoDecoder $track")
             debug_i("-----> Track selected")
             track.select()
             try {
@@ -77,45 +77,49 @@ class HardVideoDecoderImpl(val context: CodecContext,
             delay = 0
             if (d > 0) d else 0
         } else 0
-        pipeline?.queueEvent(Runnable {
-            synchronized(this@HardVideoDecoderImpl) {
-                if (!starting) return@Runnable
-                val ttt = System.currentTimeMillis()
-                egl.makeCurrent()
-                val index = codec!!.dequeueInputBuffer(WAIT_TIME)
-                if (index >= 0) {
-                    val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        codec!!.getInputBuffer(index)
-                    } else {
-                        codec!!.inputBuffers[index]
-                    }
-                    synchronized(track.extractor) {
-                        val size = track.readSampleData(buffer, 0)
-                        if (size < 0) {
-                            codec!!.queueInputBuffer(index, 0, 0, 0,
-                                    MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                            debug_e("eos!")
-                            eos = true
-                            starting = false
-                        } else {
-                            codec!!.queueInputBuffer(index, 0, size, track.getSampleTime(), 0)
-                            track.advance()
-                        }
-//                        track.unselect()
-                    }
-                    dequeue()
-                } else {
-                    debug_e("Cannot get input buffer!")
-                }
-                lastPts += System.currentTimeMillis() - ttt
-//            debug_i("next ${videoInfo.presentationTimeUs}")
-                if (!eos) {
-                    next()
-                } else {
-                    onStateListener?.onEnd(this)
-                }
-            }
+        pipeline.queueEvent(Runnable {
+            decode()
         }, delay)
+    }
+
+    private fun decode() {
+        synchronized(this@HardVideoDecoderImpl) {
+            if (!starting) return
+            val ttt = System.currentTimeMillis()
+            egl.makeCurrent()
+            val index = codec!!.dequeueInputBuffer(WAIT_TIME)
+            if (index >= 0) {
+                val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    codec!!.getInputBuffer(index)
+                } else {
+                    codec!!.inputBuffers[index]
+                }
+                synchronized(track.extractor) {
+                    val size = track.readSampleData(buffer, 0)
+                    if (size < 0) {
+                        codec!!.queueInputBuffer(index, 0, 0, 0,
+                                MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                        debug_e("eos!")
+                        eos = true
+                        starting = false
+                    } else {
+                        codec!!.queueInputBuffer(index, 0, size, track.getSampleTime(), 0)
+                        track.advance()
+                    }
+//                        track.unselect()
+                }
+                dequeue()
+            } else {
+                debug_e("Cannot get input buffer!")
+            }
+            lastPts += System.currentTimeMillis() - ttt
+//            debug_i("next ${videoInfo.presentationTimeUs}")
+            if (!eos) {
+                next()
+            } else {
+                onStateListener?.onEnd(this)
+            }
+        }
     }
 
     private fun dequeue() {
