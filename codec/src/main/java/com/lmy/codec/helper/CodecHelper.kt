@@ -6,6 +6,7 @@
  */
 package com.lmy.codec.helper
 
+import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaCodecInfo.CodecCapabilities.createFromProfileLevel
 import android.media.MediaCodecList
@@ -21,6 +22,12 @@ import com.lmy.codec.util.debug_i
  */
 class CodecHelper {
     companion object {
+        fun copy(info: MediaCodec.BufferInfo): MediaCodec.BufferInfo {
+            return MediaCodec.BufferInfo().apply {
+                set(info.offset, info.size, info.presentationTimeUs, info.flags)
+            }
+        }
+
         /**
          * MediaCodec兼容性问题：
          * 1. 部分7.0以上机型开启high效果不明显，如LG G6
