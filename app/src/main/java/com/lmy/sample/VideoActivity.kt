@@ -61,9 +61,9 @@ class VideoActivity : BaseActivity() {
         player?.start()
         mFilterController = FilterController(player!!, progressLayout)
         processor = VideoProcessorImpl.create(applicationContext)
-        effectBtn.setOnClickListener({
+        effectBtn.setOnClickListener {
             mFilterController?.chooseFilter(this)
-        })
+        }
         saveBtn.setOnClickListener {
             dialog = AlertDialog.Builder(this@VideoActivity)
                     .setMessage("Waiting...")
@@ -72,7 +72,7 @@ class VideoActivity : BaseActivity() {
             dialog?.show()
             processor?.reset()
             processor?.setInputResource(File(path!!))
-            processor?.setFilter(NatureFilter())
+//            processor?.setFilter(NatureFilter())
             processor?.prepare()
             Toast.makeText(this, "Rendering", Toast.LENGTH_SHORT).show()
             val outputPath = getOutputPath(path!!)
