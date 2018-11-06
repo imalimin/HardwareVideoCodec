@@ -24,6 +24,7 @@ class AudioDecoderImpl(val context: CodecContext,
                        private val forPlay: Boolean = false,
                        override val onSampleListener: Decoder.OnSampleListener? = null) : AudioDecoder {
 
+    private val lock = Object()
     override var onStateListener: Decoder.OnStateListener? = null
     private var pipeline: Pipeline? = EventPipeline.create("AudioDecoderPipeline")
     private var mDequeuePipeline: Pipeline? = EventPipeline.create("AudioDequeuePipeline")
@@ -31,6 +32,7 @@ class AudioDecoderImpl(val context: CodecContext,
     private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var sampleSize: Int = 0
     private var starting = false
+    private var codecStarted = false
     private var eos = false
     private var lastPts = 0L
 
@@ -41,8 +43,8 @@ class AudioDecoderImpl(val context: CodecContext,
 
     override fun prepare() {
         pipeline?.queueEvent(Runnable {
+            debug_i("AudioDecoder $track")
             debug_i("AudioDecoder channel=${getChannel()}")
-            debug_i("AudioDecoder ${track.format}")
             debug_i("-----> Track selected")
             track.select()
             try {
@@ -53,6 +55,10 @@ class AudioDecoderImpl(val context: CodecContext,
                 return@Runnable
             }
             codec?.start()
+            codecStarted = true
+            synchronized(lock) {
+                lock.notifyAll()
+            }
         })
     }
 
@@ -97,8 +103,17 @@ class AudioDecoderImpl(val context: CodecContext,
     }
 
     override fun getSampleSize(): Int {
+        if (!codecStarted) {
+            synchronized(lock) {
+                try {
+                    lock.wait()
+                } catch (e: InterruptedException) {
+
+                }
+            }
+        }
         synchronized(this@AudioDecoderImpl) {
-            if (encode()) {
+            if (decode()) {
                 while (true) {
                     val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
                     return if (index >= 0) {
@@ -131,7 +146,7 @@ class AudioDecoderImpl(val context: CodecContext,
         pipeline?.queueEvent(Runnable {
             synchronized(this@AudioDecoderImpl) {
                 if (!starting) return@Runnable
-                if (encode()) {
+                if (decode()) {
                     dequeue()
                 }
 //            debug_i("next ${videoInfo.presentationTimeUs}")
@@ -144,7 +159,7 @@ class AudioDecoderImpl(val context: CodecContext,
         })
     }
 
-    private fun encode(): Boolean {
+    private fun decode(): Boolean {
         val index = codec!!.dequeueInputBuffer(WAIT_TIME)
         if (index >= 0) {
             val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
