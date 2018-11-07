@@ -71,7 +71,7 @@ class CodecContext(ctx: Context,
                      internal var fps: Int = 0,//If not support, select the lower fps. 0 means auto.
                      internal var bitrate: Int = width * height * MEDIUM,
                      internal var iFrameInterval: Int = 2,
-                     internal var bitrateMode: Int = 1,//if support, default VBR
+                     internal var bitrateMode: Int = BITRATE_MODE_CBR,//if support, default CBR
                      /**
                       * if support, default High. It will be change by CodecHelper#createVideoFormat
                       * {@link MediaCodecInfo.CodecProfileLevel}
@@ -86,6 +86,9 @@ class CodecContext(ctx: Context,
             const val HIGH = 5
             const val MEDIUM = 3
             const val LOW = 1
+            const val BITRATE_MODE_CBR = 2
+            const val BITRATE_MODE_CQ = 0
+            const val BITRATE_MODE_VBR = 1
         }
     }
 
