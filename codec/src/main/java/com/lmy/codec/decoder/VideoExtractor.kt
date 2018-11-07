@@ -8,6 +8,7 @@ package com.lmy.codec.decoder
 
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.os.Build
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Track
 import com.lmy.codec.util.debug_e
@@ -54,6 +55,19 @@ class VideoExtractor(private val context: CodecContext,
             context.cameraSize.width = context.video.height
             context.cameraSize.height = context.video.width
         }
+        if (getVideoTrack()!!.format.containsKey(MediaFormat.KEY_PROFILE)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            context.video.profile = getVideoTrack()!!.format.getInteger(MediaFormat.KEY_PROFILE)
+        }
+        if (getVideoTrack()!!.format.containsKey(MediaFormat.KEY_LEVEL)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            context.video.level = getVideoTrack()!!.format.getInteger(MediaFormat.KEY_LEVEL)
+        }
+        if (getVideoTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+            context.video.bitrateMode = CodecContext.Video.BITRATE_MODE_CBR//静态码率
+        } else {
+            context.video.bitrateMode = CodecContext.Video.BITRATE_MODE_VBR//动态码率
+        }
     }
 
     fun seekTo(startUs: Long) {
@@ -81,7 +95,9 @@ class VideoExtractor(private val context: CodecContext,
     fun release() {
         videoExtractor.release()
         audioExtractor.release()
+        videoTrack?.release()
         videoTrack = null
+        audioTrack?.release()
         audioTrack = null
     }
 }
