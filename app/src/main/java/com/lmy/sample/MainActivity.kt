@@ -8,7 +8,6 @@ package com.lmy.sample
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
-import android.os.Bundle
 import android.os.Environment
 import android.support.v7.app.AlertDialog
 import android.view.MotionEvent
@@ -17,7 +16,6 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.RadioGroup
 import com.lmy.codec.encoder.Encoder
-import com.lmy.codec.loge
 import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.presenter.impl.VideoRecorderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
@@ -27,7 +25,6 @@ import com.lmy.codec.texture.impl.sticker.ImageSticker
 import com.lmy.codec.texture.impl.sticker.TextSticker
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.wrapper.CameraWrapper
-import com.lmy.sample.helper.PermissionHelper
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -38,22 +35,13 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
     private var defaultVideoWidth = 0
     private var defaultVideoHeight = 0
     private var count = 0
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        fillStatusBar()
-        initView()
-    }
+    override fun getLayoutResource(): Int = R.layout.activity_main
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun initView() {
+    override fun initView() {
         ratioGroup.check(ratioGroup.getChildAt(0).id)
         ratioGroup.setOnCheckedChangeListener(this)
         cameraGroup.setOnCheckedChangeListener(this)
-        loge("Permission: " + PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
-        if (!PermissionHelper.requestPermissions(this, PermissionHelper.PERMISSIONS_BASE))
-            return
         //Init TextureView
         val mTextureView = TextureView(this).apply {
             fitsSystemWindows = true
@@ -80,9 +68,9 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
         defaultVideoWidth = mRecorder.getWidth()
         defaultVideoHeight = mRecorder.getHeight()
 
-        effectBtn.setOnClickListener({
+        effectBtn.setOnClickListener {
             mFilterController.chooseFilter(this)
-        })
+        }
         nextBtn.setOnClickListener {
             nextBtn.isEnabled = false
             mRecorder.stop()
@@ -206,31 +194,6 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
                 mRecorder.setOutputSize(width, height)
                 mRecorder.setOutputUri("${Environment.getExternalStorageDirectory().absolutePath}/test_${count++}.mp4")
                 mRecorder.prepare()
-            }
-        }
-    }
-
-    private fun showPermissionsDialog() {
-        AlertDialog.Builder(this)
-                .setMessage("Please grant permission in the permission settings")
-                .setNegativeButton("cancel", { dialog, which -> finish() })
-                .setPositiveButton("enter", { dialog, which ->
-                    PermissionHelper.gotoPermissionManager(this@MainActivity)
-                    finish()
-                })
-                .show()
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (null == grantResults || grantResults.isEmpty()) return
-        when (requestCode) {
-            PermissionHelper.REQUEST_MY -> {
-                if (PermissionHelper.checkGrantResults(grantResults)) {
-                    initView()
-                } else {
-                    showPermissionsDialog()
-                }
             }
         }
     }

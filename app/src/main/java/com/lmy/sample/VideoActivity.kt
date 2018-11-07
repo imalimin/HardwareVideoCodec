@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
@@ -19,18 +18,13 @@ import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
 
 class VideoActivity : BaseActivity() {
+
     private var player: VideoPlayer? = null
     private var processor: VideoProcessor? = null
     private var mFilterController: FilterController? = null
     private var dialog: AlertDialog? = null
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_image)
-        fillStatusBar()
-        initView()
-    }
-
-    private fun initView() {
+    override fun getLayoutResource(): Int = R.layout.activity_image
+    override fun initView() {
         var uri = intent.data
         if (uri == null)
             uri = intent.getParcelableExtra(Intent.EXTRA_STREAM)

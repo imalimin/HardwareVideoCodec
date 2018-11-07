@@ -10,7 +10,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.view.TextureView
@@ -26,16 +25,11 @@ import java.io.File
  * Created by lmyooyo@gmail.com on 2018/9/21.
  */
 class ImageActivity : BaseActivity() {
+
     private var mProcessor: Processor? = null
     private var mFilterController: FilterController? = null
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_image)
-        fillStatusBar()
-        initView()
-    }
-
-    private fun initView() {
+    override fun getLayoutResource(): Int = R.layout.activity_image
+    override fun initView() {
         var uri = intent.data
         if (uri == null)
             uri = intent.getParcelableExtra(Intent.EXTRA_STREAM)
