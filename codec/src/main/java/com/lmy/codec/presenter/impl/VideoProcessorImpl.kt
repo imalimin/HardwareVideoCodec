@@ -42,6 +42,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
         Decoder.OnStateListener, Encoder.OnPreparedListener {
 
     private val context: CodecContext = CodecContext(ctx)
+    private val requestVideoContext = CodecContext.Video.create()
     private var filter: BaseFilter? = null
     private var pipeline: Pipeline? = EventPipeline.create("ImageProcessor")
     private var textureWrapper: CameraTextureWrapper? = null
@@ -115,11 +116,15 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
     }
 
     private fun prepareVideoEncoder() {
-        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE)) {
-            context.video.bitrate = extractor!!.getVideoTrack()!!
-                    .format.getInteger(MediaFormat.KEY_BIT_RATE)
+        if (requestVideoContext.bitrate > 0) {
+            context.video.bitrate = requestVideoContext.bitrate
         } else {
-            context.video.bitrate = getWidth() * getHeight() * context.video.fps / 24 * CodecContext.Video.MEDIUM
+            if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE)) {
+                context.video.bitrate = extractor!!.getVideoTrack()!!
+                        .format.getInteger(MediaFormat.KEY_BIT_RATE)
+            } else {
+                context.video.bitrate = getWidth() * getHeight() * context.video.fps / 24 * CodecContext.Video.MEDIUM
+            }
         }
         if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
             context.video.iFrameInterval = extractor!!.getVideoTrack()!!
@@ -277,6 +282,10 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
         } else {
             render!!.getFilter()
         }
+    }
+
+    override fun setBitrate(bitrate: Int) {
+        requestVideoContext.bitrate = bitrate
     }
 
     private fun getWidth(): Int = context.video.width
