@@ -116,21 +116,19 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
     }
 
     private fun prepareVideoEncoder() {
-        context.video.width = videoDecoder!!.getWidth()
-        context.video.height = videoDecoder!!.getHeight()
-        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_FRAME_RATE))
-            context.video.fps = extractor!!.getVideoTrack()!!
-                    .format.getInteger(MediaFormat.KEY_FRAME_RATE)
-        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL))
+        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
             context.video.iFrameInterval = extractor!!.getVideoTrack()!!
                     .format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)
-        else {
+        } else {
             context.video.iFrameInterval = 5
             debug_i("Set iFrameInterval=${context.video.iFrameInterval}")
         }
-        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE))
+        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE)) {
             context.video.bitrate = extractor!!.getVideoTrack()!!
                     .format.getInteger(MediaFormat.KEY_BIT_RATE)
+        } else {
+            context.video.bitrate = getWidth() * getHeight() * context.video.fps / 24 * CodecContext.Video.MEDIUM
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
                 && extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_PROFILE)) {
             context.video.profile = extractor!!.getVideoTrack()!!
