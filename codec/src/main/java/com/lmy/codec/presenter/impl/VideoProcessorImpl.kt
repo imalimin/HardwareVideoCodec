@@ -9,7 +9,6 @@ package com.lmy.codec.presenter.impl
 import android.content.Context
 import android.media.MediaCodec
 import android.media.MediaFormat
-import android.os.Build
 import android.text.TextUtils
 import android.view.TextureView
 import com.lmy.codec.decoder.AudioDecoder
@@ -116,28 +115,18 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
     }
 
     private fun prepareVideoEncoder() {
-        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
-            context.video.iFrameInterval = extractor!!.getVideoTrack()!!
-                    .format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)
-        } else {
-            context.video.iFrameInterval = 5
-            debug_i("Set iFrameInterval=${context.video.iFrameInterval}")
-        }
         if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_BIT_RATE)) {
             context.video.bitrate = extractor!!.getVideoTrack()!!
                     .format.getInteger(MediaFormat.KEY_BIT_RATE)
         } else {
             context.video.bitrate = getWidth() * getHeight() * context.video.fps / 24 * CodecContext.Video.MEDIUM
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_PROFILE)) {
-            context.video.profile = extractor!!.getVideoTrack()!!
-                    .format.getInteger(MediaFormat.KEY_PROFILE)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_LEVEL)) {
-            context.video.level = extractor!!.getVideoTrack()!!
-                    .format.getInteger(MediaFormat.KEY_LEVEL)
+        if (extractor!!.getVideoTrack()!!.format.containsKey(MediaFormat.KEY_I_FRAME_INTERVAL)) {
+            context.video.iFrameInterval = extractor!!.getVideoTrack()!!
+                    .format.getInteger(MediaFormat.KEY_I_FRAME_INTERVAL)
+        } else {
+            context.video.iFrameInterval = 5
+            debug_i("Set iFrameInterval=${context.video.iFrameInterval}")
         }
         videoEncoder = Encoder.Builder(context, render!!.getFrameBufferTexture(),
                 textureWrapper!!.egl!!.eglContext!!)
