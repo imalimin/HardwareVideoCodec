@@ -267,6 +267,7 @@ class AudioDecoderImpl(val context: CodecContext,
     /**
      * {@link https://blog.csdn.net/supermanwg/article/details/52798445}
      * {@link https://blog.csdn.net/jay100500/article/details/52955232}
+     * {@link https://blog.csdn.net/rayzhang80/article/details/46286543}
      */
     override fun getSampleRate(): Int {
         val sampleRate = when (track.format.getString(MediaFormat.KEY_MIME)) {

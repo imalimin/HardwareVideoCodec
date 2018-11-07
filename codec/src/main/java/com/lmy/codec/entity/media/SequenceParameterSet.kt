@@ -6,7 +6,7 @@ import kotlin.experimental.and
 
 /**
  * SPS
- * @link https://www.cnblogs.com/wainiwann/p/7477794.html
+ * {@link https://www.cnblogs.com/wainiwann/p/7477794.html}
  */
 data class SequenceParameterSet(
         var profileIdc: Byte = 0,//8 bit,profile
