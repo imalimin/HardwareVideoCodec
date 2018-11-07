@@ -89,6 +89,18 @@ class CodecContext(ctx: Context,
             const val BITRATE_MODE_CBR = 2
             const val BITRATE_MODE_CQ = 0
             const val BITRATE_MODE_VBR = 1
+            fun create(): Video {
+                return CodecContext.Video().apply {
+                    mime = ""
+                    width = -1
+                    height = -1
+                    bitrate = -1
+                    iFrameInterval = -1
+                    bitrateMode = -1
+                    profile = -1
+                    level = -1
+                }
+            }
         }
     }
 
