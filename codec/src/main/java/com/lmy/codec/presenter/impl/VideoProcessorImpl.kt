@@ -292,11 +292,9 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
         }
     }
 
-    private fun getWidth(): Int = if (null == extractor) 0
-    else extractor!!.getVideoTrack()!!.format.getInteger(MediaFormat.KEY_WIDTH)
+    private fun getWidth(): Int = context.video.width
 
-    private fun getHeight(): Int = if (null == extractor) 0
-    else extractor!!.getVideoTrack()!!.format.getInteger(MediaFormat.KEY_HEIGHT)
+    private fun getHeight(): Int = context.video.height
 
     override fun onStart(decoder: Decoder) {
 

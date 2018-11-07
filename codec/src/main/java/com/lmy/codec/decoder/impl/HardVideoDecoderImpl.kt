@@ -203,11 +203,9 @@ class HardVideoDecoderImpl(val context: CodecContext,
         pipeline.queueEvent(event)
     }
 
-    override fun getWidth(): Int = if (null != track)
-        track!!.format.getInteger(MediaFormat.KEY_WIDTH) else 0
+    override fun getWidth(): Int = context.video.width
 
-    override fun getHeight(): Int = if (null != track)
-        track!!.format.getInteger(MediaFormat.KEY_HEIGHT) else 0
+    override fun getHeight(): Int = context.video.height
 
     override fun getDuration(): Int = if (null != track)
         track!!.format.getInteger(MediaFormat.KEY_DURATION) / 1000 else 0
