@@ -15,7 +15,6 @@ import com.lmy.codec.presenter.VideoPlayer
 import com.lmy.codec.presenter.VideoProcessor
 import com.lmy.codec.presenter.impl.VideoPlayerImpl
 import com.lmy.codec.presenter.impl.VideoProcessorImpl
-import com.lmy.codec.texture.impl.filter.NatureFilter
 import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
 
@@ -72,7 +71,7 @@ class VideoActivity : BaseActivity() {
             dialog?.show()
             processor?.reset()
             processor?.setInputResource(File(path!!))
-//            processor?.setFilter(NatureFilter())
+            processor?.setFilter(player!!.getFilter()!!::class.java.newInstance())
             processor?.prepare()
             Toast.makeText(this, "Rendering", Toast.LENGTH_SHORT).show()
             val outputPath = getOutputPath(path!!)
