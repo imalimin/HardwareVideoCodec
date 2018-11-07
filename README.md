@@ -7,13 +7,14 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_1.gif)
 ![ScreenRecord_1](https://github.com/lmylr/HardwareVideoCodec/blob/master/images/ScreenRecord_2.gif)
 ## Latest release
-[V1.7.1](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.7.1)
+[V1.7.2](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.7.2)
 
-* Fix after switched the filter, the video of some devices will become black.
+* Support for add filters to existing videos or cut videos.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
 * Support RTMP stream.
+* Support edit video.
 * Support for changing resolution without restarting the camera.
 * Support hard & soft encode.
 * Record video & audio. Pack mp4 through MediaMuxer.
