@@ -310,7 +310,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
         } else if (decoder == audioDecoder) {
             flag[1] = true
         }
-        if (flag[0] && flag[1]) {
+        if ((flag[0] && !extractor!!.containAudio()) || (flag[0] && flag[1])) {//仅视频或音视频
             muxer?.release()
             muxer = null
             endEvent?.run()
