@@ -40,6 +40,7 @@ class VideoExtractor(private val context: CodecContext,
         context.audio.silence = !containAudio()//是否有音频
         videoTrack!!.select()
         audioTrack?.select()
+        context.video.fps = getVideoTrack()!!.format.getInteger(MediaFormat.KEY_FRAME_RATE)
         context.orientation = if (videoTrack!!.format.containsKey(VideoDecoder.KEY_ROTATION))
             videoTrack!!.format.getInteger(VideoDecoder.KEY_ROTATION) else 0
         if (context.isHorizontal()) {
