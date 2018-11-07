@@ -9,7 +9,8 @@ With it, you can encode a video at any resolution, no longer need to care about 
 ## Latest release
 [V1.7.2](https://github.com/lmylr/HardwareVideoCodec/releases/tag/v1.7.2)
 
-* Support for add filters to existing videos or cut videos.
+* Support add filters to existing videos or cut videos.
+* Support video player.
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
