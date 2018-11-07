@@ -13,8 +13,8 @@ With it, you can encode a video at any resolution, no longer need to care about 
 
 ## Features
 * Support video encoding at any resolution. No need to care about camera resolution.
+* Support for add filters to existing videos or cut videos.
 * Support RTMP stream.
-* Support edit video.
 * Support for changing resolution without restarting the camera.
 * Support hard & soft encode.
 * Record video & audio. Pack mp4 through MediaMuxer.
