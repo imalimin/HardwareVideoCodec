@@ -38,7 +38,7 @@ class VideoExtractor(private val context: CodecContext,
         videoTrack = Track.getVideoTrack(videoExtractor)
         audioTrack = Track.getAudioTrack(audioExtractor)
         videoTrack!!.select()
-        audioTrack!!.select()
+        audioTrack?.select()
         context.orientation = if (videoTrack!!.format.containsKey(VideoDecoder.KEY_ROTATION))
             videoTrack!!.format.getInteger(VideoDecoder.KEY_ROTATION) else 0
         if (context.isHorizontal()) {
@@ -56,12 +56,12 @@ class VideoExtractor(private val context: CodecContext,
 
     fun seekTo(startUs: Long) {
         videoTrack!!.seekTo(startUs)
-        audioTrack!!.seekTo(startUs)
+        audioTrack?.seekTo(startUs)
     }
 
     fun range(startUs: Long, endUs: Long) {
         videoTrack!!.range(startUs, endUs)
-        audioTrack!!.range(startUs, endUs)
+        audioTrack?.range(startUs, endUs)
     }
 
     fun getVideoTrack(): Track? {
