@@ -37,6 +37,7 @@ class VideoExtractor(private val context: CodecContext,
         }
         videoTrack = Track.getVideoTrack(videoExtractor)
         audioTrack = Track.getAudioTrack(audioExtractor)
+        context.audio.silence = !containAudio()//是否有音频
         videoTrack!!.select()
         audioTrack?.select()
         context.orientation = if (videoTrack!!.format.containsKey(VideoDecoder.KEY_ROTATION))

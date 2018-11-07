@@ -95,7 +95,8 @@ class CodecContext(ctx: Context,
                      internal var bitrate: Int = sampleRateInHz * 2,
                      internal var profile: Int = MediaCodecInfo.CodecProfileLevel.AACObjectLC,
                      internal var sampleBits: Int = AudioFormat.ENCODING_PCM_16BIT,
-                     internal var deNoise: Boolean = false)
+                     internal var deNoise: Boolean = false,
+                     internal var silence: Boolean = false)
 
     enum class CodecType {
         HARD, SOFT

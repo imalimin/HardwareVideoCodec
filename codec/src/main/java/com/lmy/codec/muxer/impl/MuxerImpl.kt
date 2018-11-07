@@ -11,6 +11,7 @@ import android.media.MediaFormat
 import android.media.MediaMuxer
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Sample
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.impl.EventPipeline
@@ -23,8 +24,7 @@ import java.util.*
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
-class MuxerImpl(var path: String) : Muxer {
-
+class MuxerImpl(private val context: CodecContext) : Muxer {
     private val mQueue = LinkedList<Sample>()
     private val mWriteSyn = Any()
     private var mAudioPipeline = EventPipeline.create("AudioWritePipeline")
@@ -48,9 +48,9 @@ class MuxerImpl(var path: String) : Muxer {
         mAudioTrackReady = false
         mStart = false
         //删除已存在的文件
-        val file = File(path)
+        val file = File(context.ioContext.path!!)
         if (file.exists()) file.delete()
-        muxer = MediaMuxer(path, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+        muxer = MediaMuxer(file.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
     }
 
     override fun reset() {
@@ -82,7 +82,7 @@ class MuxerImpl(var path: String) : Muxer {
     }
 
     private fun checkStart() {
-        if (mVideoTrackReady && mAudioTrackReady) {
+        if ((mVideoTrackReady && context.audio.silence) || (mVideoTrackReady && mAudioTrackReady)) {
             muxer?.start()
             mStart = true
             debug_e("Muxer start")

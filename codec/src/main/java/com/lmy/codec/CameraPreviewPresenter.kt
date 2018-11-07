@@ -78,7 +78,7 @@ class CameraPreviewPresenter(var context: CodecContext,
         if (TextUtils.isEmpty(context.ioContext.path)) {
             throw RuntimeException("context.ioContext.path can not be null!")
         }
-        muxer = MuxerImpl(context.ioContext.path!!)
+        muxer = MuxerImpl(context)
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
                 cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
         if (null != onStateListener)

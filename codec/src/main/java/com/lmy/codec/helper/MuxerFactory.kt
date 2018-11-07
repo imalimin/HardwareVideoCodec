@@ -18,7 +18,7 @@ class MuxerFactory {
             return if (context.ioContext.path!!.startsWith("rtmp")) {
                 RtmpMuxerImpl(context)
             } else {
-                MuxerImpl(context.ioContext.path!!)
+                MuxerImpl(context)
             }
         }
     }
