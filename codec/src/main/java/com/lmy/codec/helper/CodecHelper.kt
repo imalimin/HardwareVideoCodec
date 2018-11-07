@@ -47,8 +47,10 @@ class CodecHelper {
             mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, context.video.bitrate)
             mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, context.video.fps)
             mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, context.video.iFrameInterval)
+            debug_i("bitrateMode=${context.video.bitrateMode}， bitrate=${context.video.bitrate}")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mediaFormat.setInteger(MediaFormat.KEY_BITRATE_MODE, context.video.bitrateMode)
+                mediaFormat.setInteger(MediaFormat.KEY_COMPLEXITY, MediaCodecInfo.EncoderCapabilities.BITRATE_MODE_CBR)
                 if (!ignoreDevice)
                     setProfileLevel(context, codecInfo!!, mediaFormat)
             }
