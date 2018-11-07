@@ -36,8 +36,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation 'com.tencent.bugly:crashreport:latest.release'
     implementation 'com.tencent.bugly:nativecrashreport:latest.release'
-//    implementation 'com.lmy.codec:hardwarevideocodec:1.7.1'
-//    implementation 'com.lmy.codec:rtmp:1.7.1'
+//    implementation 'com.lmy.codec:hardwarevideocodec:1.7.2'
+//    implementation 'com.lmy.codec:rtmp:1.7.2'
     implementation project(':codec')
     implementation project(':rtmp')
 }
