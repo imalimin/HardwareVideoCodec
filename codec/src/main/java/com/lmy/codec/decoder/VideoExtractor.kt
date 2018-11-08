@@ -70,9 +70,9 @@ class VideoExtractor(private val context: CodecContext,
         }
     }
 
-    fun seekTo(startUs: Long) {
-        videoTrack!!.seekTo(startUs)
-        audioTrack?.seekTo(startUs)
+    fun seekTo(timeUs: Long) {
+        videoTrack!!.seekTo(timeUs)
+        audioTrack?.seekTo(timeUs)
     }
 
     fun range(startUs: Long, endUs: Long) {

@@ -31,6 +31,7 @@ import java.nio.ByteBuffer
 
 class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
 
+    override var onPlayStateListener: VideoPlayer.OnPlayStateListener? = null
     private var pipeline: Pipeline? = EventPipeline.create("VideoPlayImpl")
     private var textureWrapper: CameraTextureWrapper? = null
     private var context: CodecContext = CodecContext(ctx)
@@ -43,6 +44,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
     private var filter: BaseFilter? = null
     private var audioPts = 0L
     private var playing = false
+    private var videoDurationUs = 0L
 
     override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
@@ -53,6 +55,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
 //                debug_e("Delay: ${(info.presentationTimeUs - audioPts) / 1000}")
                 videoDecoder?.delay(info.presentationTimeUs - audioPts)
             }
+            onPlayStateListener?.onPlaying(this, info.presentationTimeUs, videoDurationUs)
             render?.onFrameAvailable()
         }
     }
@@ -76,6 +79,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
 
     private fun prepareExtractor() {
         extractor = VideoExtractor(context, context.ioContext.path!!)
+        videoDurationUs = extractor!!.getVideoTrack()!!.getDurationUs()
     }
 
     private fun prepareDecoder() {
@@ -102,11 +106,36 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
             render = DefaultRenderImpl(context, textureWrapper!!, pipeline!!, filter)
             render?.start(texture, width, height)
             render?.updateSize(width, height)
+            onPlayStateListener?.onPrepared(this, videoDurationUs)
+        })
+    }
+
+    @Synchronized
+    override fun seekTo(timeUs: Long) {
+        pipeline?.queueEvent(Runnable {
+            debug_i("seekTo $timeUs")
+            extractor?.seekTo(timeUs)
         })
     }
 
     override fun reset() {
         playing = false
+        player?.release()
+        player = null
+        render?.release()
+        render = null
+        pipeline?.queueEvent(Runnable {
+            textureWrapper?.release()
+            textureWrapper = null
+            videoDecoder?.release()
+            videoDecoder = null
+            audioDecoder?.release()
+            audioDecoder = null
+            extractor?.release()
+            extractor = null
+            onPlayStateListener?.onStop(this)
+        })
+        context.reset()
     }
 
     override fun prepare() {
@@ -144,6 +173,8 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
     override fun start() {
         pipeline?.queueEvent(Runnable {
             playing = true
+            debug_i("start")
+            onPlayStateListener?.onStart(this)
             videoDecoder?.start()
             audioDecoder?.start()
         })
@@ -152,6 +183,8 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
     override fun pause() {
         pipeline?.queueEvent(Runnable {
             playing = false
+            debug_i("pause")
+            onPlayStateListener?.onPause(this)
             videoDecoder?.pause()
             audioDecoder?.pause()
         })
@@ -162,6 +195,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
     override fun stop() {
         pipeline?.queueEvent(Runnable {
             playing = false
+            onPlayStateListener?.onStop(this)
             videoDecoder?.stop()
             audioDecoder?.stop()
         })
@@ -189,6 +223,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
             audioDecoder = null
             extractor?.release()
             extractor = null
+            onPlayStateListener?.onStop(this)
         })
         pipeline?.quit()
         pipeline = null

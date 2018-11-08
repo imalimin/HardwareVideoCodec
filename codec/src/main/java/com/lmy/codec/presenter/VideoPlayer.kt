@@ -9,6 +9,8 @@ package com.lmy.codec.presenter
 import android.view.TextureView
 
 interface VideoPlayer : FilterSupport {
+    var onPlayStateListener: OnPlayStateListener?
+    fun seekTo(timeUs: Long)
     fun reset()
     fun prepare()
     fun setInputResource(path: String)
@@ -18,4 +20,11 @@ interface VideoPlayer : FilterSupport {
     fun pause()
     fun stop()
     fun release()
+    interface OnPlayStateListener {
+        fun onPrepared(play: VideoPlayer, durationUs: Long)
+        fun onStart(play: VideoPlayer)
+        fun onPause(play: VideoPlayer)
+        fun onStop(play: VideoPlayer)
+        fun onPlaying(play: VideoPlayer, timeUs: Long, durationUs: Long)
+    }
 }
