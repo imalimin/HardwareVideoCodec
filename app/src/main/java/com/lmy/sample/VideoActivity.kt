@@ -51,11 +51,12 @@ class VideoActivity : BaseActivity(), VideoPlayer.OnPlayStateListener, View.OnTo
         mTextureContainer.addView(mTextureView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT))
         player = VideoPlayerImpl(applicationContext).apply {
+            reset()
+            onPlayStateListener = this@VideoActivity
             setInputResource(path!!)
             setPreviewDisplay(mTextureView)
             prepare()
         }
-        player?.onPlayStateListener = this
         player?.start()
         mFilterController = FilterController(player!!, progressLayout)
         mTextureContainer.setOnClickListener {
