@@ -76,6 +76,22 @@ class VideoActivity : BaseActivity() {
                 }
             })
         }
+        mTextureContainer.setOnClickListener {
+            if (player!!.isPlaying())
+                player?.pause()
+            else
+                player?.start()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        player?.start()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        player?.pause()
     }
 
     override fun onDestroy() {

@@ -7,13 +7,13 @@
 package com.lmy.codec.presenter
 
 import android.view.TextureView
-import java.io.File
 
 interface VideoPlayer : FilterSupport {
     fun reset()
     fun prepare()
     fun setInputResource(path: String)
     fun setPreviewDisplay(view: TextureView)
+    fun isPlaying(): Boolean
     fun start()
     fun pause()
     fun stop()

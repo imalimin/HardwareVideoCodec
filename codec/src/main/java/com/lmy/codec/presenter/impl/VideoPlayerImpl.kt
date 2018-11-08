@@ -42,6 +42,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
     private var view: TextureView? = null
     private var filter: BaseFilter? = null
     private var audioPts = 0L
+    private var playing = false
 
     override fun onSample(decoder: Decoder, info: MediaCodec.BufferInfo, data: ByteBuffer?) {
         if (decoder == audioDecoder) {
@@ -105,7 +106,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
     }
 
     override fun reset() {
-
+        playing = false
     }
 
     override fun prepare() {
@@ -142,6 +143,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
 
     override fun start() {
         pipeline?.queueEvent(Runnable {
+            playing = true
             videoDecoder?.start()
             audioDecoder?.start()
         })
@@ -149,13 +151,17 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
 
     override fun pause() {
         pipeline?.queueEvent(Runnable {
+            playing = false
             videoDecoder?.pause()
             audioDecoder?.pause()
         })
     }
 
+    override fun isPlaying(): Boolean = playing
+
     override fun stop() {
         pipeline?.queueEvent(Runnable {
+            playing = false
             videoDecoder?.stop()
             audioDecoder?.stop()
         })
