@@ -53,6 +53,16 @@ class VideoActivity : BaseActivity() {
         }
         player?.start()
         mFilterController = FilterController(player!!, progressLayout)
+        mTextureContainer.setOnClickListener {
+            if (player!!.isPlaying())
+                player?.pause()
+            else
+                player?.start()
+        }
+        initProcessor(path!!)
+    }
+
+    private fun initProcessor(path: String) {
         processor = VideoProcessorImpl.create(applicationContext)
         effectBtn.setOnClickListener {
             mFilterController?.chooseFilter(this)
@@ -64,24 +74,25 @@ class VideoActivity : BaseActivity() {
                     .create()
             dialog?.show()
             processor?.reset()
-            processor?.setInputResource(File(path!!))
+            processor?.setInputResource(File(path))
             processor?.setFilter(player!!.getFilter()!!::class.java.newInstance())
             processor?.prepare()
             Toast.makeText(this, "Rendering", Toast.LENGTH_SHORT).show()
-            val outputPath = getOutputPath(path!!)
+            val outputPath = getOutputPath(path)
             processor?.save(outputPath, Runnable {
                 runOnUiThread {
                     dialog?.dismiss()
                     Toast.makeText(this, "Saved to $outputPath", Toast.LENGTH_SHORT).show()
+                    insert(outputPath)
                 }
             })
         }
-        mTextureContainer.setOnClickListener {
-            if (player!!.isPlaying())
-                player?.pause()
-            else
-                player?.start()
-        }
+    }
+
+    private fun insert(path: String) {
+        val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+        intent.data = Uri.fromFile(File(path))
+        sendBroadcast(intent)
     }
 
     override fun onResume() {
