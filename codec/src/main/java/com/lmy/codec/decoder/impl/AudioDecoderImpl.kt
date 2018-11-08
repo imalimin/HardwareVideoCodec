@@ -207,10 +207,11 @@ class AudioDecoderImpl(val context: CodecContext,
             if (size < 0) {
                 codec!!.queueInputBuffer(index, 0, 0, 0,
                         MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                debug_e("eos!")
+                debug_e("Track eos!")
                 eos = true
-                starting = false
+                pause()
             } else {
+                eos = false
                 codec!!.queueInputBuffer(index, 0, size, track.getSampleTime(), 0)
                 track.advance()
             }
@@ -227,14 +228,18 @@ class AudioDecoderImpl(val context: CodecContext,
             debug_i("EOS!")
             return
         }
+        if (starting) {
+            debug_i("started")
+            return
+        }
         starting = true
         onStateListener?.onStart(this)
         next()
     }
 
     override fun pause() {
-        if (eos) {
-            debug_i("EOS!")
+        if (!starting) {
+            debug_i("paused")
             return
         }
         starting = false

@@ -29,7 +29,7 @@ import com.lmy.codec.util.debug_i
 import com.lmy.codec.wrapper.CameraTextureWrapper
 import java.nio.ByteBuffer
 
-class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
+class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener, Decoder.OnStateListener {
 
     override var onPlayStateListener: VideoPlayer.OnPlayStateListener? = null
     private var pipeline: Pipeline? = EventPipeline.create("VideoPlayImpl")
@@ -246,5 +246,17 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener {
         } else {
             render!!.getFilter()
         }
+    }
+
+    override fun onStart(decoder: Decoder) {
+
+    }
+
+    override fun onPause(decoder: Decoder) {
+        playing = false
+    }
+
+    override fun onEnd(decoder: Decoder) {
+        playing = false
     }
 }

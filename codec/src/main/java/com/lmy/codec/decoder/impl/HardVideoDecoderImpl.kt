@@ -101,8 +101,9 @@ class HardVideoDecoderImpl(val context: CodecContext,
                                 MediaCodec.BUFFER_FLAG_END_OF_STREAM)
                         debug_e("Track eos!")
                         eos = true
-                        starting = false
+                        pause()
                     } else {
+                        eos = false
                         codec!!.queueInputBuffer(index, 0, size, track.getSampleTime(), 0)
                         track.advance()
                     }
@@ -130,7 +131,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
             MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> debug_i("INFO_OUTPUT_BUFFERS_CHANGED")
             else -> {
                 if (bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) {
-                    debug_e("dequeue stream end")
+                    debug_e("dequeue stream end, flag=${bufferInfo.flags}")
                     onStateListener?.onEnd(this)
                 } else {
                     onSampleListener?.onSample(this, bufferInfo, null)
@@ -171,14 +172,18 @@ class HardVideoDecoderImpl(val context: CodecContext,
             debug_i("EOS!")
             return
         }
+        if (starting) {
+            debug_i("started")
+            return
+        }
         starting = true
         onStateListener?.onStart(this)
         next()
     }
 
     override fun pause() {
-        if (eos) {
-            debug_i("EOS!")
+        if (!starting) {
+            debug_i("paused")
             return
         }
         onStateListener?.onPause(this)
