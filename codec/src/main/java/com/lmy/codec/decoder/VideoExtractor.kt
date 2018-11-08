@@ -93,11 +93,11 @@ class VideoExtractor(private val context: CodecContext,
     }
 
     fun release() {
-        videoExtractor.release()
-        audioExtractor.release()
         videoTrack?.release()
         videoTrack = null
         audioTrack?.release()
         audioTrack = null
+        videoExtractor.release()
+        audioExtractor.release()
     }
 }
