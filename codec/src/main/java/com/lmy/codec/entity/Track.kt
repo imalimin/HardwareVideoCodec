@@ -83,6 +83,8 @@ data class Track(var index: Int,
         return startTime
     }
 
+    fun getDurationUs(): Long = format.getLong(MediaFormat.KEY_DURATION)
+
     @Synchronized
     internal fun release() {
         isRecycle = true
