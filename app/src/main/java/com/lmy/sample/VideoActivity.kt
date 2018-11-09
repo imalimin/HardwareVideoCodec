@@ -16,7 +16,7 @@ import com.lmy.codec.presenter.VideoPlayer
 import com.lmy.codec.presenter.VideoProcessor
 import com.lmy.codec.presenter.impl.VideoPlayerImpl
 import com.lmy.codec.presenter.impl.VideoProcessorImpl
-import kotlinx.android.synthetic.main.activity_image.*
+import kotlinx.android.synthetic.main.activity_video.*
 import java.io.File
 
 class VideoActivity : BaseActivity(), VideoPlayer.OnPlayStateListener, View.OnTouchListener {
@@ -27,7 +27,7 @@ class VideoActivity : BaseActivity(), VideoPlayer.OnPlayStateListener, View.OnTo
     private var dialog: AlertDialog? = null
     private var durationUs = 0L
     private var requestSeek = false
-    override fun getLayoutResource(): Int = R.layout.activity_image
+    override fun getLayoutResource(): Int = R.layout.activity_video
     override fun initView() {
         var uri = intent.data
         if (uri == null)
