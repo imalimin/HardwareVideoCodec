@@ -82,6 +82,7 @@ class DefaultRenderImpl(var context: CodecContext,
         }
         screenWrapper?.updateInputTexture(getFrameBufferTexture())
         screenWrapper?.egl?.makeCurrent()
+        screenWrapper?.clear()
         screenWrapper?.updateLocation(context)
     }
 
@@ -140,18 +141,13 @@ class DefaultRenderImpl(var context: CodecContext,
         this.width = width
         this.height = height
         pipeline?.queueEvent(Runnable {
-            cameraWrapper.egl?.makeCurrent()
-            initReader()
-            cameraWrapper.updateLocation(context)
-        })
-        pipeline?.queueEvent(Runnable {
             synchronized(filterLock) {
                 cameraWrapper.egl?.makeCurrent()
+                initReader()
+                cameraWrapper.updateLocation(context)
                 filter?.updateFrameBuffer(this.width, this.height)
+                initScreen()
             }
-        })
-        pipeline?.queueEvent(Runnable {
-            initScreen()
         })
     }
 

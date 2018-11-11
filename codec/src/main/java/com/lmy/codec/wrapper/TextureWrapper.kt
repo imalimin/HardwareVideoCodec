@@ -23,6 +23,12 @@ abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
 
     abstract fun draw(transformMatrix: FloatArray?)
 
+    fun clear() {
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+        GLES20.glClearColor(0f, 0f, 0f, 0f)
+        egl?.swapBuffers()
+    }
+
     fun createTexture(target: Int) {
         if (null == textureId) {
             textureId = IntArray(1)
