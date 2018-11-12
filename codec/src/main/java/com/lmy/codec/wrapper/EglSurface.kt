@@ -16,10 +16,10 @@ import com.lmy.codec.texture.impl.BaseTexture
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-abstract class TextureWrapper(open var surfaceTexture: SurfaceTexture? = null,
-                              var texture: BaseTexture? = null,
-                              open var textureId: IntArray? = null,
-                              var egl: Egl? = null) {
+abstract class EglSurface(open var surfaceTexture: SurfaceTexture? = null,
+                          var texture: BaseTexture? = null,
+                          open var textureId: IntArray? = null,
+                          var egl: Egl? = null) {
 
     abstract fun draw(transformMatrix: FloatArray?)
 

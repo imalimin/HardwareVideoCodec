@@ -53,7 +53,7 @@ class VideoRecorderImpl(ctx: Context
         if (null == cameraWrapper) {
             cameraWrapper = CameraWrapper.open(context, this)
                     .post(Runnable {
-                        render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper,
+                        render = DefaultRenderImpl(context, cameraWrapper!!.eglSurface,
                                 GLEventPipeline.INSTANCE, filter)
                     })
         }
@@ -249,7 +249,7 @@ class VideoRecorderImpl(ctx: Context
             setVideoBitrate(context.video.width * context.video.height * CodecContext.Video.MEDIUM * context.video.fps / 24)
         context.check()
         encoder = Encoder.Builder(context, render!!.getFrameBufferTexture(),
-                cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+                cameraWrapper!!.eglSurface.egl!!.eglContext!!)
                 .setOnPreparedListener(this)
                 .build()
         if (null != muxer)

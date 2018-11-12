@@ -31,7 +31,7 @@ import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.CameraTextureWrapper
+import com.lmy.codec.wrapper.CameraEglSurface
 import java.io.File
 import java.nio.ByteBuffer
 
@@ -45,7 +45,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
     private val requestVideoContext = CodecContext.Video.create()
     private var filter: BaseFilter? = null
     private var pipeline: Pipeline? = EventPipeline.create("ImageProcessor")
-    private var textureWrapper: CameraTextureWrapper? = null
+    private var eglSurface: CameraEglSurface? = null
     private var render: Render? = null
     private var extractor: VideoExtractor? = null
     private var videoDecoder: VideoDecoder? = null
@@ -134,7 +134,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
             debug_i("Set iFrameInterval=${context.video.iFrameInterval}")
         }
         videoEncoder = Encoder.Builder(context, render!!.getFrameBufferTexture(),
-                textureWrapper!!.egl!!.eglContext!!)
+                eglSurface!!.egl!!.eglContext!!)
                 .setOnPreparedListener(this)
                 .build()
         if (null != muxer) {
@@ -160,19 +160,19 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
     }
 
     private fun updateTexture() {
-        textureWrapper?.updateTexture()
-        textureWrapper?.updateLocation(context)
+        eglSurface?.updateTexture()
+        eglSurface?.updateLocation(context)
     }
 
     private fun prepareWrapper() {
         debug_i("prepareWrapper ${context.video.width}x${context.video.height}")
-        textureWrapper = CameraTextureWrapper(context.video.width, context.video.height)
+        eglSurface = CameraEglSurface(context.video.width, context.video.height)
         updateTexture()
     }
 
     private fun prepareDecoder() {
-        videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, textureWrapper!!.egl!!,
-                textureWrapper!!.surfaceTexture!!, pipeline!!, false, this)
+        videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, eglSurface!!.egl!!,
+                eglSurface!!.surfaceTexture!!, pipeline!!, false, this)
         videoDecoder?.onStateListener = this
         videoDecoder?.prepare()
         if (extractor!!.containAudio()) {
@@ -191,7 +191,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
             }
             extractor = VideoExtractor(context, this.inputPath!!)
             prepareWrapper()
-            render = DefaultRenderImpl(context, textureWrapper!!, pipeline!!, filter)
+            render = DefaultRenderImpl(context, eglSurface!!, pipeline!!, filter)
             render?.start(null, getWidth(), getHeight())
             render?.updateSize(getWidth(), getHeight())
         })
@@ -242,8 +242,8 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
         render?.release()
         render = null
         pipeline?.queueEvent(Runnable {
-            textureWrapper?.release()
-            textureWrapper = null
+            eglSurface?.release()
+            eglSurface = null
             videoDecoder?.release()
             videoDecoder = null
             audioDecoder?.release()

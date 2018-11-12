@@ -32,11 +32,11 @@ class CameraWrapper(private var context: CodecContext,
     private var mCamera: Camera? = null
     private var mCameras = 0
     private var mCameraIndex: CameraIndex? = null
-    val textureWrapper: CameraTextureWrapper
+    val eglSurface: CameraEglSurface
 
     init {
         mCameras = CameraHelper.getNumberOfCameras()
-        textureWrapper = CameraTextureWrapper(context.video.width, context.video.height)
+        eglSurface = CameraEglSurface(context.video.width, context.video.height)
         openCamera(context.cameraIndex)
     }
 
@@ -63,14 +63,14 @@ class CameraWrapper(private var context: CodecContext,
             stopPreview()
             updateTexture()
             prepare()
-            textureWrapper.updateLocation(context)
+            eglSurface.updateLocation(context)
             startPreview()
         })
     }
 
     private fun updateTexture() {
-        textureWrapper.updateTexture()
-        textureWrapper.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
+        eglSurface.updateTexture()
+        eglSurface.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
     }
 
     private fun getCameraIndex(): Int {
@@ -151,7 +151,7 @@ class CameraWrapper(private var context: CodecContext,
             return
         }
         try {
-            mCamera!!.setPreviewTexture(textureWrapper.surfaceTexture)
+            mCamera!!.setPreviewTexture(eglSurface.surfaceTexture)
             mCamera!!.startPreview()
         } catch (e: Exception) {
             release()
@@ -175,7 +175,7 @@ class CameraWrapper(private var context: CodecContext,
     }
 
     private fun releaseTexture() {
-        textureWrapper.release()
+        eglSurface.release()
         debug_i("releaseTexture")
     }
 }

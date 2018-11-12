@@ -21,7 +21,7 @@ import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.wrapper.CodecTextureWrapper
+import com.lmy.codec.wrapper.CodecEglSurface
 
 
 /**
@@ -40,7 +40,7 @@ class VideoEncoderImpl(var context: CodecContext,
 
     private val outputFormatLock = Object()
     private val bufferInfo = MediaCodec.BufferInfo()
-    private var codecWrapper: CodecTextureWrapper? = null
+    private var eglSurface: CodecEglSurface? = null
     private var codec: MediaCodec? = null
     private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var pTimer: PresentationTimer = PresentationTimer(context.video.fps)
@@ -95,8 +95,8 @@ class VideoEncoderImpl(var context: CodecContext,
         }
         pTimer.reset()
         codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        codecWrapper = CodecTextureWrapper(codec!!.createInputSurface(), textureId, eglContext)
-        codecWrapper?.egl?.makeCurrent()
+        eglSurface = CodecEglSurface(codec!!.createInputSurface(), textureId, eglContext)
+        eglSurface?.egl?.makeCurrent()
         codec!!.start()
         onPreparedListener?.onPrepared(this)
     }
@@ -132,14 +132,14 @@ class VideoEncoderImpl(var context: CodecContext,
     private fun encode() {
         synchronized(mEncodingSyn) {
             pTimer.record()
-            codecWrapper?.egl?.makeCurrent()
+            eglSurface?.egl?.makeCurrent()
             GLES20.glViewport(0, 0, context.video.width, context.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-            codecWrapper?.draw(null)
-            codecWrapper?.egl?.setPresentationTime(if (Long.MIN_VALUE != nsecs)
+            eglSurface?.draw(null)
+            eglSurface?.egl?.setPresentationTime(if (Long.MIN_VALUE != nsecs)
                 nsecs else pTimer.presentationTimeUs)
-            codecWrapper?.egl?.swapBuffers()
+            eglSurface?.egl?.swapBuffers()
             mDequeuePipeline.queueEvent(Runnable { dequeue() })
         }
     }
@@ -228,8 +228,8 @@ class VideoEncoderImpl(var context: CodecContext,
         codec!!.stop()
         codec!!.release()
         mPipeline.queueEvent(Runnable {
-            codecWrapper?.release()
-            codecWrapper = null
+            eglSurface?.release()
+            eglSurface = null
         })
         if (!GLEventPipeline.isMe(mPipeline)) {
             mPipeline.quit()

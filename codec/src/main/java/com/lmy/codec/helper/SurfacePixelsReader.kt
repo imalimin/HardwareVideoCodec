@@ -7,7 +7,7 @@ import android.opengl.GLES20
 import android.util.Log
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
-import com.lmy.codec.wrapper.CodecTextureWrapper
+import com.lmy.codec.wrapper.CodecEglSurface
 import java.nio.ByteBuffer
 
 class SurfacePixelsReader private constructor(private var width: Int,
@@ -19,7 +19,7 @@ class SurfacePixelsReader private constructor(private var width: Int,
 
     private var imageReader: ImageReader = ImageReader.newInstance(width, height,
             PixelFormat.RGBA_8888, maxImages)
-    private var codecWrapper: CodecTextureWrapper? = null
+    private var eglSurface: CodecEglSurface? = null
     private var mPipeline: Pipeline = EventPipeline.create("SurfacePixelsReader")
     private var data: ByteArray? = null
     var onReadListener: OnReadListener? = null
@@ -30,21 +30,21 @@ class SurfacePixelsReader private constructor(private var width: Int,
     }
 
     fun prepare() {
-        codecWrapper = CodecTextureWrapper(imageReader.surface, textureId, eglContext)
+        eglSurface = CodecEglSurface(imageReader.surface, textureId, eglContext)
     }
 
     fun read() {
-        codecWrapper?.egl?.makeCurrent()
+        eglSurface?.egl?.makeCurrent()
         GLES20.glViewport(0, 0, width, height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        codecWrapper?.draw(null)
-        codecWrapper?.egl?.swapBuffers()
+        eglSurface?.draw(null)
+        eglSurface?.egl?.swapBuffers()
     }
 
     fun stop() {
-        codecWrapper?.release()
-        codecWrapper = null
+        eglSurface?.release()
+        eglSurface = null
         imageReader.close()
         onReadListener = null
     }

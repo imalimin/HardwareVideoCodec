@@ -40,7 +40,7 @@ class RecordPresenter(var context: CodecContext,
     init {
         cameraWrapper = CameraWrapper.open(context, this)
                 .post(Runnable {
-                    render = DefaultRenderImpl(context, cameraWrapper!!.textureWrapper,
+                    render = DefaultRenderImpl(context, cameraWrapper!!.eglSurface,
                             GLEventPipeline.INSTANCE)
                 })
     }
@@ -87,7 +87,7 @@ class RecordPresenter(var context: CodecContext,
             muxer?.reset()
         }
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
-                cameraWrapper!!.textureWrapper.egl!!.eglContext!!)
+                cameraWrapper!!.eglSurface.egl!!.eglContext!!)
         if (null != onStateListener)
             setOnStateListener(onStateListener!!)
         audioEncoder = AudioEncoderImpl.fromDevice(context)

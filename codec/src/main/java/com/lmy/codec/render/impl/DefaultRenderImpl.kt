@@ -16,15 +16,15 @@ import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.CameraTextureWrapper
-import com.lmy.codec.wrapper.ScreenTextureWrapper
+import com.lmy.codec.wrapper.CameraEglSurface
+import com.lmy.codec.wrapper.ScreenEglSurface
 
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/27.
  */
 class DefaultRenderImpl(var context: CodecContext,
-                        var cameraWrapper: CameraTextureWrapper,
+                        var eglSurface: CameraEglSurface,
                         private var pipeline: Pipeline,
                         private var filter: BaseFilter? = null)
     : Render, FpsMeasurer.OnUpdateListener {
@@ -34,7 +34,7 @@ class DefaultRenderImpl(var context: CodecContext,
     private val outputFrameBufferTexture = IntArray(1)
     private var transformMatrix: FloatArray = FloatArray(16)
     private var screenTexture: SurfaceTexture? = null
-    private var screenWrapper: ScreenTextureWrapper? = null
+    private var screenWrapper: ScreenEglSurface? = null
     private var reader: PixelsReader? = null
     private var width: Int = 0
     private var height: Int = 0
@@ -54,14 +54,14 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun initFilter(f: BaseFilter) {
         synchronized(filterLock) {
-            cameraWrapper.egl?.makeCurrent()
+            eglSurface.egl?.makeCurrent()
             filter?.release()
             filter = f
             filter!!.width = this.width
             filter!!.height = this.height
-            debug_i("Camera texture: ${cameraWrapper.getFrameBuffer()[0]}," +
-                    " ${cameraWrapper.getFrameBufferTexture()[0]}")
-            filter!!.textureId = cameraWrapper.getFrameBufferTexture()
+            debug_i("Camera texture: ${eglSurface.getFrameBuffer()[0]}," +
+                    " ${eglSurface.getFrameBufferTexture()[0]}")
+            filter!!.textureId = eglSurface.getFrameBufferTexture()
             filter!!.init()
             outputFrameBuffer[0] = filter!!.frameBuffer[0]
             outputFrameBufferTexture[0] = filter!!.frameBufferTexture[0]
@@ -77,8 +77,8 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun initScreen() {
         if (null == screenWrapper && null != screenTexture) {
-            screenWrapper = ScreenTextureWrapper(screenTexture, getFrameBufferTexture(),
-                    cameraWrapper.egl!!.eglContext!!)
+            screenWrapper = ScreenEglSurface(screenTexture, getFrameBufferTexture(),
+                    eglSurface.egl!!.eglContext!!)
         }
         screenWrapper?.updateInputTexture(getFrameBufferTexture())
         screenWrapper?.egl?.makeCurrent()
@@ -104,7 +104,7 @@ class DefaultRenderImpl(var context: CodecContext,
 
     private fun drawFilter() {
         synchronized(filterLock) {
-            cameraWrapper.egl?.makeCurrent()
+            eglSurface.egl?.makeCurrent()
             GLES20.glViewport(0, 0, this.width, this.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
@@ -119,14 +119,14 @@ class DefaultRenderImpl(var context: CodecContext,
     }
 
     private fun drawCamera() {
-        cameraWrapper.egl?.makeCurrent()
-        if (null != cameraWrapper.surfaceTexture) {
-            cameraWrapper.surfaceTexture?.updateTexImage()
-            cameraWrapper.surfaceTexture?.getTransformMatrix(transformMatrix)
+        eglSurface.egl?.makeCurrent()
+        if (null != eglSurface.surfaceTexture) {
+            eglSurface.surfaceTexture?.updateTexImage()
+            eglSurface.surfaceTexture?.getTransformMatrix(transformMatrix)
         }
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
-        cameraWrapper.draw(transformMatrix)
+        eglSurface.draw(transformMatrix)
     }
 
     override fun start(texture: SurfaceTexture?, width: Int, height: Int) {
@@ -142,9 +142,9 @@ class DefaultRenderImpl(var context: CodecContext,
         this.height = height
         pipeline?.queueEvent(Runnable {
             synchronized(filterLock) {
-                cameraWrapper.egl?.makeCurrent()
+                eglSurface.egl?.makeCurrent()
                 initReader()
-                cameraWrapper.updateLocation(context)
+                eglSurface.updateLocation(context)
                 filter?.updateFrameBuffer(this.width, this.height)
                 initScreen()
             }
@@ -153,7 +153,7 @@ class DefaultRenderImpl(var context: CodecContext,
 
     override fun stop() {
         pipeline?.queueEvent(Runnable {
-            cameraWrapper.egl?.makeCurrent()
+            eglSurface.egl?.makeCurrent()
             screenWrapper?.release()
             screenWrapper = null
             debug_i("release")

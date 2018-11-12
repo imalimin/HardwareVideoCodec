@@ -19,8 +19,8 @@ import com.lmy.codec.util.debug_e
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class CameraTextureWrapper(private val width: Int,
-                           private val height: Int) : TextureWrapper() {
+class CameraEglSurface(private val width: Int,
+                       private val height: Int) : EglSurface() {
 
     fun updateTexture() {
         if (null == egl) {
@@ -50,7 +50,7 @@ class CameraTextureWrapper(private val width: Int,
 
     private fun checkTexture() {
         if (null != texture && texture is BaseFrameBufferTexture) return
-        throw RuntimeException("CameraTextureWrapper`s texture must be BaseFrameBufferTexture and texture must not be null")
+        throw RuntimeException("CameraEglSurface`s texture must be BaseFrameBufferTexture and texture must not be null")
     }
 
     override fun draw(transformMatrix: FloatArray?) {

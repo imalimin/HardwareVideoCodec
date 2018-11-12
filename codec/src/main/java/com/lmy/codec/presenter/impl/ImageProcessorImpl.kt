@@ -22,7 +22,7 @@ import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.ScreenTextureWrapper
+import com.lmy.codec.wrapper.ScreenEglSurface
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -56,18 +56,18 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
     private var srcInputTexture = IntArray(1)
     private var screenInputTexture = IntArray(1)
     private var screenTexture: SurfaceTexture? = null
-    private var screenWrapper: ScreenTextureWrapper? = null
+    private var eglSurface: ScreenEglSurface? = null
     private var reader: SurfacePixelsReader? = null
     private var outputPath: String? = null
     private var saveEnd: Runnable? = null
 
     private fun createEGL() {
         debug_i("createEGL")
-        if (null == screenWrapper) {
-            screenWrapper = ScreenTextureWrapper(screenTexture, screenInputTexture, null)
-            screenWrapper?.egl?.makeCurrent()
+        if (null == eglSurface) {
+            eglSurface = ScreenEglSurface(screenTexture, screenInputTexture, null)
+            eglSurface?.egl?.makeCurrent()
         }
-        screenWrapper?.updateLocation(context)
+        eglSurface?.updateLocation(context)
     }
 
     private fun createSrcTexture() {
@@ -119,8 +119,8 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
             GLES20.glViewport(0, 0, context.viewSize.width, context.viewSize.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0f, 0f, 0f, 0f)
-            screenWrapper?.draw(null)
-            screenWrapper?.egl?.swapBuffers()
+            eglSurface?.draw(null)
+            eglSurface?.egl?.swapBuffers()
             debug_i("invalidate")
         })
     }
@@ -134,7 +134,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
         debug_i("updateSrcTexture ${context.video.width}x${context.video.height}, " +
                 "${context.viewSize.width}x${context.viewSize.height}, " +
                 "src=${srcInputTexture[0]}, screen=${screenInputTexture[0]}")
-        screenWrapper?.updateLocation(context)
+        eglSurface?.updateLocation(context)
         synchronized(filterLock) {
             filter?.updateFrameBuffer(context.video.width, context.video.height)
         }
@@ -177,10 +177,10 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
     }
 
     private fun updatePreview(width: Int, height: Int) {
-        if (null == screenWrapper) return
+        if (null == eglSurface) return
         context.viewSize.width = width
         context.viewSize.height = height
-        screenWrapper?.updateLocation(context)
+        eglSurface?.updateLocation(context)
     }
 
     override fun setPreviewDisplay(view: TextureView) {
@@ -191,7 +191,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
         if (null == reader) {
             mPipeline.queueEvent(Runnable {
                 reader = SurfacePixelsReader.build(context.video.width, context.video.height,
-                        filter!!.frameBufferTexture, screenWrapper!!.eglContext!!)
+                        filter!!.frameBufferTexture, eglSurface!!.eglContext!!)
                 reader?.prepare()
                 reader?.onReadListener = this
             })
@@ -249,8 +249,8 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
                 filter?.release()
                 filter = null
                 BaseFilter.release()
-                screenWrapper?.release()
-                screenWrapper = null
+                eglSurface?.release()
+                eglSurface = null
             }
         })
         mPipeline.quit()
