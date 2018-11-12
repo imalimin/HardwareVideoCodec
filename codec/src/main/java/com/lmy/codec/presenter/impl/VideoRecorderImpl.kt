@@ -23,7 +23,7 @@ import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.CameraWrapper
+import com.lmy.codec.media.CameraWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/8/9.

@@ -19,7 +19,7 @@ import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
-import com.lmy.codec.wrapper.CameraWrapper
+import com.lmy.codec.media.CameraWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.

@@ -4,7 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec.wrapper
+package com.lmy.codec.media
 
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
@@ -14,6 +14,7 @@ import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.util.debug_v
+import com.lmy.codec.wrapper.CameraEglSurface
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.

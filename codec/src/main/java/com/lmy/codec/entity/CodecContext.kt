@@ -10,7 +10,7 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.MediaCodecInfo
 import com.lmy.codec.helper.Resources
-import com.lmy.codec.wrapper.CameraWrapper
+import com.lmy.codec.media.CameraWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.

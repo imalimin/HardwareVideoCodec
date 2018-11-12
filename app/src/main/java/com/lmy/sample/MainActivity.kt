@@ -24,7 +24,7 @@ import com.lmy.codec.texture.impl.filter.GroupFilter
 import com.lmy.codec.texture.impl.sticker.ImageSticker
 import com.lmy.codec.texture.impl.sticker.TextSticker
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.wrapper.CameraWrapper
+import com.lmy.codec.media.CameraWrapper
 import kotlinx.android.synthetic.main.activity_main.*
 
 
