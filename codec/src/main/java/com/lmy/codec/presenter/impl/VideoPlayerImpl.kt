@@ -17,6 +17,7 @@ import com.lmy.codec.decoder.VideoDecoder
 import com.lmy.codec.decoder.VideoExtractor
 import com.lmy.codec.decoder.impl.AudioDecoderImpl
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
+import com.lmy.codec.egl.CameraEglSurface
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.media.AudioPlayer
 import com.lmy.codec.pipeline.Pipeline
@@ -26,7 +27,6 @@ import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.egl.CameraEglSurface
 import java.nio.ByteBuffer
 
 class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener, Decoder.OnStateListener {
@@ -84,7 +84,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener, Dec
 
     private fun prepareDecoder() {
         videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, eglSurface!!.egl!!,
-                eglSurface!!.surfaceTexture!!, pipeline!!, true, this)
+                eglSurface!!.surface!!, pipeline!!, true, this)
         videoDecoder?.prepare()
         if (extractor!!.containAudio()) {
             audioDecoder = AudioDecoderImpl(context, extractor!!.getAudioTrack()!!, true, this)

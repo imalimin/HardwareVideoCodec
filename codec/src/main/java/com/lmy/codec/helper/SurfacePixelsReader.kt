@@ -5,21 +5,22 @@ import android.media.ImageReader
 import android.opengl.EGLContext
 import android.opengl.GLES20
 import android.util.Log
+import com.lmy.codec.egl.CodecEglSurface
+import com.lmy.codec.egl.EglInputSurface
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
-import com.lmy.codec.egl.CodecEglSurface
 import java.nio.ByteBuffer
 
 class SurfacePixelsReader private constructor(private var width: Int,
                                               private var height: Int,
                                               private var textureId: IntArray,
-                                              private var eglContext: EGLContext,
+                                              private var eglContext: EGLContext?,
                                               private var maxImages: Int = 5)
     : ImageReader.OnImageAvailableListener {
 
     private var imageReader: ImageReader = ImageReader.newInstance(width, height,
             PixelFormat.RGBA_8888, maxImages)
-    private var eglSurface: CodecEglSurface? = null
+    private var eglSurface: EglInputSurface? = null
     private var mPipeline: Pipeline = EventPipeline.create("SurfacePixelsReader")
     private var data: ByteArray? = null
     var onReadListener: OnReadListener? = null
@@ -30,7 +31,7 @@ class SurfacePixelsReader private constructor(private var width: Int,
     }
 
     fun prepare() {
-        eglSurface = CodecEglSurface(imageReader.surface, textureId, eglContext)
+        eglSurface = CodecEglSurface.create(imageReader.surface, textureId, eglContext)
     }
 
     fun read() {
@@ -69,7 +70,7 @@ class SurfacePixelsReader private constructor(private var width: Int,
     }
 
     companion object {
-        fun build(width: Int, height: Int, textureId: IntArray, eglContext: EGLContext): SurfacePixelsReader {
+        fun build(width: Int, height: Int, textureId: IntArray, eglContext: EGLContext?): SurfacePixelsReader {
             return SurfacePixelsReader(width, height, textureId, eglContext)
         }
     }

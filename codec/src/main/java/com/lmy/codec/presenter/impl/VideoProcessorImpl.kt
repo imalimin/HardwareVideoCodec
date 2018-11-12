@@ -172,7 +172,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
 
     private fun prepareDecoder() {
         videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, eglSurface!!.egl!!,
-                eglSurface!!.surfaceTexture!!, pipeline!!, false, this)
+                eglSurface!!.surface!!, pipeline!!, false, this)
         videoDecoder?.onStateListener = this
         videoDecoder?.prepare()
         if (extractor!!.containAudio()) {

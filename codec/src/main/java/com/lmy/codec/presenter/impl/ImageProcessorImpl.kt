@@ -13,6 +13,7 @@ import android.graphics.SurfaceTexture
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.view.TextureView
+import com.lmy.codec.egl.ScreenEglSurface
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.SurfacePixelsReader
 import com.lmy.codec.pipeline.Pipeline
@@ -22,7 +23,6 @@ import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.egl.ScreenEglSurface
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -64,7 +64,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
     private fun createEGL() {
         debug_i("createEGL")
         if (null == eglSurface) {
-            eglSurface = ScreenEglSurface(screenTexture, screenInputTexture, null)
+            eglSurface = ScreenEglSurface.create(screenTexture!!, screenInputTexture, null)
             eglSurface?.egl?.makeCurrent()
         }
         eglSurface?.updateLocation(context)
@@ -191,7 +191,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
         if (null == reader) {
             mPipeline.queueEvent(Runnable {
                 reader = SurfacePixelsReader.build(context.video.width, context.video.height,
-                        filter!!.frameBufferTexture, eglSurface!!.eglContext!!)
+                        filter!!.frameBufferTexture, eglSurface!!.getEglContext())
                 reader?.prepare()
                 reader?.onReadListener = this
             })

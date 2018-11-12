@@ -8,13 +8,13 @@ package com.lmy.codec.media
 
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
+import com.lmy.codec.egl.CameraEglSurface
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CameraHelper
 import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.egl.CameraEglSurface
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
@@ -71,7 +71,7 @@ class CameraWrapper(private var context: CodecContext,
 
     private fun updateTexture() {
         eglSurface.updateTexture()
-        eglSurface.surfaceTexture!!.setOnFrameAvailableListener(onFrameAvailableListener)
+        eglSurface.surface!!.setOnFrameAvailableListener(onFrameAvailableListener)
     }
 
     private fun getCameraIndex(): Int {
@@ -152,7 +152,7 @@ class CameraWrapper(private var context: CodecContext,
             return
         }
         try {
-            mCamera!!.setPreviewTexture(eglSurface.surfaceTexture)
+            mCamera!!.setPreviewTexture(eglSurface.surface)
             mCamera!!.startPreview()
         } catch (e: Exception) {
             release()

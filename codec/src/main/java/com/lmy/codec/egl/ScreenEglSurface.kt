@@ -8,8 +8,8 @@ package com.lmy.codec.egl
 
 import android.graphics.SurfaceTexture
 import android.opengl.EGLContext
-import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.egl.entity.Egl
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
 
@@ -17,25 +17,20 @@ import com.lmy.codec.util.debug_e
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class ScreenEglSurface(override var surfaceTexture: SurfaceTexture? = null,
-                       override var textureId: IntArray?,
-                       var eglContext: EGLContext? = null) : EglSurface() {
+class ScreenEglSurface private constructor(eglContext: EGLContext?,
+                                           surface: SurfaceTexture,
+                                           textureId: IntArray?) : EglOutputSurface() {
 
     init {
-        if (null != surfaceTexture) {
-            egl = Egl("Screen")
-            egl!!.initEGL(surfaceTexture!!, eglContext)
-            if (null == eglContext) {
-                eglContext = egl!!.eglContext
-            }
-            egl!!.makeCurrent()
-            if (null == textureId)
-                throw RuntimeException("textureId can not be null")
-            texture = NormalTexture(textureId!!).apply {
-                name = "Screen Texture"
-            }
-        } else {
-            debug_e("Egl create failed")
+        this.surface = surface
+        this.textureId = textureId
+        egl = Egl("Screen")
+        egl!!.initEGL(surface, eglContext)
+        egl!!.makeCurrent()
+        if (null == textureId)
+            throw RuntimeException("textureId can not be null")
+        texture = NormalTexture(textureId!!).apply {
+            name = "Screen Texture"
         }
     }
 
@@ -81,5 +76,10 @@ class ScreenEglSurface(override var surfaceTexture: SurfaceTexture? = null,
                 0f, 1f, //LEFT,TOP
                 1f, 1f//RIGHT,TOP
         ), 0, textureLocation, 0, 8)
+    }
+
+    companion object {
+        fun create(surface: SurfaceTexture, textureId: IntArray?,
+                   eglContext: EGLContext?): ScreenEglSurface = ScreenEglSurface(eglContext, surface, textureId)
     }
 }

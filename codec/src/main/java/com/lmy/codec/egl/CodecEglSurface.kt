@@ -8,19 +8,21 @@ package com.lmy.codec.egl
 
 import android.opengl.EGLContext
 import android.view.Surface
-import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.egl.entity.Egl
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/28.
  */
-class CodecEglSurface(var surface: Surface,
-                      override var textureId: IntArray?,
-                      var eglContext: EGLContext? = null) : EglSurface() {
+class CodecEglSurface private constructor(eglContext: EGLContext?,
+                                          surface: Surface,
+                                          textureId: IntArray?) : EglInputSurface() {
 
     init {
+        this.surface = surface
+        this.textureId = textureId
         egl = Egl("Codec")
         egl!!.initEGL(surface, eglContext)
         egl!!.makeCurrent()
@@ -41,10 +43,15 @@ class CodecEglSurface(var surface: Surface,
 
     override fun release() {
         super.release()
-        surface.release()
+        surface?.release()
     }
 
     override fun updateLocation(context: CodecContext) {
 
+    }
+
+    companion object {
+        fun create(surface: Surface, textureId: IntArray?,
+                   eglContext: EGLContext? = null): EglInputSurface = CodecEglSurface(eglContext, surface, textureId)
     }
 }

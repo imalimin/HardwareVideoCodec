@@ -9,8 +9,8 @@ package com.lmy.codec.egl
 import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
-import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.egl.entity.Egl
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.CameraTexture
 import com.lmy.codec.util.debug_e
@@ -20,7 +20,7 @@ import com.lmy.codec.util.debug_e
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
 class CameraEglSurface(private val width: Int,
-                       private val height: Int) : EglSurface() {
+                       private val height: Int) : EglOutputSurface() {
 
     fun updateTexture() {
         if (null == egl) {
@@ -39,12 +39,12 @@ class CameraEglSurface(private val width: Int,
 
     @SuppressLint("Recycle")
     private fun initTexture() {
-        if (null != surfaceTexture) {
-            surfaceTexture?.release()
-            surfaceTexture = null
+        if (null != surface) {
+            surface?.release()
+            surface = null
         }
         if (null != textureId)
-            surfaceTexture = SurfaceTexture(textureId!![0])
+            surface = SurfaceTexture(textureId!![0])
         debug_e("camera textureId: ${textureId!![0]}")
     }
 

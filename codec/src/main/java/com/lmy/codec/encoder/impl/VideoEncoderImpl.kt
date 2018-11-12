@@ -12,6 +12,8 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
+import com.lmy.codec.egl.CodecEglSurface
+import com.lmy.codec.egl.EglInputSurface
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
@@ -21,7 +23,6 @@ import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.egl.CodecEglSurface
 
 
 /**
@@ -40,7 +41,7 @@ class VideoEncoderImpl(var context: CodecContext,
 
     private val outputFormatLock = Object()
     private val bufferInfo = MediaCodec.BufferInfo()
-    private var eglSurface: CodecEglSurface? = null
+    private var eglSurface: EglInputSurface? = null
     private var codec: MediaCodec? = null
     private var mBufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var pTimer: PresentationTimer = PresentationTimer(context.video.fps)
@@ -95,7 +96,7 @@ class VideoEncoderImpl(var context: CodecContext,
         }
         pTimer.reset()
         codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        eglSurface = CodecEglSurface(codec!!.createInputSurface(), textureId, eglContext)
+        eglSurface = CodecEglSurface.create(codec!!.createInputSurface(), textureId, eglContext)
         eglSurface?.egl?.makeCurrent()
         codec!!.start()
         onPreparedListener?.onPrepared(this)

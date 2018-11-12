@@ -11,12 +11,13 @@ import android.media.MediaCodec
 import android.media.MediaFormat
 import android.opengl.EGLContext
 import android.opengl.GLES20
+import com.lmy.codec.egl.CodecEglSurface
+import com.lmy.codec.egl.EglInputSurface
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.egl.CodecEglSurface
 import com.lmy.codec.x264.CacheX264Encoder
 import com.lmy.codec.x264.SurfaceX264Encoder
 import java.nio.ByteBuffer
@@ -25,7 +26,7 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
                              private val textureId: IntArray,
                              private var eglContext: EGLContext,
                              override var onPreparedListener: Encoder.OnPreparedListener? = null,
-                             var eglSurface: CodecEglSurface? = null,
+                             var eglSurface: EglInputSurface? = null,
                              var codec: SurfaceX264Encoder? = null,
                              private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
                              override var onRecordListener: Encoder.OnRecordListener? = null)
@@ -57,7 +58,7 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
 
     init {
         initCodec()
-        eglSurface = CodecEglSurface(codec!!.surface, textureId, eglContext)
+        eglSurface = CodecEglSurface.create(codec!!.surface, textureId, eglContext)
         pTimer.reset()
         inited = true
     }

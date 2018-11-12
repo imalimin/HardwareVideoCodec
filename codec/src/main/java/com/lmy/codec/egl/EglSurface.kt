@@ -6,20 +6,21 @@
  */
 package com.lmy.codec.egl
 
-import android.graphics.SurfaceTexture
+import android.opengl.EGLContext
 import android.opengl.GLES20
-import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.egl.entity.Egl
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.texture.impl.BaseTexture
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-abstract class EglSurface(open var surfaceTexture: SurfaceTexture? = null,
-                          var texture: BaseTexture? = null,
-                          open var textureId: IntArray? = null,
-                          var egl: Egl? = null) {
+abstract class EglSurface<T> {
+    internal var surface: T? = null
+    var texture: BaseTexture? = null
+    open var textureId: IntArray? = null
+    internal var egl: Egl? = null
 
     abstract fun draw(transformMatrix: FloatArray?)
 
@@ -63,5 +64,13 @@ abstract class EglSurface(open var surfaceTexture: SurfaceTexture? = null,
     fun updateInputTexture(textureId: IntArray) {
         this.textureId = textureId
         texture?.textureId = textureId
+    }
+
+    fun makeCurrent() {
+        egl?.makeCurrent()
+    }
+
+    fun getEglContext(): EGLContext? {
+        return egl?.eglContext
     }
 }
