@@ -12,7 +12,7 @@ android {
         targetSdkVersion 26
         versionCode rootProject.ext.versionCode
         versionName rootProject.ext.versionName
-
+        buildConfigField "boolean", "ENABLE_LOG", "true"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         ndk {
@@ -33,6 +33,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            buildConfigField "boolean", "ENABLE_LOG", "false"
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
