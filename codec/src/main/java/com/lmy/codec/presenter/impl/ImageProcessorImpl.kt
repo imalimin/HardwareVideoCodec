@@ -65,7 +65,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
         debug_i("createEGL")
         if (null == eglSurface) {
             eglSurface = ScreenEglSurface.create(screenTexture!!, screenInputTexture, null)
-            eglSurface?.egl?.makeCurrent()
+            eglSurface?.makeCurrent()
         }
         eglSurface?.updateLocation(context)
     }
@@ -120,7 +120,7 @@ class ImageProcessorImpl private constructor(ctx: Context) : Processor,
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0f, 0f, 0f, 0f)
             eglSurface?.draw(null)
-            eglSurface?.egl?.swapBuffers()
+            eglSurface?.swapBuffers()
             debug_i("invalidate")
         })
     }

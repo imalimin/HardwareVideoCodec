@@ -17,6 +17,7 @@ import com.lmy.codec.decoder.VideoDecoder
 import com.lmy.codec.decoder.VideoExtractor
 import com.lmy.codec.decoder.impl.AudioDecoderImpl
 import com.lmy.codec.decoder.impl.HardVideoDecoderImpl
+import com.lmy.codec.egl.CameraEglSurface
 import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
@@ -31,7 +32,6 @@ import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.egl.CameraEglSurface
 import java.io.File
 import java.nio.ByteBuffer
 
@@ -134,7 +134,7 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
             debug_i("Set iFrameInterval=${context.video.iFrameInterval}")
         }
         videoEncoder = Encoder.Builder(context, render!!.getFrameBufferTexture(),
-                eglSurface!!.egl!!.eglContext!!)
+                eglSurface!!.getEglContext()!!)
                 .setOnPreparedListener(this)
                 .build()
         if (null != muxer) {
@@ -166,12 +166,12 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
 
     private fun prepareWrapper() {
         debug_i("prepareWrapper ${context.video.width}x${context.video.height}")
-        eglSurface = CameraEglSurface(context.video.width, context.video.height)
+        eglSurface = CameraEglSurface.create(context.video.width, context.video.height) as CameraEglSurface
         updateTexture()
     }
 
     private fun prepareDecoder() {
-        videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, eglSurface!!.egl!!,
+        videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, eglSurface!!.getEgl(),
                 eglSurface!!.surface!!, pipeline!!, false, this)
         videoDecoder?.onStateListener = this
         videoDecoder?.prepare()

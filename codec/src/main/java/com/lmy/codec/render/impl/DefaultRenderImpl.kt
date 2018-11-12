@@ -98,7 +98,7 @@ class DefaultRenderImpl(var context: CodecContext,
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0f, 0f, 0f, 0f)
         screenSurface?.draw(transformMatrix)
-        screenSurface?.egl?.swapBuffers()
+        screenSurface?.swapBuffers()
         renderMeasurer.end()
     }
 

@@ -73,7 +73,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener, Dec
 
     private fun prepareWrapper() {
         debug_i("prepareWrapper ${context.video.width}x${context.video.height}")
-        eglSurface = CameraEglSurface(context.video.width, context.video.height)
+        eglSurface = CameraEglSurface.create(context.video.width, context.video.height) as CameraEglSurface
         updateTexture()
     }
 
@@ -83,7 +83,7 @@ class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener, Dec
     }
 
     private fun prepareDecoder() {
-        videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, eglSurface!!.egl!!,
+        videoDecoder = HardVideoDecoderImpl(context, extractor!!.getVideoTrack()!!, eglSurface!!.getEgl(),
                 eglSurface!!.surface!!, pipeline!!, true, this)
         videoDecoder?.prepare()
         if (extractor!!.containAudio()) {

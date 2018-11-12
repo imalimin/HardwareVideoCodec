@@ -37,7 +37,7 @@ class CameraWrapper(private var context: CodecContext,
 
     init {
         mCameras = CameraHelper.getNumberOfCameras()
-        eglSurface = CameraEglSurface(context.video.width, context.video.height)
+        eglSurface = CameraEglSurface.create(context.video.width, context.video.height) as CameraEglSurface
         openCamera(context.cameraIndex)
     }
 

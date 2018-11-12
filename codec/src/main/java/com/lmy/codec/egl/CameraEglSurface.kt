@@ -9,7 +9,6 @@ package com.lmy.codec.egl
 import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
-import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.CameraTexture
@@ -19,19 +18,17 @@ import com.lmy.codec.util.debug_e
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class CameraEglSurface(private val width: Int,
-                       private val height: Int) : EglOutputSurface() {
+class CameraEglSurface private constructor(private val width: Int,
+                                           private val height: Int) : EglOutputSurface() {
+    override val name = "Camera"
 
     fun updateTexture() {
-        if (null == egl) {
-            egl = Egl("Camera")
-            egl!!.initEGL()
-        }
-        egl!!.makeCurrent()
+        createEgl(null, null)
+        makeCurrent()
         createTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES)
         if (null == texture) {
             texture = CameraTexture(width, height, textureId!!).apply {
-                name = "Camera Texture"
+                name = "CameraTexture"
             }
         }
         initTexture()
@@ -48,27 +45,12 @@ class CameraEglSurface(private val width: Int,
         debug_e("camera textureId: ${textureId!![0]}")
     }
 
-    private fun checkTexture() {
-        if (null != texture && texture is BaseFrameBufferTexture) return
-        throw RuntimeException("CameraEglSurface`s texture must be BaseFrameBufferTexture and texture must not be null")
-    }
-
     override fun draw(transformMatrix: FloatArray?) {
         if (null == texture) {
             debug_e("Render failed. Texture is null")
             return
         }
         texture?.draw(transformMatrix)
-    }
-
-    fun getFrameBuffer(): IntArray {
-        checkTexture()
-        return (texture as BaseFrameBufferTexture).frameBuffer
-    }
-
-    fun getFrameBufferTexture(): IntArray {
-        checkTexture()
-        return (texture as BaseFrameBufferTexture).frameBufferTexture
     }
 
     override fun updateLocation(context: CodecContext) {
@@ -116,5 +98,24 @@ class CameraEglSurface(private val width: Int,
                 left, top, //LEFT,TOP
                 right, top//RIGHT,TOP
         ), 0, textureLocation, 0, 8)
+    }
+
+    private fun checkTexture() {
+        if (null != texture && texture is BaseFrameBufferTexture) return
+        throw RuntimeException("CameraEglSurface`s texture must be BaseFrameBufferTexture and texture must not be null")
+    }
+
+    fun getFrameBuffer(): IntArray {
+        checkTexture()
+        return (texture as BaseFrameBufferTexture).frameBuffer
+    }
+
+    fun getFrameBufferTexture(): IntArray {
+        checkTexture()
+        return (texture as BaseFrameBufferTexture).frameBufferTexture
+    }
+
+    companion object {
+        fun create(width: Int, height: Int): EglOutputSurface = CameraEglSurface(width, height)
     }
 }

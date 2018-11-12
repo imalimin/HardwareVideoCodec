@@ -8,7 +8,6 @@ package com.lmy.codec.egl
 
 import android.opengl.EGLContext
 import android.view.Surface
-import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
@@ -18,18 +17,16 @@ import com.lmy.codec.util.debug_e
  */
 class CodecEglSurface private constructor(eglContext: EGLContext?,
                                           surface: Surface,
-                                          textureId: IntArray?) : EglInputSurface() {
+                                          override var textureId: IntArray?) : EglInputSurface() {
+    override val name = "Codec"
 
     init {
-        this.surface = surface
-        this.textureId = textureId
-        egl = Egl("Codec")
-        egl!!.initEGL(surface, eglContext)
-        egl!!.makeCurrent()
         if (null == textureId)
             throw RuntimeException("textureId can not be null")
+        createEgl(surface, eglContext)
+        makeCurrent()
         texture = NormalTexture(textureId!!).apply {
-            name = "Codec Texture"
+            name = "CodecTexture"
         }
     }
 

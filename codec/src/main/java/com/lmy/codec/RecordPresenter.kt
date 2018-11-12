@@ -15,6 +15,7 @@ import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.CodecFactory
 import com.lmy.codec.helper.MuxerFactory
+import com.lmy.codec.media.CameraWrapper
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.presenter.VideoRecorder
@@ -22,7 +23,6 @@ import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.media.CameraWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.
@@ -87,7 +87,7 @@ class RecordPresenter(var context: CodecContext,
             muxer?.reset()
         }
         encoder = CodecFactory.getEncoder(context, render!!.getFrameBufferTexture(),
-                cameraWrapper!!.eglSurface.egl!!.eglContext!!)
+                cameraWrapper!!.eglSurface.getEglContext()!!)
         if (null != onStateListener)
             setOnStateListener(onStateListener!!)
         audioEncoder = AudioEncoderImpl.fromDevice(context)

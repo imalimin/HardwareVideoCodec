@@ -35,12 +35,12 @@ class SurfacePixelsReader private constructor(private var width: Int,
     }
 
     fun read() {
-        eglSurface?.egl?.makeCurrent()
+        eglSurface?.makeCurrent()
         GLES20.glViewport(0, 0, width, height)
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
         eglSurface?.draw(null)
-        eglSurface?.egl?.swapBuffers()
+        eglSurface?.swapBuffers()
     }
 
     fun stop() {

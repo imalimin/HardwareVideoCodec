@@ -97,7 +97,7 @@ class VideoEncoderImpl(var context: CodecContext,
         pTimer.reset()
         codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         eglSurface = CodecEglSurface.create(codec!!.createInputSurface(), textureId, eglContext)
-        eglSurface?.egl?.makeCurrent()
+        eglSurface?.makeCurrent()
         codec!!.start()
         onPreparedListener?.onPrepared(this)
     }
@@ -133,14 +133,14 @@ class VideoEncoderImpl(var context: CodecContext,
     private fun encode() {
         synchronized(mEncodingSyn) {
             pTimer.record()
-            eglSurface?.egl?.makeCurrent()
+            eglSurface?.makeCurrent()
             GLES20.glViewport(0, 0, context.video.width, context.video.height)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
             GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
             eglSurface?.draw(null)
-            eglSurface?.egl?.setPresentationTime(if (Long.MIN_VALUE != nsecs)
+            eglSurface?.setPresentationTime(if (Long.MIN_VALUE != nsecs)
                 nsecs else pTimer.presentationTimeUs)
-            eglSurface?.egl?.swapBuffers()
+            eglSurface?.swapBuffers()
             mDequeuePipeline.queueEvent(Runnable { dequeue() })
         }
     }
@@ -164,10 +164,10 @@ class VideoEncoderImpl(var context: CodecContext,
 //                    debug_v("INFO_TRY_AGAIN_LATER")
                     return false
                 }
-                /**
-                 * 输出格式改变，很重要
-                 * 这里必须把outputFormat设置给MediaMuxer，而不能不能用inputFormat代替，它们是不一样的，不然无法正确生成mp4文件
-                 */
+            /**
+             * 输出格式改变，很重要
+             * 这里必须把outputFormat设置给MediaMuxer，而不能不能用inputFormat代替，它们是不一样的，不然无法正确生成mp4文件
+             */
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("INFO_OUTPUT_FORMAT_CHANGED")
                     onSampleListener?.onFormatChanged(this, codec!!.outputFormat)

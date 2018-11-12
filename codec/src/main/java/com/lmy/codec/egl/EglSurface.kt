@@ -6,8 +6,10 @@
  */
 package com.lmy.codec.egl
 
+import android.graphics.SurfaceTexture
 import android.opengl.EGLContext
 import android.opengl.GLES20
+import android.view.Surface
 import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.GLHelper
@@ -17,12 +19,31 @@ import com.lmy.codec.texture.impl.BaseTexture
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
 abstract class EglSurface<T> {
+    abstract val name: String
     internal var surface: T? = null
     var texture: BaseTexture? = null
     open var textureId: IntArray? = null
-    internal var egl: Egl? = null
+    private var egl: Egl? = null
 
     abstract fun draw(transformMatrix: FloatArray?)
+
+    internal fun createEgl(surface: Any?, eglContext: EGLContext?) {
+        egl = Egl(name)
+        if (null != surface) {
+            this.surface = surface as T
+            when (surface) {
+                is Surface -> egl!!.initEGL(surface, eglContext)
+                is SurfaceTexture -> egl!!.initEGL(surface, eglContext)
+                else -> throw RuntimeException("surface must be Surface or SurfaceTexture!")
+            }
+        } else {
+            egl!!.initEGL()
+        }
+    }
+
+    fun getEgl(): Egl {
+        return egl!!
+    }
 
     fun clear() {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
@@ -68,6 +89,14 @@ abstract class EglSurface<T> {
 
     fun makeCurrent() {
         egl?.makeCurrent()
+    }
+
+    fun swapBuffers() {
+        egl?.swapBuffers()
+    }
+
+    fun setPresentationTime(nsecs: Long) {
+        egl?.setPresentationTime(nsecs)
     }
 
     fun getEglContext(): EGLContext? {

@@ -104,12 +104,12 @@ class SoftVideoEncoderV2Impl(var context: CodecContext,
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
         synchronized(mEncodingSyn) {
             if (mEncoding && inited) {
-                eglSurface?.egl?.makeCurrent()
+                eglSurface?.makeCurrent()
                 GLES20.glViewport(0, 0, context.video.width, context.video.height)
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
                 GLES20.glClearColor(0.3f, 0.3f, 0.3f, 0f)
                 eglSurface?.draw(null)
-                eglSurface?.egl?.swapBuffers()
+                eglSurface?.swapBuffers()
             }
         }
     }

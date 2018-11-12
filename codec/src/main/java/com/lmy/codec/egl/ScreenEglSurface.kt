@@ -8,7 +8,6 @@ package com.lmy.codec.egl
 
 import android.graphics.SurfaceTexture
 import android.opengl.EGLContext
-import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.texture.impl.NormalTexture
 import com.lmy.codec.util.debug_e
@@ -19,18 +18,16 @@ import com.lmy.codec.util.debug_e
  */
 class ScreenEglSurface private constructor(eglContext: EGLContext?,
                                            surface: SurfaceTexture,
-                                           textureId: IntArray?) : EglOutputSurface() {
+                                           override var textureId: IntArray?) : EglOutputSurface() {
+    override val name = "Screen"
 
     init {
-        this.surface = surface
-        this.textureId = textureId
-        egl = Egl("Screen")
-        egl!!.initEGL(surface, eglContext)
-        egl!!.makeCurrent()
         if (null == textureId)
             throw RuntimeException("textureId can not be null")
+        createEgl(surface, eglContext)
+        makeCurrent()
         texture = NormalTexture(textureId!!).apply {
-            name = "Screen Texture"
+            name = "ScreenTexture"
         }
     }
 
