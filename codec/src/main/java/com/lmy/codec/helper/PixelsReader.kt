@@ -85,7 +85,7 @@ class PixelsReader private constructor(private var usePbo: Boolean,
         GLES20.glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer)
 //        GLES30.glFramebufferTexture2D(GLES30.GL_FRAMEBUFFER, GLES30.GL_COLOR_ATTACHMENT0,
 //                GLES30.GL_TEXTURE_2D, texture.frameBufferTexture!!, 0)
-        GLES20.glReadPixels(0, 0, width, height, Egl.GL_CLOLR_DEFAULT,
+        GLES20.glReadPixels(0, 0, width, height, Egl.GL_COLOR_DEFAULT,
                 GLES20.GL_UNSIGNED_BYTE, pixelsBuffer!!.buffer)
         GLES20.glBindFramebuffer(GL_FRAMEBUFFER, GLES20.GL_NONE)
     }
@@ -96,7 +96,7 @@ class PixelsReader private constructor(private var usePbo: Boolean,
 //                GLES30.GL_TEXTURE_2D, texture.frameBufferTexture!!, 0)
         //绑定到第一个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos!![index])
-        GLHelper.glReadPixels(0, 0, width, height, Egl.GL_CLOLR_DEFAULT, GLES30.GL_UNSIGNED_BYTE)
+        GLHelper.glReadPixels(0, 0, width, height, Egl.GL_COLOR_DEFAULT, GLES30.GL_UNSIGNED_BYTE)
         //绑定到第二个PBO
         GLES30.glBindBuffer(GLES30.GL_PIXEL_PACK_BUFFER, pbos!![nextIndex])
         //glMapBufferRange会等待DMA传输完成，所以需要交替使用pbo
