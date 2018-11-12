@@ -4,13 +4,13 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec.wrapper
+package com.lmy.codec.egl
 
 import android.annotation.SuppressLint
 import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext
 import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.entity.Egl
+import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.CameraTexture
 import com.lmy.codec.util.debug_e

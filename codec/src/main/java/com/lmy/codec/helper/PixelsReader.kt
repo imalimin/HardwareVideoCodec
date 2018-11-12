@@ -11,7 +11,7 @@ import android.graphics.BitmapFactory
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_FRAMEBUFFER
 import android.opengl.GLES30
-import com.lmy.codec.entity.Egl
+import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.PixelsBuffer
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i

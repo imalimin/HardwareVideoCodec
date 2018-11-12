@@ -7,7 +7,7 @@
 package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
-import com.lmy.codec.entity.Egl
+import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.util.debug_e
 

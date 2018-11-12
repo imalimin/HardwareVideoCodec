@@ -26,7 +26,7 @@ import com.lmy.codec.render.Render
 import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.CameraEglSurface
+import com.lmy.codec.egl.CameraEglSurface
 import java.nio.ByteBuffer
 
 class VideoPlayerImpl(ctx: Context) : VideoPlayer, Decoder.OnSampleListener, Decoder.OnStateListener {

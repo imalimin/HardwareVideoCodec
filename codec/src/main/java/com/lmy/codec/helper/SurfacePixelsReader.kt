@@ -7,7 +7,7 @@ import android.opengl.GLES20
 import android.util.Log
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
-import com.lmy.codec.wrapper.CodecEglSurface
+import com.lmy.codec.egl.CodecEglSurface
 import java.nio.ByteBuffer
 
 class SurfacePixelsReader private constructor(private var width: Int,

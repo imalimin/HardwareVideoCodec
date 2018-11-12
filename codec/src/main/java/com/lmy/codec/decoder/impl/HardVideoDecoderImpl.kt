@@ -14,7 +14,7 @@ import android.view.Surface
 import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.decoder.VideoDecoder
 import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.entity.Egl
+import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.Track
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e

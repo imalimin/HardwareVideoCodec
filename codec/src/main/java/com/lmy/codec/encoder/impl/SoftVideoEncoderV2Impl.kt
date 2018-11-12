@@ -16,7 +16,7 @@ import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.wrapper.CodecEglSurface
+import com.lmy.codec.egl.CodecEglSurface
 import com.lmy.codec.x264.CacheX264Encoder
 import com.lmy.codec.x264.SurfaceX264Encoder
 import java.nio.ByteBuffer

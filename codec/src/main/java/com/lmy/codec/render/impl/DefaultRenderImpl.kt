@@ -16,8 +16,8 @@ import com.lmy.codec.render.Render
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.CameraEglSurface
-import com.lmy.codec.wrapper.ScreenEglSurface
+import com.lmy.codec.egl.CameraEglSurface
+import com.lmy.codec.egl.ScreenEglSurface
 
 
 /**

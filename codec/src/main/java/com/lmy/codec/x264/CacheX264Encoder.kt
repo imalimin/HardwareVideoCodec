@@ -2,7 +2,7 @@ package com.lmy.codec.x264
 
 import android.media.MediaCodec
 import android.media.MediaFormat
-import com.lmy.codec.entity.Egl
+import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.Libyuv
 import java.nio.ByteBuffer

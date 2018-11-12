@@ -22,7 +22,7 @@ import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.ScreenEglSurface
+import com.lmy.codec.egl.ScreenEglSurface
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException

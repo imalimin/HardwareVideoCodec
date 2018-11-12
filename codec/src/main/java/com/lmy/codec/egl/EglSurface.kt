@@ -4,12 +4,12 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec.wrapper
+package com.lmy.codec.egl
 
 import android.graphics.SurfaceTexture
 import android.opengl.GLES20
 import com.lmy.codec.entity.CodecContext
-import com.lmy.codec.entity.Egl
+import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.texture.impl.BaseTexture
 

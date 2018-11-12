@@ -14,7 +14,7 @@ import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.wrapper.CameraEglSurface
+import com.lmy.codec.egl.CameraEglSurface
 
 /**
  * Created by lmyooyo@gmail.com on 2018/3/21.

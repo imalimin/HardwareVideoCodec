@@ -21,7 +21,7 @@ import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.wrapper.CodecEglSurface
+import com.lmy.codec.egl.CodecEglSurface
 
 
 /**

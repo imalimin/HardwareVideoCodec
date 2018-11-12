@@ -31,7 +31,7 @@ import com.lmy.codec.render.impl.DefaultRenderImpl
 import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.wrapper.CameraEglSurface
+import com.lmy.codec.egl.CameraEglSurface
 import java.io.File
 import java.nio.ByteBuffer
 

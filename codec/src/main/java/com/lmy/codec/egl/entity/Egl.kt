@@ -4,7 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec.entity
+package com.lmy.codec.egl.entity
 
 import android.graphics.SurfaceTexture
 import android.opengl.*
