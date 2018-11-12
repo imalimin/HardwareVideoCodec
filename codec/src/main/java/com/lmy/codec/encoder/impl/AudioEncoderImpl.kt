@@ -14,10 +14,10 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.RecycleQueue
 import com.lmy.codec.helper.CodecHelper
+import com.lmy.codec.media.AudioRecorder
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_v
-import com.lmy.codec.wrapper.AudioRecordWrapper
 import java.nio.ByteBuffer
 
 /**
@@ -27,7 +27,7 @@ import java.nio.ByteBuffer
  */
 class AudioEncoderImpl private constructor(var context: CodecContext,
                                            private var bufferSize: Int = 0)
-    : Encoder, AudioRecordWrapper.OnPCMListener {
+    : Encoder, AudioRecorder.OnPCMListener {
 
     companion object {
         private val WAIT_TIME = 10000L
@@ -43,7 +43,7 @@ class AudioEncoderImpl private constructor(var context: CodecContext,
     override var onPreparedListener: Encoder.OnPreparedListener? = null
     override var onRecordListener: Encoder.OnRecordListener? = null
     private val outputFormatLock = Object()
-    private var audioWrapper: AudioRecordWrapper? = null
+    private var audioRecorder: AudioRecorder? = null
     private var codec: MediaCodec? = null
     private var inputBuffers: Array<ByteBuffer>? = null
     private var outputBuffers: Array<ByteBuffer>? = null
@@ -62,9 +62,9 @@ class AudioEncoderImpl private constructor(var context: CodecContext,
         bufferSize = if (bufferSize > 0) {
             bufferSize
         } else {
-            audioWrapper = AudioRecordWrapper(context)
-            audioWrapper?.setOnPCMListener(this)
-            audioWrapper!!.getBufferSize()
+            audioRecorder = AudioRecorder(context)
+            audioRecorder?.setOnPCMListener(this)
+            audioRecorder!!.getBufferSize()
         }
         initCodec()
         mPipeline.queueEvent(Runnable { init() })
@@ -240,7 +240,7 @@ class AudioEncoderImpl private constructor(var context: CodecContext,
         mDequeuePipeline.quit()
         codec!!.stop()
         codec!!.release()
-        audioWrapper?.stop()
+        audioRecorder?.stop()
         mCache?.release()
         debug_e("Audio encoder stop")
     }

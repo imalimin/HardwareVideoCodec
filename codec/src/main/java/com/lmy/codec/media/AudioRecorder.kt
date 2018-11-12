@@ -24,13 +24,13 @@ import java.lang.Short.reverseBytes
  * Project Name：HardwareVideoCodec.
  * @author lrlmy@foxmail.com
  */
-class AudioRecordWrapper(var context: CodecContext,
-                         private var bufferSize: Int = 0,
-                         private var record: AudioRecord? = null,
-                         private var thread: Thread? = null,
-                         private var buffer: ByteArray? = null,
-                         private var mStart: Boolean = true,
-                         private var mDeNoise: DeNoise? = null) : Runnable {
+class AudioRecorder(var context: CodecContext,
+                    private var bufferSize: Int = 0,
+                    private var record: AudioRecord? = null,
+                    private var thread: Thread? = null,
+                    private var buffer: ByteArray? = null,
+                    private var mStart: Boolean = true,
+                    private var mDeNoise: DeNoise? = null) : Runnable {
     private val mStartSyn = Any()
     private var onPCMListener: OnPCMListener? = null
     private lateinit var dos: RandomAccessFile
