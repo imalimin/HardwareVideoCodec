@@ -13,8 +13,8 @@ import android.os.Build
 import android.view.Surface
 import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.decoder.VideoDecoder
-import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.egl.entity.Egl
+import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Track
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e
@@ -69,8 +69,11 @@ class HardVideoDecoderImpl(val context: CodecContext,
         })
     }
 
+    private var current: Long = 0
     @Synchronized
     private fun next() {
+        lastPts += System.currentTimeMillis() - current
+        current = System.currentTimeMillis()
         val delay = if (forPlay) {
             val d = (bufferInfo.presentationTimeUs + delay) / 1000 - lastPts
             lastPts = bufferInfo.presentationTimeUs / 1000
@@ -85,7 +88,6 @@ class HardVideoDecoderImpl(val context: CodecContext,
     private fun decode() {
         synchronized(this@HardVideoDecoderImpl) {
             if (!starting) return
-            val ttt = System.currentTimeMillis()
             egl.makeCurrent()
             val index = codec!!.dequeueInputBuffer(WAIT_TIME)
             if (index >= 0) {
@@ -113,7 +115,6 @@ class HardVideoDecoderImpl(val context: CodecContext,
             } else {
                 debug_e("Cannot get input buffer!")
             }
-            lastPts += System.currentTimeMillis() - ttt
 //            debug_i("next ${videoInfo.presentationTimeUs}")
             if (!eos) {
                 next()
