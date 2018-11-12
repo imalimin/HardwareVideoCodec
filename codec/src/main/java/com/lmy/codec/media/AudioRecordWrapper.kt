@@ -4,7 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-package com.lmy.codec.wrapper
+package com.lmy.codec.media
 
 import android.media.AudioFormat
 import android.media.AudioRecord
