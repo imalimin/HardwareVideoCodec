@@ -8,7 +8,6 @@ package com.lmy.codec.pipeline.impl
 
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Message
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e
 
@@ -24,20 +23,12 @@ class EventPipeline private constructor(name: String) : Pipeline {
     }
 
     private val lock = Object()
-    private var mHandlerThread: HandlerThread = HandlerThread(name)
-    private var mHandler: Handler
     private var start = false
-
-    init {
-        mHandlerThread.start()
-        mHandler = object : Handler(mHandlerThread.looper) {
-            override fun handleMessage(msg: Message) {
-                val event = msg.obj
-                (event as? Runnable)?.run()
-            }
-        }
+    private var mHandlerThread: HandlerThread = HandlerThread(name).apply {
+        start()
         start = true
     }
+    private var mHandler = Handler(mHandlerThread.looper)
 
     override fun queueEvent(event: Runnable, front: Boolean) {
         if (!start) {
@@ -45,9 +36,9 @@ class EventPipeline private constructor(name: String) : Pipeline {
             return
         }
         if (front) {
-            mHandler.sendMessageAtFrontOfQueue(mHandler.obtainMessage(0, event))
+            mHandler.postAtFrontOfQueue(event)
         } else {
-            mHandler.sendMessage(mHandler.obtainMessage(0, event))
+            mHandler.post(event)
         }
 
     }
@@ -57,7 +48,7 @@ class EventPipeline private constructor(name: String) : Pipeline {
             debug_e("EventPipeline has quited")
             return
         }
-        mHandler.sendMessageDelayed(mHandler.obtainMessage(0, event), delayed)
+        mHandler.postDelayed(event, delayed)
     }
 
     override fun quit() {
