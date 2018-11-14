@@ -14,7 +14,7 @@ void main(){
     vTextureCoord = aTextureCoord;
     vec2 singleStepOffset = vec2(texelWidthOffset, texelHeightOffset);
     for (int i = 0; i < SHIFT_SIZE; i++) {
-            blurShiftCoordinates[i] = vec4(textureCoordinate.xy - float(i + 1) * singleStepOffset,
-                                           textureCoordinate.xy + float(i + 1) * singleStepOffset;
+            vBlurTextureCoord[i] = vec4(vTextureCoord.xy - float(i + 1) * singleStepOffset,
+                                           vTextureCoord.xy + float(i + 1) * singleStepOffset;
     }
 }
