@@ -4,7 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include <com_lmy_codec_helper_GLHelper.h>
+#include <Java_com_lmy_codec_helper_GLHelper.h>
 
 //Log
 #ifdef ANDROID
