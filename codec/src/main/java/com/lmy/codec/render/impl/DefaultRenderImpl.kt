@@ -12,6 +12,7 @@ import com.lmy.codec.egl.CameraEglSurface
 import com.lmy.codec.egl.ScreenEglSurface
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.FpsMeasurer
+import com.lmy.codec.helper.GLHelper
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.render.Render
@@ -55,6 +56,7 @@ class DefaultRenderImpl(var context: CodecContext,
     private fun initFilter(f: BaseFilter) {
         synchronized(filterLock) {
             cameraSurface.makeCurrent()
+            debug_i("OpenGL ES version ${GLHelper.glVersion()}")
             filter?.release()
             filter = f
             filter!!.width = this.width
