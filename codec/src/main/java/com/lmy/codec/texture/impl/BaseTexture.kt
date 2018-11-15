@@ -8,7 +8,9 @@ package com.lmy.codec.texture.impl
 
 import android.opengl.GLES20
 import android.opengl.GLES30
+import com.lmy.codec.BuildConfig
 import com.lmy.codec.texture.Texture
+import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -97,6 +99,16 @@ abstract class BaseTexture(var textureId: IntArray,
         GLES20.glShaderSource(shader, shaderSource)
         //编译Shader
         GLES20.glCompileShader(shader)
+        if (BuildConfig.DEBUG) {
+            val status = IntArray(1)
+            GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, status, 0)
+            if (1 != status[0]) {
+                debug_e((if (GLES20.GL_VERTEX_SHADER == type) "Vertex" else "Fragment") +
+                        " shader compiled error(${status[0]}): \n${GLES20.glGetShaderInfoLog(shader)}\n" +
+                        "Source:$shaderSource")
+                GLES20.glDeleteShader(shader)
+            }
+        }
         return shader
     }
 
