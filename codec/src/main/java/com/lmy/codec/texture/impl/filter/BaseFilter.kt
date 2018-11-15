@@ -29,6 +29,10 @@ abstract class BaseFilter(width: Int = 0,
         initFrameBuffer()
     }
 
+    private fun checkProgram(): Boolean {
+        return GLES20.GL_NONE != shaderProgram
+    }
+
     open fun active(samplerLocation: Int) {
         GLES20.glUseProgram(shaderProgram!!)
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBuffer[0])
@@ -38,6 +42,7 @@ abstract class BaseFilter(width: Int = 0,
     }
 
     protected fun draw() {
+        if (!checkProgram()) return
         drawer.draw()
     }
 

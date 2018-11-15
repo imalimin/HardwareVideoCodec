@@ -9,6 +9,7 @@ package com.lmy.codec.texture.impl
 import android.opengl.GLES20
 import android.opengl.GLES30
 import com.lmy.codec.BuildConfig
+import com.lmy.codec.exception.CompileException
 import com.lmy.codec.texture.Texture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
@@ -81,19 +82,24 @@ abstract class BaseTexture(var textureId: IntArray,
     }
 
     fun createProgram(vertex: String, fragment: String): Int {
-        val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertex)
-        val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragment)
-        return linkProgram(vertexShader, fragmentShader)
+        try {
+            val vertexShader = createShader(GLES20.GL_VERTEX_SHADER, vertex)
+            val fragmentShader = createShader(GLES20.GL_FRAGMENT_SHADER, fragment)
+            return createProgram(vertexShader, fragmentShader)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return GLES20.GL_NONE
     }
 
     /**
      * 加载着色器，GL_VERTEX_SHADER代表生成顶点着色器，GL_FRAGMENT_SHADER代表生成片段着色器
      */
-    fun loadShader(type: Int, shaderSource: String): Int {
+    private fun createShader(type: Int, shaderSource: String): Int {
         //创建Shader
         val shader = GLES20.glCreateShader(type)
         if (shader == 0) {
-            throw RuntimeException("Create Shader Failed!" + GLES20.glGetError())
+            throw CompileException("Create Shader Failed!" + GLES20.glGetError())
         }
         //加载Shader代码
         GLES20.glShaderSource(shader, shaderSource)
@@ -103,10 +109,10 @@ abstract class BaseTexture(var textureId: IntArray,
             val status = IntArray(1)
             GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, status, 0)
             if (1 != status[0]) {
-                debug_e((if (GLES20.GL_VERTEX_SHADER == type) "Vertex" else "Fragment") +
-                        " shader compiled error(${status[0]}): \n${GLES20.glGetShaderInfoLog(shader)}\n" +
-                        "Source:$shaderSource")
+                debug_e("Error:\n${GLES20.glGetShaderInfoLog(shader)}\nSource:$shaderSource")
                 GLES20.glDeleteShader(shader)
+                throw CompileException((if (GLES20.GL_VERTEX_SHADER == type) "Vertex" else "Fragment") +
+                        " shader compiled error(${status[0]})")
             }
         }
         return shader
@@ -115,7 +121,7 @@ abstract class BaseTexture(var textureId: IntArray,
     /**
      * 将两个Shader链接至program中
      */
-    fun linkProgram(verShader: Int, fragShader: Int): Int {
+    private fun createProgram(verShader: Int, fragShader: Int): Int {
         //创建program
         val program = GLES20.glCreateProgram()
         if (program == 0) {
