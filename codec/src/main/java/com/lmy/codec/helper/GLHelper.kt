@@ -39,6 +39,7 @@ object GLHelper {
                         dest: ByteArray,
                         length: Int)
 
+    external fun glVersion(): String
     /**
      * @param context
      * @return hex

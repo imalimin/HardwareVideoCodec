@@ -39,6 +39,13 @@ static void neon_memcpy(volatile unsigned char *dst, volatile unsigned char *src
 }
 #endif
 
+JNIEXPORT jstring JNICALL Java_com_lmy_codec_helper_GLHelper_glVersion
+        (JNIEnv *env, jobject thiz) {
+    char *version = (char *) glGetString(GL_VERSION);
+    LOGE("version=%s", version);
+    return (*env)->NewStringUTF(env, version);
+}
+
 JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_glReadPixels
         (JNIEnv *env, jobject thiz, jint x, jint y, jint width, jint height, jint format,
          jint type) {

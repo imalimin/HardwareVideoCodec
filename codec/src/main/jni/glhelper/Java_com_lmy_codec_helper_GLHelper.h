@@ -19,6 +19,9 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_glReadPixels
         (JNIEnv *, jobject, jint, jint, jint, jint, jint, jint);
 
+JNIEXPORT jstring JNICALL Java_com_lmy_codec_helper_GLHelper_glVersion
+        (JNIEnv *, jobject);
+
 JNIEXPORT void JNICALL Java_com_lmy_codec_helper_GLHelper_copyToByteArray
         (JNIEnv *, jobject, jobject, jbyteArray, jint, jint, jint);
 
