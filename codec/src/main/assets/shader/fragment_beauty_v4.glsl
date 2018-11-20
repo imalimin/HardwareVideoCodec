@@ -1,7 +1,3 @@
-#define x_a 640.0
-#define y_a 1136.0
-
-
 precision lowp float;
 uniform sampler2D uTexture;
 varying lowp vec2 vTextureCoord;
@@ -9,12 +5,14 @@ varying lowp vec2 vTextureCoord;
 uniform float params;
 uniform float distanceNormalizationFactor;
 uniform float brightness;
+uniform highp float texelWidthOffset;
+uniform highp float texelHeightOffset;
 
 void main(){
     vec3 centralColor;
 
-    float mul_x = 1.6 / x_a;
-    float mul_y = 1.6 / y_a;
+    float mul_x = texelWidthOffset;
+    float mul_y = texelHeightOffset;
 
     vec2 blurCoordinates0 = vTextureCoord + vec2(0.0 * mul_x,-10.0 * mul_y);
     vec2 blurCoordinates1 = vTextureCoord + vec2(5.0 * mul_x,-8.0 * mul_y);

@@ -11,20 +11,28 @@ class BeautyV4Filter(width: Int = 0,
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0
     private var uTextureLocation = 0
+    private var texelWidthOffsetLocation = 0
+    private var texelHeightOffsetLocation = 0
     private var paramsLocation = 0
     private var distanceLocation = 0
     private var brightnessLocation = 0
 
+    private var texelWidthOffset: Float = 1f
+    private var texelHeightOffset: Float = 1f
     private var params = 1f
     private var distance = 7f
     private var brightness = 0.015f
 
     override fun init() {
         super.init()
+        texelWidthOffset = 1.6f / width
+        texelHeightOffset = 1.6f / height
         aPositionLocation = getAttribLocation("aPosition")
         uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
         //美颜参数
+        texelWidthOffsetLocation = getUniformLocation("texelWidthOffset")
+        texelHeightOffsetLocation = getUniformLocation("texelHeightOffset")
         paramsLocation = getUniformLocation("params")
         distanceLocation = getUniformLocation("distanceNormalizationFactor")
         brightnessLocation = getUniformLocation("brightness")
@@ -32,6 +40,8 @@ class BeautyV4Filter(width: Int = 0,
 
     override fun draw(transformMatrix: FloatArray?) {
         active(uTextureLocation)
+        setUniform1f(texelWidthOffsetLocation, texelWidthOffset)
+        setUniform1f(texelHeightOffsetLocation, texelHeightOffset)
         setUniform1f(paramsLocation, params)
         setUniform1f(distanceLocation, distance)
         setUniform1f(brightnessLocation, brightness)
