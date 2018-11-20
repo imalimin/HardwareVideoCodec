@@ -87,7 +87,7 @@ class BeautyV5Filter private constructor(filter: BaseFilter) : GroupFilter(filte
         }
 
         override fun getFragment(): String {
-            return "shader/fragment_result.glsl"
+            return "shader/fragment_beauty_v5_result.glsl"
         }
     }
 }
