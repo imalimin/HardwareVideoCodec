@@ -15,8 +15,9 @@ import java.util.concurrent.LinkedBlockingQueue
 /**
  * Created by lmyooyo@gmail.com on 2018/9/30.
  */
-class GroupFilter private constructor(filter: BaseFilter,
-                                      private var deFlashing: Boolean) : BaseFilter() {
+open class GroupFilter internal constructor(filter: BaseFilter,
+                                           private var deFlashing: Boolean) : BaseFilter() {
+
     private val initList = LinkedBlockingQueue<BaseTexture>()
     private val releaseList = LinkedBlockingQueue<BaseTexture>()
     private val filters = ArrayList<BaseFilter>()
