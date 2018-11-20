@@ -6,6 +6,7 @@
  */
 package com.lmy.codec.texture.impl.filter
 
+import com.lmy.codec.BuildConfig
 import com.lmy.codec.texture.impl.BaseTexture
 import com.lmy.codec.texture.impl.sticker.BaseSticker
 import com.lmy.codec.util.debug_i
@@ -57,13 +58,12 @@ class GroupFilter private constructor(filter: BaseFilter,
     }
 
     private fun printLink() {
-        val bf = StringBuffer()
+        val bf = StringBuffer("CAMERA->")
         filters.forEach {
-            bf.append(it.textureId[0])
-                    .append("->")
-                    .append(it.frameBuffer[0])
-                    .append("(${it.frameBufferTexture[0]}), ")
+            bf.append("${it::class.java.simpleName}(${it.textureId[0]}, " +
+                    "${it.frameBuffer[0]}, ${it.frameBufferTexture[0]})->")
         }
+        bf.append("END")
         debug_i("Link: $bf")
     }
 
@@ -90,7 +90,9 @@ class GroupFilter private constructor(filter: BaseFilter,
                     it.textureId = filters.last().frameBuffer
                 }
             }
-            printLink()
+            if (BuildConfig.DEBUG) {
+                printLink()
+            }
         }
     }
 
