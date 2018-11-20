@@ -1,11 +1,11 @@
 precision mediump float;
-varying vec2 textureCoordinate;
-uniform sampler2D uTexture; // 高斯模糊图片
-uniform sampler2D sTexture2;  // 输入原图
-const float intensity = 24.0;   // 强光程度
+varying vec2 vTextureCoord;
+uniform sampler2D uTexture;//高斯模糊纹理
+uniform sampler2D sTexture2;//原纹理
+const float intensity = 24.0;//强度
 void main() {
-    lowp vec4 sourceColor = texture2D(sTexture2, textureCoordinate);
-    lowp vec4 blurColor = texture2D(uTexture, textureCoordinate);
+    lowp vec4 sourceColor = texture2D(sTexture2, vTextureCoord);
+    lowp vec4 blurColor = texture2D(uTexture, vTextureCoord);
     // 高通滤波之后的颜色值
     highp vec4 highPassColor = sourceColor - blurColor;
     // 对应混合模式中的强光模式(color = 2.0 * color1 * color2)，对于高反差的颜色来说，color1 和color2 是同一个
