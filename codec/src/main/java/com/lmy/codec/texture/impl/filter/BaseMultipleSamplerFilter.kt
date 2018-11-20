@@ -9,6 +9,7 @@ package com.lmy.codec.texture.impl.filter
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import com.lmy.codec.helper.Resources
+import com.lmy.codec.util.debug_i
 import javax.microedition.khronos.opengles.GL10
 
 abstract class BaseMultipleSamplerFilter(width: Int = 0,
@@ -22,7 +23,12 @@ abstract class BaseMultipleSamplerFilter(width: Int = 0,
         textures = IntArray(getSamplers()!!.size)
         textureLocations = IntArray(getSamplers()!!.size)
         getSamplers()!!.forEachIndexed { index, sampler ->
-            textures!![index] = loadTexture(sampler.path)
+            if (sampler is Texture) {
+                textures!![index] = sampler.textureId[0]
+                debug_i("Found texture ${sampler.textureId[0]}")
+            } else {
+                textures!![index] = loadTexture(sampler.path)
+            }
             textureLocations!![index] = getUniformLocation(sampler.name)
         }
     }
@@ -60,11 +66,17 @@ abstract class BaseMultipleSamplerFilter(width: Int = 0,
     }
 
     abstract fun getSamplers(): Array<Sampler>?
-    class Sampler(var name: String, var path: String)
+    open class Sampler(var name: String, var path: String)
+    class Texture(var textureId: IntArray, name: String) : Sampler(name, "")
 
     override fun release() {
         super.release()
-        if (null != textures)
-            GLES20.glDeleteTextures(textures!!.size, textures!!, 0)
+        val texture = IntArray(1)
+        getSamplers()!!.forEachIndexed { index, sampler ->
+            if (null != textures && sampler !is Texture) {
+                texture[0] = textures!![index]
+                GLES20.glDeleteTextures(1, texture, 0)
+            }
+        }
     }
 }
