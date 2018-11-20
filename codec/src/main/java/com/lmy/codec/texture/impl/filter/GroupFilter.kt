@@ -54,12 +54,22 @@ class GroupFilter private constructor(filter: BaseFilter,
     }
 
     private fun printLink() {
-        val bf = StringBuffer("CAMERA->")
+        val bf = StringBuffer("CAMERA")
         filters.forEach {
-            bf.append("${it::class.java.simpleName}(${it.textureId[0]}, " +
-                    "${it.frameBuffer[0]}, ${it.frameBufferTexture[0]})->")
+            bf.append("->${it::class.java.simpleName}(${it.textureId[0]}, " +
+                    "${it.frameBuffer[0]}, ${it.frameBufferTexture[0]})")
         }
-        bf.append("END")
+        if (!stickers.isEmpty()) {
+            bf.append("->Stickers[")
+            stickers.forEachIndexed { index, it ->
+                bf.append("${it::class.java.simpleName}(${it.textureId[0]})")
+                if (index != stickers.size - 1) {
+                    bf.append(", ")
+                }
+            }
+            bf.append("]")
+        }
+        bf.append("->END")
         debug_i("Link: $bf")
     }
 
