@@ -16,15 +16,14 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.RadioGroup
 import com.lmy.codec.encoder.Encoder
+import com.lmy.codec.media.CameraWrapper
 import com.lmy.codec.presenter.VideoRecorder
 import com.lmy.codec.presenter.impl.VideoRecorderImpl
-import com.lmy.codec.texture.impl.filter.BaseFilter
-import com.lmy.codec.texture.impl.filter.BeautyV4Filter
-import com.lmy.codec.texture.impl.filter.GroupFilter
+import com.lmy.codec.texture.IParams
+import com.lmy.codec.texture.impl.filter.*
 import com.lmy.codec.texture.impl.sticker.ImageSticker
 import com.lmy.codec.texture.impl.sticker.TextSticker
 import com.lmy.codec.util.debug_e
-import com.lmy.codec.media.CameraWrapper
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -80,8 +79,29 @@ class MainActivity : BaseActivity(), View.OnTouchListener, RadioGroup.OnCheckedC
         }
     }
 
+    private val normalFilter = NormalFilter()
+    private val horizontalBlurFilter = BlurDirectionFilter()
+            .apply {
+                setParams(floatArrayOf(
+                        BlurDirectionFilter.PARAM_DIRECTION, 0f,
+                        BlurDirectionFilter.PARAM_BLUR_SIZE, 1f,
+                        IParams.PARAM_NONE
+                ))
+            }
+    private val verticalBlurFilter = BlurDirectionFilter()
+            .apply {
+                setParams(floatArrayOf(
+                        BlurDirectionFilter.PARAM_DIRECTION, 1f,
+                        BlurDirectionFilter.PARAM_BLUR_SIZE, 1f,
+                        IParams.PARAM_NONE
+                ))
+            }
+    private val highPassFilter = HighPassFilter(normalFilter.frameBufferTexture)
     private fun getDefaultFilter(): BaseFilter {
-        return GroupFilter.create(BeautyV4Filter())
+        return GroupFilter.create(normalFilter)
+                .addFilter(horizontalBlurFilter)
+                .addFilter(verticalBlurFilter)
+                .addFilter(highPassFilter)
                 .addSticker(TextSticker().apply {
                     setText(TextSticker.Text("HWVC", 56f).apply {
                         x = 0.8f
