@@ -2,9 +2,7 @@ package com.lmy.codec.texture.impl.filter
 
 import com.lmy.codec.texture.IParams
 
-class BlurDirectionFilter(width: Int = 0,
-                          height: Int = 0,
-                          textureId: IntArray = IntArray(1)) : BaseFilter(width, height, textureId) {
+class BlurDirectionFilter : BaseFilter() {
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0
     private var uTextureLocation = 0
@@ -15,7 +13,12 @@ class BlurDirectionFilter(width: Int = 0,
     private var texelWidthOffset: Float = 0f
     private var texelHeightOffset: Float = 0f
     private var blurSize: Float = 0f
+    /**
+     * direction <= 0:horizontal
+     * direction > 0:vertical
+     */
     private var direction: Int = 0
+
     override fun init() {
         super.init()
         texelWidthOffset = 1 / width.toFloat()
