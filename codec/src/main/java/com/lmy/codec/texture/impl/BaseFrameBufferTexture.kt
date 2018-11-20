@@ -16,9 +16,9 @@ import com.lmy.codec.util.debug_e
  */
 abstract class BaseFrameBufferTexture(var width: Int,
                                       var height: Int,
-                                      textureId: IntArray,
-                                      var frameBuffer: IntArray = IntArray(1),
-                                      var frameBufferTexture: IntArray = IntArray(1)) : BaseTexture(textureId) {
+                                      textureId: IntArray) : BaseTexture(textureId) {
+    val frameBuffer: IntArray = IntArray(1)
+    val frameBufferTexture: IntArray = IntArray(1)
 
     init {
         name = "BaseFrameBufferTexture"
