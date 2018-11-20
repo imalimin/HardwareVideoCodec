@@ -14,9 +14,10 @@ import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 /**
  * Created by lmyooyo@gmail.com on 2018/4/25.
  */
-abstract class BaseFilter(width: Int = 0,
-                          height: Int = 0,
-                          textureId: IntArray) : BaseFrameBufferTexture(width, height, textureId), IParams {
+abstract class BaseFilter : BaseFrameBufferTexture, IParams {
+    constructor() : super(0, 0, IntArray(1))
+    constructor(width: Int, height: Int, textureId: IntArray) : super(width, height, textureId)
+
     init {
         name = "BaseFilter"
     }
