@@ -2,70 +2,92 @@ package com.lmy.codec.texture.impl.filter
 
 import com.lmy.codec.texture.IParams
 
-class BeautyV5Filter(width: Int = 0,
-                     height: Int = 0,
-                     textureId: IntArray = IntArray(1)) : BaseFilter(width, height, textureId) {
-    private var aPositionLocation = 0
-    private var aTextureCoordinateLocation = 0
-    private var uTextureLocation = 0
-    private var texelWidthOffsetLocation = 0
-    private var texelHeightOffsetLocation = 0
-
-    private var texelWidthOffset: Float = 0f
-    private var texelHeightOffset: Float = 0f
-    override fun init() {
-        super.init()
-        aPositionLocation = getAttribLocation("aPosition")
-        uTextureLocation = getUniformLocation("uTexture")
-        aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
-        texelWidthOffsetLocation = getUniformLocation("texelWidthOffset")
-        texelHeightOffsetLocation = getUniformLocation("texelHeightOffset")
-    }
-
-    override fun draw(transformMatrix: FloatArray?) {
-        active(uTextureLocation)
-        setUniform1f(texelWidthOffsetLocation, 1f / width)
-        setUniform1f(texelHeightOffsetLocation, 1f / height)
-        enableVertex(aPositionLocation, aTextureCoordinateLocation)
-        draw()
-        disableVertex(aPositionLocation, aTextureCoordinateLocation)
-        inactive()
-    }
-
-    override fun getVertex(): String {
-        return "shader/vertex_beauty_v5.glsl"
-    }
-
-    override fun getFragment(): String {
-        return "shader/fragment_beauty_v5.glsl"
-    }
-
-    override fun setValue(index: Int, progress: Int) {
-        when (index) {
-            0 -> {
+class BeautyV5Filter private constructor(filter: BaseFilter) : GroupFilter(filter, false) {
+    private val normalFilter = filter
+    private val horizontalBlurFilter = BlurDirectionFilter()
+            .apply {
                 setParams(floatArrayOf(
-                        PARAM_WIDTH_OFFSET, progress / 100f * 26 / width,
+                        BlurDirectionFilter.PARAM_DIRECTION, 0f,
+                        BlurDirectionFilter.PARAM_BLUR_SIZE, 1f,
                         IParams.PARAM_NONE
                 ))
             }
-            1 -> {
+    private val verticalBlurFilter = BlurDirectionFilter()
+            .apply {
                 setParams(floatArrayOf(
-                        PARAM_HEIGHT_OFFSET, progress / 100f * 26 / height,
+                        BlurDirectionFilter.PARAM_DIRECTION, 1f,
+                        BlurDirectionFilter.PARAM_BLUR_SIZE, 1f,
                         IParams.PARAM_NONE
                 ))
             }
-        }
-    }
+    private val highPassFilter = HighPassFilter(normalFilter.frameBufferTexture)
+    private val afterHorizontalBlurFilter = BlurDirectionFilter()
+            .apply {
+                setParams(floatArrayOf(
+                        BlurDirectionFilter.PARAM_DIRECTION, 0f,
+                        BlurDirectionFilter.PARAM_BLUR_SIZE, 2f,
+                        IParams.PARAM_NONE
+                ))
+            }
+    private val afterVerticalBlurFilter = BlurDirectionFilter()
+            .apply {
+                setParams(floatArrayOf(
+                        BlurDirectionFilter.PARAM_DIRECTION, 1f,
+                        BlurDirectionFilter.PARAM_BLUR_SIZE, 2f,
+                        IParams.PARAM_NONE
+                ))
+            }
+    private val resultFilter = ResultFilter(normalFilter.frameBufferTexture, verticalBlurFilter.frameBufferTexture)
 
-    override fun setParam(cursor: Float, value: Float) {
-        when {
-            PARAM_WIDTH_OFFSET == cursor -> this.texelWidthOffset = value
-            PARAM_HEIGHT_OFFSET == cursor -> this.texelHeightOffset = value
-        }
+    init {
+        addFilter(horizontalBlurFilter)
+        addFilter(verticalBlurFilter)
+        addFilter(highPassFilter)
+        addFilter(afterHorizontalBlurFilter)
+        addFilter(afterVerticalBlurFilter)
+        addFilter(resultFilter)
     }
 
     companion object {
-        const val PARAM_WIDTH_OFFSET = 100f
-        const val PARAM_HEIGHT_OFFSET = PARAM_WIDTH_OFFSET + 1
+        fun create(): BaseFilter = BeautyV5Filter(NormalFilter())
+    }
+
+    class ResultFilter(var srcTextureId: IntArray,
+                       var srcBlurTextureId: IntArray,
+                       width: Int = 0,
+                       height: Int = 0,
+                       textureId: IntArray = IntArray(1)) : BaseMultipleSamplerFilter(width, height, textureId) {
+        private var aPositionLocation = 0
+        private var aTextureCoordinateLocation = 0
+        private var uTextureLocation = 0
+        override fun init() {
+            super.init()
+            aPositionLocation = getAttribLocation("aPosition")
+            uTextureLocation = getUniformLocation("uTexture")
+            aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
+        }
+
+        override fun draw(transformMatrix: FloatArray?) {
+            active(uTextureLocation)
+            enableVertex(aPositionLocation, aTextureCoordinateLocation)
+            draw()
+            disableVertex(aPositionLocation, aTextureCoordinateLocation)
+            inactive()
+        }
+
+        override fun getSamplers(): Array<Sampler>? {
+            return arrayOf(
+                    Texture(srcTextureId, "sTexture2"),
+                    Texture(srcBlurTextureId, "sTexture3")
+            )
+        }
+
+        override fun getVertex(): String {
+            return "shader/vertex_normal.glsl"
+        }
+
+        override fun getFragment(): String {
+            return "shader/fragment_result.glsl"
+        }
     }
 }
