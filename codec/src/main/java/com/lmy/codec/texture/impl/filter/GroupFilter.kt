@@ -96,15 +96,21 @@ class GroupFilter private constructor(filter: BaseFilter,
         }
     }
 
+    private fun notContain(list: LinkedBlockingQueue<*>, e: Any): Boolean {
+        return !list.contains(e)
+    }
+
     private fun addToInitList(texture: BaseTexture) {
         synchronized(initList) {
-            initList.offer(texture)
+            if (notContain(initList, texture))
+                initList.offer(texture)
         }
     }
 
     private fun addToReleaseList(texture: BaseTexture) {
         synchronized(releaseList) {
-            releaseList.offer(texture)
+            if (notContain(releaseList, texture))
+                releaseList.offer(texture)
         }
     }
 
