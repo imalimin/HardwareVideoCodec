@@ -36,7 +36,6 @@ class ScreenEglSurface private constructor(eglContext: EGLContext?,
     override fun updateSurface(surface: Any) {
         super.updateSurface(surface)
         createEgl(surface, eglCtx)
-        makeCurrent()
     }
 
     @Synchronized
