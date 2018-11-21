@@ -66,8 +66,10 @@ class AudioEncoderImpl private constructor(var context: CodecContext,
             audioRecorder?.setOnPCMListener(this)
             audioRecorder!!.getBufferSize()
         }
-        initCodec()
-        mPipeline.queueEvent(Runnable { init() })
+        mPipeline.queueEvent(Runnable {
+            initCodec()
+            init()
+        })
     }
 
     private fun initCodec() {

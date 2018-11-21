@@ -67,8 +67,10 @@ class VideoEncoderImpl(var context: CodecContext,
     }
 
     init {
-        initCodec()
-        mPipeline.queueEvent(Runnable { init() })
+        mPipeline.queueEvent(Runnable {
+            initCodec()
+            init()
+        })
     }
 
     private fun initCodec() {
@@ -164,10 +166,10 @@ class VideoEncoderImpl(var context: CodecContext,
 //                    debug_v("INFO_TRY_AGAIN_LATER")
                     return false
                 }
-            /**
-             * 输出格式改变，很重要
-             * 这里必须把outputFormat设置给MediaMuxer，而不能不能用inputFormat代替，它们是不一样的，不然无法正确生成mp4文件
-             */
+                /**
+                 * 输出格式改变，很重要
+                 * 这里必须把outputFormat设置给MediaMuxer，而不能不能用inputFormat代替，它们是不一样的，不然无法正确生成mp4文件
+                 */
                 MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                     debug_v("INFO_OUTPUT_FORMAT_CHANGED")
                     onSampleListener?.onFormatChanged(this, codec!!.outputFormat)
