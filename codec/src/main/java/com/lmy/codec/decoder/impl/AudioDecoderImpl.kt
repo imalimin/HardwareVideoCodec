@@ -17,6 +17,10 @@ import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.experimental.withTimeout
 import java.io.IOException
 
 class AudioDecoderImpl(val context: CodecContext,
@@ -24,7 +28,6 @@ class AudioDecoderImpl(val context: CodecContext,
                        private val forPlay: Boolean = false,
                        override val onSampleListener: Decoder.OnSampleListener? = null) : AudioDecoder {
 
-    private val lock = Object()
     override var onStateListener: Decoder.OnStateListener? = null
     private var pipeline: Pipeline? = EventPipeline.create("AudioDecoderPipeline")
     private var mDequeuePipeline: Pipeline? = EventPipeline.create("AudioDequeuePipeline")
@@ -56,9 +59,6 @@ class AudioDecoderImpl(val context: CodecContext,
             }
             codec?.start()
             codecStarted = true
-            synchronized(lock) {
-                lock.notifyAll()
-            }
         })
     }
 
@@ -137,39 +137,34 @@ class AudioDecoderImpl(val context: CodecContext,
         })
     }
 
-    override fun getSampleSize(): Int {
-        if (!codecStarted) {
-            synchronized(lock) {
-                try {
-                    lock.wait()
-                } catch (e: InterruptedException) {
-
+    override fun getSampleSize(): Int = runBlocking {
+        withTimeout(1000) {
+            val future = async {
+                while (!codecStarted) {
+                    delay(200)
                 }
-            }
-        }
-        synchronized(this@AudioDecoderImpl) {
-            if (decode()) {
                 while (true) {
-                    val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
-                    return if (index >= 0) {
-                        if (sampleSize <= 0) {
-                            sampleSize = bufferInfo.size
+                    if (decode()) {
+                        val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
+                        if (index >= 0) {
+                            if (sampleSize <= 0) {
+                                sampleSize = bufferInfo.size
+                            }
+                            val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                codec!!.getOutputBuffer(index)
+                            } else {
+                                codec!!.outputBuffers[index]
+                            }
+                            buffer.clear()
+                            codec!!.releaseOutputBuffer(index, false)
                         }
-                        val buffer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            codec!!.getOutputBuffer(index)
-                        } else {
-                            codec!!.outputBuffers[index]
-                        }
-                        buffer.clear()
-                        codec!!.releaseOutputBuffer(index, false)
-                        sampleSize
-                    } else {
-                        getSampleSize()
+                        if (sampleSize > 0) return@async sampleSize
                     }
                 }
+                return@async 0
             }
+            future.await()
         }
-        return 0
     }
 
     private fun next() {

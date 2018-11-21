@@ -1,6 +1,12 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.novoda.bintray-release'
+//kotlinx.coroutines
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
 
 android {
     compileSdkVersion 26

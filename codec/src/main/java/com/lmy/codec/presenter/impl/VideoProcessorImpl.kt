@@ -34,6 +34,7 @@ import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import java.io.File
 import java.nio.ByteBuffer
+import kotlin.system.measureTimeMillis
 
 /**
  * Created by lmyooyo@gmail.com on 2018/10/8.
@@ -106,8 +107,10 @@ class VideoProcessorImpl private constructor(ctx: Context) : VideoProcessor, Dec
         if (extractor!!.getAudioTrack()!!.format.containsKey(MediaFormat.KEY_AAC_PROFILE))
             context.audio.profile = extractor!!.getAudioTrack()!!
                     .format.getInteger(MediaFormat.KEY_AAC_PROFILE)
-        audioSample = ByteArray(audioDecoder!!.getSampleSize())
-        debug_i("audioSample=${audioSample!!.size}")
+        val cost = measureTimeMillis {
+            audioSample = ByteArray(audioDecoder!!.getSampleSize())
+        }
+        debug_i("audioSample=${audioSample!!.size}, cost $cost")
         audioEncoder = AudioEncoderImpl.fromArray(context, audioSample!!.size)
         if (null != muxer) {
             muxer!!.addAudioTrack(audioEncoder!!.getOutputFormat())
