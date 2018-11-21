@@ -4,7 +4,14 @@ buildscript {
     ext.kotlin_version = '1.3.0'
     ext.versionCode = 19
     ext.versionName = "1.7.3"
+
+    ext.bintray_userOrg = 'lmylr'
+    ext.bintray_groupId = 'com.lmy.codec'
+    ext.bintray_publishVersion = versionName
+    ext.bintray_website = 'https://github.com/lmylr'
+
     repositories {
+        mavenCentral()
         google()
         jcenter()
     }
@@ -23,7 +30,7 @@ allprojects {
         jcenter()
     }
     tasks.getByPath(":codec:releaseAndroidJavadocs").enabled = false
-//    tasks.getByPath(":rtmp:releaseAndroidJavadocs").enabled = false
+    tasks.getByPath(":rtmp:releaseAndroidJavadocs").enabled = false
     tasks.withType(Javadoc) {
         options.addStringOption('Xdoclint:none', '-quiet')
         options.addStringOption('encoding', 'UTF-8')

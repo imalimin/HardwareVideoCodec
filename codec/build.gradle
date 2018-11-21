@@ -52,14 +52,12 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.27.0-eap13"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:0.27.0-eap13"
 }
-repositories {
-    mavenCentral()
-}
+
 publish {
-    userOrg = 'lmylr'
-    groupId = 'com.lmy.codec'
+    userOrg = rootProject.bintray_userOrg
+    groupId = rootProject.bintray_groupId
+    publishVersion = rootProject.bintray_publishVersion
+    website = rootProject.bintray_website
     artifactId = 'hardwarevideocodec'
-    publishVersion = android.defaultConfig.versionName
     desc = 'HardwareVideoCodec is an efficient video encoding library for Android.'
-    website = 'https://github.com/lmylr'
 }
