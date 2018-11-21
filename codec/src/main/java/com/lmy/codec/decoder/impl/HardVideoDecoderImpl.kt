@@ -10,6 +10,7 @@ import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
+import android.text.TextUtils
 import android.view.Surface
 import com.lmy.codec.decoder.Decoder
 import com.lmy.codec.decoder.VideoDecoder
@@ -17,6 +18,7 @@ import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.Track
 import com.lmy.codec.pipeline.Pipeline
+import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import java.io.IOException
@@ -27,7 +29,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
                            private val track: Track,
                            private val egl: Egl,
                            private val surfaceTexture: SurfaceTexture,
-                           private val pipeline: Pipeline,
+                           private var pipeline: Pipeline?,
                            private val forPlay: Boolean = false,
                            override val onSampleListener: Decoder.OnSampleListener? = null) : VideoDecoder,
         SurfaceTexture.OnFrameAvailableListener {
@@ -39,6 +41,10 @@ class HardVideoDecoderImpl(val context: CodecContext,
     private var eos = false
     private var delay = 0L
     private var delayDelta = 0L
+
+    init {
+        if (null == pipeline) pipeline = EventPipeline.create(this@HardVideoDecoderImpl::class.java.simpleName)
+    }
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
 
@@ -75,7 +81,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
     private var cost = 0L
     @Synchronized
     private fun next() {
-        pipeline.queueEvent(Runnable {
+        pipeline?.queueEvent(Runnable {
             cost += measureNanoTime {
                 decode()
                 pts = dequeue()
@@ -85,7 +91,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
                     cost = 0
                 }
                 if (pts > 0) {//成功解码了一帧
-                    delay = (pts - lastPts - cost) / 1000
+                    delay = (pts - lastPts - cost + delayDelta) / 1000
                     debug_i("$pts - $lastPts - $cost=$delay, delta=$delayDelta")
                     delayDelta = 0
                     lastPts = pts
@@ -156,7 +162,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
     }
 
     override fun flush() {
-        pipeline.queueEvent(Runnable {
+        pipeline?.queueEvent(Runnable {
             val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
             debug_i("stream index=$index, flag=${bufferInfo.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM}")
             when (index) {
@@ -216,10 +222,14 @@ class HardVideoDecoderImpl(val context: CodecContext,
 
     override fun release() {
         stop()
+        if (null != pipeline && TextUtils.equals(pipeline!!.getName(),
+                        this@HardVideoDecoderImpl::class.java.simpleName)) {
+            pipeline?.quit()
+        }
     }
 
     override fun post(event: Runnable) {
-        pipeline.queueEvent(event)
+        pipeline?.queueEvent(event)
     }
 
     override fun getWidth(): Int = context.video.width
