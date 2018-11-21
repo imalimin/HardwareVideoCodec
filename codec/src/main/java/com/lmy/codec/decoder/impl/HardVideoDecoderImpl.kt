@@ -20,6 +20,7 @@ import com.lmy.codec.pipeline.Pipeline
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
 import java.io.IOException
+import kotlin.system.measureNanoTime
 
 
 class HardVideoDecoderImpl(val context: CodecContext,
@@ -36,8 +37,8 @@ class HardVideoDecoderImpl(val context: CodecContext,
     private var bufferInfo: MediaCodec.BufferInfo = MediaCodec.BufferInfo()
     private var starting = false
     private var eos = false
-    private var lastPts = 0L
     private var delay = 0L
+    private var delayDelta = 0L
 
     override fun onFrameAvailable(surfaceTexture: SurfaceTexture?) {
 
@@ -49,7 +50,7 @@ class HardVideoDecoderImpl(val context: CodecContext,
     }
 
     override fun delay(ns: Long) {
-        delay = ns
+        delayDelta = ns
     }
 
     override fun prepare() {
@@ -69,25 +70,42 @@ class HardVideoDecoderImpl(val context: CodecContext,
         })
     }
 
-    private var current: Long = 0
+    private var pts = 0L
+    private var lastPts = 0L
+    private var cost = 0L
     @Synchronized
     private fun next() {
-        lastPts += System.currentTimeMillis() - current
-        current = System.currentTimeMillis()
-        val delay = if (forPlay) {
-            val d = (bufferInfo.presentationTimeUs + delay) / 1000 - lastPts
-            lastPts = bufferInfo.presentationTimeUs / 1000
-            delay = 0
-            if (d > 0) d else 0
-        } else 0
         pipeline.queueEvent(Runnable {
-            decode()
+            cost += measureNanoTime {
+                decode()
+                pts = dequeue()
+            } / 1000
+            if (forPlay) {
+                if (pts <= 0 && 0L == lastPts) {
+                    cost = 0
+                }
+                if (pts > 0) {//成功解码了一帧
+                    delay = (pts - lastPts - cost) / 1000
+                    debug_i("$pts - $lastPts - $cost=$delay, delta=$delayDelta")
+                    delayDelta = 0
+                    lastPts = pts
+                    pts = 0
+                    cost = 0
+                }
+            } else {
+                delay = 0
+            }
+            if (!eos) {
+                next()
+            } else {
+                flush()
+            }
         }, delay)
     }
 
-    private fun decode() {
+    private fun decode(): Boolean {
         synchronized(this@HardVideoDecoderImpl) {
-            if (!starting) return
+            if (!starting) return false
             egl.makeCurrent()
             val index = codec!!.dequeueInputBuffer(WAIT_TIME)
             if (index >= 0) {
@@ -98,33 +116,26 @@ class HardVideoDecoderImpl(val context: CodecContext,
                 }
                 synchronized(track.extractor) {
                     val size = track.readSampleData(buffer, 0)
-                    if (size < 0) {
+                    if (size < 0) {//结束
                         codec!!.queueInputBuffer(index, 0, 0, 0,
                                 MediaCodec.BUFFER_FLAG_END_OF_STREAM)
                         debug_e("Track eos!")
                         eos = true
                         pause()
-                    } else {
+                    } else {//下一帧
                         eos = false
                         codec!!.queueInputBuffer(index, 0, size, track.getSampleTime(), 0)
                         track.advance()
                     }
-//                        track.unselect()
                 }
-                dequeue()
-            } else {
-                debug_e("Cannot get input buffer!")
+                return true
             }
-//            debug_i("next ${videoInfo.presentationTimeUs}")
-            if (!eos) {
-                next()
-            } else {
-                flush()
-            }
+            debug_e("Cannot get input buffer!")
+            return false
         }
     }
 
-    private fun dequeue() {
+    private fun dequeue(): Long {
         val index = codec!!.dequeueOutputBuffer(bufferInfo, WAIT_TIME)
         when (index) {
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> debug_i("INFO_OUTPUT_FORMAT_CHANGED")
@@ -138,8 +149,10 @@ class HardVideoDecoderImpl(val context: CodecContext,
                     onSampleListener?.onSample(this, bufferInfo, null)
                 }
                 codec!!.releaseOutputBuffer(index, true)
+                return bufferInfo.presentationTimeUs
             }
         }
+        return -1
     }
 
     override fun flush() {
