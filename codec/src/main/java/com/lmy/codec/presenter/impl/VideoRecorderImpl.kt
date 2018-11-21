@@ -14,6 +14,7 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.encoder.impl.AudioEncoderImpl
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.helper.MuxerFactory
+import com.lmy.codec.media.CameraWrapper
 import com.lmy.codec.muxer.Muxer
 import com.lmy.codec.pipeline.impl.GLEventPipeline
 import com.lmy.codec.presenter.VideoRecorder
@@ -23,7 +24,6 @@ import com.lmy.codec.texture.impl.filter.BaseFilter
 import com.lmy.codec.texture.impl.filter.NormalFilter
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import com.lmy.codec.media.CameraWrapper
 
 /**
  * Created by lmyooyo@gmail.com on 2018/8/9.
@@ -69,7 +69,7 @@ class VideoRecorderImpl(ctx: Context
         textureView?.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
 
             override fun onSurfaceTextureSizeChanged(p0: SurfaceTexture?, p1: Int, p2: Int) {
-                updatePreview(p1, p2)
+                render?.updateSize(p1, p2)
             }
 
             override fun onSurfaceTextureUpdated(p0: SurfaceTexture?) {
@@ -226,8 +226,8 @@ class VideoRecorderImpl(ctx: Context
         })
     }
 
-    private fun updatePreview(width: Int, height: Int) {
-//        mRender?.updatePreview(width, height)
+    override fun updatePreviewDisplay(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
+        render?.updatePreview(surfaceTexture, width, height)
     }
 
     private fun startEncoder() {

@@ -16,6 +16,7 @@ interface Render : FilterSupport {
     fun onFrameAvailable()
     fun draw()
     fun start(texture: SurfaceTexture?, width: Int, height: Int)
+    fun updatePreview(texture: SurfaceTexture, width: Int, height: Int)
     fun updateSize(width: Int, height: Int)
     fun stop()
     fun release()

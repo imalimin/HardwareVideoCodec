@@ -35,6 +35,7 @@ interface VideoRecorder : FilterSupport, SurfaceTexture.OnFrameAvailableListener
     fun setOutputUri(uri: String)
 
     fun setPreviewDisplay(view: TextureView)
+    fun updatePreviewDisplay(surfaceTexture: SurfaceTexture, width: Int, height: Int)
     fun setOnStateListener(listener: OnStateListener)
     fun release()
     interface OnStateListener : Encoder.OnPreparedListener, Encoder.OnRecordListener {

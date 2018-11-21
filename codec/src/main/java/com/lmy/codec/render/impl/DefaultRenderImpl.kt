@@ -136,6 +136,18 @@ class DefaultRenderImpl(var context: CodecContext,
         pipeline?.queueEvent(Runnable { init() })
     }
 
+    override fun updatePreview(texture: SurfaceTexture, width: Int, height: Int) {
+        debug_i("updatePreview ${width}x$height")
+        screenTexture = texture
+        context.viewSize.width = width
+        context.viewSize.height = height
+        pipeline?.queueEvent(Runnable {
+            screenSurface?.updateSurface(texture)
+            screenSurface?.makeCurrent()
+            screenSurface?.updateLocation(context)
+        })
+    }
+
     override fun updateSize(width: Int, height: Int) {
         if (width == this.width && this.height == height) return
         this.width = width
