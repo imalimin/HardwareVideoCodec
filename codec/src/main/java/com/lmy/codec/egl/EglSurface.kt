@@ -68,6 +68,12 @@ abstract class EglSurface<T> {
         GLHelper.checkGLES2Error("createTexture")
     }
 
+    open fun updateSurface(surface: Any) {
+        egl?.makeCurrent()
+        egl?.release()
+        egl = null
+    }
+
     open fun release() {
         egl?.makeCurrent()
         texture?.release()

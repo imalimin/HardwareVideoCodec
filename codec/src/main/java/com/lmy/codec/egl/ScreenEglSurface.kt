@@ -20,17 +20,26 @@ class ScreenEglSurface private constructor(eglContext: EGLContext?,
                                            surface: SurfaceTexture,
                                            override var textureId: IntArray?) : EglOutputSurface() {
     override val name = "Screen"
+    private var eglCtx: EGLContext? = eglContext
 
     init {
         if (null == textureId)
             throw RuntimeException("textureId can not be null")
-        createEgl(surface, eglContext)
+        createEgl(surface, eglCtx)
         makeCurrent()
         texture = NormalTexture(textureId!!).apply {
             name = "ScreenTexture"
         }
     }
 
+    @Synchronized
+    override fun updateSurface(surface: Any) {
+        super.updateSurface(surface)
+        createEgl(surface, eglCtx)
+        makeCurrent()
+    }
+
+    @Synchronized
     override fun draw(transformMatrix: FloatArray?) {
         if (null == texture) {
             debug_e("Render failed. Texture is null")
@@ -39,6 +48,7 @@ class ScreenEglSurface private constructor(eglContext: EGLContext?,
         texture?.draw(transformMatrix)
     }
 
+    @Synchronized
     override fun updateLocation(context: CodecContext) {
         val location = FloatArray(8)
         val textureLocation = FloatArray(8)
