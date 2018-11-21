@@ -28,6 +28,7 @@ abstract class EglSurface<T> {
     abstract fun draw(transformMatrix: FloatArray?)
 
     internal fun createEgl(surface: Any?, eglContext: EGLContext?) {
+        if (null != egl) return
         egl = Egl(name)
         if (null != surface) {
             this.surface = surface as T
