@@ -30,7 +30,7 @@ class FilterController(private val mVideoRecorder: FilterSupport,
                 "Hue", "Gamma", "Brightness", "Sepia", "Sharpness",
                 "Saturation", "Exposure", "Highlight Shadow", "Monochrome", "White Balance",
                 "Vignette", "Crosshatch", "Smooth", "Sketch", "Halftone",
-                "Haze")
+                "Haze", "Beauty V6")
     }
 
     private var oneBar: SeekBar = progressLayout.getChildAt(0) as SeekBar
@@ -283,6 +283,14 @@ class FilterController(private val mVideoRecorder: FilterSupport,
                 show(2)
                 oneBar.progress = 50
                 twoBar.progress = 50
+            }
+            41 -> {
+                mVideoRecorder.setFilter(BeautyV6Filter())
+                show(4)
+                oneBar.progress = 0
+                twoBar.progress = 30
+                thBar.progress = 0
+                fBar.progress = 15
             }
             else -> {
                 mVideoRecorder.setFilter(NormalFilter())
