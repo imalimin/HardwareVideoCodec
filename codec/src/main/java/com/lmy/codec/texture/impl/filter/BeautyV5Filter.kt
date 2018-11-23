@@ -1,7 +1,16 @@
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 package com.lmy.codec.texture.impl.filter
 
 import com.lmy.codec.texture.IParams
 
+/**
+ * 高反差磨皮美颜
+ */
 class BeautyV5Filter private constructor(filter: BaseFilter) : GroupFilter(filter, false) {
     private val normalFilter = filter
     private val horizontalBlurFilter = BlurDirectionFilter()
