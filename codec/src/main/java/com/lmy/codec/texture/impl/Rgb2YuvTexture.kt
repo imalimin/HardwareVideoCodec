@@ -22,6 +22,8 @@ class Rgb2YuvTexture(width: Int, height: Int,
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0
     private var uTextureLocation = 0
+    private var aWidthLocation = 0
+    private var aHeightLocation = 0
 
     init {
         init()
@@ -33,8 +35,10 @@ class Rgb2YuvTexture(width: Int, height: Int,
         shaderProgram = createProgram(Resources.instance.readAssetsAsString("shader/vertex_rgb2yuv.glsl"),
                 Resources.instance.readAssetsAsString("shader/fragment_rgb2yuv.glsl"))
         aPositionLocation = getAttribLocation("aPosition")
-        uTextureLocation = getUniformLocation("uTexture")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
+        uTextureLocation = getUniformLocation("uTexture")
+        aWidthLocation = getUniformLocation("width")
+        aHeightLocation = getUniformLocation("height")
     }
 
     override fun draw(transformMatrix: FloatArray?) {
@@ -43,6 +47,8 @@ class Rgb2YuvTexture(width: Int, height: Int,
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
         GLES20.glUniform1i(uTextureLocation, 0)
+        GLES20.glUniform1i(aWidthLocation, width)
+        GLES20.glUniform1i(aHeightLocation, height)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
 
         drawer.draw()
