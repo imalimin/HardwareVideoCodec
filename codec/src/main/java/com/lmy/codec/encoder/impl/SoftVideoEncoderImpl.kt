@@ -20,6 +20,7 @@ import com.lmy.codec.helper.Resources
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
 import com.lmy.codec.texture.impl.MirrorTexture
+import com.lmy.codec.texture.impl.Rgb2YuvTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.x264.CacheX264Encoder
 import com.lmy.codec.x264.X264Encoder
@@ -31,12 +32,9 @@ import java.nio.ByteBuffer
 class SoftVideoEncoderImpl(var context: CodecContext,
                            textureId: IntArray,
                            private var eglContext: EGLContext,
-                           override var onPreparedListener: Encoder.OnPreparedListener? = null,
-                           var codec: CacheX264Encoder? = null,
-                           var reader: PixelsReader? = null,
-                           private var pTimer: PresentationTimer = PresentationTimer(context.video.fps),
-                           override var onRecordListener: Encoder.OnRecordListener? = null)
+                           override var onPreparedListener: Encoder.OnPreparedListener? = null)
     : Encoder, CacheX264Encoder.OnSampleListener {
+
     override fun getOutputFormat(): MediaFormat {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -52,6 +50,10 @@ class SoftVideoEncoderImpl(var context: CodecContext,
         onRecordListener?.onRecord(this, info.presentationTimeUs)
     }
 
+    private  var codec: CacheX264Encoder? = null
+    private var reader: PixelsReader? = null
+    private var pTimer: PresentationTimer = PresentationTimer(context.video.fps)
+    override var onRecordListener: Encoder.OnRecordListener? = null
     private lateinit var format: MediaFormat
     private var mirrorTexture: BaseFrameBufferTexture
     private var mPipeline = EventPipeline.create("VideoEncodePipeline")
@@ -66,7 +68,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
 
     init {
         initPixelsCache()
-        mirrorTexture = MirrorTexture(context.video.width,
+        mirrorTexture = Rgb2YuvTexture(context.video.width,
                 context.video.height, textureId)
         mPipeline.queueEvent(Runnable {
             initCodec()

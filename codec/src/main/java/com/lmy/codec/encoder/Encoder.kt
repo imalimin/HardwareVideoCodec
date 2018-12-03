@@ -10,6 +10,7 @@ import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.opengl.EGLContext
+import com.lmy.codec.encoder.impl.SoftVideoEncoderImpl
 import com.lmy.codec.encoder.impl.SoftVideoEncoderV2Impl
 import com.lmy.codec.encoder.impl.VideoEncoderImpl
 import com.lmy.codec.entity.CodecContext
@@ -53,7 +54,7 @@ interface Encoder : SurfaceTexture.OnFrameAvailableListener {
             return if (CodecContext.CodecType.HARD == context.codecType) {
                 VideoEncoderImpl(context, textureId, eglContext, onPreparedListener)
             } else {
-                SoftVideoEncoderV2Impl(context, textureId, eglContext, onPreparedListener)
+                SoftVideoEncoderImpl(context, textureId, eglContext, onPreparedListener)
             }
         }
 

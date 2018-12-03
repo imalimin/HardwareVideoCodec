@@ -6,11 +6,11 @@
  */
 package com.lmy.codec.helper
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.*
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_FRAMEBUFFER
 import android.opengl.GLES30
+import android.os.Environment
 import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.PixelsBuffer
 import com.lmy.codec.util.debug_e
@@ -152,7 +152,18 @@ class PixelsReader private constructor(private var usePbo: Boolean,
         }
     }
 
+    private var count: Int = 0
     fun getPixelsBuffer(): ByteBuffer {
+        ++count
+        if (count == 60) {
+            val data = ByteArray(width * height * 2 / 3)
+            pixelsBuffer!!.buffer.get(data, 0, data.size)
+            val image = YuvImage(data, ImageFormat.NV21, width, height, null)
+            debug_e("Save, $width x $height")
+            val fos = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/00000.jpg")
+            image.compressToJpeg(Rect(0, 0, image.width, image.height), 80, fos)
+            fos.close()
+        }
         return pixelsBuffer!!.buffer
     }
 
