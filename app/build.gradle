@@ -34,8 +34,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    implementation 'com.tencent.bugly:crashreport:latest.release'
-    implementation 'com.tencent.bugly:nativecrashreport:latest.release'
+//    implementation 'com.tencent.bugly:crashreport:latest.release'
+//    implementation 'com.tencent.bugly:nativecrashreport:latest.release'
 //    implementation 'com.lmy.codec:hardwarevideocodec:1.7.3'
 //    implementation 'com.lmy.codec:rtmp:1.7.3'
     implementation project(':codec')

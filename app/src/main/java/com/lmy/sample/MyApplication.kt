@@ -7,7 +7,6 @@
 package com.lmy.sample
 
 import android.app.Application
-import com.tencent.bugly.crashreport.CrashReport
 
 /**
  * Created by lmyooyo@gmail.com on 2018/5/29.
@@ -15,6 +14,6 @@ import com.tencent.bugly.crashreport.CrashReport
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        CrashReport.initCrashReport(applicationContext, "d7f93990a9", false)
+//        CrashReport.initCrashReport(applicationContext, "d7f93990a9", false)
     }
 }
