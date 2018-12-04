@@ -17,11 +17,7 @@ import javax.microedition.khronos.egl.EGL10
 /**
  * Created by lmyooyo@gmail.com on 2018/3/26.
  */
-class Egl(private val name: String,
-          var eglDisplay: EGLDisplay? = null,
-          var eglConfig: EGLConfig? = null,
-          var eglSurface: EGLSurface? = null,
-          var eglContext: EGLContext? = null) {
+class Egl(private val name: String) {
     companion object {
         const val COLOR_CHANNELS = 4
         const val GL_COLOR_DEFAULT = GLES20.GL_RGBA
@@ -48,6 +44,23 @@ class Egl(private val name: String,
                 EGL14.EGL_NONE
         )
     }
+
+    var eglDisplay: EGLDisplay? = null
+    var eglConfig: EGLConfig? = null
+    var eglSurface: EGLSurface? = null
+    var eglContext: EGLContext? = null
+    val width: Int
+        get() {
+            val result = IntArray(1)
+            EGL14.eglQuerySurface(eglDisplay, eglSurface, EGL14.EGL_WIDTH, result, result.size)
+            return result[0]
+        }
+    val height: Int
+        get() {
+            val result = IntArray(1)
+            EGL14.eglQuerySurface(eglDisplay, eglSurface, EGL14.EGL_HEIGHT, result, result.size)
+            return result[0]
+        }
 
     private fun createDisplay(displayId: Int): EGLDisplay? {
         val eglDisplay = EGL14.eglGetDisplay(displayId)

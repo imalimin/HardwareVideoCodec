@@ -109,4 +109,8 @@ abstract class EglSurface<T> {
     fun getEglContext(): EGLContext? {
         return egl?.eglContext
     }
+
+    fun getSurfaceWidth(): Int = if (null == egl) 0 else egl!!.width
+
+    fun getSurfaceHeight(): Int = if (null == egl) 0 else egl!!.height
 }
