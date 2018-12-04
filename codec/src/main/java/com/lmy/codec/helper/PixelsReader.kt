@@ -15,6 +15,7 @@ import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.PixelsBuffer
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -156,13 +157,18 @@ class PixelsReader private constructor(private var usePbo: Boolean,
     fun getPixelsBuffer(): ByteBuffer {
         ++count
         if (count == 60) {
-            val data = ByteArray(width * height * 2 / 3)
+            val data = ByteArray(width * height * 3 / 2)
             pixelsBuffer!!.buffer.get(data, 0, data.size)
             val image = YuvImage(data, ImageFormat.NV21, width, height, null)
             debug_e("Save, $width x $height")
-            val fos = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/00000.jpg")
-            image.compressToJpeg(Rect(0, 0, image.width, image.height), 80, fos)
-            fos.close()
+            try {
+                val fos = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/00000.jpg")
+//                val fos = ByteArrayOutputStream()
+                image.compressToJpeg(Rect(0, 0, image.width, image.height), 80, fos)
+                fos.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         return pixelsBuffer!!.buffer
     }
