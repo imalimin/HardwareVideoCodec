@@ -148,11 +148,9 @@ abstract class BaseTexture(var textureId: IntArray,
             GLES30.glEnableVertexAttribArray(texLoc)
 
             GLES30.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
-                    GLES20.GL_FLOAT, false,
-                    COORDS_PER_VERTEX * 4, 0)
+                    GLES20.GL_FLOAT, false, 0, 0)
             GLES30.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
-                    GLES20.GL_FLOAT, false,
-                    TEXTURE_COORDS_PER_VERTEX * 4, COORDS_BYTE_SIZE)
+                    GLES20.GL_FLOAT, false, 0, COORDS_BYTE_SIZE)
             GLES30.glBindVertexArray(GLES30.GL_NONE)
         }
         GLES30.glBindVertexArray(vao!![0])
@@ -170,11 +168,11 @@ abstract class BaseTexture(var textureId: IntArray,
         //xy
         GLES20.glVertexAttribPointer(posLoc, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
-                COORDS_PER_VERTEX * 4, 0)
+                0, 0)
         //st
         GLES20.glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
-                TEXTURE_COORDS_PER_VERTEX * 4, COORDS_BYTE_SIZE)
+                0, COORDS_BYTE_SIZE)
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, GLES20.GL_NONE)
     }
 
