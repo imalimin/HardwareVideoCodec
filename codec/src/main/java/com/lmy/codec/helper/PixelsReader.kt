@@ -15,7 +15,6 @@ import com.lmy.codec.egl.entity.Egl
 import com.lmy.codec.entity.PixelsBuffer
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.util.debug_i
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -155,21 +154,28 @@ class PixelsReader private constructor(private var usePbo: Boolean,
 
     private var count: Int = 0
     fun getPixelsBuffer(): ByteBuffer {
-        ++count
-        if (count == 60) {
-            val data = ByteArray(width * height * 3 / 2)
-            pixelsBuffer!!.buffer.get(data, 0, data.size)
-            val image = YuvImage(data, ImageFormat.NV21, width, height, null)
-            debug_e("Save, $width x $height")
-            try {
-                val fos = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/00000.jpg")
-//                val fos = ByteArrayOutputStream()
-                image.compressToJpeg(Rect(0, 0, image.width, image.height), 80, fos)
-                fos.close()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+//        ++count
+//        if (0 == count % 60) {
+//            val data = ByteArray(width * height * 3 / 2)
+//            val buffer = pixelsBuffer!!.buffer
+////            buffer.position(width * height)
+//            buffer.get(data, 0, data.size)
+//            val image = YuvImage(data, ImageFormat.NV21, width, height, null)
+//            debug_e("Save, $width x $height")
+//            val offset = 0
+//            debug_e("Frame[${data[offset + 0]},${data[offset + 1]},${data[offset + 2]},\n" +
+//                    "${data[width * height / 2 + offset + 3]},${data[width * height / 2 + offset + 4]},${data[width * height / 2 + offset + 5]},\n" +
+//                    "${data[offset + 6]},${data[offset + 7]},${data[offset + 8]}" +
+//                    "]")
+//            try {
+//                val fos = FileOutputStream("${Environment.getExternalStorageDirectory().absolutePath}/00000.yuv420p")
+////                fos.write(data)
+//                image.compressToJpeg(Rect(0, 0, image.width, image.height), 80, fos)
+//                fos.close()
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
         return pixelsBuffer!!.buffer
     }
 

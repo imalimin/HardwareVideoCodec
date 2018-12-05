@@ -15,11 +15,11 @@ import com.lmy.codec.encoder.Encoder
 import com.lmy.codec.entity.CodecContext
 import com.lmy.codec.entity.PresentationTimer
 import com.lmy.codec.helper.CodecHelper
+import com.lmy.codec.helper.Libyuv
 import com.lmy.codec.helper.PixelsReader
 import com.lmy.codec.helper.Resources
 import com.lmy.codec.pipeline.impl.EventPipeline
 import com.lmy.codec.texture.impl.BaseFrameBufferTexture
-import com.lmy.codec.texture.impl.MirrorTexture
 import com.lmy.codec.texture.impl.Rgb2YuvTexture
 import com.lmy.codec.util.debug_e
 import com.lmy.codec.x264.CacheX264Encoder
@@ -50,7 +50,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
         onRecordListener?.onRecord(this, info.presentationTimeUs)
     }
 
-    private  var codec: CacheX264Encoder? = null
+    private var codec: CacheX264Encoder? = null
     private var reader: PixelsReader? = null
     private var pTimer: PresentationTimer = PresentationTimer(context.video.fps)
     override var onRecordListener: Encoder.OnRecordListener? = null
@@ -79,7 +79,7 @@ class SoftVideoEncoderImpl(var context: CodecContext,
 
     private fun initCodec() {
         format = CodecHelper.createVideoFormat(context, true)!!
-        codec = CacheX264Encoder(X264Encoder(format))
+        codec = CacheX264Encoder(X264Encoder(format, Libyuv.COLOR_I420))
         codec!!.setProfile("high")
         codec!!.setLevel(31)
         codec?.start()
