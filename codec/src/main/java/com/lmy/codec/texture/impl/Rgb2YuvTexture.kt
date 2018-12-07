@@ -22,8 +22,10 @@ class Rgb2YuvTexture(width: Int, height: Int,
     private var aPositionLocation = 0
     private var aTextureCoordinateLocation = 0
     private var uTextureLocation = 0
-    private var aWidthLocation = 0
-    private var aHeightLocation = 0
+    private var uWidthLocation = 0
+    private var uHeightLocation = 0
+    private var uRotationMatrix = 0
+    private var uScaleVec = 0
 
     init {
         init()
@@ -37,8 +39,10 @@ class Rgb2YuvTexture(width: Int, height: Int,
         aPositionLocation = getAttribLocation("aPosition")
         aTextureCoordinateLocation = getAttribLocation("aTextureCoord")
         uTextureLocation = getUniformLocation("uTexture")
-        aWidthLocation = getUniformLocation("width")
-        aHeightLocation = getUniformLocation("height")
+        uWidthLocation = getUniformLocation("width")
+        uHeightLocation = getUniformLocation("height")
+        uRotationMatrix = getUniformLocation("rotation")
+        uScaleVec = getUniformLocation("flipScale")
     }
 
     override fun draw(transformMatrix: FloatArray?) {
@@ -47,8 +51,10 @@ class Rgb2YuvTexture(width: Int, height: Int,
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId[0])
         GLES20.glUniform1i(uTextureLocation, 0)
-        GLES20.glUniform1i(aWidthLocation, width)
-        GLES20.glUniform1i(aHeightLocation, height)
+        GLES20.glUniform1i(uWidthLocation, width)
+        GLES20.glUniform1i(uHeightLocation, height)
+        GLES20.glUniformMatrix2fv(uRotationMatrix, 1, false, floatArrayOf(1f, 0f, 0f, 1f), 0)
+        GLES20.glUniform2f(uScaleVec, 1f, 1f)
         enableVertex(aPositionLocation, aTextureCoordinateLocation)
 
         drawer.draw()
