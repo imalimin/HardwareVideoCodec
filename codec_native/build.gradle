@@ -11,11 +11,12 @@ android {
         versionName rootProject.ext.versionName
         externalNativeBuild {
             cmake {
-                cppFlags ""
+                cppFlags "--std=c++11"
             }
         }
         ndk {
-            abiFilters 'armeabi-v7a', 'x86'
+            stl "stlport_static"
+            abiFilters "armeabi-v7a", "x86"
         }
     }
 
