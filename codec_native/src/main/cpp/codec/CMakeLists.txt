@@ -8,11 +8,16 @@ include_directories(
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os")
-else()
+else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
-endif()
-
+endif ()
+file(
+        GLOB
+        SOURCES
+        render/*cpp
+        filter/*cpp
+)
 add_library( # Sets the name of the library.
         lmy_codec
 
@@ -20,7 +25,8 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        native-lib.cpp)
+        ${SOURCES}
+        )
 
 find_library( # Sets the name of the path variable.
         log-lib
