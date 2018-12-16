@@ -1,9 +1,17 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(lmy_codec)
 include_directories(
-        ${SDL_PATH}/include
-        ${SDL_PATH}/src/dynapi
+        ../sdl2/include
+        ../sdl2/src/dynapi
 )
+
+if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+endif()
 
 add_library( # Sets the name of the library.
         lmy_codec

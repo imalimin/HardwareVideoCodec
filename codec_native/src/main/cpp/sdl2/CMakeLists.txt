@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(sdl2)
-
 file(
         GLOB
         SDL_SOURCES
@@ -41,7 +40,7 @@ find_library( # Sets the name of the path variable.
         log )
 add_library(
         sdl2
-        SHARED
+        STATIC
         ${SDL_SOURCES}
 )
-target_link_libraries(SDL2 ${log-lib} GLESv1_CM GLESv2 EGL android dl)
+target_link_libraries(sdl2 ${log-lib} GLESv1_CM GLESv2 EGL android dl)
