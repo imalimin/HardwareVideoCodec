@@ -10,13 +10,15 @@ endif ()
 file(
         GLOB
         SOURCES
-        *cpp
+        *.cpp
+        ./entity/*.cpp
+        ./thread/*.cpp
 )
 add_library(
         lmy_common
         SHARED
         ${SOURCES}
-        )
+)
 
 find_library(
         log-lib

@@ -1,0 +1,14 @@
+//
+// Created by limin on 2018/12/16.
+//
+
+#ifndef HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
+#define HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
+
+
+class MessageQueue {
+
+};
+
+
+#endif //HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
