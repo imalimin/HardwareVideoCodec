@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.4.1)
-project(lmy_codec)
+project(lmy_render)
 include_directories(
         ../sdl2/include
         ../sdl2/src/dynapi
+)
+include_directories(
+        ../common
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
@@ -15,11 +18,11 @@ endif ()
 file(
         GLOB
         SOURCES
-        render/*cpp
+        *cpp
         filter/*cpp
 )
 add_library( # Sets the name of the library.
-        lmy_codec
+        lmy_render
 
         # Sets the library as a shared library.
         SHARED
@@ -36,9 +39,10 @@ find_library( # Sets the name of the path variable.
         log)
 
 target_link_libraries( # Specifies the target library.
-        lmy_codec
+        lmy_render
+        lmy_common
         sdl2
-
         # Links the target library to the log library
         # included in the NDK.
+        GLESv2
         ${log-lib})
