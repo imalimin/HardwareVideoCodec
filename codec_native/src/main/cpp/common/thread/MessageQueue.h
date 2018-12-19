@@ -6,8 +6,21 @@
 #define HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
 
 
-class MessageQueue {
+#include "../entity/BlockQueue.h"
+#include "Message.h"
 
+class MessageQueue {
+public:
+    MessageQueue();
+
+    ~MessageQueue();
+
+    void offer(Message *msg);
+
+    Message *take();
+
+private:
+    BlockQueue<Message> *queue = nullptr;
 };
 
 

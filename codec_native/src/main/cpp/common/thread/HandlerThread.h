@@ -9,9 +9,24 @@
 #include "MessageQueue.h"
 
 class HandlerThread : public Object {
+public:
+    HandlerThread(string name);
+
+    ~HandlerThread();
+
+    void sendMessage(Message *msg);
+
 private:
+    bool running = true;
+    pthread_attr_t attr;
     Thread *thread = nullptr;
-    MessageQueue queue = nullptr;
+    MessageQueue *queue = nullptr;
+
+    void offer(Message *msg);
+
+    Message *take();
+
+    void run(void *thiz);
 };
 
 

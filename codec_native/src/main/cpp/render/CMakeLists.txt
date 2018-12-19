@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(lmy_render)
 include_directories(
-        ../sdl2/include
-        ../sdl2/src/dynapi
+        ${PROJECT_SOURCE_DIR}/../sdl2/include
+        ${PROJECT_SOURCE_DIR}/../sdl2/src/dynapi
 )
 include_directories(
-        ../common
+        ${PROJECT_SOURCE_DIR}/../common/
+        ${PROJECT_SOURCE_DIR}/../common/thread
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")

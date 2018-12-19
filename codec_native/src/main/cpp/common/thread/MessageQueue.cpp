@@ -6,3 +6,22 @@
  */
 
 #include "MessageQueue.h"
+
+MessageQueue::MessageQueue() {
+    queue = new BlockQueue<Message>();
+}
+
+MessageQueue::~MessageQueue() {
+    if (nullptr != queue) {
+        delete queue;
+        queue = nullptr;
+    }
+}
+
+void MessageQueue::offer(Message *msg) {
+    queue->offer(msg);
+}
+
+Message *MessageQueue::take() {
+    return queue->take();
+}

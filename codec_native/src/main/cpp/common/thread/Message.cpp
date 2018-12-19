@@ -7,12 +7,12 @@
 
 #include "Message.h"
 
-Message::Message(int what, function<void()> runnable) {
+Message::Message(int what, function<void(Message *msg)> runnable) {
     this->what = what;
     this->runnable = runnable;
 }
 
-Message::Message(int what, Object *obj, function<void()> runnable) {
+Message::Message(int what, Object *obj, function<void(Message *msg)> runnable) {
     this->what = what;
     this->obj = obj;
     this->runnable = runnable;

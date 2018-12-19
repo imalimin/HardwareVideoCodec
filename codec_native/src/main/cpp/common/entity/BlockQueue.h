@@ -14,7 +14,6 @@ template<class T>
 class BlockQueue : public Object {
 public:
     typedef list<T> Queue;
-    typedef typename list<T>::iterator Iterator;
 
     BlockQueue();
 
@@ -50,16 +49,37 @@ public:
      */
     bool isEmpty();
 
-    Iterator begin();
-
-    Iterator end();
-
-    void erase(Iterator iterator);
+    Iterator *getIterator();
 
 private:
     pthread_mutex_t *mutex;
     pthread_cond_t *cond;
     Queue *m_queue;
+};
+
+template<class T>
+class Iterator : public Object {
+public:
+    Iterator(list<T>::iterator iterator, list<T>::iterator end) {
+        this->iterator = iterator;
+    }
+
+    ~Iterator() {
+        this->iterator = nullptr;
+
+    }
+
+    T next() {
+        return this->iterator++;
+    }
+
+    bool hasNext() {
+        return end != this->iterator;
+    }
+
+private:
+    list<T>::iterator iterator = nullptr;
+    const list<T>::iterator end;
 };
 
 

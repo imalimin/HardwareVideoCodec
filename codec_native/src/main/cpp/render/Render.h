@@ -6,8 +6,19 @@
 #define HARDWAREVIDEOCODEC_RENDER_H
 
 
-class Render {
+#include "HandlerThread.h"
 
+class Render {
+public:
+    Render();
+
+    ~Render();
+
+    void post();
+
+private:
+    HandlerThread *handlerThread = nullptr;
+    int count = 0;
 };
 
 

@@ -11,15 +11,15 @@ using namespace std;
 
 class Message : public Object {
 public:
-    function<void()> runnable = nullptr;
+    function<void(Message *msg)> runnable = nullptr;
     int what;
     int arg1;
     long arg2;
     Object *obj = nullptr;
 
-    Message(int what, function<void()> runnable);
+    Message(int what, function<void(Message *msg)> runnable);
 
-    Message(int what, Object *obj, function<void()> runnable);
+    Message(int what, Object *obj, function<void(Message *msg)> runnable);
 
     ~Message() {
         this->runnable = nullptr;

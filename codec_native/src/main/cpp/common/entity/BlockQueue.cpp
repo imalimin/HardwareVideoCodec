@@ -81,22 +81,9 @@ bool BlockQueue::isEmpty() {
     return m_queue->empty();
 }
 
-Iterator BlockQueue::begin() {
+Iterator *BlockQueue::getIterator() {
     pthread_mutex_lock(mutex);
-    Iterator it = m_queue->begin();
+    Iterator *it = new Iterator(m_queue->begin(), m_queue->end());
     pthread_mutex_unlock(mutex);
     return it;
-}
-
-Iterator BlockQueue::end() {
-    pthread_mutex_lock(mutex);
-    Iterator it = m_queue->end();
-    pthread_mutex_unlock(mutex);
-    return it;
-}
-
-void BlockQueue::erase(Iterator iterator) {
-    pthread_mutex_lock(mutex);
-    m_queue->erase(iterator);
-    pthread_mutex_unlock(mutex);
 }
