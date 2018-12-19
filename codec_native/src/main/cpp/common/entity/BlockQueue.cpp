@@ -4,9 +4,6 @@
 
 #include "BlockQueue.h"
 
-template<class T>
-typedef typename list<T>::iterator Iterator;
-
 BlockQueue::BlockQueue() {
     m_queue = new Queue();
     mutex = new pthread_mutex_t;
@@ -81,7 +78,8 @@ bool BlockQueue::isEmpty() {
     return m_queue->empty();
 }
 
-Iterator *BlockQueue::getIterator() {
+template<class T>
+Iterator<T> *BlockQueue::getIterator() {
     pthread_mutex_lock(mutex);
     Iterator *it = new Iterator(m_queue->begin(), m_queue->end());
     pthread_mutex_unlock(mutex);

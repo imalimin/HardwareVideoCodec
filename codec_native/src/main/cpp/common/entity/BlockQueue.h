@@ -10,6 +10,32 @@ using namespace std;
 #ifndef HARDWAREVIDEOCODEC_BLOCKQUEUE_H
 #define HARDWAREVIDEOCODEC_BLOCKQUEUE_H
 
+
+template<class T>
+class Iterator : public Object {
+public:
+    Iterator(list<T>::iterator iterator, list<T>::iterator end) {
+        this->iterator = iterator;
+    }
+
+    ~Iterator() {
+        this->iterator = nullptr;
+
+    }
+
+    T next() {
+        return this->iterator++;
+    }
+
+    bool hasNext() {
+        return end != this->iterator;
+    }
+
+private:
+    list<void>::iterator iterator = nullptr;
+    const list<void>::iterator end;
+};
+
 template<class T>
 class BlockQueue : public Object {
 public:
@@ -49,37 +75,12 @@ public:
      */
     bool isEmpty();
 
-    Iterator *getIterator();
+    Iterator<T> *getIterator();
 
 private:
     pthread_mutex_t *mutex;
     pthread_cond_t *cond;
     Queue *m_queue;
-};
-
-template<class T>
-class Iterator : public Object {
-public:
-    Iterator(list<T>::iterator iterator, list<T>::iterator end) {
-        this->iterator = iterator;
-    }
-
-    ~Iterator() {
-        this->iterator = nullptr;
-
-    }
-
-    T next() {
-        return this->iterator++;
-    }
-
-    bool hasNext() {
-        return end != this->iterator;
-    }
-
-private:
-    list<T>::iterator iterator = nullptr;
-    const list<T>::iterator end;
 };
 
 

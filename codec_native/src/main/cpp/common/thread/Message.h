@@ -8,6 +8,8 @@
 #include "../entity/Object.h"
 
 using namespace std;
+#ifndef HARDWAREVIDEOCODEC_MESSAGE_H
+#define HARDWAREVIDEOCODEC_MESSAGE_H
 
 class Message : public Object {
 public:
@@ -29,6 +31,4 @@ public:
         }
     }
 };
-
-
 #endif //HARDWAREVIDEOCODEC_MESSAGE_H
