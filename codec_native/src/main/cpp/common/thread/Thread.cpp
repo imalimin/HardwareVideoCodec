@@ -9,6 +9,12 @@
 #include <assert.h>
 #include "../log.h"
 
+static void *run(void *arg) {
+    Thread *thread = static_cast<Thread *>(arg);
+    thread->runnable();
+    return nullptr;
+}
+
 Thread::Thread(string name, function<void()> runnable) {
     this->name = name;
     this->runnable = runnable;
@@ -22,12 +28,6 @@ void Thread::start() {
     this->running = true;
     createThread();
     this->running = false;
-}
-
-void *Thread::run(void *arg) {
-    Thread *thread = static_cast<Thread *>(arg);
-    thread->runnable();
-    return nullptr;
 }
 
 void Thread::createThread() {

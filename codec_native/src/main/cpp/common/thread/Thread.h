@@ -16,6 +16,8 @@ using namespace std;
 
 class Thread : public Object {
 public:
+    function<void()> runnable;
+
     Thread(string name, function<void()> runnable);
 
     void start();
@@ -28,12 +30,9 @@ public:
 
 private:
     string name;
-    function<void()> runnable;
     pthread_attr_t attr;
     pthread_t thread;
     bool running = false;
-
-    void *run(void *arg);
 
     void createThread();
 };
