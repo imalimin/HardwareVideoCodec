@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(lmy_render)
 include_directories(
-        ${PROJECT_SOURCE_DIR}/../sdl2/include
-        ${PROJECT_SOURCE_DIR}/../sdl2/src/dynapi
-)
-include_directories(
         ${PROJECT_SOURCE_DIR}/../common/
         ${PROJECT_SOURCE_DIR}/../common/thread
 )
@@ -42,7 +38,6 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         lmy_render
         lmy_common
-        sdl2
         # Links the target library to the log library
         # included in the NDK.
         GLESv2
