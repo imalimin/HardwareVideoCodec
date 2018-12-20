@@ -4,40 +4,13 @@
 #include <string>
 #include <pthread.h>
 #include <list>
-#include "Object.h"
 
 using namespace std;
 #ifndef HARDWAREVIDEOCODEC_BLOCKQUEUE_H
 #define HARDWAREVIDEOCODEC_BLOCKQUEUE_H
 
-
 template<class T>
-class Iterator : public Object {
-public:
-    Iterator(list<T>::iterator iterator, list<T>::iterator end) {
-        this->iterator = iterator;
-    }
-
-    ~Iterator() {
-        this->iterator = nullptr;
-
-    }
-
-    T next() {
-        return this->iterator++;
-    }
-
-    bool hasNext() {
-        return end != this->iterator;
-    }
-
-private:
-    list<void>::iterator iterator = nullptr;
-    const list<void>::iterator end;
-};
-
-template<class T>
-class BlockQueue : public Object {
+class BlockQueue {
 public:
     typedef list<T> Queue;
 
@@ -74,8 +47,6 @@ public:
      * 检查队列是否为空
      */
     bool isEmpty();
-
-    Iterator<T> *getIterator();
 
 private:
     pthread_mutex_t *mutex;

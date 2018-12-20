@@ -10,9 +10,9 @@ endif ()
 file(
         GLOB
         SOURCES
-        *.cpp
-        ./entity/*.cpp
-        ./thread/*.cpp
+        ${PROJECT_SOURCE_DIR}/*.cpp
+        ${PROJECT_SOURCE_DIR}/entity/*.cpp
+        ${PROJECT_SOURCE_DIR}/thread/*.cpp
 )
 add_library(
         lmy_common

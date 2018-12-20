@@ -1,10 +1,10 @@
 //
-// Created by limin on 2018/12/16.
+// Created by limin on 2018/12/21.
 //
-
 #include "BlockQueue.h"
 
-BlockQueue::BlockQueue() {
+template<class T>
+BlockQueue<T>::BlockQueue() {
     m_queue = new Queue();
     mutex = new pthread_mutex_t;
     cond = new pthread_cond_t;
@@ -12,7 +12,8 @@ BlockQueue::BlockQueue() {
     pthread_cond_init(cond, NULL);
 }
 
-BlockQueue::~BlockQueue() {
+template<class T>
+BlockQueue<T>::~BlockQueue() {
     pthread_mutex_lock(mutex);
     pthread_mutex_unlock(mutex);
     if (NULL != m_queue) {
@@ -24,7 +25,7 @@ BlockQueue::~BlockQueue() {
 }
 
 template<class T>
-bool BlockQueue::offer(T *entity) {
+bool BlockQueue<T>::offer(T *entity) {
     pthread_mutex_lock(mutex);
 //        if (size() >= SIZE_CACHE) {
 //            pthread_cond_broadcast(cond);
@@ -40,7 +41,7 @@ bool BlockQueue::offer(T *entity) {
 }
 
 template<class T>
-T *BlockQueue::take() {
+T *BlockQueue<T>::take() {
     pthread_mutex_lock(mutex);
     while (size() <= 0) {
         if (0 != pthread_cond_wait(cond, mutex)) {
@@ -57,31 +58,27 @@ T *BlockQueue::take() {
     return e;
 }
 
-void BlockQueue::pop() {
+template<class T>
+void BlockQueue<T>::pop() {
     pthread_mutex_lock(mutex);
     m_queue->pop_front();
     pthread_mutex_unlock(mutex);
 }
 
-void BlockQueue::clear() {
+template<class T>
+void BlockQueue<T>::clear() {
     pthread_cond_broadcast(cond);
     pthread_mutex_lock(mutex);
     m_queue->clear();
     pthread_mutex_unlock(mutex);
 }
 
-int BlockQueue::size() {
+template<class T>
+int BlockQueue<T>::size() {
     return m_queue->size();
 }
 
-bool BlockQueue::isEmpty() {
-    return m_queue->empty();
-}
-
 template<class T>
-Iterator<T> *BlockQueue::getIterator() {
-    pthread_mutex_lock(mutex);
-    Iterator *it = new Iterator(m_queue->begin(), m_queue->end());
-    pthread_mutex_unlock(mutex);
-    return it;
+bool BlockQueue<T>::isEmpty() {
+    return m_queue->empty();
 }
