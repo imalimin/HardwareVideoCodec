@@ -2,12 +2,11 @@
 // Created by limin on 2018/12/16.
 //
 
-#ifndef HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
-#define HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
-
-
 #include "../entity/BlockQueue.h"
 #include "Message.h"
+
+#ifndef HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
+#define HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
 
 class MessageQueue {
 public:
@@ -22,6 +21,5 @@ public:
 private:
     BlockQueue<Message> *queue = nullptr;
 };
-
 
 #endif //HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
