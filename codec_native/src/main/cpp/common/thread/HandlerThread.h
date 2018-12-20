@@ -15,7 +15,7 @@ class HandlerThread : public Object {
 public:
     HandlerThread(string name);
 
-    ~HandlerThread();
+    virtual ~HandlerThread();
 
     void sendMessage(Message *msg);
 
