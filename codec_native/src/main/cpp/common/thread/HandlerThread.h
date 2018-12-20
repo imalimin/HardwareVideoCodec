@@ -8,6 +8,9 @@
 #include "../entity/Object.h"
 #include "MessageQueue.h"
 
+#ifndef HARDWAREVIDEOCODEC_HANDLERTHREAD_H
+#define HARDWAREVIDEOCODEC_HANDLERTHREAD_H
+
 class HandlerThread : public Object {
 public:
     HandlerThread(string name);
