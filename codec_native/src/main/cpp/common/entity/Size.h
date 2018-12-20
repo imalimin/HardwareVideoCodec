@@ -21,5 +21,4 @@ public:
     virtual ~Size();
 };
 
-
 #endif //HARDWAREVIDEOCODEC_SIZE_H
