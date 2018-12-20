@@ -15,7 +15,7 @@ android {
             }
         }
         ndk {
-            stl "stlport_static"
+//            stl "stlport_static"
             abiFilters "armeabi-v7a", "x86"
         }
     }
