@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <functional>
-#include "../entity/Object.h"
+#include "Object.h"
 
 using namespace std;
 #ifndef HARDWAREVIDEOCODEC_MESSAGE_H

@@ -1,8 +1,11 @@
-//
-// Created by limin on 2018/12/16.
-//
-
-#include "../entity/BlockQueue.h"
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+#include "BlockQueue.h"
+#include "../entity/BlockQueue.cpp"
 #include "Message.h"
 
 #ifndef HARDWAREVIDEOCODEC_MESSAGEQUEUE_H

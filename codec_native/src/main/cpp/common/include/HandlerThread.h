@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "Thread.h"
-#include "../entity/Object.h"
 #include "MessageQueue.h"
 
 #ifndef HARDWAREVIDEOCODEC_HANDLERTHREAD_H

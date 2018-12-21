@@ -4,8 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-#include "Size.h"
+#include "../include/Size.h"
 
 Size::Size() {
     this->width = 0;

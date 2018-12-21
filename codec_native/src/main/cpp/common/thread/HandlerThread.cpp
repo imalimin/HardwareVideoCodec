@@ -4,8 +4,8 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include "HandlerThread.h"
-#include "../log.h"
+#include "../include/HandlerThread.h"
+#include "../include/log.h"
 
 void HandlerThread::run(void *thiz) {
 

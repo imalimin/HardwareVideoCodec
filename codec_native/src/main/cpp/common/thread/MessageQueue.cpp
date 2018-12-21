@@ -4,8 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-#include "MessageQueue.h"
+#include "../include/MessageQueue.h"
 
 MessageQueue::MessageQueue() {
     queue = new BlockQueue<Message>();

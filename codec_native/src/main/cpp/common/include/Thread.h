@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <string>
 #include <functional>
-#include "../entity/Object.h"
+#include "Object.h"
 
 using namespace std;
 #ifndef HARDWAREVIDEOCODEC_THREAD_H

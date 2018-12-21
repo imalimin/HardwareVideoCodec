@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(lmy_render)
 include_directories(
-        ${PROJECT_SOURCE_DIR}/../common/
-        ${PROJECT_SOURCE_DIR}/../common/thread
+        ${PROJECT_SOURCE_DIR}/../common/include
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")

@@ -4,12 +4,16 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include "../include/Object.h"
+#ifndef HARDWAREVIDEOCODEC_OBJECT_H
+#define HARDWAREVIDEOCODEC_OBJECT_H
 
-Object::Object() {
 
-}
+class Object {
+public:
+    Object();
 
-Object::~Object() {
+    virtual ~Object();
+};
 
-}
+
+#endif //HARDWAREVIDEOCODEC_OBJECT_H

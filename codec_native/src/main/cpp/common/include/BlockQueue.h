@@ -1,6 +1,9 @@
-//
-// Created by limin on 2018/12/16.
-//
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 #include <string>
 #include <pthread.h>
 #include <list>
@@ -53,6 +56,5 @@ private:
     pthread_cond_t *cond;
     Queue *m_queue;
 };
-
 
 #endif //HARDWAREVIDEOCODEC_BLOCKQUEUE_H

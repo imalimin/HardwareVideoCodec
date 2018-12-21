@@ -4,10 +4,9 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-
-#include "Thread.h"
+#include "../include/Thread.h"
 #include <assert.h>
-#include "../log.h"
+#include "../include/log.h"
 
 static void *run(void *arg) {
     Thread *thread = static_cast<Thread *>(arg);
