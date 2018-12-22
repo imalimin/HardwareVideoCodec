@@ -14,13 +14,27 @@ HandlerThread::HandlerThread(string name) {
         while (thread->isRunning()) {
             LOGI("take");
             Message *msg = take();
-            if (thread->interrupted()) break;
-            if (nullptr == msg) continue;
+            if (thread->interrupted()) {
+                LOGI("take interrupted, %ld, %ld", msg, thread);
+                break;
+            }
+            if (nullptr == msg) {
+                pop();
+                LOGI("take null, %ld, %ld", msg, thread);
+                continue;
+            }
+            LOGI("take 2");
             msg->runnable(msg);
+            LOGI("take 3");
             pop();
+            LOGI("take 4");
+            if (thread->interrupted()) {
+                LOGI("take 2");
+                break;
+            }
         }
+        LOGI("take 6");
         if (nullptr != queue) {
-            queue->notify();
             delete queue;
             queue = nullptr;
         }
@@ -29,9 +43,9 @@ HandlerThread::HandlerThread(string name) {
 }
 
 HandlerThread::~HandlerThread() {
+    LOGI("~HandlerThread");
     if (nullptr != thread) {
         thread->interrupt();
-        delete thread;
     }
     if (nullptr != queue) {
         queue->notify();
