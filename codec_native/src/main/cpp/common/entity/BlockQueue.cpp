@@ -12,19 +12,19 @@ BlockQueue<T>::BlockQueue() {
     m_queue = new Queue();
     mutex = new pthread_mutex_t;
     cond = new pthread_cond_t;
-    pthread_mutex_init(mutex, NULL);
-    pthread_cond_init(cond, NULL);
+    pthread_mutex_init(mutex, nullptr);
+    pthread_cond_init(cond, nullptr);
 }
 
 template<class T>
 BlockQueue<T>::~BlockQueue() {
-    LOGI("~HandleThread");
+    LOGI("~BlockQueue");
     pthread_mutex_lock(mutex);
     pthread_mutex_unlock(mutex);
-    if (NULL != m_queue) {
+    if (nullptr != m_queue) {
         m_queue->clear();
         delete m_queue;
-        m_queue = NULL;
+        m_queue = nullptr;
     }
     pthread_mutex_destroy(mutex);
     pthread_cond_destroy(cond);
@@ -52,10 +52,10 @@ T *BlockQueue<T>::take() {
     if (size() <= 0) {
         if (0 != pthread_cond_wait(cond, mutex)) {
             pthread_mutex_unlock(mutex);
-            return NULL;
+            return nullptr;
         }
     }
-    T *e = NULL;
+    T *e = nullptr;
     if (!isEmpty()) {
         e = &m_queue->front();
     }
@@ -67,6 +67,8 @@ T *BlockQueue<T>::take() {
 template<class T>
 void BlockQueue<T>::pop() {
     pthread_mutex_lock(mutex);
+    if (isEmpty())
+        return;
     m_queue->pop_front();
     pthread_mutex_unlock(mutex);
 }

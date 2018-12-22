@@ -20,7 +20,7 @@ public:
 
     BlockQueue();
 
-    ~BlockQueue();
+    virtual ~BlockQueue();
 
     /**
      * 阻塞式向队列增加一个元素
@@ -55,9 +55,9 @@ public:
     virtual void notify() override;
 
 private:
-    pthread_mutex_t *mutex;
-    pthread_cond_t *cond;
-    Queue *m_queue;
+    pthread_mutex_t *mutex = nullptr;
+    pthread_cond_t *cond = nullptr;
+    Queue *m_queue = nullptr;
 };
 
 #endif //HARDWAREVIDEOCODEC_BLOCKQUEUE_H
