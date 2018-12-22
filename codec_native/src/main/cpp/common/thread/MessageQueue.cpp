@@ -32,3 +32,7 @@ int MessageQueue::size() {
 void MessageQueue::pop() {
     queue->pop();
 }
+
+void MessageQueue::notify() {
+    queue->notify();
+}

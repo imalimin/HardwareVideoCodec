@@ -12,25 +12,29 @@ HandlerThread::HandlerThread(string name) {
     thread = new Thread(name, [=]() {
         LOGI("HandlerThread run");
         while (thread->isRunning()) {
-            if (thread->interrupted()) break;
             LOGI("take");
             Message *msg = take();
+            if (thread->interrupted()) break;
             if (nullptr == msg) continue;
             msg->runnable(msg);
             pop();
+        }
+        if (nullptr != queue) {
+            queue->notify();
+            delete queue;
+            queue = nullptr;
         }
     });
     thread->start();
 }
 
 HandlerThread::~HandlerThread() {
-    if (nullptr != queue) {
-        delete queue;
-        queue = nullptr;
-    }
     if (nullptr != thread) {
         thread->interrupt();
         delete thread;
+    }
+    if (nullptr != queue) {
+        queue->notify();
     }
 }
 

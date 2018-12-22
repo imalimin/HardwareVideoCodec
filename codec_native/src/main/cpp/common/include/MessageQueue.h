@@ -11,7 +11,7 @@
 #ifndef HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
 #define HARDWAREVIDEOCODEC_MESSAGEQUEUE_H
 
-class MessageQueue {
+class MessageQueue : public Object {
 public:
     MessageQueue();
 
@@ -24,6 +24,8 @@ public:
     int size();
 
     void pop();
+
+    virtual void notify() override;
 
 private:
     BlockQueue<Message> *queue = nullptr;
