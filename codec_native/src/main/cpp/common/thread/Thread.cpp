@@ -10,7 +10,10 @@
 
 static void *run(void *arg) {
     Thread *thread = static_cast<Thread *>(arg);
+    LOGI("Thread(%ld) start", (long) thread);
     thread->runnable();
+    thread->stop();
+    LOGI("Thread(%ld) stop", (long) thread);
     return nullptr;
 }
 
@@ -20,13 +23,11 @@ Thread::Thread(string name, function<void()> runnable) {
 }
 
 Thread::~Thread() {
-    pthread_attr_destroy(&attr);
 }
 
 void Thread::start() {
-    this->running = true;
+    this->inter = false;
     createThread();
-    this->running = false;
 }
 
 void Thread::createThread() {
@@ -41,10 +42,18 @@ void Thread::createThread() {
     }
 }
 
+void Thread::stop() {
+    pthread_attr_destroy(&attr);
+}
+
 bool Thread::isRunning() {
-    return running;
+    return !inter;
 }
 
 void Thread::interrupt() {
+    inter = true;
+}
 
+bool Thread::interrupted() {
+    return inter;
 }

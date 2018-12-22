@@ -21,6 +21,10 @@ public:
 
     Message *take();
 
+    int size();
+
+    void pop();
+
 private:
     BlockQueue<Message> *queue = nullptr;
 };

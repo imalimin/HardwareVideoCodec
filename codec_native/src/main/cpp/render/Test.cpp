@@ -20,6 +20,13 @@ JNIEXPORT void JNICALL Java_com_lmy_samplenative_MainActivity_addMessage
     }
     render->post();
 }
+JNIEXPORT void JNICALL Java_com_lmy_samplenative_MainActivity_stop
+        (JNIEnv *env, jobject thiz) {
+    if (nullptr != render) {
+        delete render;
+        render = nullptr;
+    }
+}
 
 #ifdef __cplusplus
 }

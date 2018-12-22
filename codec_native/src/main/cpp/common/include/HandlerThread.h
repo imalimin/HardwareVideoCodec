@@ -19,7 +19,6 @@ public:
     void sendMessage(Message *msg);
 
 private:
-    bool running = true;
     pthread_attr_t attr;
     Thread *thread = nullptr;
     MessageQueue *queue = nullptr;
@@ -28,7 +27,9 @@ private:
 
     Message *take();
 
-    void run(void *thiz);
+    void pop();
+
+    int size();
 };
 
 

@@ -26,13 +26,17 @@ public:
 
     void interrupt();
 
+    bool interrupted();
+
     ~Thread();
+
+    void stop();
 
 private:
     string name;
     pthread_attr_t attr;
     pthread_t thread;
-    bool running = false;
+    bool inter = false;
 
     void createThread();
 };

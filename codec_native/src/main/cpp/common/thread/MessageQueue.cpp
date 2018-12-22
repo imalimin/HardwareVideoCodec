@@ -24,3 +24,11 @@ void MessageQueue::offer(Message *msg) {
 Message *MessageQueue::take() {
     return queue->take();
 }
+
+int MessageQueue::size() {
+    return queue->size();
+};
+
+void MessageQueue::pop() {
+    queue->pop();
+}

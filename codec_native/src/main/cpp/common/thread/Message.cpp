@@ -16,3 +16,11 @@ Message::Message(int what, Object *obj, function<void(Message *msg)> runnable) {
     this->obj = obj;
     this->runnable = runnable;
 }
+
+Message::~Message() {
+    this->runnable = nullptr;
+    if (nullptr != obj) {
+        delete obj;
+        obj = nullptr;
+    }
+}

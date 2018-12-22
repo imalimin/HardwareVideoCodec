@@ -7,18 +7,17 @@
 #include "../include/HandlerThread.h"
 #include "../include/log.h"
 
-void HandlerThread::run(void *thiz) {
-
-}
-
 HandlerThread::HandlerThread(string name) {
-    running = true;
     queue = new MessageQueue();
     thread = new Thread(name, [=]() {
-        while (running) {
+        LOGI("HandlerThread run");
+        while (thread->isRunning()) {
+            if (thread->interrupted()) break;
+            LOGI("take");
             Message *msg = take();
+            if (nullptr == msg) continue;
             msg->runnable(msg);
-            delete msg;
+            pop();
         }
     });
     thread->start();
@@ -45,4 +44,12 @@ void HandlerThread::offer(Message *msg) {
 
 Message *HandlerThread::take() {
     return queue->take();
+}
+
+int HandlerThread::size() {
+    return queue->size();
+}
+
+void HandlerThread::pop() {
+    queue->pop();
 }

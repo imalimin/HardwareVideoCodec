@@ -23,12 +23,7 @@ public:
 
     Message(int what, Object *obj, function<void(Message *msg)> runnable);
 
-    ~Message() {
-        this->runnable = nullptr;
-        if (nullptr != obj) {
-            delete obj;
-            obj = nullptr;
-        }
-    }
+    virtual ~Message();
 };
+
 #endif //HARDWAREVIDEOCODEC_MESSAGE_H
