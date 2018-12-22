@@ -13,6 +13,8 @@ public:
     Object();
 
     virtual ~Object();
+
+    virtual void notify();
 };
 
 

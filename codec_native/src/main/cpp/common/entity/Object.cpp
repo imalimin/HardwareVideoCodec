@@ -13,3 +13,7 @@ Object::Object() {
 Object::~Object() {
 
 }
+
+void Object::notify() {
+
+}
