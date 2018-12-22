@@ -18,11 +18,15 @@ static void *run(void *arg) {
 }
 
 Thread::Thread(string name, function<void()> runnable) {
+    this->inter = false;
     this->name = name;
     this->runnable = runnable;
+    pthread_mutex_init(&mutex, nullptr);
+    pthread_cond_init(&cond, nullptr);
 }
 
 Thread::~Thread() {
+    LOGI("~Thread");
 }
 
 void Thread::start() {
@@ -44,16 +48,35 @@ void Thread::createThread() {
 
 void Thread::stop() {
     pthread_attr_destroy(&attr);
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&cond);
 }
 
 bool Thread::isRunning() {
-    return !inter;
+    return !interrupted();
 }
 
 void Thread::interrupt() {
+    lock();
     inter = true;
+    unLock();
 }
 
 bool Thread::interrupted() {
-    return inter;
+    lock();
+    bool ret = inter;
+    unLock();
+    return ret;
+}
+
+void Thread::lock() {
+    if (NULL == &mutex)
+        return;
+    pthread_mutex_lock(&mutex);
+}
+
+void Thread::unLock() {
+    if (NULL == &mutex)
+        return;
+    pthread_mutex_unlock(&mutex);
 }

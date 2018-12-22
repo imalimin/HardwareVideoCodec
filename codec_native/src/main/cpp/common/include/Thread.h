@@ -36,9 +36,15 @@ private:
     string name;
     pthread_attr_t attr;
     pthread_t thread;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
     bool inter = false;
 
     void createThread();
+
+    void lock();
+
+    void unLock();
 };
 
 
