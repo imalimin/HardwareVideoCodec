@@ -55,8 +55,8 @@ public:
     virtual void notify() override;
 
 private:
-    pthread_mutex_t *mutex = nullptr;
-    pthread_cond_t *cond = nullptr;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
     Queue *m_queue = nullptr;
 };
 
