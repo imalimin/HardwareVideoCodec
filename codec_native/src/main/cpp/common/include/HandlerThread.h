@@ -19,7 +19,6 @@ public:
     void sendMessage(Message *msg);
 
 private:
-    pthread_attr_t attr;
     Thread *thread = nullptr;
     MessageQueue *queue = nullptr;
 

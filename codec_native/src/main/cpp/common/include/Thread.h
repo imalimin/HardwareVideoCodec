@@ -28,7 +28,7 @@ public:
 
     bool interrupted();
 
-    ~Thread();
+    virtual ~Thread();
 
     void stop();
 

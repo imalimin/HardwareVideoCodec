@@ -15,7 +15,7 @@ class MessageQueue : public Object {
 public:
     MessageQueue();
 
-    ~MessageQueue();
+    virtual ~MessageQueue();
 
     void offer(Message *msg);
 
