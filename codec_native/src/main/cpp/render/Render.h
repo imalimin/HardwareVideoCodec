@@ -4,7 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include "HandlerThread.h"
+#include "EventPipeline.h"
 
 #ifndef HARDWAREVIDEOCODEC_RENDER_H
 #define HARDWAREVIDEOCODEC_RENDER_H
@@ -18,7 +18,7 @@ public:
     void post();
 
 private:
-    HandlerThread *handlerThread = nullptr;
+    EventPipeline *pipeline = nullptr;
     int count = 0;
 };
 

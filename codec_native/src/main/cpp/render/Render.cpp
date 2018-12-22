@@ -8,20 +8,19 @@
 #include "Render.h"
 
 Render::Render() {
-    handlerThread = new HandlerThread("Render");
+    pipeline = new EventPipeline("Render");
 }
 
 Render::~Render() {
-    if (nullptr != handlerThread) {
-        delete handlerThread;
-        handlerThread = nullptr;
+    if (nullptr != pipeline) {
+        delete pipeline;
+        pipeline = nullptr;
     }
 }
 
 void Render::post() {
-    handlerThread->sendMessage(new Message(
-            count++, [](Message *msg) {
-                LOGI("Handle %d", msg->what);
-            })
-    );
+    pipeline->queueEvent([=] {
+        ++count;
+        LOGI("Handle %d", count);
+    });
 }
