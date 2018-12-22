@@ -7,13 +7,14 @@
 #include <string>
 #include <pthread.h>
 #include <list>
+#include "Object.h"
 
 using namespace std;
 #ifndef HARDWAREVIDEOCODEC_BLOCKQUEUE_H
 #define HARDWAREVIDEOCODEC_BLOCKQUEUE_H
 
 template<class T>
-class BlockQueue {
+class BlockQueue : public Object {
 public:
     typedef list<T> Queue;
 
@@ -50,6 +51,8 @@ public:
      * 检查队列是否为空
      */
     bool isEmpty();
+
+    virtual void notify() override;
 
 private:
     pthread_mutex_t *mutex;

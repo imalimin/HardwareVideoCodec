@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "../include/BlockQueue.h"
+#include "../include/log.h"
 
 template<class T>
 BlockQueue<T>::BlockQueue() {
@@ -17,9 +18,11 @@ BlockQueue<T>::BlockQueue() {
 
 template<class T>
 BlockQueue<T>::~BlockQueue() {
+    LOGI("~HandleThread");
     pthread_mutex_lock(mutex);
     pthread_mutex_unlock(mutex);
     if (NULL != m_queue) {
+        m_queue->clear();
         delete m_queue;
         m_queue = NULL;
     }
@@ -46,7 +49,7 @@ bool BlockQueue<T>::offer(T *entity) {
 template<class T>
 T *BlockQueue<T>::take() {
     pthread_mutex_lock(mutex);
-    while (size() <= 0) {
+    if (size() <= 0) {
         if (0 != pthread_cond_wait(cond, mutex)) {
             pthread_mutex_unlock(mutex);
             return NULL;
@@ -84,4 +87,11 @@ int BlockQueue<T>::size() {
 template<class T>
 bool BlockQueue<T>::isEmpty() {
     return m_queue->empty();
+}
+
+template<class T>
+void BlockQueue<T>::notify() {
+    pthread_mutex_lock(mutex);
+    pthread_cond_broadcast(cond);
+    pthread_mutex_unlock(mutex);
 }
