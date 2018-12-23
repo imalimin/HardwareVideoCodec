@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
-project(lmy_render)
+project(hwvc_render)
 include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
 )
@@ -18,7 +18,7 @@ file(
         filter/*cpp
 )
 add_library( # Sets the name of the library.
-        lmy_render
+        hwvc_render
 
         # Sets the library as a shared library.
         SHARED
@@ -35,8 +35,8 @@ find_library( # Sets the name of the path variable.
         log)
 
 target_link_libraries( # Specifies the target library.
-        lmy_render
-        lmy_common
+        hwvc_render
+        hwvcom
         # Links the target library to the log library
         # included in the NDK.
         GLESv2

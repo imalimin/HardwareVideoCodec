@@ -20,7 +20,8 @@ class MainActivity : BaseActivity() {
 
     companion object {
         init {
-            System.loadLibrary("lmy_render")
+            System.loadLibrary("hwvc_render")
+            System.loadLibrary("hwvcom")
         }
     }
 }

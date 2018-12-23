@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
-project(lmy_common)
+project(hwvcom)
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os")
@@ -15,7 +15,7 @@ file(
         ${PROJECT_SOURCE_DIR}/thread/*.cpp
 )
 add_library(
-        lmy_common
+        hwvcom
         SHARED
         ${SOURCES}
 )
@@ -25,6 +25,6 @@ find_library(
         log)
 
 target_link_libraries(
-        lmy_common
+        hwvcom
         ${log-lib}
 )
