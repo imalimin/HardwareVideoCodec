@@ -3,6 +3,11 @@ project(hwvc_render)
 include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
 )
+option(GL_DEBUG "Whether show opengl logs." ON)
+if (USE_SSE)
+    add_definitions(-DGL_DEBUG)
+    message(GL_DEBUG "Show opengl logs。")
+endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
@@ -14,8 +19,10 @@ endif ()
 file(
         GLOB
         SOURCES
-        *cpp
-        filter/*cpp
+        ${PROJECT_SOURCE_DIR}/*cpp
+        ${PROJECT_SOURCE_DIR}/filter/*cpp
+        ${PROJECT_SOURCE_DIR}/drawer/*cpp
+        ${PROJECT_SOURCE_DIR}/texture/*cpp
 )
 add_library( # Sets the name of the library.
         hwvc_render
