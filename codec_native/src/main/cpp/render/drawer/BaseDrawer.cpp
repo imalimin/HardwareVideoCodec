@@ -8,12 +8,6 @@
 #include "log.h"
 #include <vector>
 
-#define SHADER(...) #__VA_ARGS__
-
-static const char *VERTEX = SHADER(
-
-);
-
 BaseDrawer::BaseDrawer() {
 
 }

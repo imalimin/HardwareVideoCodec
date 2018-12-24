@@ -5,3 +5,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "../include/NormalDrawer.h"
+
+static const string VERTEX = SHADER(
+
+);
+static const string FRAGMENT = SHADER(
+
+);
+
+NormalDrawer::NormalDrawer() {
+    createProgram(VERTEX, FRAGMENT);
+}
+
+NormalDrawer::~NormalDrawer() {
+
+}

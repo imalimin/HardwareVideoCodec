@@ -7,8 +7,13 @@
 #ifndef HARDWAREVIDEOCODEC_NORMALDRAWER_H
 #define HARDWAREVIDEOCODEC_NORMALDRAWER_H
 
+#include "BaseDrawer.h"
 
-class NormalDrawer {
+class NormalDrawer : protected BaseDrawer {
+public:
+    NormalDrawer();
+
+    virtual ~NormalDrawer();
 
 };
 

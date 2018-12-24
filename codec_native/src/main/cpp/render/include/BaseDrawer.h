@@ -11,6 +11,8 @@
 #include <string>
 #include <GLES2/gl2.h>
 
+#define SHADER(...) #__VA_ARGS__
+
 using namespace std;
 
 class BaseDrawer : public Object {
