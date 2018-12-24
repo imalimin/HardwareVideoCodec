@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <log.h>
-#include "Render.h"
+#include "include/Render.h"
 
 Render::Render() {
     pipeline = new EventPipeline("Render");
