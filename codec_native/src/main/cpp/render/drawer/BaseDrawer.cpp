@@ -16,15 +16,17 @@ BaseDrawer::BaseDrawer() {
     aPositionLocation = static_cast<GLuint>(getAttribLocation("aPosition"));
     uTextureLocation = getUniformLocation("uTexture");
     aTextureCoordinateLocation = static_cast<GLuint>(getAttribLocation("aTextureCoord"));
-    updateLocation(new float[0.0f, 0.0f,//LEFT,BOTTOM
+    updateLocation(new float[8]{
+            0.0f, 0.0f,//LEFT,BOTTOM
             1.0f, 0.0f,//RIGHT,BOTTOM
-            0f, 1f,//LEFT,TOP
-            1f, 1f//RIGHT,TOP
-    ], new float[-1f, -1f,//LEFT,BOTTOM
-            1f, -1f,//RIGHT,BOTTOM
-            -1f, 1f,//LEFT,TOP
-            1f, 1f//RIGHT,TOP
-    ]);
+            0.0f, 1.0f,//LEFT,TOP
+            1.0f, 1.0f//RIGHT,TOP
+    }, new float[8]{
+            -1.0f, -1.0f,//LEFT,BOTTOM
+            1.0f, -1.0f,//RIGHT,BOTTOM
+            -1.0f, 1.0f,//LEFT,TOP
+            1.0f, 1.0f//RIGHT,TOP
+    });
 }
 
 BaseDrawer::~BaseDrawer() {
@@ -55,7 +57,7 @@ void BaseDrawer::draw(GLuint texture) {
 GLuint BaseDrawer::createProgram(string vertex, string fragment) {
     GLuint program = glCreateProgram();
     if (program == GL_NONE) {
-        LOGE("Create program failed: %d" + glGetError());
+        LOGE("Create program failed: %d", glGetError());
     }
     GLuint vertexShader = createShader(GL_VERTEX_SHADER, vertex);
     GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, fragment);
@@ -81,7 +83,8 @@ GLuint BaseDrawer::createShader(GLenum type, string shader) {
         return 0;
     }
     //加载Shader代码
-    glShaderSource(shaderId, 1, reinterpret_cast<const GLchar **>(shader.c_str()), 0);
+    const char *str = shader.c_str();
+    glShaderSource(shaderId, 1, &str, 0);
     //编译Shader
     glCompileShader(shaderId);
 #ifdef GL_DEBUG
