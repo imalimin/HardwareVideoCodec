@@ -20,6 +20,7 @@ class MainActivity : BaseActivity() {
 
     companion object {
         init {
+            System.loadLibrary("hwvc_test")
             System.loadLibrary("hwvc_render")
             System.loadLibrary("hwvcom")
         }
