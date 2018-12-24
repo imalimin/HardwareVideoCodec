@@ -6,22 +6,54 @@
  */
 #include "../include/BaseDrawer.h"
 #include "log.h"
-#include <vector>
+
+#define COORDS_PER_VERTEX  2
+#define TEXTURE_COORDS_PER_VERTEX 2
+#define COORDS_BYTE_SIZE  COORDS_PER_VERTEX * 4 * 4
 
 BaseDrawer::BaseDrawer() {
-
+    program = getProgram();
+    aPositionLocation = static_cast<GLuint>(getAttribLocation("aPosition"));
+    uTextureLocation = getUniformLocation("uTexture");
+    aTextureCoordinateLocation = static_cast<GLuint>(getAttribLocation("aTextureCoord"));
+    updateLocation(new float[0.0f, 0.0f,//LEFT,BOTTOM
+            1.0f, 0.0f,//RIGHT,BOTTOM
+            0f, 1f,//LEFT,TOP
+            1f, 1f//RIGHT,TOP
+    ], new float[-1f, -1f,//LEFT,BOTTOM
+            1f, -1f,//RIGHT,BOTTOM
+            -1f, 1f,//LEFT,TOP
+            1f, 1f//RIGHT,TOP
+    ]);
 }
 
 BaseDrawer::~BaseDrawer() {
-
+    glDeleteBuffers(1, &vbo);
+    if (GL_NONE != program)
+        glDeleteProgram(program);
+    delete[]position;
+    delete[]texCoordinate;
+//    if (GL_NONE != vao) {
+//        GLES30.glDeleteVertexArrays(1, &vao);
+//    }
 }
 
 void BaseDrawer::draw(GLuint texture) {
-
+    glUseProgram(program);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(uTextureLocation, 0);
+    enableVertex(aPositionLocation, aTextureCoordinateLocation);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDisableVertexAttribArray(aPositionLocation);
+    glDisableVertexAttribArray(aTextureCoordinateLocation);
+    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+    glUseProgram(GL_NONE);
+//    glFlush();
 }
 
-void BaseDrawer::createProgram(string vertex, string fragment) {
-    program = glCreateProgram();
+GLuint BaseDrawer::createProgram(string vertex, string fragment) {
+    GLuint program = glCreateProgram();
     if (program == GL_NONE) {
         LOGE("Create program failed: %d" + glGetError());
     }
@@ -34,6 +66,7 @@ void BaseDrawer::createProgram(string vertex, string fragment) {
     glLinkProgram(program);
     //告诉OpenGL ES使用此program
     glUseProgram(program);
+    return program;
 }
 
 /**
@@ -65,4 +98,64 @@ GLuint BaseDrawer::createShader(GLenum type, string shader) {
     }
 #endif
     return shaderId;
+}
+
+GLuint BaseDrawer::getProgram() {
+    return GL_NONE;
+}
+
+void BaseDrawer::enableVertex(GLuint posLoc, GLuint texLoc) {
+    updateVBOs();
+    if (enableVAO) {
+//        enableVAO(posLoc, texLoc);
+        return;
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glEnableVertexAttribArray(posLoc);
+    glEnableVertexAttribArray(texLoc);
+    //xy
+    glVertexAttribPointer(posLoc, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, 0);
+    //st
+    glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, (GLvoid *) 0);
+    glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+}
+
+void BaseDrawer::_enableVAO(GLuint posLoc, GLuint texLoc) {
+//    if (GL_NONE != vao) {
+//        glGenVertexArrays(1, &vao);
+//        glBindVertexArray(vao);
+//        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+//
+//        glEnableVertexAttribArray(posLoc);
+//        glEnableVertexAttribArray(texLoc);
+//
+//        glVertexAttribPointer(posLoc, COORDS_PER_VERTEX, GL_FLOAT, false, 0, 0);
+//        glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX, GL_FLOAT, false, 0,
+//                              COORDS_BYTE_SIZE);
+//        glBindVertexArray(GL_NONE);
+//    }
+//    glBindVertexArray(vao);
+}
+
+void BaseDrawer::updateVBOs() {
+    if (!requestUpdateLocation) return;
+    requestUpdateLocation = false;
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, COORDS_BYTE_SIZE, position);
+    glBufferSubData(GL_ARRAY_BUFFER, COORDS_BYTE_SIZE, COORDS_BYTE_SIZE, texCoordinate);
+    glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+}
+
+void BaseDrawer::updateLocation(float *texCoordinate, float *position) {
+    this->texCoordinate = texCoordinate;
+    this->position = position;
+    requestUpdateLocation = true;
+}
+
+GLint BaseDrawer::getAttribLocation(string name) {
+    return glGetAttribLocation(program, name.c_str());
+}
+
+GLint BaseDrawer::getUniformLocation(string name) {
+    return glGetUniformLocation(program, name.c_str());
 }
