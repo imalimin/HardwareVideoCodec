@@ -23,6 +23,7 @@ file(
         ${PROJECT_SOURCE_DIR}/filter/*cpp
         ${PROJECT_SOURCE_DIR}/drawer/*cpp
         ${PROJECT_SOURCE_DIR}/texture/*cpp
+        ${PROJECT_SOURCE_DIR}/egl/*cpp
 )
 add_library( # Sets the name of the library.
         hwvc_render
@@ -47,4 +48,5 @@ target_link_libraries( # Specifies the target library.
         # Links the target library to the log library
         # included in the NDK.
         GLESv2
+        EGL
         ${log-lib})
