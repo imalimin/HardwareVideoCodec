@@ -21,17 +21,17 @@ Screen::~Screen() {
 }
 
 bool Screen::dispatch(Message *msg) {
-//    switch (msg->what) {
-//        case EVENT_PIPELINE_PREPARE:
-//            initWindow(reinterpret_cast<ANativeWindow *>(msg->obj));
-//            break;
-//        case EVENT_PIPELINE_DRAW_SCREEN:
-//            draw(reinterpret_cast<GLuint>(msg->obj));
-//            break;
-//        default:
-//            break;
-//    }
-    return true;
+    switch (msg->what) {
+        case EVENT_PIPELINE_PREPARE:
+            initWindow(reinterpret_cast<ANativeWindow *>(msg->obj));
+            return true;
+        case EVENT_PIPELINE_DRAW_SCREEN:
+            draw(reinterpret_cast<GLuint>(msg->obj));
+            return true;
+        default:
+            break;
+    }
+    return false;
 }
 
 void Screen::initWindow(ANativeWindow *win) {
