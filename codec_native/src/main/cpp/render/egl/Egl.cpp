@@ -20,7 +20,7 @@ Egl::Egl(ANativeWindow *win) {
 }
 
 Egl::Egl(EGLContext context, ANativeWindow *win) {
-    init(eglContext, win);
+    init(context, win);
 }
 
 Egl::~Egl() {
@@ -36,8 +36,14 @@ Egl::~Egl() {
 
 void Egl::init(EGLContext context, ANativeWindow *win) {
     this->eglDisplay = createDisplay(EGL_DEFAULT_DISPLAY);
-    this->eglConfig = createConfig(const_cast<int *>(CONFIG_DEFAULT));
-    this->eglContext = createContext(context);
+    if (!this->eglDisplay)
+        return;
+    this->eglConfig = createConfig(CONFIG_DEFAULT);
+    if (!this->eglConfig)
+        return;
+    this->eglDisplay = createContext(context);
+    if (!this->eglDisplay)
+        return;
     if (win) {
         this->eglSurface = createWindowSurface(win);
     } else {
@@ -51,22 +57,31 @@ EGLDisplay Egl::createDisplay(EGLNativeDisplayType display_id) {
         LOGE("eglGetDisplay failed: %d", eglGetError());
         return nullptr;
     }
-    if (!eglInitialize(eglDisplay, 0, 0)) {
+    EGLint majorVersion;
+    EGLint minorVersion;
+    if (!eglInitialize(eglDisplay, // 创建的EGL连接
+                       &majorVersion, // 返回EGL主板版本号
+                       &minorVersion)) { // 返回EGL次版本号
         LOGE("eglInitialize failed: %d", eglGetError());
         return nullptr;
     }
     return eglDisplay;
 }
 
-EGLConfig Egl::createConfig(int *configSpec) {
+EGLConfig Egl::createConfig(const int *configSpec) {
     EGLint configsCount;
-    EGLConfig configs;
-    eglChooseConfig(eglDisplay, configSpec, &configs, 1, &configsCount);
-    if (configsCount <= 0) {
+    const EGLint maxConfigs = 1;
+    EGLConfig configs[maxConfigs];
+    EGLBoolean ret = eglChooseConfig(eglDisplay, // 创建的和本地窗口系统的连接
+                                     configSpec, // 指定渲染表面的参数列表，可以为null
+                                     configs, // 调用成功，返会符合条件的EGLConfig列表
+                                     maxConfigs, // 最多返回的符合条件的EGLConfig个数
+                                     &configsCount); // 实际返回的符合条件的EGLConfig个数
+    if (EGL_TRUE != ret || configsCount <= 0) {
         LOGE("eglChooseConfig failed: %d", eglGetError());
         return nullptr;
     }
-    return configs;
+    return configs[0];
 }
 
 EGLContext Egl::createContext(EGLContext context) {
@@ -92,10 +107,13 @@ EGLSurface Egl::createPbufferSurface() {
 }
 
 EGLSurface Egl::createWindowSurface(ANativeWindow *win) {
-    EGLint values;
-    int surfaceAttribs[] = {EGL_NONE};
-    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
-    EGLSurface eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, win, surfaceAttribs);
+    int attribList[] = {EGL_NONE};
+//    EGLint values;
+//    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
+    EGLSurface eglSurface = eglCreateWindowSurface(eglDisplay,
+                                                   eglConfig, // 选好的可用EGLConfig
+                                                   win, // 指定原生窗口
+                                                   attribList); // 指定窗口属性列表，可以为null，一般指定渲染所用的缓冲区使用但缓冲或者后台缓冲，默认为后者。
     if (nullptr == eglSurface || EGL_NO_SURFACE == eglSurface) {
         LOGE("eglCreateWindowSurface failed: %d", eglGetError());
         return nullptr;

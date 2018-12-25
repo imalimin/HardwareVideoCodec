@@ -49,7 +49,7 @@ private:
 
     EGLDisplay createDisplay(EGLNativeDisplayType display_id);
 
-    EGLConfig createConfig(int *configSpec);
+    EGLConfig createConfig(const int *configSpec);
 
     EGLContext createContext(EGLContext context);
 

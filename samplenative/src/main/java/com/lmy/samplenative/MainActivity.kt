@@ -20,13 +20,13 @@ class MainActivity : BaseActivity() {
         }
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceChanged(holder: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
-                processor?.prepare(holder.surface)
             }
 
             override fun surfaceDestroyed(p0: SurfaceHolder?) {
             }
 
-            override fun surfaceCreated(p0: SurfaceHolder?) {
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                processor?.prepare(holder.surface)
             }
         })
     }

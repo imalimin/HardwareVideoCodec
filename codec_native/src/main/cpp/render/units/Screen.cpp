@@ -36,7 +36,7 @@ bool Screen::dispatch(Message *msg) {
 
 void Screen::initWindow(ANativeWindow *win) {
     if (!egl) {
-        egl = new Egl(win);
+        egl = new Egl(EGL_NO_CONTEXT, win);
         drawer = new NormalDrawer();
     }
 }
