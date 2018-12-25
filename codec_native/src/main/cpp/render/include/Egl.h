@@ -40,10 +40,10 @@ public:
     int height();
 
 private:
-    EGLDisplay eglDisplay = nullptr;
+    EGLDisplay eglDisplay = EGL_NO_DISPLAY;
     EGLConfig eglConfig = nullptr;
-    EGLContext eglContext = nullptr;
-    EGLSurface eglSurface = nullptr;
+    EGLContext eglContext = EGL_NO_CONTEXT;
+    EGLSurface eglSurface = EGL_NO_SURFACE;
 
     void init(EGLContext eglContext, ANativeWindow *win);
 

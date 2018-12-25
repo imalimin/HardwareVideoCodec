@@ -53,9 +53,9 @@ void Egl::init(EGLContext context, ANativeWindow *win) {
 
 EGLDisplay Egl::createDisplay(EGLNativeDisplayType display_id) {
     EGLDisplay eglDisplay = eglGetDisplay(display_id);
-    if (EGL_NO_DISPLAY == eglDisplay) {
+    if (EGL_NO_DISPLAY == eglDisplay || EGL_SUCCESS != eglGetError()) {
         LOGE("eglGetDisplay failed: %d", eglGetError());
-        return nullptr;
+        return EGL_NO_DISPLAY;
     }
     EGLint majorVersion;
     EGLint minorVersion;
@@ -63,7 +63,7 @@ EGLDisplay Egl::createDisplay(EGLNativeDisplayType display_id) {
                        &majorVersion, // 返回EGL主板版本号
                        &minorVersion)) { // 返回EGL次版本号
         LOGE("eglInitialize failed: %d", eglGetError());
-        return nullptr;
+        return EGL_NO_DISPLAY;
     }
     return eglDisplay;
 }
@@ -89,7 +89,7 @@ EGLContext Egl::createContext(EGLContext context) {
     EGLContext eglContext = eglCreateContext(eglDisplay, eglConfig, context, contextSpec);
     if (EGL_NO_CONTEXT == eglContext) {
         LOGE("eglCreateContext failed: %d", eglGetError());
-        return nullptr;
+        return EGL_NO_CONTEXT;
     }
     return eglContext;
 }
@@ -101,7 +101,7 @@ EGLSurface Egl::createPbufferSurface() {
     EGLSurface eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttribs);
     if (nullptr == eglSurface || EGL_NO_SURFACE == eglSurface) {
         LOGE("eglCreatePbufferSurface failed: %d", eglGetError());
-        return nullptr;
+        return EGL_NO_SURFACE;
     }
     return eglSurface;
 }
@@ -116,7 +116,7 @@ EGLSurface Egl::createWindowSurface(ANativeWindow *win) {
                                                    attribList); // 指定窗口属性列表，可以为null，一般指定渲染所用的缓冲区使用但缓冲或者后台缓冲，默认为后者。
     if (nullptr == eglSurface || EGL_NO_SURFACE == eglSurface) {
         LOGE("eglCreateWindowSurface failed: %d", eglGetError());
-        return nullptr;
+        return EGL_NO_SURFACE;
     }
     return eglSurface;
 }
