@@ -41,8 +41,8 @@ void Egl::init(EGLContext context, ANativeWindow *win) {
     this->eglConfig = createConfig(CONFIG_DEFAULT);
     if (!this->eglConfig)
         return;
-    this->eglDisplay = createContext(context);
-    if (!this->eglDisplay)
+    this->eglContext = createContext(context);
+    if (!this->eglContext)
         return;
     if (win) {
         this->eglSurface = createWindowSurface(win);
