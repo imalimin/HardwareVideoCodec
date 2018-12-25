@@ -4,6 +4,7 @@
 
 #include "../include/Screen.h"
 #include "../include/NormalDrawer.h"
+#include "../entity/NativeWindow.h"
 
 Screen::Screen() {
     name = __func__;
@@ -22,12 +23,16 @@ Screen::~Screen() {
 
 bool Screen::dispatch(Message *msg) {
     switch (msg->what) {
-        case EVENT_PIPELINE_PREPARE:
-            initWindow(reinterpret_cast<ANativeWindow *>(msg->obj));
+        case EVENT_PIPELINE_PREPARE: {
+            NativeWindow *nw = dynamic_cast<NativeWindow *>(msg->obj);
+            initWindow(nw->win);
+            delete nw;
             return true;
-        case EVENT_PIPELINE_DRAW_SCREEN:
+        }
+        case EVENT_PIPELINE_DRAW_SCREEN: {
             draw(reinterpret_cast<GLuint>(msg->obj));
             return true;
+        }
         default:
             break;
     }
