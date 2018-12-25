@@ -15,7 +15,7 @@ static PictureProcessor *getHandler(jlong handler) {
     return reinterpret_cast<PictureProcessor *>(handler);
 }
 
-JNIEXPORT jlong JNICALL Java_com_lmy_samplenative_processor_create
+JNIEXPORT jlong JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_create
         (JNIEnv *env, jobject thiz) {
     if (!processor) {
         return reinterpret_cast<jlong>(new PictureProcessor());
@@ -23,9 +23,9 @@ JNIEXPORT jlong JNICALL Java_com_lmy_samplenative_processor_create
     return reinterpret_cast<jlong>(processor);
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_prepare
+JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_prepare
         (JNIEnv *env, jobject thiz, jlong handler, jobject surface) {
-    if (!handler) {
+    if (handler) {
         ANativeWindow *win = ANativeWindow_fromSurface(env, surface);
         if (!win) {
             LOGE("ANativeWindow_fromSurface failed");
