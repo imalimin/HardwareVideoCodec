@@ -1,38 +1,40 @@
 package com.lmy.samplenative
 
-import android.view.SurfaceHolder
-import android.view.SurfaceView
-import android.widget.Button
+import android.graphics.SurfaceTexture
+import android.view.Surface
+import android.view.TextureView
 import com.lmy.samplenative.processor.PictureProcessor
+import kotlinx.android.synthetic.main.activity_main.*
 
 
-class MainActivity : BaseActivity() {
-    private lateinit var addBtn: Button
-    private lateinit var surfaceView: SurfaceView
+class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     private var processor: PictureProcessor? = PictureProcessor()
 
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
-        addBtn = findViewById(R.id.addBtn)
-        surfaceView = findViewById(R.id.surfaceView)
         addBtn.setOnClickListener {
             addMessage()
         }
-        surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceChanged(holder: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun surfaceDestroyed(p0: SurfaceHolder?) {
-            }
-
-            override fun surfaceCreated(holder: SurfaceHolder) {
-                processor?.prepare(holder.surface)
-            }
-        })
+        textureView.surfaceTextureListener = this
     }
 
     external fun addMessage()
     external fun stop()
+
+    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
+    }
+
+    override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {
+    }
+
+    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
+        return true
+    }
+
+    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+        processor?.prepare(Surface(surface))
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         stop()
