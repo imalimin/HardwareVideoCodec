@@ -4,7 +4,7 @@
 
 #include "../include/Screen.h"
 #include "../include/NormalDrawer.h"
-#include "../entity/NativeWindow.h"
+#include "ObjectBox.h"
 
 Screen::Screen() {
     name = __func__;
@@ -24,13 +24,33 @@ Screen::~Screen() {
 bool Screen::dispatch(Message *msg) {
     switch (msg->what) {
         case EVENT_PIPELINE_PREPARE: {
-            NativeWindow *nw = dynamic_cast<NativeWindow *>(msg->obj);
-            initWindow(nw->win);
+            ObjectBox *nw = dynamic_cast<ObjectBox *>(msg->obj);
+            width = msg->arg1;
+            height = msg->arg2;
+            initWindow(static_cast<ANativeWindow *>(nw->ptr));
             delete nw;
             return true;
         }
         case EVENT_PIPELINE_DRAW_SCREEN: {
-            draw(reinterpret_cast<GLuint>(msg->obj));
+            ObjectBox *ob = dynamic_cast<ObjectBox *>(msg->obj);
+            uint8_t *rgba = static_cast<uint8_t *>(ob->ptr);
+            int width = msg->arg1;
+            int height = msg->arg2;
+            GLuint texture;
+            glGenTextures(1, &texture);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexParameterf(GL_TEXTURE_2D,
+                            GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameterf(GL_TEXTURE_2D,
+                            GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameterf(GL_TEXTURE_2D,
+                            GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameterf(GL_TEXTURE_2D,
+                            GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         rgba);
+            glBindTexture(GL_TEXTURE_2D, GL_NONE);
+            draw(texture);
             return true;
         }
         default:
@@ -41,13 +61,18 @@ bool Screen::dispatch(Message *msg) {
 
 void Screen::initWindow(ANativeWindow *win) {
     if (!egl) {
-        egl = new Egl(EGL_NO_CONTEXT, win);
+        egl = new Egl(win);
+        egl->makeCurrent();
         drawer = new NormalDrawer();
     }
 }
 
 void Screen::draw(GLuint texture) {
     egl->makeCurrent();
+    LOGE("%d x %d, %d x %d", width, height, egl->width(), egl->height());
+    glViewport(0, 0, width, height);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
     drawer->draw(texture);
     egl->swapBuffers();
 }

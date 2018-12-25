@@ -15,7 +15,9 @@ public:
 
     virtual ~PictureProcessor();
 
-    void prepare(ANativeWindow *win);
+    void prepare(ANativeWindow *win, int width, int height);
+
+    void show(uint8_t *rgba, int width, int height);
 
 private:
     MainPipeline *pipeline = nullptr;

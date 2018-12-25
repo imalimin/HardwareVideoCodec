@@ -24,14 +24,23 @@ JNIEXPORT jlong JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_cre
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_prepare
-        (JNIEnv *env, jobject thiz, jlong handler, jobject surface) {
+        (JNIEnv *env, jobject thiz, jlong handler, jobject surface, jint width, jint height) {
     if (handler) {
         ANativeWindow *win = ANativeWindow_fromSurface(env, surface);
         if (!win) {
             LOGE("ANativeWindow_fromSurface failed");
             return;
         }
-        getHandler(handler)->prepare(win);
+        getHandler(handler)->prepare(win, width, height);
+    }
+}
+
+JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_show
+        (JNIEnv *env, jobject thiz, jlong handler, jbyteArray rgba, jint width, jint height) {
+    if (handler) {
+        jbyte *pData = env->GetByteArrayElements(rgba, JNI_FALSE);
+        getHandler(handler)->show(reinterpret_cast<uint8_t *>(pData), width, height);
+        env->ReleaseByteArrayElements(rgba, pData, 0);
     }
 }
 

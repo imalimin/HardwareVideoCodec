@@ -20,6 +20,8 @@ public:
 private:
     Egl *egl = nullptr;
     BaseDrawer *drawer;
+    int width = 0;
+    int height = 0;
 
     void initWindow(ANativeWindow *win);
 
