@@ -8,11 +8,15 @@
 #include "log.h"
 
 Egl::Egl() {
-    init(nullptr, nullptr);
+    init(EGL_NO_CONTEXT, nullptr);
 }
 
 Egl::Egl(EGLContext eglContext) {
     init(eglContext, nullptr);
+}
+
+Egl::Egl(ANativeWindow *win) {
+    init(EGL_NO_CONTEXT, win);
 }
 
 Egl::Egl(EGLContext context, ANativeWindow *win) {
@@ -67,8 +71,7 @@ EGLConfig Egl::createConfig(int *configSpec) {
 
 EGLContext Egl::createContext(EGLContext context) {
     int contextSpec[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-    EGLContext eglContext = eglCreateContext(eglDisplay, eglConfig,
-                                             context ? context : EGL_NO_CONTEXT, contextSpec);
+    EGLContext eglContext = eglCreateContext(eglDisplay, eglConfig, context, contextSpec);
     if (EGL_NO_CONTEXT == eglContext) {
         LOGE("eglCreateContext failed: %d", eglGetError());
         return nullptr;

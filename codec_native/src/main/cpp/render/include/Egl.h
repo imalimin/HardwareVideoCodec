@@ -25,6 +25,8 @@ public:
 
     Egl(EGLContext context);
 
+    Egl(ANativeWindow *win);
+
     Egl(EGLContext context, ANativeWindow *win);
 
     virtual ~Egl();
