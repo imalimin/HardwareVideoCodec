@@ -4,21 +4,23 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include "EventPipeline.h"
+#include "Unit.h"
 
 #ifndef HARDWAREVIDEOCODEC_RENDER_H
 #define HARDWAREVIDEOCODEC_RENDER_H
 
-class Render {
+class Render : public Unit {
 public:
     Render();
 
-    ~Render();
+    virtual ~Render();
 
-    void post();
+//    void post();
+
+    bool dispatch(Message *msg) override;
 
 private:
-    EventPipeline *pipeline = nullptr;
+//    EventPipeline *pipeline = nullptr;
     int count = 0;
 };
 

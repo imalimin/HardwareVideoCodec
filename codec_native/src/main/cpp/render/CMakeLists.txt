@@ -24,6 +24,9 @@ file(
         ${PROJECT_SOURCE_DIR}/drawer/*cpp
         ${PROJECT_SOURCE_DIR}/texture/*cpp
         ${PROJECT_SOURCE_DIR}/egl/*cpp
+        ${PROJECT_SOURCE_DIR}/units/*cpp
+        ${PROJECT_SOURCE_DIR}/processor/*cpp
+        ${PROJECT_SOURCE_DIR}/entity/*cpp
 )
 add_library( # Sets the name of the library.
         hwvc_render

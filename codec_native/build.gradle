@@ -37,7 +37,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     //Kotlin协程
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.27.0-eap13"

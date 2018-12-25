@@ -9,7 +9,7 @@
 
 #include "BaseDrawer.h"
 
-class NormalDrawer : protected BaseDrawer {
+class NormalDrawer : public BaseDrawer {
 public:
     NormalDrawer();
 

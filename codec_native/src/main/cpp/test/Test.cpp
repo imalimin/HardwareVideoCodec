@@ -18,7 +18,7 @@ JNIEXPORT void JNICALL Java_com_lmy_samplenative_MainActivity_addMessage
     if (nullptr == render) {
         render = new Render();
     }
-    render->post();
+//    render->post();
 }
 JNIEXPORT void JNICALL Java_com_lmy_samplenative_MainActivity_stop
         (JNIEnv *env, jobject thiz) {

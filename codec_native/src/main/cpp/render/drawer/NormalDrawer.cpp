@@ -26,7 +26,6 @@ static const string FRAGMENT = SHADER(
 );
 
 NormalDrawer::NormalDrawer() {
-    createProgram(VERTEX, FRAGMENT);
 }
 
 GLuint NormalDrawer::getProgram() {
