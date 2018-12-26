@@ -12,10 +12,7 @@
 #define COORDS_BYTE_SIZE  COORDS_PER_VERTEX * 4 * 4
 
 BaseDrawer::BaseDrawer() {
-    program = getProgram();
-    aPositionLocation = static_cast<GLuint>(getAttribLocation("aPosition"));
-    uTextureLocation = getUniformLocation("uTexture");
-    aTextureCoordinateLocation = static_cast<GLuint>(getAttribLocation("aTextureCoord"));
+    createVBOs();
     updateLocation(new float[8]{
             0.0f, 0.0f,//LEFT,BOTTOM
             1.0f, 0.0f,//RIGHT,BOTTOM
@@ -103,10 +100,6 @@ GLuint BaseDrawer::createShader(GLenum type, string shader) {
     return shaderId;
 }
 
-GLuint BaseDrawer::getProgram() {
-    return GL_NONE;
-}
-
 void BaseDrawer::enableVertex(GLuint posLoc, GLuint texLoc) {
     updateVBOs();
     if (enableVAO) {
@@ -146,6 +139,13 @@ void BaseDrawer::updateVBOs() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, COORDS_BYTE_SIZE, position);
     glBufferSubData(GL_ARRAY_BUFFER, COORDS_BYTE_SIZE, COORDS_BYTE_SIZE, texCoordinate);
+    glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+}
+
+void BaseDrawer::createVBOs() {
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, COORDS_BYTE_SIZE * 2, nullptr, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 }
 

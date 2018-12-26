@@ -25,7 +25,7 @@ public:
 
     virtual GLuint createProgram(string vertex, string fragment);
 
-    virtual GLuint getProgram();
+    virtual GLuint getProgram() = 0;
 
     GLint getAttribLocation(string name);
 
@@ -33,7 +33,7 @@ public:
 
     void updateLocation(float *texCoordinate, float *position);
 
-private:
+protected:
     bool enableVAO = false;
     GLuint program = GL_NONE;
     GLint uTextureLocation = GL_NONE;
@@ -46,6 +46,8 @@ private:
     GLuint vao = GL_NONE;
 
     GLuint createShader(GLenum type, string shader);
+
+    void createVBOs();
 
     void enableVertex(GLuint posLoc, GLuint texLoc);
 
