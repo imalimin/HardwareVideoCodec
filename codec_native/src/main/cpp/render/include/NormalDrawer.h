@@ -13,10 +13,9 @@ class NormalDrawer : public BaseDrawer {
 public:
     NormalDrawer();
 
-    virtual ~NormalDrawer() override;
+    virtual ~NormalDrawer();
 
-protected:
-    GLuint getProgram() override;
+    virtual GLuint getProgram();
 
 };
 

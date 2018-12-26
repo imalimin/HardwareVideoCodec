@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "../include/NormalDrawer.h"
+#include "log.h"
 
 static const string VERTEX = SHADER(
         attribute vec4 aPosition;
@@ -26,9 +27,14 @@ static const string FRAGMENT = SHADER(
 );
 
 NormalDrawer::NormalDrawer() {
+    program = getProgram();
+    aPositionLocation = static_cast<GLuint>(getAttribLocation("aPosition"));
+    uTextureLocation = getUniformLocation("uTexture");
+    aTextureCoordinateLocation = static_cast<GLuint>(getAttribLocation("aTextureCoord"));
 }
 
 GLuint NormalDrawer::getProgram() {
+    LOGE("NormalDrawer::getProgram");
     return createProgram(VERTEX, FRAGMENT);
 }
 
