@@ -13,17 +13,22 @@
 
 BaseDrawer::BaseDrawer() {
     createVBOs();
-    updateLocation(new float[8]{
+
+    float *texCoordinate = new float[8]{
             0.0f, 0.0f,//LEFT,BOTTOM
             1.0f, 0.0f,//RIGHT,BOTTOM
             0.0f, 1.0f,//LEFT,TOP
             1.0f, 1.0f//RIGHT,TOP
-    }, new float[8]{
+    };
+    float *position = new float[8]{
             -1.0f, -1.0f,//LEFT,BOTTOM
             1.0f, -1.0f,//RIGHT,BOTTOM
             -1.0f, 1.0f,//LEFT,TOP
             1.0f, 1.0f//RIGHT,TOP
-    });
+    };
+    updateLocation(texCoordinate, position);
+    delete[]texCoordinate;
+    delete[]position;
 }
 
 BaseDrawer::~BaseDrawer() {
@@ -151,8 +156,8 @@ void BaseDrawer::createVBOs() {
 }
 
 void BaseDrawer::updateLocation(float *texCoordinate, float *position) {
-    this->texCoordinate = texCoordinate;
-    this->position = position;
+    memcpy(this->texCoordinate, texCoordinate, COORDS_BYTE_SIZE);
+    memcpy(this->position, position, COORDS_BYTE_SIZE);
     requestUpdateLocation = true;
 }
 

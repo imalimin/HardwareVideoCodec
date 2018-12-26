@@ -39,8 +39,8 @@ protected:
     GLint uTextureLocation = GL_NONE;
     GLuint aPositionLocation = GL_NONE;
     GLuint aTextureCoordinateLocation = GL_NONE;
-    GLvoid *position = GL_NONE;
-    GLvoid *texCoordinate = GL_NONE;
+    GLvoid *position = new float[8];
+    GLvoid *texCoordinate = new float[8];
     bool requestUpdateLocation = false;
     GLuint vbo = GL_NONE;
     GLuint vao = GL_NONE;
