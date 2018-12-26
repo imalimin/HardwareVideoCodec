@@ -17,7 +17,7 @@ public:
 
     void prepare(ANativeWindow *win, int width, int height);
 
-    void show(uint8_t *rgba, int width, int height);
+    void show(char *file);
 
 private:
     MainPipeline *pipeline = nullptr;

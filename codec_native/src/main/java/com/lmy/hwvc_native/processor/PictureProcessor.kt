@@ -14,9 +14,9 @@ class PictureProcessor {
         prepare(handler, surface, width, height)
     }
 
-    fun show(rgba: ByteArray, width: Int, height: Int) {
+    fun show(file: String) {
         if (0L == handler) return
-        show(handler, rgba, width, height)
+        show(handler, file)
     }
 
     fun release() {
@@ -26,6 +26,6 @@ class PictureProcessor {
 
     private external fun create(): Long
     private external fun prepare(handler: Long, surface: Surface, width: Int, height: Int)
-    private external fun show(handler: Long, rgba: ByteArray, width: Int, height: Int)
+    private external fun show(handler: Long, file: String)
     private external fun release(handler: Long)
 }

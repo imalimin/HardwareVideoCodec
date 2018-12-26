@@ -1,7 +1,9 @@
-//
-// Created by mingyi.li on 2018/12/25.
-//
-
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 #ifndef HARDWAREVIDEOCODEC_UNIT_H
 #define HARDWAREVIDEOCODEC_UNIT_H
 
@@ -12,6 +14,8 @@
 #define EVENT_PIPELINE_PREPARE 0x0010001
 #define EVENT_PIPELINE_RELEASE 0x0010002
 #define EVENT_PIPELINE_DRAW_SCREEN 0x0010003
+
+#define EVENT_IMAGE_SHOW 0x0010004
 
 class Unit : public Object {
 public:

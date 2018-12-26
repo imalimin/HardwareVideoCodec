@@ -3,14 +3,12 @@ package com.lmy.samplenative
 import android.graphics.BitmapFactory
 import android.graphics.SurfaceTexture
 import android.os.Environment
-import android.view.Surface
-import android.view.TextureView
-import kotlinx.android.synthetic.main.activity_main.*
-import android.R.attr.bitmap
 import android.util.Log
+import android.view.Surface
 import android.view.SurfaceHolder
-import android.view.SurfaceView
+import android.view.TextureView
 import com.lmy.hwvc_native.processor.PictureProcessor
+import kotlinx.android.synthetic.main.activity_main.*
 import java.nio.ByteBuffer
 
 
@@ -21,7 +19,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun initView() {
         addBtn.setOnClickListener {
         }
-        surfaceView.holder.addCallback(object:SurfaceHolder.Callback{
+        surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceChanged(holder: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
             }
 
@@ -30,15 +28,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
             override fun surfaceCreated(holder: SurfaceHolder) {
                 processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
-                val bitmap = BitmapFactory.decodeFile("${Environment.getExternalStorageDirectory().path}/1.jpg")
-                val bytes = bitmap.byteCount
-                val buffer = ByteBuffer.allocate(bytes)
-                bitmap.copyPixelsToBuffer(buffer)
-                val data = ByteArray(buffer.capacity())
-                buffer.rewind()
-                buffer.get(data)
-                Log.e("11111", "size = ${data.size}")
-                processor?.show(data, bitmap.width, bitmap.height)
+                processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
             }
         })
 //        textureView.surfaceTextureListener = this
@@ -56,15 +46,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
         processor?.prepare(Surface(surface), width, height)
-        val bitmap = BitmapFactory.decodeFile("${Environment.getExternalStorageDirectory().path}/1.jpg")
-        val bytes = bitmap.byteCount
-        val buffer = ByteBuffer.allocate(bytes)
-        bitmap.copyPixelsToBuffer(buffer)
-        val data = ByteArray(buffer.capacity())
-        buffer.rewind()
-        buffer.get(data)
-        Log.e("11111", "size = ${data.size}")
-        processor?.show(data, bitmap.width, bitmap.height)
+        processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
     }
 
     override fun onDestroy() {

@@ -1,6 +1,9 @@
-//
-// Created by mingyi.li on 2018/12/25.
-//
+/*
+ * Copyright (c) 2018-present, lmyooyo@gmail.com.
+ *
+ * This source code is licensed under the GPL license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 #include <jni.h>
 #include <log.h>
 #include "PictureProcessor.h"
@@ -36,11 +39,11 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_prep
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_show
-        (JNIEnv *env, jobject thiz, jlong handler, jbyteArray rgba, jint width, jint height) {
+        (JNIEnv *env, jobject thiz, jlong handler, jstring file) {
     if (handler) {
-        jbyte *pData = env->GetByteArrayElements(rgba, JNI_FALSE);
-        getHandler(handler)->show(reinterpret_cast<uint8_t *>(pData), width, height);
-        env->ReleaseByteArrayElements(rgba, pData, 0);
+        const char *pFile = reinterpret_cast<const char *>(env->GetStringChars(file, JNI_FALSE));
+        getHandler(handler)->show(const_cast<char *>(pFile));
+        env->ReleaseStringChars(file, reinterpret_cast<const jchar *>(pFile));
     }
 }
 

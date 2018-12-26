@@ -23,8 +23,8 @@ bool JpegDecoder::decodeFile(string file, uint8_t **rgb, int *width, int *height
 
     int subsample, colorspace;
     int flags = 0;
-    int fmt = TJPF_RGB;
-    int channels = 3;
+    int fmt = TJPF_RGBA;
+    int channels = 4;
     tjDecompressHeader3(handle, buffer, length, width, height, &subsample, &colorspace);
 
     flags |= 0;

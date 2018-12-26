@@ -4,11 +4,13 @@
 
 #include "../include/PictureProcessor.h"
 #include "../include/Render.h"
+#include "../include/Image.h"
 #include "ObjectBox.h"
 
 PictureProcessor::PictureProcessor() {
     pipeline = new MainPipeline(__func__);
     pipeline->registerAnUnit(new Render());
+    pipeline->registerAnUnit(new Image());
     pipeline->registerAnUnit(new Screen());
 }
 
@@ -31,11 +33,9 @@ void PictureProcessor::prepare(ANativeWindow *win, int width, int height) {
     }
 }
 
-void PictureProcessor::show(uint8_t *rgba, int width, int height) {
+void PictureProcessor::show(char *file) {
     if (!pipeline) return;
-    Message *msg = new Message(EVENT_PIPELINE_DRAW_SCREEN, nullptr);
-    msg->obj = new ObjectBox(rgba);
-    msg->arg1 = width;
-    msg->arg2 = height;
+    Message *msg = new Message(EVENT_IMAGE_SHOW, nullptr);
+    msg->obj = new ObjectBox(file);
     pipeline->postEvent(msg);
 }
