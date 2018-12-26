@@ -34,6 +34,7 @@ bool Image::dispatch(Message *msg) {
         case EVENT_IMAGE_SHOW: {
             ObjectBox *ob = dynamic_cast<ObjectBox *>(msg->obj);
             show(static_cast<char *>(ob->ptr));
+            delete[]ob->ptr;
             return true;
         }
         case EVENT_PIPELINE_RELEASE: {
@@ -46,18 +47,18 @@ bool Image::dispatch(Message *msg) {
     return Unit::dispatch(msg);
 }
 
-void Image::show(string file) {
+void Image::show(string path) {
     if (rgba) {
         delete[]rgba;
         rgba = nullptr;
     }
     int width = 0, height = 0;
-    bool ret = decoder->decodeFile("/sdcard/1.jpg", &rgba, &width, &height);
+    bool ret = decoder->decodeFile(path, &rgba, &width, &height);
     if (!ret || 0 == width || 0 == height) {
-        LOGE("Image decode %s failed", file.c_str());
+        LOGE("Image decode %s failed", path.c_str());
         return;
     }
-    LOGE("Image decode %d x %d", width, height);
+    LOGI("Image decode(%d x %d) %s", width, height, path.c_str());
     Message *msg = new Message(EVENT_PIPELINE_DRAW_SCREEN, nullptr);
     msg->obj = new ObjectBox(rgba);
     msg->arg1 = width;

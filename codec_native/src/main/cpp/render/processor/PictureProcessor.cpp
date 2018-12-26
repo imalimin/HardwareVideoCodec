@@ -33,9 +33,9 @@ void PictureProcessor::prepare(ANativeWindow *win, int width, int height) {
     }
 }
 
-void PictureProcessor::show(char *file) {
+void PictureProcessor::show(char *path) {
     if (!pipeline) return;
     Message *msg = new Message(EVENT_IMAGE_SHOW, nullptr);
-    msg->obj = new ObjectBox(file);
+    msg->obj = new ObjectBox(path);
     pipeline->postEvent(msg);
 }

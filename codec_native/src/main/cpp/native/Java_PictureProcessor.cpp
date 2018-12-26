@@ -41,9 +41,13 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_prep
 JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_show
         (JNIEnv *env, jobject thiz, jlong handler, jstring file) {
     if (handler) {
-        const char *pFile = reinterpret_cast<const char *>(env->GetStringChars(file, JNI_FALSE));
-        getHandler(handler)->show(const_cast<char *>(pFile));
-        env->ReleaseStringChars(file, reinterpret_cast<const jchar *>(pFile));
+        int len = env->GetStringUTFLength(file) + 1;
+        const char *pFile = env->GetStringUTFChars(file, JNI_FALSE);
+        char *path = new char[len];
+        memcpy(path, pFile, len);
+        LOGE("show %s, %d", path, len);
+        getHandler(handler)->show(path);
+        env->ReleaseStringUTFChars(file, pFile);
     }
 }
 

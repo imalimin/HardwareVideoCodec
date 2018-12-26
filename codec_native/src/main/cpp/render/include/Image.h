@@ -25,7 +25,7 @@ private:
     JpegDecoder *decoder = nullptr;
     uint8_t *rgba = nullptr;
 
-    void show(string file);
+    void show(string path);
 };
 
 
