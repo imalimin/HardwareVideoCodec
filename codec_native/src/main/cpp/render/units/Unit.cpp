@@ -10,7 +10,7 @@ Unit::Unit() {
 }
 
 Unit::~Unit() {
-
+    name = __func__;
 }
 
 void Unit::release() {

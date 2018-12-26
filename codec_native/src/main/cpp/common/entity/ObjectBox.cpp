@@ -9,5 +9,5 @@ ObjectBox::ObjectBox(void *ptr) {
 }
 
 ObjectBox::~ObjectBox() {
-
+    this->ptr = nullptr;
 }

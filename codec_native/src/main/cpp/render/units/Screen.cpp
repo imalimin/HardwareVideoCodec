@@ -15,6 +15,7 @@ Screen::~Screen() {
 }
 
 void Screen::release() {
+    Unit::release();
     if (egl) {
         egl->makeCurrent();
     }
@@ -34,6 +35,7 @@ void Screen::release() {
 }
 
 bool Screen::dispatch(Message *msg) {
+    Unit::dispatch(msg);
     switch (msg->what) {
         case EVENT_PIPELINE_PREPARE: {
             ObjectBox *nw = dynamic_cast<ObjectBox *>(msg->obj);

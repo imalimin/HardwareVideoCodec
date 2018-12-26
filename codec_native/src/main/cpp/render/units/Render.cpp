@@ -15,6 +15,7 @@
 //}
 
 Render::Render() {
+    name = __func__;
 //    pipeline = new EventPipeline("Render");
 }
 

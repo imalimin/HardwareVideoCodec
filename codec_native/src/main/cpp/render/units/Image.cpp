@@ -8,6 +8,7 @@
 #include "ObjectBox.h"
 
 Image::Image() {
+    name = __func__;
     decoder = new JpegDecoder();
 }
 
@@ -16,6 +17,7 @@ Image::~Image() {
 }
 
 void Image::release() {
+    Unit::release();
     if (decoder) {
         delete decoder;
         decoder = nullptr;
@@ -27,6 +29,7 @@ void Image::release() {
 }
 
 bool Image::dispatch(Message *msg) {
+    Unit::dispatch(msg);
     switch (msg->what) {
         case EVENT_IMAGE_SHOW: {
             ObjectBox *ob = dynamic_cast<ObjectBox *>(msg->obj);
@@ -49,8 +52,8 @@ void Image::show(string file) {
         rgba = nullptr;
     }
     int width = 0, height = 0;
-    decoder->decodeFile("/sdcard/1.jpg", &rgba, &width, &height);
-    if (0 == width || 0 == height) {
+    bool ret = decoder->decodeFile("/sdcard/1.jpg", &rgba, &width, &height);
+    if (!ret || 0 == width || 0 == height) {
         LOGE("Image decode %s failed", file.c_str());
         return;
     }
