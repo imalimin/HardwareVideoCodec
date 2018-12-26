@@ -36,7 +36,7 @@ void MainPipeline::dispatch(Message *msg) {
 }
 
 int MainPipeline::registerAnUnit(Unit *unit) {
-//    unit->setController(this);
+    unit->setController(this);
     units.push_back(unit);
     return 1;
 }
