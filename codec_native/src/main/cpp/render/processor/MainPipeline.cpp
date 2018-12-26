@@ -23,6 +23,10 @@ MainPipeline::~MainPipeline() {
 void MainPipeline::postEvent(Message *msg) {
     if (pipeline) {
         msg->runnable = [=](Message *msg) {
+            /**
+             * @NOTE 不置空的话会出现不可预料的崩溃
+             */
+            msg->runnable = nullptr;
             dispatch(msg);
         };
         pipeline->sendMessage(msg);
