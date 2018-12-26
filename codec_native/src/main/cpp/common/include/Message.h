@@ -24,6 +24,8 @@ public:
     Message(int what, Object *obj, function<void(Message *msg)> runnable);
 
     virtual ~Message();
+
+    void *tyrUnBox();
 };
 
 #endif //HARDWAREVIDEOCODEC_MESSAGE_H

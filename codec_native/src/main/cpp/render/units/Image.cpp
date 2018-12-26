@@ -32,9 +32,9 @@ bool Image::dispatch(Message *msg) {
     Unit::dispatch(msg);
     switch (msg->what) {
         case EVENT_IMAGE_SHOW: {
-            ObjectBox *ob = dynamic_cast<ObjectBox *>(msg->obj);
-            show(static_cast<char *>(ob->ptr));
-            delete[]ob->ptr;
+            char *path = static_cast<char *>(msg->tyrUnBox());
+            show(path);
+            delete[]path;
             return true;
         }
         case EVENT_PIPELINE_RELEASE: {

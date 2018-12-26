@@ -4,7 +4,6 @@
 
 #include "../include/Screen.h"
 #include "../include/NormalDrawer.h"
-#include "ObjectBox.h"
 
 Screen::Screen() {
     name = __func__;
@@ -38,16 +37,13 @@ bool Screen::dispatch(Message *msg) {
     Unit::dispatch(msg);
     switch (msg->what) {
         case EVENT_PIPELINE_PREPARE: {
-            ObjectBox *nw = dynamic_cast<ObjectBox *>(msg->obj);
             width = msg->arg1;
             height = msg->arg2;
-            initWindow(static_cast<ANativeWindow *>(nw->ptr));
-            delete nw;
+            initWindow(static_cast<ANativeWindow *>(msg->tyrUnBox()));
             return true;
         }
         case EVENT_PIPELINE_DRAW_SCREEN: {
-            ObjectBox *ob = dynamic_cast<ObjectBox *>(msg->obj);
-            uint8_t *rgba = static_cast<uint8_t *>(ob->ptr);
+            uint8_t *rgba = static_cast<uint8_t *>(msg->tyrUnBox());
             int width = msg->arg1;
             int height = msg->arg2;
             egl->makeCurrent();

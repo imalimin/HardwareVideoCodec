@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "../include/Message.h"
+#include "../include/ObjectBox.h"
 
 Message::Message(int what, function<void(Message *msg)> runnable) {
     this->what = what;
@@ -28,4 +29,9 @@ Message::~Message() {
         delete obj;
         obj = nullptr;
     }
+}
+
+void *Message::tyrUnBox() {
+    ObjectBox *ob = dynamic_cast<ObjectBox *>(obj);
+    return ob->ptr;
 }
