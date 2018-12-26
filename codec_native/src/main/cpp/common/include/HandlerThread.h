@@ -18,9 +18,15 @@ public:
 
     void sendMessage(Message *msg);
 
+    void quit();
+
+    void quitSafely();
+
 private:
     Thread *thread = nullptr;
     MessageQueue *queue = nullptr;
+    bool requestQuitSafely = false;
+    bool requestQuit = false;
 
     void offer(Message *msg);
 

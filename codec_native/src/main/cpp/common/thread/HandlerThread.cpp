@@ -10,9 +10,7 @@
 HandlerThread::HandlerThread(string name) {
     queue = new MessageQueue();
     thread = new Thread(name, [=]() {
-        LOGI("HandlerThread run");
         while (thread->isRunning()) {
-            LOGI("take");
             Message *msg = take();
             if (thread->interrupted()) {
                 LOGI("take interrupted, %ld, %ld", msg, thread);
@@ -23,14 +21,10 @@ HandlerThread::HandlerThread(string name) {
                 LOGI("take null, %ld, %ld", msg, thread);
                 continue;
             }
-            LOGI("take 2");
             msg->runnable(msg);
-            LOGI("take 3");
             pop();
-            LOGI("take 4");
-            if (thread->interrupted()) {
-                LOGI("take 2");
-                break;
+            if (requestQuitSafely && 0 == size()) {
+                quit();
             }
         }
         LOGI("take 6");
@@ -44,15 +38,14 @@ HandlerThread::HandlerThread(string name) {
 
 HandlerThread::~HandlerThread() {
     LOGI("~HandlerThread");
-    if (nullptr != thread) {
-        thread->interrupt();
-    }
-    if (nullptr != queue) {
-        queue->notify();
-    }
+    quitSafely();
 }
 
 void HandlerThread::sendMessage(Message *msg) {
+    if (requestQuitSafely || requestQuit) {
+        LOGE("HandlerThread had quited");
+        return;
+    }
     offer(msg);
 }
 
@@ -70,4 +63,22 @@ int HandlerThread::size() {
 
 void HandlerThread::pop() {
     queue->pop();
+}
+
+void HandlerThread::quit() {
+    this->requestQuit = true;
+    if (nullptr != thread) {
+        thread->interrupt();
+    }
+    if (nullptr != queue) {
+        queue->notify();
+    }
+}
+
+void HandlerThread::quitSafely() {
+    if (0 == size()) {
+        quit();
+    } else {
+        this->requestQuitSafely = true;
+    }
 }
