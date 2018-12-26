@@ -16,7 +16,7 @@ PictureProcessor::PictureProcessor() {
 
 PictureProcessor::~PictureProcessor() {
     if (pipeline) {
-        Message *msg = new Message(EVENT_PIPELINE_RELEASE, nullptr);
+        Message *msg = new Message(EVENT_COMMON_RELEASE, nullptr);
         pipeline->postEvent(msg);
         delete pipeline;
         pipeline = nullptr;
@@ -25,7 +25,7 @@ PictureProcessor::~PictureProcessor() {
 
 void PictureProcessor::prepare(ANativeWindow *win, int width, int height) {
     if (pipeline) {
-        Message *msg = new Message(EVENT_PIPELINE_PREPARE, nullptr);
+        Message *msg = new Message(EVENT_COMMON_PREPARE, nullptr);
         msg->obj = new ObjectBox(win);
         msg->arg1 = width;
         msg->arg2 = height;

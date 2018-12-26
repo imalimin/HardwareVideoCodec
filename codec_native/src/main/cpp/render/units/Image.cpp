@@ -37,7 +37,7 @@ bool Image::dispatch(Message *msg) {
             delete[]path;
             return true;
         }
-        case EVENT_PIPELINE_RELEASE: {
+        case EVENT_COMMON_RELEASE: {
             release();
             return true;
         }
@@ -59,7 +59,7 @@ void Image::show(string path) {
         return;
     }
     LOGI("Image decode(%d x %d) %s", width, height, path.c_str());
-    Message *msg = new Message(EVENT_PIPELINE_DRAW_SCREEN, nullptr);
+    Message *msg = new Message(EVENT_SCREEN_DRAW, nullptr);
     msg->obj = new ObjectBox(rgba);
     msg->arg1 = width;
     msg->arg2 = height;

@@ -36,13 +36,13 @@ void Screen::release() {
 bool Screen::dispatch(Message *msg) {
     Unit::dispatch(msg);
     switch (msg->what) {
-        case EVENT_PIPELINE_PREPARE: {
+        case EVENT_COMMON_PREPARE: {
             width = msg->arg1;
             height = msg->arg2;
             initWindow(static_cast<ANativeWindow *>(msg->tyrUnBox()));
             return true;
         }
-        case EVENT_PIPELINE_DRAW_SCREEN: {
+        case EVENT_SCREEN_DRAW: {
             uint8_t *rgba = static_cast<uint8_t *>(msg->tyrUnBox());
             int width = msg->arg1;
             int height = msg->arg2;
@@ -64,7 +64,7 @@ bool Screen::dispatch(Message *msg) {
             draw(texture);
             return true;
         }
-        case EVENT_PIPELINE_RELEASE: {
+        case EVENT_COMMON_RELEASE: {
             release();
             return true;
         }
