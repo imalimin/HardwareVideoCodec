@@ -20,6 +20,10 @@ void Image::release() {
         delete decoder;
         decoder = nullptr;
     }
+    if (rgba) {
+        delete[]rgba;
+        rgba = nullptr;
+    }
 }
 
 bool Image::dispatch(Message *msg) {
@@ -29,6 +33,10 @@ bool Image::dispatch(Message *msg) {
             show(static_cast<char *>(ob->ptr));
             return true;
         }
+        case EVENT_PIPELINE_RELEASE: {
+            release();
+            return true;
+        }
         default:
             break;
     }
@@ -36,13 +44,17 @@ bool Image::dispatch(Message *msg) {
 }
 
 void Image::show(string file) {
-    uint8_t *rgba;
+    if (rgba) {
+        delete[]rgba;
+        rgba = nullptr;
+    }
     int width = 0, height = 0;
     decoder->decodeFile("/sdcard/1.jpg", &rgba, &width, &height);
     if (0 == width || 0 == height) {
         LOGE("Image decode %s failed", file.c_str());
         return;
     }
+    LOGE("Image decode %d x %d", width, height);
     Message *msg = new Message(EVENT_PIPELINE_DRAW_SCREEN, nullptr);
     msg->obj = new ObjectBox(rgba);
     msg->arg1 = width;

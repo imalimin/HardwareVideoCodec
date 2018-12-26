@@ -1,15 +1,12 @@
 package com.lmy.samplenative
 
-import android.graphics.BitmapFactory
 import android.graphics.SurfaceTexture
 import android.os.Environment
-import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.TextureView
 import com.lmy.hwvc_native.processor.PictureProcessor
 import kotlinx.android.synthetic.main.activity_main.*
-import java.nio.ByteBuffer
 
 
 class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
@@ -19,6 +16,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun initView() {
         addBtn.setOnClickListener {
         }
+        surfaceView.keepScreenOn = true
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceChanged(holder: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
             }
