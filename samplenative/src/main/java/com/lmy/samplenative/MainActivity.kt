@@ -9,6 +9,8 @@ import com.lmy.samplenative.processor.PictureProcessor
 import kotlinx.android.synthetic.main.activity_main.*
 import android.R.attr.bitmap
 import android.util.Log
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import java.nio.ByteBuffer
 
 
@@ -20,7 +22,27 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
         addBtn.setOnClickListener {
             addMessage()
         }
-        textureView.surfaceTextureListener = this
+        surfaceView.holder.addCallback(object:SurfaceHolder.Callback{
+            override fun surfaceChanged(holder: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun surfaceDestroyed(p0: SurfaceHolder?) {
+            }
+
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
+                val bitmap = BitmapFactory.decodeFile("${Environment.getExternalStorageDirectory().path}/1.jpg")
+                val bytes = bitmap.byteCount
+                val buffer = ByteBuffer.allocate(bytes)
+                bitmap.copyPixelsToBuffer(buffer)
+                val data = ByteArray(buffer.capacity())
+                buffer.rewind()
+                buffer.get(data)
+                Log.e("11111", "size = ${data.size}")
+                processor?.show(data, bitmap.width, bitmap.height)
+            }
+        })
+//        textureView.surfaceTextureListener = this
     }
 
     external fun addMessage()
@@ -40,14 +62,19 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
         processor?.prepare(Surface(surface), width, height)
         val bitmap = BitmapFactory.decodeFile("${Environment.getExternalStorageDirectory().path}/1.jpg")
         val bytes = bitmap.byteCount
-        Log.e("11111", "size = $bytes")
         val buffer = ByteBuffer.allocate(bytes)
         bitmap.copyPixelsToBuffer(buffer)
-        processor?.show(buffer.array(), bitmap.width, bitmap.height)
+        val data = ByteArray(buffer.capacity())
+        buffer.rewind()
+        buffer.get(data)
+        Log.e("11111", "size = ${data.size}")
+        processor?.show(data, bitmap.width, bitmap.height)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        processor?.release()
+        processor = null
         stop()
     }
 
