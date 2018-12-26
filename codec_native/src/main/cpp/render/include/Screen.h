@@ -22,6 +22,7 @@ private:
     BaseDrawer *drawer;
     int width = 0;
     int height = 0;
+    GLuint texture = GL_NONE;
 
     void initWindow(ANativeWindow *win);
 

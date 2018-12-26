@@ -11,14 +11,19 @@ Screen::Screen() {
 }
 
 Screen::~Screen() {
-    if (drawer) {
-        delete drawer;
-        drawer = nullptr;
-    }
-    if (egl) {
-        delete egl;
-        egl = nullptr;
-    }
+    LOGE("~Screen");
+//    if (texture) {
+//        glDeleteTextures(1, &texture);
+//        texture = GL_NONE;
+//    }
+//    if (drawer) {
+//        delete drawer;
+//        drawer = nullptr;
+//    }
+//    if (egl) {
+//        delete egl;
+//        egl = nullptr;
+//    }
 }
 
 bool Screen::dispatch(Message *msg) {
@@ -36,7 +41,7 @@ bool Screen::dispatch(Message *msg) {
             uint8_t *rgba = static_cast<uint8_t *>(ob->ptr);
             int width = msg->arg1;
             int height = msg->arg2;
-            GLuint texture;
+            egl->makeCurrent();
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);
             glTexParameterf(GL_TEXTURE_2D,
@@ -68,9 +73,8 @@ void Screen::initWindow(ANativeWindow *win) {
 }
 
 void Screen::draw(GLuint texture) {
-    egl->makeCurrent();
     LOGE("%d x %d, %d x %d", width, height, egl->width(), egl->height());
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, egl->width(), egl->height());
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
     drawer->draw(texture);
