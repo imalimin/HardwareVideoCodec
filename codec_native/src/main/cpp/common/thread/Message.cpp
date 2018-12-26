@@ -8,18 +8,23 @@
 
 Message::Message(int what, function<void(Message *msg)> runnable) {
     this->what = what;
+    this->obj = nullptr;
     this->runnable = runnable;
+    this->arg1 = 0;
+    this->arg2 = 0;
 }
 
 Message::Message(int what, Object *obj, function<void(Message *msg)> runnable) {
     this->what = what;
     this->obj = obj;
     this->runnable = runnable;
+    this->arg1 = 0;
+    this->arg2 = 0;
 }
 
 Message::~Message() {
     this->runnable = nullptr;
-    if (nullptr != obj) {
+    if (obj) {
         delete obj;
         obj = nullptr;
     }
