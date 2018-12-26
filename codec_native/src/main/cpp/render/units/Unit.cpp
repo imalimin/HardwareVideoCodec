@@ -13,6 +13,10 @@ Unit::~Unit() {
 
 }
 
+void Unit::release() {
+
+}
+
 void Unit::setController(MainPipeline *pipeline) {
     this->pipeline = pipeline;
 }

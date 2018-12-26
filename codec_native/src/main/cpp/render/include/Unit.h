@@ -9,6 +9,10 @@
 #include "MainPipeline.h"
 #include "Message.h"
 
+#define EVENT_PIPELINE_PREPARE 0x0010001
+#define EVENT_PIPELINE_RELEASE 0x0010002
+#define EVENT_PIPELINE_DRAW_SCREEN 0x0010003
+
 class Unit : public Object {
 public:
     Unit();
@@ -22,6 +26,8 @@ public:
      * @return true:我可以处理这个事件，false:无法处理这个事件
      */
     virtual bool dispatch(Message *msg);
+
+    virtual void release();
 
 protected:
     string name;

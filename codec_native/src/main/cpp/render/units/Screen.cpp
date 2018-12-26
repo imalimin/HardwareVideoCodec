@@ -12,18 +12,25 @@ Screen::Screen() {
 
 Screen::~Screen() {
     LOGE("~Screen");
-//    if (texture) {
-//        glDeleteTextures(1, &texture);
-//        texture = GL_NONE;
-//    }
-//    if (drawer) {
-//        delete drawer;
-//        drawer = nullptr;
-//    }
-//    if (egl) {
-//        delete egl;
-//        egl = nullptr;
-//    }
+}
+
+void Screen::release() {
+    if (egl) {
+        egl->makeCurrent();
+    }
+    if (texture) {
+        glDeleteTextures(1, &texture);
+        texture = GL_NONE;
+    }
+    if (drawer) {
+        delete drawer;
+        drawer = nullptr;
+    }
+    if (egl) {
+        delete egl;
+        egl = nullptr;
+    }
+    LOGE("EVENT_PIPELINE_RELEASE");
 }
 
 bool Screen::dispatch(Message *msg) {
@@ -57,6 +64,10 @@ bool Screen::dispatch(Message *msg) {
                          rgba);
             glBindTexture(GL_TEXTURE_2D, GL_NONE);
             draw(texture);
+            return true;
+        }
+        case EVENT_PIPELINE_RELEASE: {
+            release();
             return true;
         }
         default:

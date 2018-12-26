@@ -14,9 +14,9 @@ MainPipeline::~MainPipeline() {
         delete pipeline;
         pipeline = nullptr;
     }
-    for (auto itr = units.cbegin(); itr != units.cend(); itr++) {
-        delete *itr;
-    }
+//    for (auto itr = units.cbegin(); itr != units.cend(); itr++) {
+//        delete *itr;
+//    }
     units.clear();
 }
 

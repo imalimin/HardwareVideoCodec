@@ -17,6 +17,8 @@ public:
 
     bool dispatch(Message *msg) override;
 
+    virtual void release() override;
+
 private:
     Egl *egl = nullptr;
     BaseDrawer *drawer;

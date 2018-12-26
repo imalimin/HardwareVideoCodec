@@ -10,10 +10,6 @@
 #include "HandlerThread.h"
 #include <vector>
 
-#define EVENT_PIPELINE_PREPARE 0x0010001
-#define EVENT_PIPELINE_RELEASE 0x0010002
-#define EVENT_PIPELINE_DRAW_SCREEN 0x0010003
-
 using namespace std;
 
 class Unit;

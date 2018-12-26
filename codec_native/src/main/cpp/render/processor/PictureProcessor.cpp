@@ -14,6 +14,8 @@ PictureProcessor::PictureProcessor() {
 
 PictureProcessor::~PictureProcessor() {
     if (pipeline) {
+        Message *msg = new Message(EVENT_PIPELINE_RELEASE, nullptr);
+        pipeline->postEvent(msg);
         delete pipeline;
         pipeline = nullptr;
     }
