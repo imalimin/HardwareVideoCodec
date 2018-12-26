@@ -112,7 +112,8 @@ void BaseDrawer::enableVertex(GLuint posLoc, GLuint texLoc) {
     //xy
     glVertexAttribPointer(posLoc, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, 0);
     //st
-    glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, (GLvoid *) 0);
+    glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0,
+                          reinterpret_cast<const void *>(COORDS_BYTE_SIZE));
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 }
 
