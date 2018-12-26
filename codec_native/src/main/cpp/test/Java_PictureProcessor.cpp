@@ -44,6 +44,14 @@ JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_show
     }
 }
 
+JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_release
+        (JNIEnv *env, jobject thiz, jlong handler) {
+    if (handler) {
+        PictureProcessor *p = getHandler(handler);
+        delete p;
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif
