@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
-project(hwvc_test)
+project(hwvc_native)
 include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
         ${PROJECT_SOURCE_DIR}/../render/include
@@ -11,7 +11,7 @@ file(
         ${PROJECT_SOURCE_DIR}/*cpp
 )
 add_library( # Sets the name of the library.
-        hwvc_test
+        hwvc_native
 
         # Sets the library as a shared library.
         SHARED
@@ -28,7 +28,7 @@ find_library( # Sets the name of the path variable.
         log)
 
 target_link_libraries( # Specifies the target library.
-        hwvc_test
+        hwvc_native
         hwvc_render
         hwvcom
         android

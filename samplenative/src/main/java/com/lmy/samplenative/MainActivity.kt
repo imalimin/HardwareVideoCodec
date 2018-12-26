@@ -5,12 +5,12 @@ import android.graphics.SurfaceTexture
 import android.os.Environment
 import android.view.Surface
 import android.view.TextureView
-import com.lmy.samplenative.processor.PictureProcessor
 import kotlinx.android.synthetic.main.activity_main.*
 import android.R.attr.bitmap
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import com.lmy.hwvc_native.processor.PictureProcessor
 import java.nio.ByteBuffer
 
 
@@ -20,7 +20,6 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
         addBtn.setOnClickListener {
-            addMessage()
         }
         surfaceView.holder.addCallback(object:SurfaceHolder.Callback{
             override fun surfaceChanged(holder: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
@@ -44,9 +43,6 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
         })
 //        textureView.surfaceTextureListener = this
     }
-
-    external fun addMessage()
-    external fun stop()
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
     }
@@ -75,14 +71,13 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
         super.onDestroy()
         processor?.release()
         processor = null
-        stop()
     }
 
     companion object {
         init {
             System.loadLibrary("hwvcom")
             System.loadLibrary("hwvc_render")
-            System.loadLibrary("hwvc_test")
+            System.loadLibrary("hwvc_native")
         }
     }
 }

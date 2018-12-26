@@ -1,4 +1,4 @@
-package com.lmy.samplenative.processor
+package com.lmy.hwvc_native.processor
 
 import android.view.Surface
 

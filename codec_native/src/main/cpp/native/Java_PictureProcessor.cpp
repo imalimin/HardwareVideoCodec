@@ -15,7 +15,7 @@ static PictureProcessor *getHandler(jlong handler) {
     return reinterpret_cast<PictureProcessor *>(handler);
 }
 
-JNIEXPORT jlong JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_create
+JNIEXPORT jlong JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_create
         (JNIEnv *env, jobject thiz) {
     if (!processor) {
         return reinterpret_cast<jlong>(new PictureProcessor());
@@ -23,7 +23,7 @@ JNIEXPORT jlong JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_cre
     return reinterpret_cast<jlong>(processor);
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_prepare
+JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_prepare
         (JNIEnv *env, jobject thiz, jlong handler, jobject surface, jint width, jint height) {
     if (handler) {
         ANativeWindow *win = ANativeWindow_fromSurface(env, surface);
@@ -35,7 +35,7 @@ JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_prep
     }
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_show
+JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_show
         (JNIEnv *env, jobject thiz, jlong handler, jbyteArray rgba, jint width, jint height) {
     if (handler) {
         jbyte *pData = env->GetByteArrayElements(rgba, JNI_FALSE);
@@ -44,7 +44,7 @@ JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_show
     }
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_samplenative_processor_PictureProcessor_release
+JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_release
         (JNIEnv *env, jobject thiz, jlong handler) {
     if (handler) {
         PictureProcessor *p = getHandler(handler);
