@@ -27,6 +27,8 @@ private:
     void initWindow(ANativeWindow *win);
 
     void draw(GLuint texture);
+
+    void setScaleType(int dw, int dh);
 };
 
 

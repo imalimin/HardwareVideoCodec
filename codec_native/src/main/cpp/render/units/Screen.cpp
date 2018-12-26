@@ -42,6 +42,7 @@ bool Screen::dispatch(Message *msg) {
             int width = msg->arg1;
             int height = msg->arg2;
             egl->makeCurrent();
+            setScaleType(width, height);
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);
             glTexParameterf(GL_TEXTURE_2D,
@@ -73,10 +74,45 @@ void Screen::initWindow(ANativeWindow *win) {
 }
 
 void Screen::draw(GLuint texture) {
-    LOGE("%d x %d, %d x %d", width, height, egl->width(), egl->height());
     glViewport(0, 0, egl->width(), egl->height());
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
     drawer->draw(texture);
     egl->swapBuffers();
+}
+
+void Screen::setScaleType(int dw, int dh) {
+    int viewWidth = egl->width();
+    int viewHeight = egl->height();
+    float viewScale = viewWidth / (float) viewHeight;
+    float picScale = dw / (float) dh;
+
+    int destViewWidth = viewWidth;
+    int destViewHeight = viewHeight;
+    if (viewScale > picScale) {
+        destViewWidth = (int) (viewHeight * picScale);
+    } else {
+        destViewHeight = (int) (viewWidth / picScale);
+    }
+    float left = -destViewWidth / (float) viewWidth;
+    float right = -left;
+    float bottom = -destViewHeight / (float) viewHeight;
+    float top = -bottom;
+
+    float *texCoordinate = new float[8]{
+            0.0f, 0.0f,//LEFT,BOTTOM
+            1.0f, 0.0f,//RIGHT,BOTTOM
+            0.0f, 1.0f,//LEFT,TOP
+            1.0f, 1.0f//RIGHT,TOP
+    };
+    float *position = new float[8]{
+            left, bottom, //LEFT,BOTTOM
+            right, bottom, //RIGHT,BOTTOM
+            left, top, //LEFT,TOP
+            right, top//RIGHT,TOP
+    };
+
+    drawer->updateLocation(texCoordinate, position);
+    delete[]texCoordinate;
+    delete[]position;
 }
