@@ -7,10 +7,6 @@
 #include "../include/BaseDrawer.h"
 #include "log.h"
 
-#define COORDS_PER_VERTEX  2
-#define TEXTURE_COORDS_PER_VERTEX 2
-#define COORDS_BYTE_SIZE  COORDS_PER_VERTEX * 4 * 4
-
 BaseDrawer::BaseDrawer() {
     createVBOs();
 
@@ -108,17 +104,17 @@ GLuint BaseDrawer::createShader(GLenum type, string shader) {
 void BaseDrawer::enableVertex(GLuint posLoc, GLuint texLoc) {
     updateVBOs();
     if (enableVAO) {
-//        enableVAO(posLoc, texLoc);
+        _enableVAO(posLoc, texLoc);
         return;
     }
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glEnableVertexAttribArray(posLoc);
     glEnableVertexAttribArray(texLoc);
     //xy
-    glVertexAttribPointer(posLoc, COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(posLoc, COUNT_PER_VERTEX, GL_FLOAT, GL_FALSE, 0, 0);
     //st
-    glVertexAttribPointer(texLoc, TEXTURE_COORDS_PER_VERTEX, GL_FLOAT, GL_FALSE, 0,
-                          reinterpret_cast<const void *>(COORDS_BYTE_SIZE));
+    glVertexAttribPointer(texLoc, COUNT_PER_VERTEX, GL_FLOAT, GL_FALSE, 0,
+                          reinterpret_cast<const void *>(VERTEX_BYTE_SIZE));
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 }
 
@@ -142,22 +138,23 @@ void BaseDrawer::_enableVAO(GLuint posLoc, GLuint texLoc) {
 void BaseDrawer::updateVBOs() {
     if (!requestUpdateLocation) return;
     requestUpdateLocation = false;
+    rotateVertex(rotation);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, COORDS_BYTE_SIZE, position);
-    glBufferSubData(GL_ARRAY_BUFFER, COORDS_BYTE_SIZE, COORDS_BYTE_SIZE, texCoordinate);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, VERTEX_BYTE_SIZE, position);
+    glBufferSubData(GL_ARRAY_BUFFER, VERTEX_BYTE_SIZE, VERTEX_BYTE_SIZE, texCoordinate);
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 }
 
 void BaseDrawer::createVBOs() {
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, COORDS_BYTE_SIZE * 2, nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, VERTEX_BYTE_SIZE * 2, nullptr, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 }
 
 void BaseDrawer::updateLocation(float *texCoordinate, float *position) {
-    memcpy(this->texCoordinate, texCoordinate, COORDS_BYTE_SIZE);
-    memcpy(this->position, position, COORDS_BYTE_SIZE);
+    memcpy(this->texCoordinate, texCoordinate, VERTEX_BYTE_SIZE);
+    memcpy(this->position, position, VERTEX_BYTE_SIZE);
     requestUpdateLocation = true;
 }
 
@@ -167,4 +164,40 @@ GLint BaseDrawer::getAttribLocation(string name) {
 
 GLint BaseDrawer::getUniformLocation(string name) {
     return glGetUniformLocation(program, name.c_str());
+}
+
+void BaseDrawer::setRotation(int rotation) {
+    this->rotation = rotation;
+    this->requestUpdateLocation = true;
+}
+
+void BaseDrawer::rotateVertex(int rotation) {
+    int size = 0;
+    switch (rotation) {
+        case ROTATION_VERTICAL: {
+            size = 4 * 4;
+            float *tmp = new float[4];
+            memcpy(tmp, position, size);
+            memcpy(position, &position[4], size);
+            memcpy(&position[4], tmp, size);
+            delete[]tmp;
+            break;
+        }
+        case ROTATION_HORIZONTAL: {
+            size = 2 * 4;
+            int offset = 0;
+            float *tmp = new float[2];
+            memcpy(tmp, &position[offset], size);
+            memcpy(&position[offset], &position[offset + 2], size);
+            memcpy(&position[offset + 2], tmp, size);
+            offset = 4;
+            memcpy(tmp, &position[offset], size);
+            memcpy(&position[offset], &position[offset + 2], size);
+            memcpy(&position[offset + 2], tmp, size);
+            delete[]tmp;
+            break;
+        }
+        default:
+            break;
+    }
 }
