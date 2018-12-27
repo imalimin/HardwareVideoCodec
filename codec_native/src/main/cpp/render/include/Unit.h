@@ -18,6 +18,8 @@
 
 #define EVENT_IMAGE_SHOW 0x0010004
 
+#define EVENT_RENDER_FILTER 0x0010005
+
 class Unit : public Object {
 public:
     Unit();

@@ -66,7 +66,7 @@ void Image::show(string path) {
         return;
     }
     GLuint tex = texCenter->alloc(rgba, width, height);
-    Message *msg = new Message(EVENT_SCREEN_DRAW, nullptr);
+    Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
     msg->obj = new ObjectBox(new Size(width, height));
     msg->arg1 = tex;
     postEvent(msg);

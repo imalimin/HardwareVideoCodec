@@ -66,6 +66,8 @@ void Screen::initWindow(ANativeWindow *win) {
 }
 
 void Screen::draw(GLuint texture) {
+//    string glslVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
+//    LOGE("version: %s", glslVersion.c_str());
     glViewport(0, 0, egl->width(), egl->height());
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0, 0.0, 0.0, 0.0);

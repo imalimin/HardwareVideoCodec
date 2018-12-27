@@ -11,15 +11,23 @@
 #include "Size.h"
 #include <GLES2/gl2.h>
 
-class BaseTexture : public Object {
+class FrameBuffer : public Object {
 public:
-    BaseTexture(int w, int h);
+    FrameBuffer(int w, int h);
 
-    virtual ~BaseTexture();
+    virtual ~FrameBuffer();
 
     virtual int width();
 
     virtual int height();
+
+    GLuint getFrameTexture() {
+        return id;
+    }
+
+    GLuint getFrameBuffer() {
+        return fbo;
+    }
 
 private:
     Size *size = nullptr;

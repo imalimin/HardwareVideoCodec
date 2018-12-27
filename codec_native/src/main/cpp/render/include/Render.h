@@ -4,10 +4,12 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include "Unit.h"
 
 #ifndef HARDWAREVIDEOCODEC_RENDER_H
 #define HARDWAREVIDEOCODEC_RENDER_H
+
+#include "Unit.h"
+#include "Filter.h"
 
 class Render : public Unit {
 public:
@@ -15,13 +17,18 @@ public:
 
     virtual ~Render();
 
-//    void post();
+    virtual void release() override;
 
     bool dispatch(Message *msg) override;
 
+    void checkFilter(int width, int height);
+
+    void renderFilter(GLuint texture);
+
+    void renderScreen();
+
 private:
-//    EventPipeline *pipeline = nullptr;
-    int count = 0;
+    Filter *filter = nullptr;
 };
 
 

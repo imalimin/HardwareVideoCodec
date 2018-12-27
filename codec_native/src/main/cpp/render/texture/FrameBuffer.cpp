@@ -4,14 +4,14 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include "../include/BaseTexture.h"
+#include "../include/FrameBuffer.h"
 
-BaseTexture::BaseTexture(int w, int h) {
+FrameBuffer::FrameBuffer(int w, int h) {
     size = new Size(w, h);
     createTexture();
 }
 
-BaseTexture::~BaseTexture() {
+FrameBuffer::~FrameBuffer() {
     if (size) {
         delete size;
         size = nullptr;
@@ -24,7 +24,7 @@ BaseTexture::~BaseTexture() {
     }
 }
 
-void BaseTexture::createTexture() {
+void FrameBuffer::createTexture() {
     glGenTextures(1, &id);
     glGenFramebuffers(1, &fbo);
     glBindTexture(GL_TEXTURE_2D, id);
@@ -44,14 +44,14 @@ void BaseTexture::createTexture() {
     glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 }
 
-int BaseTexture::width() {
+int FrameBuffer::width() {
     if (size) {
         return size->width;
     }
     return 0;
 }
 
-int BaseTexture::height() {
+int FrameBuffer::height() {
     if (size) {
         return size->height;
     }

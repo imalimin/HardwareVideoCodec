@@ -6,26 +6,63 @@
  */
 #include <log.h>
 #include "../include/Render.h"
-
-//void Render::post() {
-//    pipeline->queueEvent([=] {
-//        ++count;
-//        LOGI("Handle %d", count);
-//    });
-//}
+#include "../include/NormalFilter.h"
+#include "../include/ObjectBox.h"
 
 Render::Render() {
     name = __func__;
-//    pipeline = new EventPipeline("Render");
 }
 
 Render::~Render() {
-//    if (nullptr != pipeline) {
-//        delete pipeline;
-//        pipeline = nullptr;
-//    }
+    LOGE("~Render");
+}
+
+void Render::release() {
+    Unit::release();
+    if (filter) {
+        delete filter;
+        filter = nullptr;
+    }
 }
 
 bool Render::dispatch(Message *msg) {
-    return Unit::dispatch(msg);
+    Unit::dispatch(msg);
+    switch (msg->what) {
+        case EVENT_COMMON_PREPARE: {
+            return true;
+        }
+        case EVENT_COMMON_RELEASE: {
+            release();
+            return true;
+        }
+        case EVENT_RENDER_FILTER: {
+            Size *size = static_cast<Size *>(msg->tyrUnBox());
+            checkFilter(size->width, size->height);
+            renderFilter(msg->arg1);
+            renderScreen();
+            delete size;
+            return true;
+        }
+        default:
+            break;
+    }
+    return false;
+}
+
+void Render::checkFilter(int width, int height) {
+    if (!filter) {
+        filter = new NormalFilter(width, height);
+    }
+}
+
+void Render::renderFilter(GLuint texture) {
+    filter->draw(texture);
+}
+
+void Render::renderScreen() {
+    Message *msg = new Message(EVENT_SCREEN_DRAW, nullptr);
+    msg->obj = new ObjectBox(new Size(filter->getFrameBuffer()->width(),
+                                      filter->getFrameBuffer()->height()));
+    msg->arg1 = filter->getFrameBuffer()->getFrameTexture();
+    postEvent(msg);
 }
