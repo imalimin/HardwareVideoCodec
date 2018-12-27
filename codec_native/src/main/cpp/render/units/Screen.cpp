@@ -79,6 +79,7 @@ void Screen::initWindow(ANativeWindow *win) {
         egl = new Egl(win);
         egl->makeCurrent();
         drawer = new NormalDrawer();
+        drawer->setRotation(ROTATION_VERTICAL);
     }
 }
 
@@ -118,7 +119,7 @@ void Screen::setScaleType(int dw, int dh) {
             left, bottom, //LEFT,BOTTOM
             right, bottom, //RIGHT,BOTTOM
             left, top, //LEFT,TOP
-            right, top//RIGHT,TOP
+            right, top,//RIGHT,TOP
     };
 
     drawer->updateLocation(texCoordinate, position);
