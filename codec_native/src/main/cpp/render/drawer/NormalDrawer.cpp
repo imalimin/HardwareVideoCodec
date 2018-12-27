@@ -26,12 +26,17 @@ static const string FRAGMENT = SHADER(
         }
 );
 
-NormalDrawer::NormalDrawer() : BaseDrawer() {
+NormalDrawer::NormalDrawer() : NormalDrawer(VERTEX, FRAGMENT) {
+}
+
+NormalDrawer::NormalDrawer(string vertex, string fragment) {
+    this->vertex = vertex;
+    this->fragment = fragment;
     init();
 }
 
 GLuint NormalDrawer::getProgram() {
-    return createProgram(VERTEX, FRAGMENT);
+    return createProgram(this->vertex, this->fragment);
 }
 
 NormalDrawer::~NormalDrawer() {
