@@ -26,15 +26,11 @@ static const string FRAGMENT = SHADER(
         }
 );
 
-NormalDrawer::NormalDrawer() {
-    program = getProgram();
-    aPositionLocation = static_cast<GLuint>(getAttribLocation("aPosition"));
-    uTextureLocation = getUniformLocation("uTexture");
-    aTextureCoordinateLocation = static_cast<GLuint>(getAttribLocation("aTextureCoord"));
+NormalDrawer::NormalDrawer() : BaseDrawer() {
+    init();
 }
 
 GLuint NormalDrawer::getProgram() {
-    LOGE("NormalDrawer::getProgram");
     return createProgram(VERTEX, FRAGMENT);
 }
 

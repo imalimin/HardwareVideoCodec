@@ -34,6 +34,8 @@ public:
 
     virtual ~BaseDrawer();
 
+    virtual void init();
+
     virtual void draw(GLuint texture);
 
     virtual GLuint createProgram(string vertex, string fragment);

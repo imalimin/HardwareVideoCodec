@@ -8,6 +8,20 @@
 #include "log.h"
 
 BaseDrawer::BaseDrawer() {
+}
+
+BaseDrawer::~BaseDrawer() {
+    glDeleteBuffers(1, &vbo);
+    if (GL_NONE != program)
+        glDeleteProgram(program);
+    delete[]position;
+    delete[]texCoordinate;
+//    if (GL_NONE != vao) {
+//        GLES30.glDeleteVertexArrays(1, &vao);
+//    }
+}
+
+void BaseDrawer::init() {
     createVBOs();
 
     float *texCoordinate = new float[8]{
@@ -25,17 +39,10 @@ BaseDrawer::BaseDrawer() {
     updateLocation(texCoordinate, position);
     delete[]texCoordinate;
     delete[]position;
-}
-
-BaseDrawer::~BaseDrawer() {
-    glDeleteBuffers(1, &vbo);
-    if (GL_NONE != program)
-        glDeleteProgram(program);
-    delete[]position;
-    delete[]texCoordinate;
-//    if (GL_NONE != vao) {
-//        GLES30.glDeleteVertexArrays(1, &vao);
-//    }
+    program = getProgram();
+    aPositionLocation = static_cast<GLuint>(getAttribLocation("aPosition"));
+    uTextureLocation = getUniformLocation("uTexture");
+    aTextureCoordinateLocation = static_cast<GLuint>(getAttribLocation("aTextureCoord"));
 }
 
 void BaseDrawer::draw(GLuint texture) {
