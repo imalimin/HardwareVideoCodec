@@ -7,6 +7,7 @@
 #include "../include/Egl.h"
 #include "log.h"
 
+//eglGetProcAddress( "eglPresentationTimeANDROID")
 Egl::Egl() {
     init(EGL_NO_CONTEXT, nullptr);
 }
