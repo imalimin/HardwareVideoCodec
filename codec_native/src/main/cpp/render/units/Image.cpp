@@ -48,20 +48,24 @@ bool Image::dispatch(Message *msg) {
 }
 
 void Image::show(string path) {
-    if (rgba) {
-        delete[]rgba;
-        rgba = nullptr;
-    }
-    int width = 0, height = 0;
-    bool ret = decoder->decodeFile(path, &rgba, &width, &height);
-    if (!ret || 0 == width || 0 == height) {
-        LOGE("Image decode %s failed", path.c_str());
-        return;
-    }
-    LOGI("Image decode(%d x %d) %s", width, height, path.c_str());
+    decode(path);
     Message *msg = new Message(EVENT_SCREEN_DRAW, nullptr);
     msg->obj = new ObjectBox(rgba);
     msg->arg1 = width;
     msg->arg2 = height;
     postEvent(msg);
+}
+
+bool Image::decode(string path) {
+    if (rgba) {
+        delete[]rgba;
+        rgba = nullptr;
+    }
+    bool ret = decoder->decodeFile(path, &rgba, &width, &height);
+    if (!ret || 0 == width || 0 == height) {
+        LOGE("Image decode %s failed", path.c_str());
+        return false;
+    }
+    LOGI("Image decode(%d x %d) %s", width, height, path.c_str());
+    return true;
 }

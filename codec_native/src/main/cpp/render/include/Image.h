@@ -23,9 +23,12 @@ public:
 
 private:
     JpegDecoder *decoder = nullptr;
+    int width = 0, height = 0;
     uint8_t *rgba = nullptr;
 
     void show(string path);
+
+    bool decode(string path);
 };
 
 
