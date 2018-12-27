@@ -58,6 +58,7 @@ public:
     void setUniform1f(GLint location, float value);
 
 protected:
+    bool programUsed = false;
     bool enableVAO = false;
     GLuint program = GL_NONE;
     GLint uTextureLocation = GL_NONE;

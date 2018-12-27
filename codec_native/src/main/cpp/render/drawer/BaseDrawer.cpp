@@ -56,11 +56,15 @@ void BaseDrawer::draw(GLuint texture) {
     glDisableVertexAttribArray(aTextureCoordinateLocation);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
     glUseProgram(GL_NONE);
+    programUsed = false;
 //    glFlush();
 }
 
 void BaseDrawer::useProgram() {
+    if (programUsed)
+        return;
     glUseProgram(program);
+    programUsed = true;
 }
 
 GLuint BaseDrawer::createProgram(string vertex, string fragment) {
