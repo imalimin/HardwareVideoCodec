@@ -58,6 +58,7 @@ bool Render::eventRelease(Message *msg) {
 bool Render::eventFilter(Message *msg) {
     Size *size = static_cast<Size *>(msg->tyrUnBox());
     checkFilter(size->width, size->height);
+    glViewport(0, 0, size->width, size->height);
     renderFilter(msg->arg1);
     renderScreen();
     delete size;
