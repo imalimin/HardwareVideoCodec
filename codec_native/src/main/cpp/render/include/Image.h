@@ -19,9 +19,13 @@ public:
 
     virtual ~Image();
 
-    bool dispatch(Message *msg) override;
-
     virtual void release() override;
+
+    bool eventPrepare(Message *msg);
+
+    bool eventRelease(Message *msg);
+
+    bool eventShow(Message *msg);
 
 private:
     JpegDecoder *decoder = nullptr;

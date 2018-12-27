@@ -15,9 +15,13 @@ public:
 
     virtual ~Screen();
 
-    bool dispatch(Message *msg) override;
-
     virtual void release() override;
+
+    bool eventPrepare(Message *msg);
+
+    bool eventRelease(Message *msg);
+
+    bool eventDraw(Message *msg);
 
 private:
     Egl *egl = nullptr;

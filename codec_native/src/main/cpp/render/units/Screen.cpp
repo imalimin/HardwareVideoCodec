@@ -8,6 +8,9 @@
 
 Screen::Screen() {
     name = __func__;
+    registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Screen::eventPrepare));
+    registerEvent(EVENT_COMMON_RELEASE, reinterpret_cast<EventFunc>(&Screen::eventRelease));
+    registerEvent(EVENT_SCREEN_DRAW, reinterpret_cast<EventFunc>(&Screen::eventDraw));
 }
 
 Screen::~Screen() {
@@ -30,30 +33,24 @@ void Screen::release() {
     LOGE("EVENT_PIPELINE_RELEASE");
 }
 
-bool Screen::dispatch(Message *msg) {
-    Unit::dispatch(msg);
-    switch (msg->what) {
-        case EVENT_COMMON_PREPARE: {
-            width = msg->arg1;
-            height = msg->arg2;
-            initWindow(static_cast<ANativeWindow *>(msg->tyrUnBox()));
-            return true;
-        }
-        case EVENT_SCREEN_DRAW: {
-            Size *size = static_cast<Size *>(msg->tyrUnBox());
-            egl->makeCurrent();
-            setScaleType(size->width, size->height);
-            draw(msg->arg1);
-            return true;
-        }
-        case EVENT_COMMON_RELEASE: {
-            release();
-            return true;
-        }
-        default:
-            break;
-    }
-    return false;
+bool Screen::eventPrepare(Message *msg) {
+    width = msg->arg1;
+    height = msg->arg2;
+    initWindow(static_cast<ANativeWindow *>(msg->tyrUnBox()));
+    return true;
+}
+
+bool Screen::eventRelease(Message *msg) {
+    release();
+    return true;
+}
+
+bool Screen::eventDraw(Message *msg) {
+    Size *size = static_cast<Size *>(msg->tyrUnBox());
+    egl->makeCurrent();
+    setScaleType(size->width, size->height);
+    draw(msg->arg1);
+    return true;
 }
 
 void Screen::initWindow(ANativeWindow *win) {

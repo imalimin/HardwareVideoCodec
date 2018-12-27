@@ -11,6 +11,9 @@
 
 Render::Render() {
     name = __func__;
+    registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Render::eventPrepare));
+    registerEvent(EVENT_COMMON_RELEASE, reinterpret_cast<EventFunc>(&Render::eventRelease));
+    registerEvent(EVENT_RENDER_FILTER, reinterpret_cast<EventFunc>(&Render::eventFilter));
 }
 
 Render::~Render() {
@@ -23,30 +26,6 @@ void Render::release() {
         delete filter;
         filter = nullptr;
     }
-}
-
-bool Render::dispatch(Message *msg) {
-    Unit::dispatch(msg);
-    switch (msg->what) {
-        case EVENT_COMMON_PREPARE: {
-            return true;
-        }
-        case EVENT_COMMON_RELEASE: {
-            release();
-            return true;
-        }
-        case EVENT_RENDER_FILTER: {
-            Size *size = static_cast<Size *>(msg->tyrUnBox());
-            checkFilter(size->width, size->height);
-            renderFilter(msg->arg1);
-            renderScreen();
-            delete size;
-            return true;
-        }
-        default:
-            break;
-    }
-    return false;
 }
 
 void Render::checkFilter(int width, int height) {
@@ -65,4 +44,22 @@ void Render::renderScreen() {
                                       filter->getFrameBuffer()->height()));
     msg->arg1 = filter->getFrameBuffer()->getFrameTexture();
     postEvent(msg);
+}
+
+bool Render::eventPrepare(Message *msg) {
+    return true;
+}
+
+bool Render::eventRelease(Message *msg) {
+    release();
+    return true;
+}
+
+bool Render::eventFilter(Message *msg) {
+    Size *size = static_cast<Size *>(msg->tyrUnBox());
+    checkFilter(size->width, size->height);
+    renderFilter(msg->arg1);
+    renderScreen();
+    delete size;
+    return true;
 }

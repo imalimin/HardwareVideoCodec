@@ -10,6 +10,9 @@
 
 Image::Image() {
     name = __func__;
+    registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Image::eventPrepare));
+    registerEvent(EVENT_COMMON_RELEASE, reinterpret_cast<EventFunc>(&Image::eventRelease));
+    registerEvent(EVENT_IMAGE_SHOW, reinterpret_cast<EventFunc>(&Image::eventShow));
     decoder = new JpegDecoder();
     pDecoder = new PngDecoder();
 }
@@ -38,29 +41,6 @@ void Image::release() {
     }
 }
 
-bool Image::dispatch(Message *msg) {
-    Unit::dispatch(msg);
-    switch (msg->what) {
-        case EVENT_COMMON_PREPARE: {
-            texCenter = new TextureCenter();
-            break;
-        }
-        case EVENT_IMAGE_SHOW: {
-            char *path = static_cast<char *>(msg->tyrUnBox());
-            show(path);
-            delete[]path;
-            return true;
-        }
-        case EVENT_COMMON_RELEASE: {
-            release();
-            return true;
-        }
-        default:
-            break;
-    }
-    return Unit::dispatch(msg);
-}
-
 void Image::show(string path) {
     if (!decode(path)) {
         return;
@@ -87,5 +67,22 @@ bool Image::decode(string path) {
         return false;
     }
     LOGI("Image decode(%d x %d) %s", width, height, path.c_str());
+    return true;
+}
+
+bool Image::eventPrepare(Message *msg) {
+    texCenter = new TextureCenter();
+    return true;
+}
+
+bool Image::eventRelease(Message *msg) {
+    release();
+    return true;
+}
+
+bool Image::eventShow(Message *msg) {
+    char *path = static_cast<char *>(msg->tyrUnBox());
+    show(path);
+    delete[]path;
     return true;
 }

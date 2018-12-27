@@ -10,6 +10,9 @@
 #include "Object.h"
 #include "MainPipeline.h"
 #include "Message.h"
+#include <map>
+
+using namespace std;
 
 #define EVENT_COMMON_PREPARE 0x0010001
 #define EVENT_COMMON_RELEASE 0x0010002
@@ -20,6 +23,21 @@
 
 #define EVENT_RENDER_FILTER 0x0010005
 
+typedef bool (Unit::*EventFunc)(Message *);
+
+class Event : public Object {
+public:
+    Event(int what, EventFunc handler);
+
+    virtual ~Event();
+
+    bool dispatch(Unit *unit, Message *msg);
+
+protected:
+    int what = 0;
+    EventFunc handler;
+};
+
 class Unit : public Object {
 public:
     Unit();
@@ -28,13 +46,15 @@ public:
 
     virtual void setController(MainPipeline *pipeline);
 
+    bool registerEvent(int what, EventFunc handler);
+
+    virtual void release();
+
     /**
      * @msg 事件消息
      * @return true:我可以处理这个事件，false:无法处理这个事件
      */
-    virtual bool dispatch(Message *msg);
-
-    virtual void release();
+    bool dispatch(Message *msg);
 
 protected:
     string name;
@@ -42,6 +62,7 @@ protected:
     void postEvent(Message *msg);
 
 private:
+    map<int, Event *> eventMap;
     MainPipeline *pipeline = nullptr;
 };
 

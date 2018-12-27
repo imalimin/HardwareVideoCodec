@@ -19,13 +19,17 @@ public:
 
     virtual void release() override;
 
-    bool dispatch(Message *msg) override;
-
     void checkFilter(int width, int height);
 
     void renderFilter(GLuint texture);
 
     void renderScreen();
+
+    bool eventPrepare(Message *msg);
+
+    bool eventRelease(Message *msg);
+
+    bool eventFilter(Message *msg);
 
 private:
     Filter *filter = nullptr;

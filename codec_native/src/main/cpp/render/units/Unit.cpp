@@ -5,16 +5,39 @@
 #include "../include/Unit.h"
 #include "log.h"
 
-Unit::Unit() {
-
+Event::Event(int what, EventFunc handler) {
+    this->what = what;
+    this->handler = handler;
 }
 
-Unit::~Unit() {
+Event::~Event() {
+    this->what = 0;
+    this->handler = nullptr;
+}
+
+bool Event::dispatch(Unit *unit, Message *msg) {
+    return (unit->*handler)(msg);
+}
+
+Unit::Unit() {
     name = __func__;
 }
 
-void Unit::release() {
+Unit::~Unit() {
+//    release();
+}
 
+void Unit::release() {
+    if (eventMap.empty()) return;
+    for (auto itr = eventMap.rbegin(); itr != eventMap.rend(); itr++) {
+//        delete itr->second;
+    }
+    eventMap.clear();
+}
+
+bool Unit::registerEvent(int what, EventFunc handler) {
+    eventMap.insert(pair<int, Event *>(what, new Event(what, handler)));
+    return true;
 }
 
 void Unit::setController(MainPipeline *pipeline) {
@@ -30,5 +53,9 @@ void Unit::postEvent(Message *msg) {
 }
 
 bool Unit::dispatch(Message *msg) {
+    auto itr = eventMap.find(msg->what);
+    if (eventMap.end() != itr) {
+        return itr->second->dispatch(this, msg);
+    }
     return false;
 }
