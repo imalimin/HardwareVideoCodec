@@ -10,6 +10,7 @@
 #include "Unit.h"
 #include "BaseDrawer.h"
 #include "JpegDecoder.h"
+#include "PngDecoder.h"
 #include "TextureCenter.h"
 
 class Image : public Unit {
@@ -24,6 +25,7 @@ public:
 
 private:
     JpegDecoder *decoder = nullptr;
+    PngDecoder *pDecoder = nullptr;
     TextureCenter *texCenter = nullptr;
     int width = 0, height = 0;
     uint8_t *rgba = nullptr;

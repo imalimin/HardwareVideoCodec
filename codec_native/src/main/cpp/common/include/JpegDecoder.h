@@ -8,8 +8,8 @@
 #define HARDWAREVIDEOCODEC_JPEGDECODER_H
 
 #include <string>
-#include <fstream>
 #include "Object.h"
+#include "FileUtils.h"
 #include "libjpeg-turbo/jpeglib.h"
 #include "libjpeg-turbo/turbojpeg.h"
 
@@ -21,12 +21,10 @@ public:
 
     virtual ~JpegDecoder();
 
-    bool decodeFile(string file, uint8_t **rgb, int *width, int *height);
+    int decodeFile(string file, uint8_t **rgb, int *width, int *height);
 
 private:
     tjhandle handle;
-
-    unsigned long readFile(string file, uint8_t **buffer);
 };
 
 

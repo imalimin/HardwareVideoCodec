@@ -3,9 +3,10 @@ project(hwvcom)
 
 set(PREBUILD_STATIC "${PROJECT_SOURCE_DIR}/prebuild/static/${ANDROID_ABI}")
 
-include_directories(
-        ${local_src}/include/libjpeg-turbo
-)
+#include_directories(
+#        ${local_src}/include/libjpeg-turbo
+#        ${local_src}/include/libpng
+#)
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
@@ -36,6 +37,16 @@ set_target_properties(
         PROPERTIES IMPORTED_LOCATION
         "${PREBUILD_STATIC}/libturbojpeg.a")
 
+#libpng16
+add_library(
+        libpng
+        STATIC
+        IMPORTED)
+set_target_properties(
+        libpng
+        PROPERTIES IMPORTED_LOCATION
+        "${PREBUILD_STATIC}/libpng.a")
+
 #------------------STATIC END----------------------
 
 file(
@@ -45,6 +56,7 @@ file(
         ${PROJECT_SOURCE_DIR}/entity/*.cpp
         ${PROJECT_SOURCE_DIR}/thread/*.cpp
         ${PROJECT_SOURCE_DIR}/decoder/*.cpp
+        ${PROJECT_SOURCE_DIR}/utils/*.cpp
 )
 add_library(
         hwvcom
@@ -56,9 +68,16 @@ find_library(
         log-lib
         log)
 
+# libpng需要zlib依赖
+find_library(
+        zlib
+        z)
+
 target_link_libraries(
         hwvcom
         libjpeg
         libturbojpeg
+        libpng
+        ${zlib}
         ${log-lib}
 )

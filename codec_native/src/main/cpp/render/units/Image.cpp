@@ -11,6 +11,7 @@
 Image::Image() {
     name = __func__;
     decoder = new JpegDecoder();
+    pDecoder = new PngDecoder();
 }
 
 Image::~Image() {
@@ -19,6 +20,10 @@ Image::~Image() {
 
 void Image::release() {
     Unit::release();
+    if (pDecoder) {
+        delete pDecoder;
+        pDecoder = nullptr;
+    }
     if (decoder) {
         delete decoder;
         decoder = nullptr;
@@ -72,7 +77,11 @@ bool Image::decode(string path) {
         delete[]rgba;
         rgba = nullptr;
     }
-    bool ret = decoder->decodeFile(path, &rgba, &width, &height);
+    int ret = 0;
+    ret = pDecoder->decodeFile(path, &rgba, &width, &height);
+    if (ret <= 0) {
+        ret = decoder->decodeFile(path, &rgba, &width, &height);
+    }
     if (!ret || 0 == width || 0 == height) {
         LOGE("Image decode %s failed", path.c_str());
         return false;

@@ -14,11 +14,11 @@ JpegDecoder::~JpegDecoder() {
     tjDestroy(handle);
 }
 
-bool JpegDecoder::decodeFile(string file, uint8_t **rgb, int *width, int *height) {
+int JpegDecoder::decodeFile(string file, uint8_t **rgb, int *width, int *height) {
     uint8_t *buffer;
     unsigned long length = readFile(file, &buffer);
     if (0 == length) {
-        return false;
+        return 0;
     }
 
     int subsample, colorspace;
@@ -31,18 +31,5 @@ bool JpegDecoder::decodeFile(string file, uint8_t **rgb, int *width, int *height
     *rgb = new uint8_t[(*width) * (*height) * channels];
     tjDecompress2(handle, buffer, length, *rgb, *width, 0, *height, fmt, flags);
     delete[]buffer;
-    return true;
-}
-
-unsigned long JpegDecoder::readFile(string file, uint8_t **buffer) {
-    ifstream infile;
-    infile.open(file.data());
-    if (!infile.is_open()) return 0;
-
-    infile.seekg(0, ios::end);
-    unsigned long length = static_cast<unsigned long>(infile.tellg());
-    infile.seekg(0, ios::beg);
-    *buffer = new uint8_t[length];
-    infile.read(reinterpret_cast<char *>(*buffer), length);
-    return length;
+    return 1;
 }

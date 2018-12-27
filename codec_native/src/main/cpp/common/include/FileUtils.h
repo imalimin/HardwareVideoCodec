@@ -14,6 +14,8 @@ using namespace std;
 
 unsigned long readFile(string file, uint8_t **buffer);
 
+unsigned long readStream(ifstream &infile, uint8_t **buffer);
+
 class FileUtils {
 
 };
