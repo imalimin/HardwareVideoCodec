@@ -24,7 +24,12 @@ void Filter::draw(GLuint texture) {
     if (!fbo || !drawer)
         return;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->getFrameBuffer());
+    drawer->useProgram();
+    bindResources();
     drawer->draw(texture);
     glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+}
+
+void Filter::bindResources() {
 
 }

@@ -22,6 +22,8 @@ public:
 
     virtual void draw(GLuint texture);
 
+    virtual void bindResources();
+
     FrameBuffer *getFrameBuffer() {
         return fbo;
     }
