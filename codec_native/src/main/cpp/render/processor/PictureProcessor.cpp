@@ -10,8 +10,8 @@
 PictureProcessor::PictureProcessor() {
     pipeline = new MainPipeline(__func__);
     pipeline->registerAnUnit(new Render());
-    pipeline->registerAnUnit(new Image());
     pipeline->registerAnUnit(new Screen());
+    pipeline->registerAnUnit(new Image());
 }
 
 PictureProcessor::~PictureProcessor() {

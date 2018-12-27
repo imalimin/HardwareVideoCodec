@@ -45,7 +45,6 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_show
         const char *pFile = env->GetStringUTFChars(file, JNI_FALSE);
         char *path = new char[len];
         memcpy(path, pFile, len);
-        LOGE("show %s, %d", path, len);
         getHandler(handler)->show(path);
         env->ReleaseStringUTFChars(file, pFile);
     }

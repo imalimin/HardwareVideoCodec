@@ -43,8 +43,8 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     }
 
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-        processor?.prepare(Surface(surface), width, height)
-        processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
+//        processor?.prepare(Surface(surface), width, height)
+//        processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
     }
 
     override fun onDestroy() {

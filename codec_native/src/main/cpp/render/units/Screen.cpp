@@ -4,6 +4,7 @@
 
 #include "../include/Screen.h"
 #include "../include/NormalDrawer.h"
+#include "Size.h"
 
 Screen::Screen() {
     name = __func__;
@@ -17,10 +18,6 @@ void Screen::release() {
     Unit::release();
     if (egl) {
         egl->makeCurrent();
-    }
-    if (texture) {
-        glDeleteTextures(1, &texture);
-        texture = GL_NONE;
     }
     if (drawer) {
         delete drawer;
@@ -43,25 +40,10 @@ bool Screen::dispatch(Message *msg) {
             return true;
         }
         case EVENT_SCREEN_DRAW: {
-            uint8_t *rgba = static_cast<uint8_t *>(msg->tyrUnBox());
-            int width = msg->arg1;
-            int height = msg->arg2;
+            Size *size = static_cast<Size *>(msg->tyrUnBox());
             egl->makeCurrent();
-            setScaleType(width, height);
-            glGenTextures(1, &texture);
-            glBindTexture(GL_TEXTURE_2D, texture);
-            glTexParameterf(GL_TEXTURE_2D,
-                            GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameterf(GL_TEXTURE_2D,
-                            GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameterf(GL_TEXTURE_2D,
-                            GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameterf(GL_TEXTURE_2D,
-                            GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                         rgba);
-            glBindTexture(GL_TEXTURE_2D, GL_NONE);
-            draw(texture);
+            setScaleType(size->width, size->height);
+            draw(msg->arg1);
             return true;
         }
         case EVENT_COMMON_RELEASE: {

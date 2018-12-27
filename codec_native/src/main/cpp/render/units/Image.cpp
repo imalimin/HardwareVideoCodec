@@ -6,6 +6,7 @@
  */
 #include "../include/Image.h"
 #include "ObjectBox.h"
+#include "Size.h"
 
 Image::Image() {
     name = __func__;
@@ -22,6 +23,10 @@ void Image::release() {
         delete decoder;
         decoder = nullptr;
     }
+    if (texCenter) {
+        delete texCenter;
+        texCenter = nullptr;
+    }
     if (rgba) {
         delete[]rgba;
         rgba = nullptr;
@@ -31,6 +36,10 @@ void Image::release() {
 bool Image::dispatch(Message *msg) {
     Unit::dispatch(msg);
     switch (msg->what) {
+        case EVENT_COMMON_PREPARE: {
+            texCenter = new TextureCenter();
+            break;
+        }
         case EVENT_IMAGE_SHOW: {
             char *path = static_cast<char *>(msg->tyrUnBox());
             show(path);
@@ -48,11 +57,13 @@ bool Image::dispatch(Message *msg) {
 }
 
 void Image::show(string path) {
-    decode(path);
+    if (!decode(path)) {
+        return;
+    }
+    GLuint tex = texCenter->alloc(rgba, width, height);
     Message *msg = new Message(EVENT_SCREEN_DRAW, nullptr);
-    msg->obj = new ObjectBox(rgba);
-    msg->arg1 = width;
-    msg->arg2 = height;
+    msg->obj = new ObjectBox(new Size(width, height));
+    msg->arg1 = tex;
     postEvent(msg);
 }
 
