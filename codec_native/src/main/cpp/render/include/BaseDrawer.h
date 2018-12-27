@@ -42,16 +42,20 @@ public:
 
     virtual GLuint getProgram() = 0;
 
-    GLint getAttribLocation(string name);
-
-    GLint getUniformLocation(string name);
-
     void updateLocation(float *texCoordinate, float *position);
 
     /**
     * 通过改变顶点坐标，达到旋转到目的
     */
     void setRotation(int rotation);
+
+    void useProgram();
+
+    GLint getAttribLocation(string name);
+
+    GLint getUniformLocation(string name);
+
+    void setUniform1f(GLint location, float value);
 
 protected:
     bool enableVAO = false;

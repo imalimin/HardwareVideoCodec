@@ -46,7 +46,7 @@ void BaseDrawer::init() {
 }
 
 void BaseDrawer::draw(GLuint texture) {
-    glUseProgram(program);
+    useProgram();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glUniform1i(uTextureLocation, 0);
@@ -57,6 +57,10 @@ void BaseDrawer::draw(GLuint texture) {
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
     glUseProgram(GL_NONE);
 //    glFlush();
+}
+
+void BaseDrawer::useProgram() {
+    glUseProgram(program);
 }
 
 GLuint BaseDrawer::createProgram(string vertex, string fragment) {
@@ -207,4 +211,8 @@ void BaseDrawer::rotateVertex(int rotation) {
         default:
             break;
     }
+}
+
+void BaseDrawer::setUniform1f(GLint location, float value) {
+    glUniform1f(location, value);
 }
