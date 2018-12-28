@@ -12,29 +12,21 @@ HandlerThread::HandlerThread(string name) {
     thread = new Thread(name, [this]() {
         while (this->thread->isRunning()) {
             Message *msg = this->take();
+            int size = this->size();
             if (this->requestQuit && !this->requestQuitSafely) {
                 LOGI("requestQuit, %ld, %ld", msg, this->thread);
                 break;
             }
             if (nullptr == msg) {
                 this->pop();
-                LOGI("take null, %ld, %ld", msg, this->thread);
                 continue;
             }
             msg->runnable(msg);
-            this->pop();
-            if (this->requestQuitSafely && 0 == this->size()) {
+            if (this->requestQuitSafely && size <= 1) {
                 LOGI("requestQuitSafely");
                 break;
             }
-        }
-        if (this->queue) {
-            delete this->queue;
-            this->queue = nullptr;
-        }
-        if (this->thread) {
-            delete this->thread;
-            this->thread = nullptr;
+            this->pop();
         }
     });
     thread->start();
@@ -71,11 +63,17 @@ void HandlerThread::pop() {
 
 void HandlerThread::quit() {
     this->requestQuit = true;
-    if (nullptr != thread) {
-        thread->interrupt();
-    }
     if (nullptr != queue) {
         queue->notify();
+    }
+    if (nullptr != thread) {
+        thread->interrupt();
+        delete thread;
+        thread = nullptr;
+    }
+    if (this->queue) {
+        delete this->queue;
+        this->queue = nullptr;
     }
 }
 

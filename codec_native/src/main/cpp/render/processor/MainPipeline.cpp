@@ -10,11 +10,15 @@ MainPipeline::MainPipeline(string name) {
 }
 
 MainPipeline::~MainPipeline() {
+    Message *msg = new Message(EVENT_COMMON_RELEASE, nullptr);
+    postEvent(msg);
+    if (pipeline) {
+        delete pipeline;
+        pipeline = nullptr;
+    }
 }
 
 void MainPipeline::release() {
-    Message *msg = new Message(EVENT_COMMON_RELEASE, nullptr);
-    postEvent(msg);
 }
 
 void MainPipeline::postEvent(Message *msg1) {
@@ -45,10 +49,6 @@ void MainPipeline::clear() {
         delete unit;
     }
     units.clear();
-    if (pipeline) {
-        delete pipeline;
-        pipeline = nullptr;
-    }
 }
 
 int MainPipeline::registerAnUnit(Unit *unit) {

@@ -18,6 +18,7 @@ PictureProcessor::PictureProcessor() {
 PictureProcessor::~PictureProcessor() {
     if (pipeline) {
         pipeline->release();
+        delete pipeline;
         pipeline = nullptr;
     }
 }

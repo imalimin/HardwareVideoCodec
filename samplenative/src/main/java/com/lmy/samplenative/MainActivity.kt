@@ -2,6 +2,7 @@ package com.lmy.samplenative
 
 import android.graphics.SurfaceTexture
 import android.os.Environment
+import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.TextureView
@@ -23,6 +24,9 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
             }
 
             override fun surfaceDestroyed(p0: SurfaceHolder?) {
+                processor?.release()
+                processor = null
+                Log.i("00000", "surfaceDestroyed")
             }
 
             override fun surfaceCreated(holder: SurfaceHolder) {
@@ -40,6 +44,8 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     }
 
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
+//                processor?.release()
+//                processor = null
         this.surface?.release()
         return true
     }
@@ -52,8 +58,6 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        processor?.release()
-        processor = null
     }
 
     companion object {
