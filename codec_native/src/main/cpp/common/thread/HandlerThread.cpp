@@ -9,28 +9,28 @@
 
 HandlerThread::HandlerThread(string name) {
     queue = new MessageQueue();
-    thread = new Thread(name, [=]() {
-        while (HandlerThread::thread->isRunning()) {
-            Message *msg = HandlerThread::take();
-            if (HandlerThread::thread->interrupted()) {
-                LOGI("take interrupted, %ld, %ld", msg, HandlerThread::thread);
+    thread = new Thread(name, [this]() {
+        while (this->thread->isRunning()) {
+            Message *msg = this->take();
+            if (this->thread->interrupted()) {
+                LOGI("take interrupted, %ld, %ld", msg, this->thread);
                 break;
             }
             if (nullptr == msg) {
                 HandlerThread::pop();
-                LOGI("take null, %ld, %ld", msg, HandlerThread::thread);
+                LOGI("take null, %ld, %ld", msg, this->thread);
                 continue;
             }
             msg->runnable(msg);
-            HandlerThread::pop();
-            if (HandlerThread::requestQuitSafely && 0 == HandlerThread::size()) {
-                HandlerThread::quit();
+            this->pop();
+            if (this->requestQuitSafely && 0 == this->size()) {
+                this->quit();
             }
         }
         LOGI("take 6");
-        if (nullptr != HandlerThread::queue) {
-            delete HandlerThread::queue;
-            HandlerThread::queue = nullptr;
+        if (nullptr != this->queue) {
+            delete this->queue;
+            this->queue = nullptr;
         }
     });
     thread->start();

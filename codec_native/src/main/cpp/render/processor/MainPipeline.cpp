@@ -20,16 +20,16 @@ MainPipeline::~MainPipeline() {
     units.clear();
 }
 
-void MainPipeline::postEvent(Message *msg) {
+void MainPipeline::postEvent(Message *msg1) {
     if (pipeline) {
-        msg->runnable = [=](Message *msg) {
+        msg1->runnable = [this](Message *msg2) {
             /**
              * @NOTE 不置空的话会出现不可预料的崩溃
              */
-            msg->runnable = nullptr;
-            dispatch(msg);
+            msg2->runnable = nullptr;
+            this->dispatch(msg2);
         };
-        pipeline->sendMessage(msg);
+        pipeline->sendMessage(msg1);
     }
 }
 
