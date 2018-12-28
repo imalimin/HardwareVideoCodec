@@ -2,18 +2,18 @@
 // Created by mingyi.li on 2018/12/27.
 //
 
-#include "../include/TextureCenter.h"
+#include "../include/TextureAllocator.h"
 #include "ObjectBox.h"
 #include "log.h"
 
-TextureCenter::TextureCenter() {
+TextureAllocator::TextureAllocator() {
 }
 
-TextureCenter::~TextureCenter() {
+TextureAllocator::~TextureAllocator() {
     clear();
 }
 
-GLuint TextureCenter::alloc() {
+GLuint TextureAllocator::alloc() {
     GLuint texture = GL_NONE;
     glGenTextures(1, &texture);
     if (GL_NONE == texture)
@@ -32,7 +32,7 @@ GLuint TextureCenter::alloc() {
     return texture;
 }
 
-GLuint TextureCenter::alloc(uint8_t *rgba, int width, int height) {
+GLuint TextureAllocator::alloc(uint8_t *rgba, int width, int height) {
     GLuint texture = alloc();
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -41,10 +41,10 @@ GLuint TextureCenter::alloc(uint8_t *rgba, int width, int height) {
     return texture;
 }
 
-void TextureCenter::recycle(GLuint texture) {
+void TextureAllocator::recycle(GLuint texture) {
     for (auto itr = textures.cbegin(); itr != textures.cend(); itr++) {
         if (GL_NONE != *itr && texture == *itr) {
-            LOGI("TextureCenter %s %d", __func__, *itr);
+            LOGI("TextureAllocator %s %d", __func__, *itr);
             glDeleteTextures(1, &texture);
             textures.erase(itr);
             break;
@@ -52,10 +52,11 @@ void TextureCenter::recycle(GLuint texture) {
     }
 }
 
-void TextureCenter::clear() {
+void TextureAllocator::clear() {
     for (auto t:textures) {
         if (GL_NONE != t) {
             glDeleteTextures(1, &t);
+            t = GL_NONE;
         }
     }
     textures.clear();

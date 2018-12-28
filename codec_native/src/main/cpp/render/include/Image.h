@@ -11,7 +11,7 @@
 #include "BaseDrawer.h"
 #include "JpegDecoder.h"
 #include "PngDecoder.h"
-#include "TextureCenter.h"
+#include "TextureAllocator.h"
 
 class Image : public Unit {
 public:
@@ -28,7 +28,7 @@ public:
 private:
     JpegDecoder *decoder = nullptr;
     PngDecoder *pDecoder = nullptr;
-    TextureCenter *texCenter = nullptr;
+    TextureAllocator *texAllocator = nullptr;
     int width = 0, height = 0;
     uint8_t *rgba = nullptr;
 

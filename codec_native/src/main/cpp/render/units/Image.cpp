@@ -32,9 +32,9 @@ void Image::release() {
         delete decoder;
         decoder = nullptr;
     }
-    if (texCenter) {
-        delete texCenter;
-        texCenter = nullptr;
+    if (texAllocator) {
+        delete texAllocator;
+        texAllocator = nullptr;
     }
     if (rgba) {
         delete[]rgba;
@@ -46,7 +46,7 @@ void Image::show(string path) {
     if (!decode(path)) {
         return;
     }
-    GLuint tex = texCenter->alloc(rgba, width, height);
+    GLuint tex = texAllocator->alloc(rgba, width, height);
     Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
     msg->obj = new ObjectBox(new Size(width, height));
     msg->arg1 = tex;
@@ -72,7 +72,7 @@ bool Image::decode(string path) {
 }
 
 bool Image::eventPrepare(Message *msg) {
-    texCenter = new TextureCenter();
+    texAllocator = new TextureAllocator();
     return true;
 }
 

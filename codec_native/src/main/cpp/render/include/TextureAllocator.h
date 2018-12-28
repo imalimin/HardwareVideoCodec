@@ -11,11 +11,11 @@
 
 using namespace std;
 
-class TextureCenter : public Object {
+class TextureAllocator : public Object {
 public:
-    TextureCenter();
+    TextureAllocator();
 
-    virtual ~TextureCenter();
+    virtual ~TextureAllocator();
 
     GLuint alloc();
 

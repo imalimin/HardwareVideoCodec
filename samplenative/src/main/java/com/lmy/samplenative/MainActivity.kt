@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     private var processor: PictureProcessor? = PictureProcessor()
+    private var surface: Surface? = null
 
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
@@ -29,7 +30,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
                 processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
             }
         })
-//        textureView.surfaceTextureListener = this
+//        surfaceView.surfaceTextureListener = this
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
@@ -39,12 +40,14 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     }
 
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
+        this.surface?.release()
         return true
     }
 
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-//        processor?.prepare(Surface(surface), width, height)
-//        processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
+        this.surface = Surface(surface)
+        processor?.prepare(this.surface!!, width, height)
+        processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
     }
 
     override fun onDestroy() {
