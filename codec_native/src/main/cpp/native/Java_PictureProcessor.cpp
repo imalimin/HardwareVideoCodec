@@ -58,6 +58,15 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_rele
     }
 }
 
+JNIEXPORT void JNICALL Java_com_lmy_hwvc_1native_processor_PictureProcessor_setFilterParams
+        (JNIEnv *env, jobject thiz, jlong handler, jintArray params) {
+    if (handler) {
+        int *pParams = env->GetIntArrayElements(params, JNI_FALSE);
+        getHandler(handler)->setFilterParams(pParams);
+        env->ReleaseIntArrayElements(params, pParams, 0);
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif

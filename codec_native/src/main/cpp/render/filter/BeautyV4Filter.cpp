@@ -180,3 +180,7 @@ void BeautyV4Filter::bindResources() {
     drawer->setUniform1f(distanceLocation, distance);
     drawer->setUniform1f(brightnessLocation, brightness);
 }
+
+void BeautyV4Filter::setParam(int key, int value) {
+    Filter::setParam(key, value);
+}

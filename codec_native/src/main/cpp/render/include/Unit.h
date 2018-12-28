@@ -22,6 +22,7 @@ static const int EVENT_COMMON_RELEASE = 0x0010002;
 #define EVENT_IMAGE_SHOW 0x0010004
 
 #define EVENT_RENDER_FILTER 0x0010005
+#define EVENT_RENDER_FILTER_PARAMS 0x0010006
 
 typedef bool (Unit::*EventFunc)(Message *);
 

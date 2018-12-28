@@ -19,6 +19,10 @@ public:
 
     void show(char *file);
 
+    void setFilter();
+
+    void setFilterParams(int *params);
+
 private:
     MainPipeline *pipeline = nullptr;
 };

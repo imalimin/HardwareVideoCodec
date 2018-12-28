@@ -12,6 +12,8 @@
 
 using namespace std;
 
+const int FILTER_NONE = 0;
+
 class Filter : public Object {
 public:
     string name;
@@ -27,6 +29,10 @@ public:
     FrameBuffer *getFrameBuffer() {
         return fbo;
     }
+
+    virtual void setParams(int *params);
+
+    virtual void setParam(int key, int value);
 
 protected:
     BaseDrawer *drawer = nullptr;

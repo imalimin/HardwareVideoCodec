@@ -25,9 +25,13 @@ public:
 
     void renderScreen();
 
+    void setFilterParams(int *params);
+
     bool eventPrepare(Message *msg);
 
     bool eventFilter(Message *msg);
+
+    bool eventFilterParams(Message *msg);
 
 private:
     Filter *filter = nullptr;

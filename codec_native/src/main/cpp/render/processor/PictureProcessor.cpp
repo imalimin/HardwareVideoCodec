@@ -39,3 +39,15 @@ void PictureProcessor::show(char *path) {
     msg->obj = new ObjectBox(path);
     pipeline->postEvent(msg);
 }
+
+
+void PictureProcessor::setFilter() {
+
+}
+
+void PictureProcessor::setFilterParams(int *params) {
+    if (!pipeline) return;
+    Message *msg = new Message(EVENT_RENDER_FILTER_PARAMS, nullptr);
+    msg->obj = new ObjectBox(params);
+    pipeline->postEvent(msg);
+}

@@ -9,6 +9,9 @@
 
 #include "Filter.h"
 
+const int FILTER_BRIGHT = 100;
+const int FILTER_TEXEL_OFFSET = FILTER_BRIGHT + 1;
+const int FILTER_SMOOTH = FILTER_BRIGHT + 2;
 
 class BeautyV4Filter : public Filter {
 public:
@@ -17,6 +20,8 @@ public:
     virtual ~BeautyV4Filter();
 
     void bindResources() override;
+
+    void setParam(int key, int value) override;
 
 private:
     GLuint texelWidthOffsetLocation = 0;

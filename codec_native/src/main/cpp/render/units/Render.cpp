@@ -6,13 +6,15 @@
  */
 #include <log.h>
 #include "../include/Render.h"
-#include "../include/NormalFilter.h"
+#include "../include/BeautyV4Filter.h"
 #include "../include/ObjectBox.h"
 
 Render::Render() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Render::eventPrepare));
     registerEvent(EVENT_RENDER_FILTER, reinterpret_cast<EventFunc>(&Render::eventFilter));
+    registerEvent(EVENT_RENDER_FILTER_PARAMS,
+                  reinterpret_cast<EventFunc>(&Render::eventFilterParams));
 }
 
 Render::~Render() {
@@ -31,7 +33,7 @@ void Render::release() {
 
 void Render::checkFilter(int width, int height) {
     if (!filter) {
-        filter = new NormalFilter(width, height);
+        filter = new BeautyV4Filter(width, height);
     }
 }
 
@@ -47,6 +49,12 @@ void Render::renderScreen() {
     postEvent(msg);
 }
 
+void Render::setFilterParams(int *params) {
+    if (filter) {
+        filter->setParams(params);
+    }
+}
+
 bool Render::eventPrepare(Message *msg) {
     return true;
 }
@@ -58,5 +66,11 @@ bool Render::eventFilter(Message *msg) {
     renderFilter(msg->arg1);
     renderScreen();
     delete size;
+    return true;
+}
+
+bool Render::eventFilterParams(Message *msg) {
+    int *params = static_cast<int *>(msg->tyrUnBox());
+    setFilterParams(params);
     return true;
 }

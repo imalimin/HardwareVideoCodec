@@ -24,8 +24,14 @@ class PictureProcessor {
         handler = 0
     }
 
+    fun setFilterParams(params: IntArray) {
+        if (0L == handler) return
+        setFilterParams(handler, params)
+    }
+
     private external fun create(): Long
     private external fun prepare(handler: Long, surface: Surface, width: Int, height: Int)
     private external fun show(handler: Long, file: String)
+    private external fun setFilterParams(handler: Long, params: IntArray)
     private external fun release(handler: Long)
 }
