@@ -47,14 +47,16 @@ void TextureCenter::recycle(GLuint texture) {
             LOGI("TextureCenter %s %d", __func__, *itr);
             glDeleteTextures(1, &texture);
             textures.erase(itr);
+            break;
         }
     }
 }
 
 void TextureCenter::clear() {
-    for (auto itr = textures.cbegin(); itr != textures.cend(); itr++) {
-        LOGI("TextureCenter %s %d", __func__, *itr);
-        glDeleteTextures(1, reinterpret_cast<const GLuint *>(*itr));
-        textures.erase(itr);
+    for (auto t:textures) {
+        if (GL_NONE != t) {
+            glDeleteTextures(1, &t);
+        }
     }
+    textures.clear();
 }
