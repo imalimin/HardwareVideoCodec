@@ -12,16 +12,17 @@
 Render::Render() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Render::eventPrepare));
-    registerEvent(EVENT_COMMON_RELEASE, reinterpret_cast<EventFunc>(&Render::eventRelease));
     registerEvent(EVENT_RENDER_FILTER, reinterpret_cast<EventFunc>(&Render::eventFilter));
 }
 
 Render::~Render() {
-    LOGE("~Render");
+    release();
+    LOGI("Render::~Render");
 }
 
 void Render::release() {
     Unit::release();
+    LOGI("Render::release");
     if (filter) {
         delete filter;
         filter = nullptr;
@@ -47,11 +48,6 @@ void Render::renderScreen() {
 }
 
 bool Render::eventPrepare(Message *msg) {
-    return true;
-}
-
-bool Render::eventRelease(Message *msg) {
-    release();
     return true;
 }
 

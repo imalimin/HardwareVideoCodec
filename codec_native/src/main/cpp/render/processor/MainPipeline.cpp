@@ -10,14 +10,11 @@ MainPipeline::MainPipeline(string name) {
 }
 
 MainPipeline::~MainPipeline() {
-    if (pipeline) {
-        delete pipeline;
-        pipeline = nullptr;
-    }
-//    for (auto itr = units.cbegin(); itr != units.cend(); itr++) {
-//        delete *itr;
-//    }
-    units.clear();
+}
+
+void MainPipeline::release() {
+    Message *msg = new Message(EVENT_COMMON_RELEASE, nullptr);
+    postEvent(msg);
 }
 
 void MainPipeline::postEvent(Message *msg1) {
@@ -36,6 +33,21 @@ void MainPipeline::postEvent(Message *msg1) {
 void MainPipeline::dispatch(Message *msg) {
     for (auto itr = units.cbegin(); itr != units.cend(); itr++) {
         bool ret = (*itr)->dispatch(msg);
+    }
+    if (EVENT_COMMON_RELEASE == msg->what) {
+        clear();
+    }
+}
+
+void MainPipeline::clear() {
+    LOGI("MainPipeline::clear units");
+    for (auto unit:units) {
+        delete unit;
+    }
+    units.clear();
+    if (pipeline) {
+        delete pipeline;
+        pipeline = nullptr;
     }
 }
 

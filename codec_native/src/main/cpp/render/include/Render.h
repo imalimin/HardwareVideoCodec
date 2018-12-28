@@ -27,8 +27,6 @@ public:
 
     bool eventPrepare(Message *msg);
 
-    bool eventRelease(Message *msg);
-
     bool eventFilter(Message *msg);
 
 private:

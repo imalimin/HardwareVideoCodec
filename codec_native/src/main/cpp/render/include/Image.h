@@ -23,8 +23,6 @@ public:
 
     bool eventPrepare(Message *msg);
 
-    bool eventRelease(Message *msg);
-
     bool eventShow(Message *msg);
 
 private:

@@ -24,11 +24,15 @@ public:
 
     int registerAnUnit(Unit *unit);
 
+    void release();
+
 private:
     HandlerThread *pipeline = nullptr;
     vector<Unit *> units;
 
     void dispatch(Message *msg);
+
+    void clear();
 };
 
 

@@ -11,6 +11,7 @@ Event::Event(int what, EventFunc handler) {
 }
 
 Event::~Event() {
+    LOGE("~Event");
     this->what = 0;
     this->handler = nullptr;
 }
@@ -28,6 +29,7 @@ Unit::~Unit() {
 }
 
 void Unit::release() {
+    LOGI("Unit::release");
     if (eventMap.empty()) return;
     for (auto itr = eventMap.rbegin(); itr != eventMap.rend(); itr++) {
 //        delete itr->second;

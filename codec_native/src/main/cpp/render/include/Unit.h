@@ -14,8 +14,8 @@
 
 using namespace std;
 
+static const int EVENT_COMMON_RELEASE = 0x0010002;
 #define EVENT_COMMON_PREPARE 0x0010001
-#define EVENT_COMMON_RELEASE 0x0010002
 
 #define EVENT_SCREEN_DRAW 0x0010003
 

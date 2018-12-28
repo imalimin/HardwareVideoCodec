@@ -9,16 +9,17 @@
 Screen::Screen() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Screen::eventPrepare));
-    registerEvent(EVENT_COMMON_RELEASE, reinterpret_cast<EventFunc>(&Screen::eventRelease));
     registerEvent(EVENT_SCREEN_DRAW, reinterpret_cast<EventFunc>(&Screen::eventDraw));
 }
 
 Screen::~Screen() {
-    LOGE("~Screen");
+    release();
+    LOGI("Screen::~Screen");
 }
 
 void Screen::release() {
     Unit::release();
+    LOGI("Screen::release");
     if (egl) {
         egl->makeCurrent();
     }
@@ -30,18 +31,12 @@ void Screen::release() {
         delete egl;
         egl = nullptr;
     }
-    LOGE("EVENT_PIPELINE_RELEASE");
 }
 
 bool Screen::eventPrepare(Message *msg) {
     width = msg->arg1;
     height = msg->arg2;
     initWindow(static_cast<ANativeWindow *>(msg->tyrUnBox()));
-    return true;
-}
-
-bool Screen::eventRelease(Message *msg) {
-    release();
     return true;
 }
 

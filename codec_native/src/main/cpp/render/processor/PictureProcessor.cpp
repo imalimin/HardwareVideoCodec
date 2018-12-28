@@ -9,16 +9,15 @@
 
 PictureProcessor::PictureProcessor() {
     pipeline = new MainPipeline(__func__);
-    pipeline->registerAnUnit(new Render());
-    pipeline->registerAnUnit(new Screen());
     pipeline->registerAnUnit(new Image());
+    pipeline->registerAnUnit(new Render());
+    //注意顺序问题，包含EGL环境的模块放到最后，因为要最后释放
+    pipeline->registerAnUnit(new Screen());
 }
 
 PictureProcessor::~PictureProcessor() {
     if (pipeline) {
-        Message *msg = new Message(EVENT_COMMON_RELEASE, nullptr);
-        pipeline->postEvent(msg);
-        delete pipeline;
+        pipeline->release();
         pipeline = nullptr;
     }
 }

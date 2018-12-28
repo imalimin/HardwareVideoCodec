@@ -19,8 +19,6 @@ public:
 
     bool eventPrepare(Message *msg);
 
-    bool eventRelease(Message *msg);
-
     bool eventDraw(Message *msg);
 
 private:
