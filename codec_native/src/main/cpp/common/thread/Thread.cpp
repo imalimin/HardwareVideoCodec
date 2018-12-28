@@ -10,11 +10,11 @@
 
 static void *run(void *arg) {
     Thread *thread = static_cast<Thread *>(arg);
-    LOGI("Thread(%ld) start", (long) thread);
+    LOGI("Thread(%ld) start", pthread_self());
     thread->runnable();
     thread->runnable = nullptr;
     thread->stop();
-    LOGI("Thread(%ld) stop", (long) thread);
+    LOGI("Thread(%ld) stop", pthread_self());
     return nullptr;
 }
 
