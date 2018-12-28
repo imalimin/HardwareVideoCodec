@@ -12,23 +12,23 @@ HandlerThread::HandlerThread(string name) {
     thread = new Thread(name, [this]() {
         while (this->thread->isRunning()) {
             Message *msg = this->take();
-            if (this->thread->interrupted()) {
-                LOGI("take interrupted, %ld, %ld", msg, this->thread);
+            if (this->requestQuit && !this->requestQuitSafely) {
+                LOGI("requestQuit, %ld, %ld", msg, this->thread);
                 break;
             }
             if (nullptr == msg) {
-                HandlerThread::pop();
+                this->pop();
                 LOGI("take null, %ld, %ld", msg, this->thread);
                 continue;
             }
             msg->runnable(msg);
             this->pop();
             if (this->requestQuitSafely && 0 == this->size()) {
-                this->quit();
+                LOGI("requestQuitSafely");
+                break;
             }
         }
-        LOGI("take 6");
-        if (nullptr != this->queue) {
+        if (this->queue) {
             delete this->queue;
             this->queue = nullptr;
         }
@@ -80,9 +80,8 @@ void HandlerThread::quit() {
 }
 
 void HandlerThread::quitSafely() {
-    if (0 == size()) {
-        quit();
-    } else {
+    if (0 != size()) {
         this->requestQuitSafely = true;
     }
+    quit();
 }
