@@ -32,6 +32,10 @@ HandlerThread::HandlerThread(string name) {
             delete this->queue;
             this->queue = nullptr;
         }
+        if (this->thread) {
+            delete this->thread;
+            this->thread = nullptr;
+        }
     });
     thread->start();
 }
