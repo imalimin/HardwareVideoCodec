@@ -38,18 +38,14 @@ void Filter::bindResources() {
 void Filter::setParams(int *params) {
     LOGE("%s", __func__);
     if (nullptr == params) return;
-    int size = sizeof(params) / sizeof(int);
-    LOGE("Filter::setParams size=%d", size);
-    if (0 == size || 1 != size % 2) return;
     int key = FILTER_NONE;
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0;; ++i) {
         if (0 == i % 2) {
             key = params[i];
             if (FILTER_NONE == params[i]) return;
         } else {
             setParam(key, params[i]);
         }
-
     }
 }
 

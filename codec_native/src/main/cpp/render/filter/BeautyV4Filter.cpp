@@ -183,4 +183,20 @@ void BeautyV4Filter::bindResources() {
 
 void BeautyV4Filter::setParam(int key, int value) {
     Filter::setParam(key, value);
+    switch (key) {
+        case FILTER_BRIGHT: {
+            this->brightness = value / 100 * 0.2f;
+            break;
+        }
+        case FILTER_SMOOTH: {
+            this->params = value / 100 * 2.0f;
+            break;
+        }
+        case FILTER_TEXEL_OFFSET: {
+            this->distance = value / 100 * 10.0f;
+            break;
+        }
+        default:
+            break;
+    }
 }

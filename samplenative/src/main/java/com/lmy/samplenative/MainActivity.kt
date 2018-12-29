@@ -17,9 +17,9 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
         addBtn.setOnClickListener {
-            processor?.setFilterParams(intArrayOf(100, 1,
-                    101, 2,
-                    102, 3,
+            processor?.setFilterParams(intArrayOf(100, 100,
+                    101, 100,
+                    102, 100,
                     0))
         }
         surfaceView.keepScreenOn = true

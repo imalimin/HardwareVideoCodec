@@ -12,6 +12,7 @@ Image::Image() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Image::eventPrepare));
     registerEvent(EVENT_IMAGE_SHOW, reinterpret_cast<EventFunc>(&Image::eventShow));
+    registerEvent(EVENT_COMMON_INVALIDATE, reinterpret_cast<EventFunc>(&Image::eventInvalidate));
     decoder = new JpegDecoder();
     pDecoder = new PngDecoder();
 }
@@ -46,11 +47,8 @@ void Image::show(string path) {
     if (!decode(path)) {
         return;
     }
-    GLuint tex = texAllocator->alloc(rgba, width, height);
-    Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
-    msg->obj = new ObjectBox(new Size(width, height));
-    msg->arg1 = tex;
-    postEvent(msg);
+    tex = texAllocator->alloc(rgba, width, height);
+    eventInvalidate(nullptr);
 }
 
 bool Image::decode(string path) {
@@ -80,5 +78,15 @@ bool Image::eventShow(Message *msg) {
     char *path = static_cast<char *>(msg->tyrUnBox());
     show(path);
     delete[]path;
+    return true;
+}
+
+bool Image::eventInvalidate(Message *m) {
+    if (GL_NONE != tex) {
+        Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
+        msg->obj = new ObjectBox(new Size(width, height));
+        msg->arg1 = tex;
+        postEvent(msg);
+    }
     return true;
 }

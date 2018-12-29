@@ -25,12 +25,15 @@ public:
 
     bool eventShow(Message *msg);
 
+    bool eventInvalidate(Message *msg);
+
 private:
     JpegDecoder *decoder = nullptr;
     PngDecoder *pDecoder = nullptr;
     TextureAllocator *texAllocator = nullptr;
     int width = 0, height = 0;
     uint8_t *rgba = nullptr;
+    GLuint tex;
 
     void show(string path);
 

@@ -14,15 +14,16 @@
 
 using namespace std;
 
-static const int EVENT_COMMON_RELEASE = 0x0010002;
-#define EVENT_COMMON_PREPARE 0x0010001
+static const int EVENT_COMMON_RELEASE = 0x0010000;
+static const int EVENT_COMMON_PREPARE = 0x0010001;
+static const int EVENT_COMMON_INVALIDATE = 0x0010002;
 
-#define EVENT_SCREEN_DRAW 0x0010003
+static const int EVENT_SCREEN_DRAW = 0x0040000;
 
-#define EVENT_IMAGE_SHOW 0x0010004
+static const int EVENT_IMAGE_SHOW = 0x0020000;
 
-#define EVENT_RENDER_FILTER 0x0010005
-#define EVENT_RENDER_FILTER_PARAMS 0x0010006
+static const int EVENT_RENDER_FILTER = 0x0030000;
+static const int EVENT_RENDER_FILTER_PARAMS = 0x0030001;
 
 typedef bool (Unit::*EventFunc)(Message *);
 
