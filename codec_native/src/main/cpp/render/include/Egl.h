@@ -17,6 +17,7 @@ const int CONFIG_DEFAULT[] = {EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
                               EGL_ALPHA_SIZE, 8,
                               EGL_DEPTH_SIZE, 0,
                               EGL_STENCIL_SIZE, 0,
+                              EGL_SAMPLES, 4,
                               EGL_NONE};
 
 class Egl : public Object {

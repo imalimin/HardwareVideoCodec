@@ -43,7 +43,6 @@ void Filter::bindResources() {
 }
 
 void Filter::setParams(int *params) {
-    LOGE("%s", __func__);
     if (nullptr == params) return;
     int key = FILTER_NONE;
     for (int i = 0;; ++i) {

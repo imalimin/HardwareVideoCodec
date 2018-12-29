@@ -2,9 +2,11 @@ package com.lmy.hwvcnative.processor
 
 import android.view.Surface
 import com.lmy.hwvcnative.CPPObject
+import com.lmy.hwvcnative.FilterSupport
 import com.lmy.hwvcnative.filter.Filter
 
-class PictureProcessor : CPPObject() {
+class PictureProcessor : CPPObject(), FilterSupport {
+    private var filter: Filter? = null
 
     init {
         handler = create()
@@ -25,12 +27,17 @@ class PictureProcessor : CPPObject() {
         handler = 0
     }
 
-    fun setFilter(filter: Filter) {
+    override fun setFilter(filter: Filter) {
         if (0L == handler) return
+        this.filter = filter
         setFilter(handler, filter.handler)
     }
 
-    fun invalidate() {
+    override fun getFilter(): Filter? {
+        return this.filter
+    }
+
+    override fun invalidate() {
         if (0L == handler) return
         invalidate(handler)
     }

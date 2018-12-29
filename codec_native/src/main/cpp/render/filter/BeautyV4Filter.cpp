@@ -6,6 +6,7 @@
  */
 #include "../include/BeautyV4Filter.h"
 #include "../include/NormalDrawer.h"
+#include "log.h"
 
 static const string VERTEX = SHADER(
         attribute vec4 aPosition;
@@ -191,15 +192,15 @@ void BeautyV4Filter::setParam(int key, int value) {
     Filter::setParam(key, value);
     switch (key) {
         case FILTER_BRIGHT: {
-            this->brightness = value / 100 * 0.2f;
+            this->brightness = value / 100.0f * 0.2f;
             break;
         }
         case FILTER_SMOOTH: {
-            this->params = value / 100 * 2.0f;
+            this->params = value / 100.0f * 2.0f;
             break;
         }
         case FILTER_TEXEL_OFFSET: {
-            this->distance = value / 100 * 10.0f;
+            this->distance = value / 100.0f * 10.0f;
             break;
         }
         default:
