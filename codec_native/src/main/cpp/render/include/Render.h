@@ -31,6 +31,8 @@ public:
 
     bool eventFilter(Message *msg);
 
+    bool eventSetFilter(Message *msg);
+
     bool eventFilterParams(Message *msg);
 
 private:

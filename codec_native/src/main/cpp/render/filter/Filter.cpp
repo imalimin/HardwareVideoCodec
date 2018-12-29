@@ -20,8 +20,12 @@ Filter::~Filter() {
     }
 }
 
-void Filter::init(int w, int h) {
+bool Filter::init(int w, int h) {
+    if (initted)
+        return false;
     fbo = new FrameBuffer(w, h);
+    initted = true;
+    return true;
 }
 
 void Filter::draw(GLuint texture) {

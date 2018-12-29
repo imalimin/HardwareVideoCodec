@@ -22,7 +22,7 @@ public:
 
     virtual ~Filter();
 
-    virtual void init(int w, int h);
+    virtual bool init(int w, int h);
 
     virtual void draw(GLuint texture);
 
@@ -40,6 +40,7 @@ protected:
     BaseDrawer *drawer = nullptr;
 private:
     FrameBuffer *fbo = nullptr;
+    bool initted = false;
 
 };
 

@@ -13,6 +13,9 @@ NormalFilter::~NormalFilter() {
 
 }
 
-void NormalFilter::init(int w, int h) {
+bool NormalFilter::init(int w, int h) {
+    if (!Filter::init(w, h))
+        return false;
     drawer = new NormalDrawer();
+    return true;
 }

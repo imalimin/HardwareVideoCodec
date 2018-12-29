@@ -19,7 +19,7 @@ public:
 
     virtual ~BeautyV4Filter();
 
-    void init(int w, int h) override;
+    bool init(int w, int h) override;
 
     void bindResources() override;
 

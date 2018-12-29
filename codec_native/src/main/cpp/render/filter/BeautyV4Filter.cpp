@@ -163,8 +163,9 @@ BeautyV4Filter::~BeautyV4Filter() {
 
 }
 
-void BeautyV4Filter::init(int w, int h) {
-    Filter::init(w, h);
+bool BeautyV4Filter::init(int w, int h) {
+    if (!Filter::init(w, h))
+        return false;
     texelWidthOffset = 1.6f / w;
     texelHeightOffset = 1.6f / h;
     drawer = new NormalDrawer(VERTEX, FRAGMENT);
@@ -175,6 +176,7 @@ void BeautyV4Filter::init(int w, int h) {
     distanceLocation = static_cast<GLuint>(drawer->getUniformLocation(
             "distanceNormalizationFactor"));
     brightnessLocation = static_cast<GLuint>(drawer->getUniformLocation("brightness"));
+    return true;
 }
 
 void BeautyV4Filter::bindResources() {

@@ -13,7 +13,7 @@ public:
 
     ~NormalFilter();
 
-    void init(int w, int h) override;
+    bool init(int w, int h) override;
 };
 
 

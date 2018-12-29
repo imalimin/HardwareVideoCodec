@@ -8,6 +8,7 @@
 #include "Object.h"
 #include "MainPipeline.h"
 #include "Screen.h"
+#include "Filter.h"
 
 class PictureProcessor : public Object {
 public:
@@ -19,7 +20,7 @@ public:
 
     void show(char *file);
 
-    void setFilter();
+    void setFilter(Filter *filter);
 
     void setFilterParams(int *params);
 
