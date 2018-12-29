@@ -11,6 +11,7 @@
 
 Render::Render() {
     name = __func__;
+    filter = new BeautyV4Filter();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Render::eventPrepare));
     registerEvent(EVENT_RENDER_FILTER, reinterpret_cast<EventFunc>(&Render::eventFilter));
     registerEvent(EVENT_RENDER_FILTER_PARAMS,
@@ -32,8 +33,8 @@ void Render::release() {
 }
 
 void Render::checkFilter(int width, int height) {
-    if (!filter) {
-        filter = new BeautyV4Filter(width, height);
+    if (filter) {
+        filter->init(width, height);
     }
 }
 

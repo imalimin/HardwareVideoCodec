@@ -15,9 +15,11 @@ const int FILTER_SMOOTH = FILTER_BRIGHT + 2;
 
 class BeautyV4Filter : public Filter {
 public:
-    BeautyV4Filter(int w, int h);
+    BeautyV4Filter();
 
     virtual ~BeautyV4Filter();
+
+    void init(int w, int h) override;
 
     void bindResources() override;
 

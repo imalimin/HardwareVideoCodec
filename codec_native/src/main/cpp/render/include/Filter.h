@@ -18,9 +18,11 @@ class Filter : public Object {
 public:
     string name;
 
-    Filter(int w, int h);
+    Filter();
 
     virtual ~Filter();
+
+    virtual void init(int w, int h);
 
     virtual void draw(GLuint texture);
 

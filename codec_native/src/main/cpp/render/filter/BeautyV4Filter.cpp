@@ -155,8 +155,16 @@ static const string FRAGMENT = SHADER(
         }
 );
 
-BeautyV4Filter::BeautyV4Filter(int w, int h) : Filter(w, h) {
+BeautyV4Filter::BeautyV4Filter() {
     name = __func__;
+}
+
+BeautyV4Filter::~BeautyV4Filter() {
+
+}
+
+void BeautyV4Filter::init(int w, int h) {
+    Filter::init(w, h);
     texelWidthOffset = 1.6f / w;
     texelHeightOffset = 1.6f / h;
     drawer = new NormalDrawer(VERTEX, FRAGMENT);
@@ -167,10 +175,6 @@ BeautyV4Filter::BeautyV4Filter(int w, int h) : Filter(w, h) {
     distanceLocation = static_cast<GLuint>(drawer->getUniformLocation(
             "distanceNormalizationFactor"));
     brightnessLocation = static_cast<GLuint>(drawer->getUniformLocation("brightness"));
-}
-
-BeautyV4Filter::~BeautyV4Filter() {
-
 }
 
 void BeautyV4Filter::bindResources() {

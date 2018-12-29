@@ -5,9 +5,8 @@
 #include "../include/Filter.h"
 #include "log.h"
 
-Filter::Filter(int w, int h) {
+Filter::Filter() {
     name = __func__;
-    fbo = new FrameBuffer(w, h);
 }
 
 Filter::~Filter() {
@@ -19,6 +18,10 @@ Filter::~Filter() {
         delete drawer;
         drawer = nullptr;
     }
+}
+
+void Filter::init(int w, int h) {
+    fbo = new FrameBuffer(w, h);
 }
 
 void Filter::draw(GLuint texture) {

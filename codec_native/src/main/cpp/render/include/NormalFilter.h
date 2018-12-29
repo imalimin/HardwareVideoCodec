@@ -9,9 +9,11 @@
 
 class NormalFilter : public Filter {
 public:
-    NormalFilter(int w, int h);
+    NormalFilter();
 
     ~NormalFilter();
+
+    void init(int w, int h) override;
 };
 
 

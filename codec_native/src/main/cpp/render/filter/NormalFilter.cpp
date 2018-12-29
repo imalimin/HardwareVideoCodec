@@ -5,11 +5,14 @@
 #include "../include/NormalFilter.h"
 #include "../include/NormalDrawer.h"
 
-NormalFilter::NormalFilter(int w, int h) : Filter(w, h) {
+NormalFilter::NormalFilter() {
     name = __func__;
-    drawer = new NormalDrawer();
 }
 
 NormalFilter::~NormalFilter() {
 
+}
+
+void NormalFilter::init(int w, int h) {
+    drawer = new NormalDrawer();
 }
