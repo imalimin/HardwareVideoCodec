@@ -1,0 +1,4 @@
+cmake_minimum_required(VERSION 3.4.1)
+set(CPP_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+add_subdirectory(${CPP_PATH}/common)
+add_subdirectory(${CPP_PATH}/render)
