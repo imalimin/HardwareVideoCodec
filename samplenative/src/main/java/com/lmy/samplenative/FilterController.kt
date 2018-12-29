@@ -11,6 +11,7 @@ import com.lmy.hwvcnative.FilterSupport
 import com.lmy.hwvcnative.filter.BeautyV4Filter
 import com.lmy.hwvcnative.filter.Filter
 import com.lmy.hwvcnative.filter.NormalFilter
+import com.lmy.hwvcnative.filter.PinkFilter
 import com.lmy.samplenative.adapter.OnRecyclerItemClickListener
 import com.lmy.samplenative.adapter.RecyclerAdapter
 import java.util.*
@@ -24,7 +25,7 @@ class FilterController(private val filterSupport: FilterSupport,
 
     companion object {
         private val FILTERS = arrayOf(
-                "Normal", "Beauty V4")
+                "Normal", "Beauty V4", "Pink")
     }
 
     private var oneBar: SeekBar = progressLayout.getChildAt(0) as SeekBar
@@ -91,6 +92,11 @@ class FilterController(private val filterSupport: FilterSupport,
                 oneBar.progress = 55
                 twoBar.progress = 25
                 thBar.progress = 15
+            }
+            2 -> {
+                filterSupport.setFilter(PinkFilter(arrayOf("sTexture2", "sTexture3"),
+                        arrayOf("textures/pink.png", "textures/pink.png")))
+                show(0)
             }
             else -> {
                 filterSupport.setFilter(NormalFilter())

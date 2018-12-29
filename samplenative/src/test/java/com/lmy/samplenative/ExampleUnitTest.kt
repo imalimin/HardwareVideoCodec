@@ -1,5 +1,6 @@
 package com.lmy.samplenative
 
+import com.lmy.hwvcnative.filter.PinkFilter
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -12,6 +13,10 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        System.loadLibrary("hwvcom")
+        System.loadLibrary("hwvc_render")
+        System.loadLibrary("hwvc_native")
+        PinkFilter(arrayOf("sTexture2", "sTexture3"),
+                arrayOf("textures/pink.png", "textures/pink.png"))
     }
 }

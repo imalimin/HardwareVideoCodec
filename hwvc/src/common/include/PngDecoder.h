@@ -19,6 +19,11 @@ public:
 
     virtual ~PngDecoder();
 
+
+    /**
+     *
+     * @return 0:failed, 1:success, -1:not png file
+     */
     int decodeFile(string path, uint8_t **rgba, int *width, int *height);
 
 private:
