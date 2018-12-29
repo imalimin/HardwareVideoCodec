@@ -6,7 +6,7 @@ import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.TextureView
-import com.lmy.hwvc_native.processor.PictureProcessor
+import com.lmy.hwvcnative.processor.PictureProcessor
 import kotlinx.android.synthetic.main.activity_main.*
 
 
