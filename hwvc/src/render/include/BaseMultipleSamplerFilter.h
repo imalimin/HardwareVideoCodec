@@ -15,17 +15,21 @@ using namespace std;
 
 class BaseMultipleSamplerFilter : public Filter {
 public:
-    BaseMultipleSamplerFilter(string *names, string *samplers, int size);
+    BaseMultipleSamplerFilter(char **names, char **samplers, int size);
 
     virtual ~BaseMultipleSamplerFilter();
 
     virtual bool init(int w, int h) override;
 
+    void bindResources() override;
+
     virtual BaseDrawer *getDrawer()=0;
 
+    void releaseStringArray(char **array, int size);
+
 private:
-    string *names = nullptr;
-    string *samplers = nullptr;
+    char **names = nullptr;
+    char **samplers = nullptr;
     int size = 0;
     GLuint *textures = nullptr;
     GLint *textureLocations = nullptr;

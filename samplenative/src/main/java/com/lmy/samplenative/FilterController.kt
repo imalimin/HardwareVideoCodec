@@ -1,6 +1,7 @@
 package com.lmy.samplenative
 
 import android.content.Context
+import android.os.Environment
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -94,8 +95,9 @@ class FilterController(private val filterSupport: FilterSupport,
                 thBar.progress = 15
             }
             2 -> {
-                filterSupport.setFilter(PinkFilter(arrayOf("sTexture2", "sTexture3"),
-                        arrayOf("textures/pink.png", "textures/pink.png")))
+                filterSupport.setFilter(PinkFilter(arrayOf("sTexture2"),
+                        arrayOf("${Environment.getExternalStorageDirectory().path}/hwvc/textures/pink.png")))
+                filterSupport.invalidate()
                 show(0)
             }
             else -> {

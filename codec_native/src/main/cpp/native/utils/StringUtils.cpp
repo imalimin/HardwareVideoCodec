@@ -9,16 +9,29 @@
 
 
 namespace StringUtils {
-    int jStringArray2StringArray(JNIEnv *env, jobjectArray jStringArray, string **array) {
+    char **jStringArray2StringArray(JNIEnv *env, jobjectArray jStringArray, int &size) {
         int len = env->GetArrayLength(jStringArray);
-//        *array = new string[len];
+        char **array = static_cast<char **>(malloc(sizeof(char **)));
+        *array = static_cast<char *>(malloc(sizeof(char *) * len));
         for (int i = 0; i < len; i++) {
             jstring obj = (jstring) env->GetObjectArrayElement(jStringArray, i);
+            int l = env->GetStringUTFLength(obj) + 1;
             const char *str = env->GetStringUTFChars(obj, NULL);
-//            *array[i] = str;
+            char *tmp = static_cast<char *>(malloc(sizeof(char) * l));
+            memcpy(tmp, str, l);
+            array[i] = tmp;
             env->ReleaseStringUTFChars(obj, str);
-            LOGI("jStringArray2StringArray: %s", str);
+//            LOGI("jStringArray2StringArray: %s", array[i]);
         }
-        return len;
+        size = len;
+        return array;
+    }
+
+    void releaseStringArray(char **array, int size) {
+        for (int i = 0; i < size; ++i) {
+            free(array[i]);
+            free(*array);
+            free(array);
+        }
     }
 }

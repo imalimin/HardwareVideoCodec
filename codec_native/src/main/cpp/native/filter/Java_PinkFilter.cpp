@@ -19,14 +19,10 @@ static PinkFilter *getHandler(jlong handler) {
 
 JNIEXPORT jlong JNICALL Java_com_lmy_hwvcnative_filter_PinkFilter_create
         (JNIEnv *env, jobject thiz, jobjectArray names, jobjectArray samplers) {
-    string *nameArray;
-    int size = StringUtils::jStringArray2StringArray(env, names, &nameArray);
-    for (int i = 0; i < size; ++i) {
-        LOGI("%s", nameArray[i].c_str());
-    }
+    int size = 0;
+    char **nameArray = StringUtils::jStringArray2StringArray(env, names, size);
 
-    string *samplerArray;
-    StringUtils::jStringArray2StringArray(env, samplers, &samplerArray);
+    char **samplerArray = StringUtils::jStringArray2StringArray(env, samplers, size);
 
     return reinterpret_cast<jlong>(new PinkFilter(nameArray, samplerArray, size));
 }

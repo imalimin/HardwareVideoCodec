@@ -11,7 +11,7 @@
 
 class PinkFilter : public BaseMultipleSamplerFilter {
 public:
-    PinkFilter(string *names, string *samplers, int size);
+    PinkFilter(char **names, char **samplers, int size);
 
     ~PinkFilter();
 

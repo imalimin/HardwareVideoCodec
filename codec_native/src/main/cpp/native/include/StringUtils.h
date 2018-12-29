@@ -13,7 +13,9 @@
 
 using namespace std;
 namespace StringUtils {
-    int jStringArray2StringArray(JNIEnv *env, jobjectArray jStringArray, string **array);
+    char **jStringArray2StringArray(JNIEnv *env, jobjectArray jStringArray, int &size);
+
+    void releaseStringArray(char **array, int size);
 }
 
 #endif //HARDWAREVIDEOCODEC_STRINGUTILS_H

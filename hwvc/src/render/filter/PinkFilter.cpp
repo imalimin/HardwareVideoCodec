@@ -57,7 +57,7 @@ static const string FRAGMENT = SHADER(
         }
 );
 
-PinkFilter::PinkFilter(string *names, string *samplers, int size)
+PinkFilter::PinkFilter(char **names, char **samplers, int size)
         : BaseMultipleSamplerFilter(names, samplers, size) {
     name = __func__;
 }

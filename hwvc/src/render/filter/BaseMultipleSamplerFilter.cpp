@@ -9,8 +9,8 @@
 #include "../include/NormalDrawer.h"
 #include "log.h"
 
-BaseMultipleSamplerFilter::BaseMultipleSamplerFilter(string *names, string *samplers, int size) {
-    assert(nullptr != names && nullptr != samplers && names->size() == samplers->size());
+BaseMultipleSamplerFilter::BaseMultipleSamplerFilter(char **names, char **samplers, int size) {
+    assert(nullptr != names && nullptr != samplers);
     this->names = names;
     this->samplers = samplers;
     this->size = size;
@@ -19,7 +19,7 @@ BaseMultipleSamplerFilter::BaseMultipleSamplerFilter(string *names, string *samp
 
 BaseMultipleSamplerFilter::~BaseMultipleSamplerFilter() {
     if (textures) {
-        glDeleteTextures(names->size(), textures);
+        glDeleteTextures(size, textures);
         delete[]textures;
         textures = nullptr;
     }
@@ -36,18 +36,23 @@ BaseMultipleSamplerFilter::~BaseMultipleSamplerFilter() {
 bool BaseMultipleSamplerFilter::init(int w, int h) {
     if (!Filter::init(w, h))
         return false;
-    drawer = getDrawer();
-    textures = new GLuint[names->size()];
-    textureLocations = new GLint[names->size()];
-    for (int i = 0; i < names->size(); ++i) {
-        textures[i] = loadTexture(samplers[i]);
-        textureLocations[i] = drawer->getUniformLocation(names[i]);
+    for (int i = 0; i < size; ++i) {
+        LOGI("BaseMultipleSamplerFilter: %s, %s", names[i], samplers[i]);
     }
+    drawer = getDrawer();
+    textures = new GLuint[size];
+    textureLocations = new GLint[size];
+    for (int i = 0; i < size; ++i) {
+        textures[i] = loadTexture(string((char *) samplers[i]));
+        textureLocations[i] = drawer->getUniformLocation(string((char *) names[i]));
+    }
+    releaseStringArray(names, size);
+    releaseStringArray(samplers, size);
     return true;
 }
 
 GLuint BaseMultipleSamplerFilter::loadTexture(string path) {
-    if (decoder) {
+    if (!decoder) {
         LOGE("Decoder is null");
         return GL_NONE;
     }
@@ -74,4 +79,25 @@ GLuint BaseMultipleSamplerFilter::loadTexture(string path) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
     return texture;
+}
+
+void BaseMultipleSamplerFilter::bindResources() {
+    Filter::bindResources();
+    /**
+     * GL_TEXTURE0为保留Sampler，给默认画面使用
+     */
+    for (int i = 0; i < size; ++i) {
+        int offset = i + 1;
+        glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + offset));
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        glUniform1i(textureLocations[i], offset);
+    }
+}
+
+void BaseMultipleSamplerFilter::releaseStringArray(char **array, int size) {
+    for (int i = 0; i < size; ++i) {
+        free(array[i]);
+        free(*array);
+        free(array);
+    }
 }
