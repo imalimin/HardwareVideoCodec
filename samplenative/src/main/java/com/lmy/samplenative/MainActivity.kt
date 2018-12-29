@@ -20,7 +20,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
             processor?.setFilterParams(intArrayOf(100, 100,
                     101, 100,
                     102, 100,
-                    0))
+                    2333))
         }
         surfaceView.keepScreenOn = true
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
