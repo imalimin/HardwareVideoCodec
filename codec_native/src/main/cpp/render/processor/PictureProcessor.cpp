@@ -47,11 +47,8 @@ void PictureProcessor::setFilter(Filter *filter) {
     pipeline->postEvent(msg);
 }
 
-void PictureProcessor::setFilterParams(int *params) {
+void PictureProcessor::invalidate() {
     if (!pipeline) return;
-    Message *msg = new Message(EVENT_RENDER_FILTER_PARAMS, nullptr);
-    msg->obj = new ObjectBox(params);
-    pipeline->postEvent(msg);
     Message *invalidateMsg = new Message(EVENT_COMMON_INVALIDATE, nullptr);
     pipeline->postEvent(invalidateMsg);
 }

@@ -9,6 +9,8 @@ file(
         GLOB
         SOURCES
         ${PROJECT_SOURCE_DIR}/*cpp
+        ${PROJECT_SOURCE_DIR}/filter/*cpp
+        ${PROJECT_SOURCE_DIR}/processor/*cpp
 )
 add_library( # Sets the name of the library.
         hwvc_native

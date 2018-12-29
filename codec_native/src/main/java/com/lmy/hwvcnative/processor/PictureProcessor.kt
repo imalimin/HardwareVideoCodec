@@ -1,9 +1,10 @@
 package com.lmy.hwvcnative.processor
 
 import android.view.Surface
+import com.lmy.hwvcnative.CPPObject
+import com.lmy.hwvcnative.filter.Filter
 
-class PictureProcessor {
-    private var handler: Long = 0
+class PictureProcessor : CPPObject() {
 
     init {
         handler = create()
@@ -24,14 +25,20 @@ class PictureProcessor {
         handler = 0
     }
 
-    fun setFilterParams(params: IntArray) {
+    fun setFilter(filter: Filter) {
         if (0L == handler) return
-        setFilterParams(handler, params)
+        setFilter(handler, filter.handler)
+    }
+
+    fun invalidate() {
+        if (0L == handler) return
+        invalidate(handler)
     }
 
     private external fun create(): Long
     private external fun prepare(handler: Long, surface: Surface, width: Int, height: Int)
     private external fun show(handler: Long, file: String)
-    private external fun setFilterParams(handler: Long, params: IntArray)
+    private external fun setFilter(handler: Long, filter: Long)
+    private external fun invalidate(handler: Long)
     private external fun release(handler: Long)
 }

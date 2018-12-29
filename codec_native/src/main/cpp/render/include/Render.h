@@ -33,8 +33,6 @@ public:
 
     bool eventSetFilter(Message *msg);
 
-    bool eventFilterParams(Message *msg);
-
 private:
     Filter *filter = nullptr;
 };

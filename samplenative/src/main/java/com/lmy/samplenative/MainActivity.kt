@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.TextureView
+import com.lmy.hwvcnative.filter.BeautyV4Filter
 import com.lmy.hwvcnative.processor.PictureProcessor
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -17,10 +18,13 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
         addBtn.setOnClickListener {
-            processor?.setFilterParams(intArrayOf(100, 100,
+            val filter=BeautyV4Filter()
+            processor?.setFilter(filter)
+            filter.setParams(intArrayOf(100, 100,
                     101, 100,
                     102, 100,
                     2333))
+            processor?.invalidate()
         }
         surfaceView.keepScreenOn = true
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {

@@ -9,7 +9,6 @@
 #include "PictureProcessor.h"
 #include <android/native_window_jni.h>
 
-PictureProcessor *processor = nullptr;
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,10 +19,7 @@ static PictureProcessor *getHandler(jlong handler) {
 
 JNIEXPORT jlong JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_create
         (JNIEnv *env, jobject thiz) {
-    if (!processor) {
-        return reinterpret_cast<jlong>(new PictureProcessor());
-    }
-    return reinterpret_cast<jlong>(processor);
+    return reinterpret_cast<jlong>(new PictureProcessor());
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_prepare
@@ -58,12 +54,17 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_releas
     }
 }
 
-JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_setFilterParams
-        (JNIEnv *env, jobject thiz, jlong handler, jintArray params) {
+JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_setFilter
+        (JNIEnv *env, jobject thiz, jlong handler, jlong filter) {
+    if (handler && filter) {
+        getHandler(handler)->setFilter(reinterpret_cast<Filter *>(filter));
+    }
+}
+
+JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_invalidate
+        (JNIEnv *env, jobject thiz, jlong handler) {
     if (handler) {
-        int *pParams = env->GetIntArrayElements(params, JNI_FALSE);
-        getHandler(handler)->setFilterParams(pParams);
-        env->ReleaseIntArrayElements(params, pParams, 0);
+        getHandler(handler)->invalidate();
     }
 }
 

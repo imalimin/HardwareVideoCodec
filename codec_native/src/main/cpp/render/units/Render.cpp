@@ -14,8 +14,6 @@ Render::Render() {
     filter = new NormalFilter();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Render::eventPrepare));
     registerEvent(EVENT_RENDER_FILTER, reinterpret_cast<EventFunc>(&Render::eventFilter));
-    registerEvent(EVENT_RENDER_FILTER_PARAMS,
-                  reinterpret_cast<EventFunc>(&Render::eventFilterParams));
     registerEvent(EVENT_RENDER_SET_FILTER, reinterpret_cast<EventFunc>(&Render::eventSetFilter));
 }
 
@@ -54,12 +52,6 @@ void Render::renderScreen() {
     postEvent(msg);
 }
 
-void Render::setFilterParams(int *params) {
-    if (filter) {
-        filter->setParams(params);
-    }
-}
-
 bool Render::eventPrepare(Message *msg) {
     return true;
 }
@@ -80,11 +72,5 @@ bool Render::eventSetFilter(Message *msg) {
         filter = nullptr;
     }
     filter = static_cast<Filter *>(msg->tyrUnBox());
-    return true;
-}
-
-bool Render::eventFilterParams(Message *msg) {
-    int *params = static_cast<int *>(msg->tyrUnBox());
-    setFilterParams(params);
     return true;
 }

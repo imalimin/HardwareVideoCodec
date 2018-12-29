@@ -22,7 +22,7 @@ public:
 
     void setFilter(Filter *filter);
 
-    void setFilterParams(int *params);
+    void invalidate();
 
 private:
     MainPipeline *pipeline = nullptr;

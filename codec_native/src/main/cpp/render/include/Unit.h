@@ -24,7 +24,6 @@ static const int EVENT_IMAGE_SHOW = 0x0020000;
 
 static const int EVENT_RENDER_FILTER = 0x0030000;// 绘制滤镜
 static const int EVENT_RENDER_SET_FILTER = 0x0030001;// 更新滤镜
-static const int EVENT_RENDER_FILTER_PARAMS = 0x0030002;// 更新滤镜参数
 
 typedef bool (Unit::*EventFunc)(Message *);
 
