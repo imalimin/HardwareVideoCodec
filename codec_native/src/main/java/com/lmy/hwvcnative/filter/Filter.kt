@@ -10,6 +10,7 @@ import com.lmy.hwvcnative.CPPObject
 
 abstract class Filter : CPPObject() {
     abstract fun setParams(params: IntArray)
+    abstract fun setParam(index: Int, value: Int)
 
     companion object {
         const val FILTER_BASE = 100

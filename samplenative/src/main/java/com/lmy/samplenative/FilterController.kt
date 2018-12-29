@@ -63,9 +63,7 @@ class FilterController(private val filterSupport: FilterSupport,
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        filterSupport.getFilter()?.setParams(intArrayOf(
-                100 + progressLayout.indexOfChild(seekBar), progress,
-                Filter.FILTER_NONE))
+        filterSupport.getFilter()?.setParam(progressLayout.indexOfChild(seekBar), progress)
         filterSupport.invalidate()
     }
 

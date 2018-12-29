@@ -11,6 +11,10 @@ class NormalFilter : Filter() {
         setParams(handler, params)
     }
 
+    override fun setParam(index: Int, value: Int) {
+
+    }
+
     private external fun create(): Long
     private external fun setParams(handler: Long, params: IntArray)
 }

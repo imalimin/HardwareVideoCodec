@@ -17,6 +17,23 @@ class BeautyV4Filter : Filter() {
         setParams(handler, params)
     }
 
+    override fun setParam(index: Int, value: Int) {
+        when (index) {
+            0 -> {
+                setParams(intArrayOf(FILTER_SMOOTH, value,
+                        FILTER_NONE))
+            }
+            1 -> {
+                setParams(intArrayOf(FILTER_TEXEL_OFFSET, value,
+                        FILTER_NONE))
+            }
+            2 -> {
+                setParams(intArrayOf(FILTER_BRIGHT, value,
+                        FILTER_NONE))
+            }
+        }
+    }
+
     private external fun create(): Long
     private external fun setParams(handler: Long, params: IntArray)
 
