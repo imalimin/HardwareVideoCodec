@@ -12,6 +12,7 @@
 
 using namespace std;
 
+const int FILTER_BASE = 100;
 const int FILTER_NONE = 2333;
 
 class Filter : public Object {

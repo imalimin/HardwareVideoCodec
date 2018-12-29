@@ -21,7 +21,7 @@ class BeautyV4Filter : Filter() {
     private external fun setParams(handler: Long, params: IntArray)
 
     companion object {
-        const val FILTER_SMOOTH = 100
+        const val FILTER_SMOOTH = FILTER_BASE
         const val FILTER_TEXEL_OFFSET = FILTER_SMOOTH + 1
         const val FILTER_BRIGHT = FILTER_SMOOTH + 2
     }

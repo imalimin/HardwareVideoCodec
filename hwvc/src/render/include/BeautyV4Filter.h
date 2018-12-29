@@ -9,7 +9,7 @@
 
 #include "Filter.h"
 
-const int FILTER_SMOOTH = 100;
+const int FILTER_SMOOTH = FILTER_BASE;
 const int FILTER_TEXEL_OFFSET = FILTER_SMOOTH + 1;
 const int FILTER_BRIGHT = FILTER_SMOOTH + 2;
 

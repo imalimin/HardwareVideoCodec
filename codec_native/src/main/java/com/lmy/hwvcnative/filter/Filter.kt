@@ -12,6 +12,7 @@ abstract class Filter : CPPObject() {
     abstract fun setParams(params: IntArray)
 
     companion object {
+        const val FILTER_BASE = 100
         const val FILTER_NONE = 2333
     }
 }
