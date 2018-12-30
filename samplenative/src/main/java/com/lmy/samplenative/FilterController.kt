@@ -9,10 +9,7 @@ import android.view.*
 import android.widget.SeekBar
 import android.widget.TextView
 import com.lmy.hwvcnative.FilterSupport
-import com.lmy.hwvcnative.filter.BeautyV4Filter
-import com.lmy.hwvcnative.filter.Filter
-import com.lmy.hwvcnative.filter.NormalFilter
-import com.lmy.hwvcnative.filter.PinkFilter
+import com.lmy.hwvcnative.filter.*
 import com.lmy.samplenative.adapter.OnRecyclerItemClickListener
 import com.lmy.samplenative.adapter.RecyclerAdapter
 import java.util.*
@@ -26,7 +23,7 @@ class FilterController(private val filterSupport: FilterSupport,
 
     companion object {
         private val FILTERS = arrayOf(
-                "Normal", "Beauty V4", "Pink")
+                "Normal", "Beauty V4", "Pink", "Pink", "Clean")
     }
 
     private var oneBar: SeekBar = progressLayout.getChildAt(0) as SeekBar
@@ -97,6 +94,16 @@ class FilterController(private val filterSupport: FilterSupport,
             2 -> {
                 filterSupport.setFilter(PinkFilter(arrayOf("sTexture2"),
                         arrayOf("${Environment.getExternalStorageDirectory().path}/hwvc/textures/pink.png")))
+                filterSupport.invalidate()
+                show(0)
+            }
+            3 -> {
+                filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/pink.hvf"))
+                filterSupport.invalidate()
+                show(0)
+            }
+            4 -> {
+                filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/clean.hvf"))
                 filterSupport.invalidate()
                 show(0)
             }
