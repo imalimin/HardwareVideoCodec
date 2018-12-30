@@ -11,6 +11,14 @@
 
 using namespace std;
 
+static const char *ATTR_KEY = "key";
+static const char *VERSION = "version";
+static const char *NAME = "name";
+static const char *VERTEX = "vertex";
+static const char *FRAGMENT = "fragment";
+static const char *PARAM = "param";
+static const char *SAMPLER = "sampler";
+
 FilterReader::FilterReader(char *path) {
     if (!doc.LoadFile(path)) {
         LOGE("HVF open file failed");
@@ -38,19 +46,21 @@ FilterEntity *FilterReader::read() {
     for (TiXmlElement *elem = root->FirstChildElement();
          elem != NULL; elem = elem->NextSiblingElement()) {
         string elemName = elem->Value();
-        if (strcmp(elemName.c_str(), "name") == 0) {
+        if (strcmp(elemName.c_str(), VERSION) == 0) {
+            entity->version = atoi(elem->GetText());
+        } else if (strcmp(elemName.c_str(), NAME) == 0) {
             entity->name = string(elem->GetText());
             LOGI("name: %s", elem->GetText());
-        } else if (strcmp(elemName.c_str(), "vertex") == 0) {
+        } else if (strcmp(elemName.c_str(), VERTEX) == 0) {
             entity->vertex = string(elem->FirstChild()->Value());
-        } else if (strcmp(elemName.c_str(), "fragment") == 0) {
+        } else if (strcmp(elemName.c_str(), FRAGMENT) == 0) {
             entity->fragment = string(elem->FirstChild()->Value());
-        } else if (strcmp(elemName.c_str(), "param") == 0) {
-            string key = elem->Attribute("key");
+        } else if (strcmp(elemName.c_str(), PARAM) == 0) {
+            string key = elem->Attribute(ATTR_KEY);
             string value = elem->GetText();
             entity->params[key] = static_cast<float>(atof(value.c_str()));
-        } else if (strcmp(elemName.c_str(), "sampler") == 0) {
-            string key = elem->Attribute("key");
+        } else if (strcmp(elemName.c_str(), SAMPLER) == 0) {
+            string key = elem->Attribute(ATTR_KEY);
             string value = elem->FirstChild()->Value();
             entity->samplers[key] = base64_decode(value);
         }

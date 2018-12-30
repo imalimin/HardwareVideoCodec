@@ -15,6 +15,7 @@ using namespace std;
 
 class FilterEntity : public Object {
 public:
+    int version = 1;
     string name;
     string vertex;
     string fragment;

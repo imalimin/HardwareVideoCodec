@@ -48,6 +48,8 @@ bool HwvcFilter::init(int w, int h) {
     struct timeval start, end;
     gettimeofday(&start, NULL);
     FilterEntity *entity = reader->read();
+    gettimeofday(&end, NULL);
+    long time = end.tv_usec - start.tv_usec;
     drawer = new NormalDrawer(entity->vertex, entity->fragment);
     //读取Sampler
     this->size = entity->samplers.size();
@@ -74,7 +76,8 @@ bool HwvcFilter::init(int w, int h) {
         }
     }
     gettimeofday(&end, NULL);
-    LOGI("%s read cost: %ld us", entity->name.c_str(), (end.tv_usec - start.tv_usec));
+    LOGI("%s(ver: %d) read cost: %ld / %ld us", entity->name.c_str(), entity->version, time,
+         (end.tv_usec - start.tv_usec));
     delete entity;
     return true;
 }
