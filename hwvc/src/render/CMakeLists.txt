@@ -27,6 +27,7 @@ file(
         ${PROJECT_SOURCE_DIR}/units/*cpp
         ${PROJECT_SOURCE_DIR}/processor/*cpp
         ${PROJECT_SOURCE_DIR}/entity/*cpp
+        ${PROJECT_SOURCE_DIR}/tinyxml/*cpp
 )
 add_library( # Sets the name of the library.
         hwvc_render
