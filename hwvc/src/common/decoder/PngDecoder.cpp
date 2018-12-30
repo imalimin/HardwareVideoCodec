@@ -48,9 +48,7 @@ static void fillBuffer(uint8_t **rgba, int w, int h, png_bytep *row, int channel
     } else if (channels == 3 || color_type == PNG_COLOR_TYPE_RGB) {
         for (int i = 0; i < h; ++i) {
             for (int j = 0; j < w; ++j) {
-                (*rgba)[i * w * 4 + j * 4] = row[i][j * 3];
-                (*rgba)[i * w * 4 + j * 4 + 1] = row[i][j * 3 + 1];
-                (*rgba)[i * w * 4 + j * 4 + 2] = row[i][j * 3 + 2];
+                memcpy(*rgba + i * w * 4 + j * 4, row[i] + j * 3, 3);
                 (*rgba)[i * w * 4 + j * 4 + 3] = 255;
             }
         }
