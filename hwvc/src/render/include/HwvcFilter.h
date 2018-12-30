@@ -29,8 +29,11 @@ private:
     char **names = nullptr;
     char **samplers = nullptr;
     int size = 0;
+    int paramSize = 0;
+    float *params = nullptr;
     GLuint *textures = nullptr;
     GLint *textureLocations = nullptr;
+    GLint *paramLocations = nullptr;
     PngDecoder *decoder = nullptr;
 
     GLuint loadTexture(string pngBuf);

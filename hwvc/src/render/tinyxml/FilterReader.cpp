@@ -4,13 +4,16 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
+#include <iostream>
 #include "FilterReader.h"
 #include "Base64.h"
 #include "log.h"
 
+using namespace std;
+
 FilterReader::FilterReader(char *path) {
     if (!doc.LoadFile(path)) {
-        LOGE("Open file failed");
+        LOGE("HVF open file failed");
     }
 }
 
@@ -36,15 +39,17 @@ FilterEntity *FilterReader::read() {
     for (TiXmlElement *elem = root->FirstChildElement();
          elem != NULL; elem = elem->NextSiblingElement()) {
         string elemName = elem->Value();
-        if (strcmp(elemName.c_str(), "vertex") == 0) {
-            entity->vertex = string(elem->GetText());
-            LOGI("vertex: %s", elem->GetText());
+        if (strcmp(elemName.c_str(), "name") == 0) {
+            entity->name = string(elem->GetText());
+            LOGI("name: %s", elem->GetText());
+        } else if (strcmp(elemName.c_str(), "vertex") == 0) {
+            entity->vertex = string(elem->FirstChild()->Value());
         } else if (strcmp(elemName.c_str(), "fragment") == 0) {
-            entity->fragment = string(elem->GetText());
+            entity->fragment = string(elem->FirstChild()->Value());
         } else if (strcmp(elemName.c_str(), "param") == 0) {
             string key = elem->Attribute("key");
             string value = elem->GetText();
-            entity->params[key] = value;
+            entity->params[key] = static_cast<float>(atof(value.c_str()));
         } else if (strcmp(elemName.c_str(), "sampler") == 0) {
             string key = elem->Attribute("key");
             string value = elem->FirstChild()->Value();

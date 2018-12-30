@@ -15,6 +15,14 @@ HwvcFilter::HwvcFilter(char *path) {
 }
 
 HwvcFilter::~HwvcFilter() {
+    if (params) {
+        delete[]params;
+        params = nullptr;
+    }
+    if (paramLocations) {
+        delete[]paramLocations;
+        paramLocations = nullptr;
+    }
     if (textures) {
         glDeleteTextures(size, textures);
         delete[]textures;
@@ -39,16 +47,32 @@ bool HwvcFilter::init(int w, int h) {
         return false;
     FilterEntity *entity = reader->read();
     drawer = new NormalDrawer(entity->vertex, entity->fragment);
+    //读取Sampler
     this->size = entity->samplers.size();
-    textures = new GLuint[size];
-    textureLocations = new GLint[size];
-    int i = 0;
-    for (auto itr = entity->samplers.begin(); itr != entity->samplers.end(); itr++) {
-        LOGE("%s", itr->first.c_str());
-        textureLocations[i] = drawer->getUniformLocation(itr->first);
-        textures[i] = loadTexture(itr->second);
-        ++i;
+    if (0 != this->size) {
+        textures = new GLuint[size];
+        textureLocations = new GLint[size];
+        int i = 0;
+        for (auto itr = entity->samplers.begin(); itr != entity->samplers.end(); itr++) {
+            LOGE("%s", itr->first.c_str());
+            textureLocations[i] = drawer->getUniformLocation(itr->first);
+            textures[i] = loadTexture(itr->second);
+            ++i;
+        }
     }
+    //读取Params
+    paramSize = entity->params.size();
+    if (0 != paramSize) {
+        paramLocations = new GLint[paramSize];
+        params = new float[paramSize];
+        int i = 0;
+        for (auto itr = entity->params.begin(); itr != entity->params.end(); itr++) {
+            paramLocations[i] = drawer->getUniformLocation(itr->first);
+            params[i] = itr->second;
+            ++i;
+        }
+    }
+    delete entity;
     return true;
 }
 
@@ -62,6 +86,9 @@ void HwvcFilter::bindResources() {
         glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + offset));
         glBindTexture(GL_TEXTURE_2D, textures[i]);
         glUniform1i(textureLocations[i], offset);
+    }
+    for (int i = 0; i < paramSize; ++i) {
+        drawer->setUniform1f(paramLocations[i], params[i]);
     }
 }
 

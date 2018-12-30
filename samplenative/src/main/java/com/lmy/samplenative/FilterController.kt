@@ -85,11 +85,13 @@ class FilterController(private val filterSupport: FilterSupport,
                 show(0)
             }
             1 -> {
-                filterSupport.setFilter(BeautyV4Filter())
-                show(3)
-                oneBar.progress = 55
-                twoBar.progress = 25
-                thBar.progress = 15
+//                filterSupport.setFilter(BeautyV4Filter())
+//                show(3)
+//                oneBar.progress = 55
+//                twoBar.progress = 25
+//                thBar.progress = 15
+                filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/beauty_v4.hvf"))
+                show(0)
             }
             2 -> {
                 filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/pink.hvf"))

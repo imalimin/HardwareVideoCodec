@@ -15,9 +15,10 @@ using namespace std;
 
 class FilterEntity : public Object {
 public:
+    string name;
     string vertex;
     string fragment;
-    map<string, string> params;
+    map<string, float> params;
     map<string, string> samplers;
 
     FilterEntity();
