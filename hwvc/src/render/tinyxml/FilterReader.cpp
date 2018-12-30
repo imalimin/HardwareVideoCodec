@@ -22,7 +22,6 @@ FilterReader::~FilterReader() {
 }
 
 FilterEntity *FilterReader::read() {
-    LOGI(__func__);
     TiXmlElement *root = doc.FirstChildElement();
     if (NULL == root) {
         LOGE("Read xml file failed");

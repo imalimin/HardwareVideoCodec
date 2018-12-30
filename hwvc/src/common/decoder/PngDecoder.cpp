@@ -99,7 +99,6 @@ int PngDecoder::decodeBuf(uint8_t *pngBuf, int bufSize, uint8_t **rgba, int *wid
         release();
         LOGE("PNG setjmp failed");
     }
-    LOGE("size: %ld", bufSize);
     ImageSource src;
     src.data = pngBuf;
     src.size = bufSize;

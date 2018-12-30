@@ -2,8 +2,6 @@ package com.lmy.samplenative
 
 import com.lmy.hwvcnative.filter.PinkFilter
 import org.junit.Test
-
-import org.junit.Assert.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream

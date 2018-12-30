@@ -45,6 +45,8 @@ HwvcFilter::~HwvcFilter() {
 bool HwvcFilter::init(int w, int h) {
     if (!Filter::init(w, h))
         return false;
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
     FilterEntity *entity = reader->read();
     drawer = new NormalDrawer(entity->vertex, entity->fragment);
     //读取Sampler
@@ -54,7 +56,6 @@ bool HwvcFilter::init(int w, int h) {
         textureLocations = new GLint[size];
         int i = 0;
         for (auto itr = entity->samplers.begin(); itr != entity->samplers.end(); itr++) {
-            LOGE("%s", itr->first.c_str());
             textureLocations[i] = drawer->getUniformLocation(itr->first);
             textures[i] = loadTexture(itr->second);
             ++i;
@@ -72,6 +73,8 @@ bool HwvcFilter::init(int w, int h) {
             ++i;
         }
     }
+    gettimeofday(&end, NULL);
+    LOGI("%s read cost: %ld us", entity->name.c_str(), (end.tv_usec - start.tv_usec));
     delete entity;
     return true;
 }
