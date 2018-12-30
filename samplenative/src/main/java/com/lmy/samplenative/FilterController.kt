@@ -23,7 +23,7 @@ class FilterController(private val filterSupport: FilterSupport,
 
     companion object {
         private val FILTERS = arrayOf(
-                "Normal", "Beauty V4", "Pink", "Clean")
+                "Normal", "Beauty V4", "Beach", "Clean", "Pink")
     }
 
     private var oneBar: SeekBar = progressLayout.getChildAt(0) as SeekBar
@@ -94,11 +94,15 @@ class FilterController(private val filterSupport: FilterSupport,
                 show(0)
             }
             2 -> {
-                filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/pink.hvf"))
+                filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/beach.hvf"))
                 show(0)
             }
             3 -> {
                 filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/clean.hvf"))
+                show(0)
+            }
+            4 -> {
+                filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/pink.hvf"))
                 show(0)
             }
             else -> {
