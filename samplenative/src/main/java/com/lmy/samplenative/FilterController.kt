@@ -23,7 +23,7 @@ class FilterController(private val filterSupport: FilterSupport,
 
     companion object {
         private val FILTERS = arrayOf(
-                "Normal", "Beauty V4", "Pink", "Pink", "Clean")
+                "Normal", "Beauty V4", "Pink", "Clean")
     }
 
     private var oneBar: SeekBar = progressLayout.getChildAt(0) as SeekBar
@@ -92,19 +92,11 @@ class FilterController(private val filterSupport: FilterSupport,
                 thBar.progress = 15
             }
             2 -> {
-                filterSupport.setFilter(PinkFilter(arrayOf("sTexture2"),
-                        arrayOf("${Environment.getExternalStorageDirectory().path}/hwvc/textures/pink.png")))
-                filterSupport.invalidate()
+                filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/pink.hvf"))
                 show(0)
             }
             3 -> {
-                filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/pink.hvf"))
-                filterSupport.invalidate()
-                show(0)
-            }
-            4 -> {
                 filterSupport.setFilter(HwvcFilter("${Environment.getExternalStorageDirectory().path}/clean.hvf"))
-                filterSupport.invalidate()
                 show(0)
             }
             else -> {
@@ -112,6 +104,7 @@ class FilterController(private val filterSupport: FilterSupport,
                 show(0)
             }
         }
+        filterSupport.invalidate()
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {

@@ -15,6 +15,19 @@ HwvcFilter::HwvcFilter(char *path) {
 }
 
 HwvcFilter::~HwvcFilter() {
+    if (textures) {
+        glDeleteTextures(size, textures);
+        delete[]textures;
+        textures = nullptr;
+    }
+    if (textureLocations) {
+        delete[]textureLocations;
+        textureLocations = nullptr;
+    }
+    if (decoder) {
+        delete decoder;
+        decoder = nullptr;
+    }
     if (reader) {
         delete reader;
         reader = nullptr;
@@ -79,5 +92,6 @@ GLuint HwvcFilter::loadTexture(string pngBuf) {
                     GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
+    delete[]rgba;
     return texture;
 }

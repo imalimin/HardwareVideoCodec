@@ -15,7 +15,7 @@ FilterReader::FilterReader(char *path) {
 }
 
 FilterReader::~FilterReader() {
-
+    doc.Clear();
 }
 
 FilterEntity *FilterReader::read() {
@@ -51,6 +51,5 @@ FilterEntity *FilterReader::read() {
             entity->samplers[key] = base64_decode(value);
         }
     }
-    doc.Clear();
     return entity;
 }
