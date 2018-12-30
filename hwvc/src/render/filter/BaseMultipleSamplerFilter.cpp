@@ -43,8 +43,8 @@ bool BaseMultipleSamplerFilter::init(int w, int h) {
     textures = new GLuint[size];
     textureLocations = new GLint[size];
     for (int i = 0; i < size; ++i) {
-        textures[i] = loadTexture(string((char *) samplers[i]));
-        textureLocations[i] = drawer->getUniformLocation(string((char *) names[i]));
+        textures[i] = loadTexture(string(samplers[i]));
+        textureLocations[i] = drawer->getUniformLocation(string(names[i]));
     }
     releaseStringArray(names, size);
     releaseStringArray(samplers, size);
