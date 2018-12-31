@@ -1,14 +1,9 @@
 cmake_minimum_required(VERSION 3.4.1)
-project(hwvc_render)
+project(hwvc_codec)
 include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
-        ${PROJECT_SOURCE_DIR}/../codec/include
 )
 option(GL_DEBUG "Whether show opengl logs." ON)
-if (GL_DEBUG)
-    add_definitions(-DGL_DEBUG)
-    message(GL_DEBUG "Show opengl logs。")
-endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
@@ -21,17 +16,10 @@ file(
         GLOB
         SOURCES
         ${PROJECT_SOURCE_DIR}/*cpp
-        ${PROJECT_SOURCE_DIR}/filter/*cpp
-        ${PROJECT_SOURCE_DIR}/drawer/*cpp
-        ${PROJECT_SOURCE_DIR}/texture/*cpp
-        ${PROJECT_SOURCE_DIR}/egl/*cpp
-        ${PROJECT_SOURCE_DIR}/units/*cpp
-        ${PROJECT_SOURCE_DIR}/processor/*cpp
-        ${PROJECT_SOURCE_DIR}/entity/*cpp
-        ${PROJECT_SOURCE_DIR}/tinyxml/*cpp
+        ${PROJECT_SOURCE_DIR}/decoder/*cpp
 )
 add_library( # Sets the name of the library.
-        hwvc_render
+        hwvc_codec
 
         # Sets the library as a shared library.
         SHARED
@@ -48,11 +36,8 @@ find_library( # Sets the name of the path variable.
         log)
 
 target_link_libraries( # Specifies the target library.
-        hwvc_render
-        hwvcom
         hwvc_codec
+        hwvcom
         # Links the target library to the log library
         # included in the NDK.
-        GLESv2
-        EGL
         ${log-lib})
