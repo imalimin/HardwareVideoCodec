@@ -14,11 +14,11 @@ using namespace std;
 
 class Unit;
 
-class MainPipeline : public Object {
+class UnitPipeline : public Object {
 public:
-    MainPipeline(string name);
+    UnitPipeline(string name);
 
-    virtual ~MainPipeline();
+    virtual ~UnitPipeline();
 
     void postEvent(Message *msg);
 

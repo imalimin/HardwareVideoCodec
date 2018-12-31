@@ -8,7 +8,7 @@
 #define HARDWAREVIDEOCODEC_UNIT_H
 
 #include "Object.h"
-#include "MainPipeline.h"
+#include "UnitPipeline.h"
 #include "Message.h"
 #include <map>
 
@@ -46,7 +46,7 @@ public:
 
     virtual ~Unit();
 
-    virtual void setController(MainPipeline *pipeline);
+    virtual void setController(UnitPipeline *pipeline);
 
     bool registerEvent(int what, EventFunc handler);
 
@@ -65,7 +65,7 @@ protected:
 
 private:
     map<int, Event *> eventMap;
-    MainPipeline *pipeline = nullptr;
+    UnitPipeline *pipeline = nullptr;
 };
 
 

@@ -42,7 +42,7 @@ bool Unit::registerEvent(int what, EventFunc handler) {
     return true;
 }
 
-void Unit::setController(MainPipeline *pipeline) {
+void Unit::setController(UnitPipeline *pipeline) {
     this->pipeline = pipeline;
 }
 

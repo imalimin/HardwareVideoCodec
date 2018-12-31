@@ -6,7 +6,7 @@
 #define HARDWAREVIDEOCODEC_PICTUREPROCESSOR_H
 
 #include "Object.h"
-#include "MainPipeline.h"
+#include "UnitPipeline.h"
 #include "Screen.h"
 #include "Filter.h"
 
@@ -25,7 +25,7 @@ public:
     void invalidate();
 
 private:
-    MainPipeline *pipeline = nullptr;
+    UnitPipeline *pipeline = nullptr;
 };
 
 

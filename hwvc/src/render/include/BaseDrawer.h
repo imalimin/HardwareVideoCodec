@@ -9,6 +9,7 @@
 
 #include "Object.h"
 #include <string>
+#include <vector>
 #include <GLES2/gl2.h>
 
 //每个点占多少字节

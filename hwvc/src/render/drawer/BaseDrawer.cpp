@@ -109,7 +109,7 @@ GLuint BaseDrawer::createShader(GLenum type, string shader) {
         vector<char> log(static_cast<unsigned int>(len));
         glGetShaderInfoLog(shaderId, len, nullptr, log.data());
         string str(begin(log), end(log));
-        LOGE("Shader(%d) error:\n%s\nSource: %s", type, shader, str);
+        LOGE("Shader(%d) error:\n%s\nSource: %s", type, shader.c_str(), str.c_str());
         glDeleteShader(shaderId);
     }
 #endif

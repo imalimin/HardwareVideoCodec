@@ -2,14 +2,14 @@
 // Created by mingyi.li on 2018/12/25.
 //
 
-#include "../include/MainPipeline.h"
+#include "../include/UnitPipeline.h"
 #include "../include/Unit.h"
 
-MainPipeline::MainPipeline(string name) {
+UnitPipeline::UnitPipeline(string name) {
     pipeline = new HandlerThread(name);
 }
 
-MainPipeline::~MainPipeline() {
+UnitPipeline::~UnitPipeline() {
     Message *msg = new Message(EVENT_COMMON_RELEASE, nullptr);
     postEvent(msg);
     if (pipeline) {
@@ -18,10 +18,10 @@ MainPipeline::~MainPipeline() {
     }
 }
 
-void MainPipeline::release() {
+void UnitPipeline::release() {
 }
 
-void MainPipeline::postEvent(Message *msg1) {
+void UnitPipeline::postEvent(Message *msg1) {
     if (pipeline) {
         msg1->runnable = [this](Message *msg2) {
             /**
@@ -34,7 +34,7 @@ void MainPipeline::postEvent(Message *msg1) {
     }
 }
 
-void MainPipeline::dispatch(Message *msg) {
+void UnitPipeline::dispatch(Message *msg) {
     for (auto itr = units.cbegin(); itr != units.cend(); itr++) {
         bool ret = (*itr)->dispatch(msg);
     }
@@ -43,15 +43,15 @@ void MainPipeline::dispatch(Message *msg) {
     }
 }
 
-void MainPipeline::clear() {
-    LOGI("MainPipeline::clear units");
+void UnitPipeline::clear() {
+    LOGI("UnitPipeline::clear units");
     for (auto unit:units) {
         delete unit;
     }
     units.clear();
 }
 
-int MainPipeline::registerAnUnit(Unit *unit) {
+int UnitPipeline::registerAnUnit(Unit *unit) {
     unit->setController(this);
     units.push_back(unit);
     return 1;
