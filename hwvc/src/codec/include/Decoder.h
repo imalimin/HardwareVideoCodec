@@ -7,9 +7,26 @@
 #ifndef HARDWAREVIDEOCODEC_DECODER_H
 #define HARDWAREVIDEOCODEC_DECODER_H
 
+#include "Object.h"
+#include <string>
+#include "ff/libavcodec/avcodec.h"
+#include "ff/libavformat/avformat.h"
+#include "ff/libavutil/avutil.h"
 
-class Decoder {
+using namespace std;
 
+class Decoder : public Object {
+public:
+    Decoder();
+
+    virtual ~Decoder();
+
+    bool prepare(string path);
+
+private:
+    string path;
+    AVFormatContext *pFormatCtx;
+    int audioTrack = -1, videoTrack = -1;
 };
 
 
