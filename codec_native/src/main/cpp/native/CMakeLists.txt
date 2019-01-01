@@ -34,5 +34,6 @@ target_link_libraries( # Specifies the target library.
         hwvc_native
         hwvc_render
         hwvcom
+        hwvc_codec
         android
         ${log-lib})

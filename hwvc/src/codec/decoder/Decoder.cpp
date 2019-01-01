@@ -40,7 +40,8 @@ bool Decoder::prepare(string path) {
         }
     }
     AVCodecParameters *avCodecParameters = pFormatCtx->streams[videoTrack]->codecpar;
-    AVCodec * codec = avcodec_find_decoder(avCodecParameters->codec_id);
+    LOGI("Decoder(%s) %d x %d", path.c_str(), avCodecParameters->width, avCodecParameters->height);
+    AVCodec *codec = avcodec_find_decoder(avCodecParameters->codec_id);
     if (NULL == codec) {
         LOGE("Couldn't find codec.");
         return false;

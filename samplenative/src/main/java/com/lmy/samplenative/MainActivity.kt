@@ -66,6 +66,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     companion object {
         init {
             System.loadLibrary("hwvcom")
+            System.loadLibrary("hwvc_codec")
             System.loadLibrary("hwvc_render")
             System.loadLibrary("hwvc_native")
         }

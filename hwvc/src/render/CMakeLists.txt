@@ -3,6 +3,7 @@ project(hwvc_render)
 include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
         ${PROJECT_SOURCE_DIR}/../codec/include
+        ${PROJECT_SOURCE_DIR}/../codec/include/ff
 )
 option(GL_DEBUG "Whether show opengl logs." ON)
 if (GL_DEBUG)

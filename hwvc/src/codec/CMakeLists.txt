@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(hwvc_codec)
-set(PREBUILD_STATIC "${PROJECT_SOURCE_DIR}/prebuild/static/${ANDROID_ABI}")
+set(PREBUILD_STATIC "${CMAKE_CURRENT_SOURCE_DIR}/prebuild/static/${ANDROID_ABI}")
 include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
-        ${PROJECT_SOURCE_DIR}/include/ff
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/ff
 )
-option(GL_DEBUG "Whether show opengl logs." ON)
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")

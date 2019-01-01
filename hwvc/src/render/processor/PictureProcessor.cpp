@@ -5,11 +5,13 @@
 #include "../include/PictureProcessor.h"
 #include "../include/Render.h"
 #include "../include/Image.h"
+#include "../include/Video.h"
 #include "ObjectBox.h"
 
 PictureProcessor::PictureProcessor() {
     pipeline = new UnitPipeline(__func__);
     pipeline->registerAnUnit(new Image());
+    pipeline->registerAnUnit(new Video());
     pipeline->registerAnUnit(new Render());
     //注意顺序问题，包含EGL环境的模块放到最后，因为要最后释放
     pipeline->registerAnUnit(new Screen());
