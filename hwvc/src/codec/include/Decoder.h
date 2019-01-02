@@ -10,9 +10,15 @@
 #include "Object.h"
 #include <string>
 
+const int MEDIA_TYPE_UNKNOWN = -1;
+const int MEDIA_TYPE_EOS = 0;
+const int MEDIA_TYPE_VIDEO = 1;
+const int MEDIA_TYPE_AUDIO = 2;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #include "ff/libavcodec/avcodec.h"
 #include "ff/libavformat/avformat.h"
 #include "ff/libavutil/avutil.h"
@@ -40,9 +46,11 @@ private:
     string path;
     AVFormatContext *pFormatCtx = nullptr;
     AVCodecContext *codecContext = nullptr;
-    int audioTrack = -1, videoTrack = -1;
+    int audioTrack = -1, videoTrack = -1, currentTrack = -1;
     AVPacket *avPacket = nullptr;
     AVFrame *avFrame = nullptr;
+
+    int getMediaType(int track);
 };
 
 #ifdef __cplusplus

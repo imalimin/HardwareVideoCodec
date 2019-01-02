@@ -73,22 +73,21 @@ bool Decoder::prepare(string path) {
 }
 
 int Decoder::grab() {
-    if (av_read_frame(pFormatCtx, avPacket) >= 0) {
-        if (videoTrack == avPacket->stream_index) {
-            //解码
-            if (avcodec_send_packet(codecContext, avPacket) == 0) {
-                // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
-                while (avcodec_receive_frame(codecContext, avFrame) == 0) {
-                    return 1;
-                }
-            }
-        } else if (audioTrack == avPacket->stream_index) {
-
-            return 2;
-        }
+    if (currentTrack >= 0 && 0 == avcodec_receive_frame(codecContext, avFrame)) {
+        return getMediaType(currentTrack);
+    }
+    if (avPacket) {
         av_packet_unref(avPacket);
     }
-    return 0;
+    if (av_read_frame(pFormatCtx, avPacket) >= 0) {
+        currentTrack = avPacket->stream_index;
+        //解码
+        if (avcodec_send_packet(codecContext, avPacket) == 0) {
+            // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
+            return grab();
+        }
+    }
+    return MEDIA_TYPE_EOS;
 }
 
 int Decoder::width() {
@@ -99,6 +98,16 @@ int Decoder::width() {
 int Decoder::height() {
     if (!pFormatCtx) return 0;
     return pFormatCtx->streams[videoTrack]->codecpar->height;
+}
+
+int Decoder::getMediaType(int track) {
+    if (videoTrack == track) {
+        return MEDIA_TYPE_VIDEO;
+    }
+    if (audioTrack == track) {
+        return MEDIA_TYPE_AUDIO;
+    }
+    return MEDIA_TYPE_UNKNOWN;
 }
 
 #ifdef __cplusplus
