@@ -37,7 +37,7 @@ void VideoProcessor::prepare(ANativeWindow *win, int width, int height) {
 
 void VideoProcessor::start() {
     if (pipeline) {
-        Message *msg = new Message(EVENT_PLAYER_START, nullptr);
+        Message *msg = new Message(EVENT_VIDEO_START, nullptr);
         pipeline->postEvent(msg);
     }
 }

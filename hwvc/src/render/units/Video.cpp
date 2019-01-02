@@ -9,7 +9,7 @@
 Video::Video() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
-    registerEvent(EVENT_PLAYER_START, reinterpret_cast<EventFunc>(&Video::eventStart));
+    registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
     decoder = new Decoder();
 }
 

@@ -18,14 +18,14 @@ static const int EVENT_COMMON_RELEASE = 0x0010000;
 static const int EVENT_COMMON_PREPARE = 0x0010001;
 static const int EVENT_COMMON_INVALIDATE = 0x0010002;
 
-static const int EVENT_SCREEN_DRAW = 0x0040000;
-
 static const int EVENT_IMAGE_SHOW = 0x0020000;
 
 static const int EVENT_RENDER_FILTER = 0x0030000;// 绘制滤镜
 static const int EVENT_RENDER_SET_FILTER = 0x0030001;// 更新滤镜
 
-static const int EVENT_PLAYER_START = 0x0040000;
+static const int EVENT_SCREEN_DRAW = 0x0040000;
+
+static const int EVENT_VIDEO_START = 0x0050000;
 
 typedef bool (Unit::*EventFunc)(Message *);
 
