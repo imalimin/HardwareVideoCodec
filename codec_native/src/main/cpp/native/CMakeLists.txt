@@ -32,8 +32,9 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         hwvc_native
-        hwvc_render
+        hwvc_ffmpeg
         hwvcom
         hwvc_codec
+        hwvc_render
         android
         ${log-lib})

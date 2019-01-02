@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(hwvc_codec)
 set(PREBUILD_STATIC "${CMAKE_CURRENT_SOURCE_DIR}/prebuild/static/${ANDROID_ABI}")
+set(PREBUILD_SHARED "${CMAKE_CURRENT_SOURCE_DIR}/prebuild/shared/${ANDROID_ABI}")
 include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/x264
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ff
 )
 
@@ -15,6 +17,15 @@ else ()
 endif ()
 #------------------STATIC START----------------------
 add_library(
+        libx264
+        STATIC
+        IMPORTED)
+set_target_properties(
+        libx264
+        PROPERTIES IMPORTED_LOCATION
+        "${PREBUILD_STATIC}/libx264.a")
+
+add_library(
         libavcodec
         STATIC
         IMPORTED)
@@ -22,33 +33,6 @@ set_target_properties(
         libavcodec
         PROPERTIES IMPORTED_LOCATION
         "${PREBUILD_STATIC}/libavcodec.a")
-
-add_library(
-        libavutil
-        STATIC
-        IMPORTED)
-set_target_properties(
-        libavutil
-        PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_STATIC}/libavutil.a")
-
-add_library(
-        libpostproc
-        STATIC
-        IMPORTED)
-set_target_properties(
-        libpostproc
-        PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_STATIC}/libpostproc.a")
-
-add_library(
-        libswresample
-        STATIC
-        IMPORTED)
-set_target_properties(
-        libswresample
-        PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_STATIC}/libswresample.a")
 
 add_library(
         libavformat
@@ -68,7 +52,29 @@ set_target_properties(
         PROPERTIES IMPORTED_LOCATION
         "${PREBUILD_STATIC}/libavresample.a")
 
+add_library(
+        libavutil
+        STATIC
+        IMPORTED)
+set_target_properties(
+        libavutil
+        PROPERTIES IMPORTED_LOCATION
+        "${PREBUILD_STATIC}/libavutil.a")
+
 #------------------STATIC END----------------------
+add_library(
+        hwvc_ffmpeg
+        SHARED
+        decoder/Decoder.cpp
+        )
+target_link_libraries(
+        hwvc_ffmpeg
+        libx264
+        libavcodec
+        libavformat
+        libavresample
+        libavutil)
+
 file(
         GLOB
         SOURCES
@@ -95,12 +101,7 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         hwvc_codec
         hwvcom
-        libavcodec
-        libavformat
-        libavutil
-        libpostproc
-        libswresample
-        libavresample
+        hwvc_ffmpeg
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})

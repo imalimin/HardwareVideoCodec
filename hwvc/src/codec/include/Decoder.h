@@ -9,6 +9,10 @@
 
 #include "Object.h"
 #include <string>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "ff/libavcodec/avcodec.h"
 #include "ff/libavformat/avformat.h"
 #include "ff/libavutil/avutil.h"
@@ -29,5 +33,8 @@ private:
     int audioTrack = -1, videoTrack = -1;
 };
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif //HARDWAREVIDEOCODEC_DECODER_H

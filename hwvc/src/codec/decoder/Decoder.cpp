@@ -7,6 +7,12 @@
 #include "../include/Decoder.h"
 #include "log.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "x264.h"
+#include "x264_config.h"
+
 Decoder::Decoder() {
 
 }
@@ -48,3 +54,7 @@ bool Decoder::prepare(string path) {
     }
     return true;
 }
+
+#ifdef __cplusplus
+}
+#endif
