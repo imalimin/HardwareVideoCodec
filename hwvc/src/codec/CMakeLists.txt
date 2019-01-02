@@ -16,64 +16,52 @@ else ()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
 endif ()
 #------------------STATIC START----------------------
-add_library(
-        libx264
-        STATIC
-        IMPORTED)
-set_target_properties(
-        libx264
-        PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_STATIC}/libx264.a")
+#add_library(
+#        libx264
+#        STATIC
+#        IMPORTED)
+#set_target_properties(
+#        libx264
+#        PROPERTIES IMPORTED_LOCATION
+#        "${PREBUILD_STATIC}/libx264.a")
 
 add_library(
         libavcodec
-        STATIC
+        SHARED
         IMPORTED)
 set_target_properties(
         libavcodec
         PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_STATIC}/libavcodec.a")
+        "${PREBUILD_SHARED}/libavcodec-58.so")
 
 add_library(
         libavformat
-        STATIC
+        SHARED
         IMPORTED)
 set_target_properties(
         libavformat
         PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_STATIC}/libavformat.a")
+        "${PREBUILD_SHARED}/libavformat-58.so")
 
 add_library(
         libavresample
-        STATIC
+        SHARED
         IMPORTED)
 set_target_properties(
         libavresample
         PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_STATIC}/libavresample.a")
+        "${PREBUILD_SHARED}/libavresample-4.so")
 
 add_library(
         libavutil
-        STATIC
+        SHARED
         IMPORTED)
 set_target_properties(
         libavutil
         PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_STATIC}/libavutil.a")
+        "${PREBUILD_SHARED}/libavutil-56.so")
 
 #------------------STATIC END----------------------
-add_library(
-        hwvc_ffmpeg
-        SHARED
-        decoder/Decoder.cpp
-        )
-target_link_libraries(
-        hwvc_ffmpeg
-        libx264
-        libavcodec
-        libavformat
-        libavresample
-        libavutil)
 
 file(
         GLOB
@@ -100,8 +88,12 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         hwvc_codec
+#        libx264
+        libavcodec
+        libavformat
+        libavresample
+        libavutil
         hwvcom
-        hwvc_ffmpeg
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})

@@ -65,8 +65,11 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     companion object {
         init {
+            System.loadLibrary("avcodec-58")
+            System.loadLibrary("avformat-58")
+            System.loadLibrary("avresample-4")
+            System.loadLibrary("avutil-56")
             System.loadLibrary("hwvcom")
-            System.loadLibrary("hwvc_ffmpeg")
             System.loadLibrary("hwvc_codec")
             System.loadLibrary("hwvc_render")
             System.loadLibrary("hwvc_native")
