@@ -7,9 +7,23 @@
 #ifndef HARDWAREVIDEOCODEC_VIDEOPROCESSOR_H
 #define HARDWAREVIDEOCODEC_VIDEOPROCESSOR_H
 
+#include "Object.h"
+#include "UnitPipeline.h"
+#include "Screen.h"
+#include "Filter.h"
 
-class VideoProcessor {
+class VideoProcessor : public Object {
+public:
+    VideoProcessor();
 
+    virtual ~VideoProcessor();
+
+    void prepare(ANativeWindow *win, int width, int height);
+
+    void start();
+
+private:
+    UnitPipeline *pipeline = nullptr;
 };
 
 

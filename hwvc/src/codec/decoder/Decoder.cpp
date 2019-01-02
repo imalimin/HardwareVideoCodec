@@ -18,7 +18,14 @@ Decoder::Decoder() {
 }
 
 Decoder::~Decoder() {
-
+    if (avFrame) {
+        av_packet_unref(avPacket);
+        avPacket = nullptr;
+    }
+    if (avPacket) {
+        av_packet_unref(avPacket);
+        avPacket = nullptr;
+    }
 }
 
 bool Decoder::prepare(string path) {
@@ -52,7 +59,46 @@ bool Decoder::prepare(string path) {
         LOGE("Couldn't find codec.");
         return false;
     }
+    //打开编码器
+    codecContext = avcodec_alloc_context3(codec);
+    avcodec_parameters_to_context(codecContext, avCodecParameters);
+    if (avcodec_open2(codecContext, codec, NULL) < 0) {
+        LOGE("Couldn't open codec.");
+        return false;
+    }
+    //准备资源
+    avPacket = av_packet_alloc();
+    avFrame = av_frame_alloc();
     return true;
+}
+
+int Decoder::grab() {
+    if (av_read_frame(pFormatCtx, avPacket) >= 0) {
+        if (videoTrack == avPacket->stream_index) {
+            //解码
+            if (avcodec_send_packet(codecContext, avPacket) == 0) {
+                // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
+                while (avcodec_receive_frame(codecContext, avFrame) == 0) {
+                    return 1;
+                }
+            }
+        } else if (audioTrack == avPacket->stream_index) {
+
+            return 2;
+        }
+        av_packet_unref(avPacket);
+    }
+    return 0;
+}
+
+int Decoder::width() {
+    if (!pFormatCtx) return 0;
+    return pFormatCtx->streams[videoTrack]->codecpar->width;
+}
+
+int Decoder::height() {
+    if (!pFormatCtx) return 0;
+    return pFormatCtx->streams[videoTrack]->codecpar->height;
 }
 
 #ifdef __cplusplus

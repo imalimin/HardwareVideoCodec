@@ -9,11 +9,12 @@
 Video::Video() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
+    registerEvent(EVENT_PLAYER_START, reinterpret_cast<EventFunc>(&Video::eventStart));
     decoder = new Decoder();
 }
 
 Video::~Video() {
-
+    release();
 }
 
 void Video::release() {
@@ -25,5 +26,10 @@ void Video::release() {
 
 bool Video::eventPrepare(Message *msg) {
     decoder->prepare("/sdcard/001.mp4");
+    return true;
+}
+
+bool Video::eventStart(Message *msg) {
+//    decoder->grab();
     return true;
 }

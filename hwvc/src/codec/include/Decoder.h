@@ -27,10 +27,22 @@ public:
 
     bool prepare(string path);
 
+    /**
+     * @return 1: video, 2: audio, 0: failed
+     */
+    int grab();
+
+    int width();
+
+    int height();
+
 private:
     string path;
-    AVFormatContext *pFormatCtx;
+    AVFormatContext *pFormatCtx = nullptr;
+    AVCodecContext *codecContext = nullptr;
     int audioTrack = -1, videoTrack = -1;
+    AVPacket *avPacket = nullptr;
+    AVFrame *avFrame = nullptr;
 };
 
 #ifdef __cplusplus

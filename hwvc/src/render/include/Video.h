@@ -21,6 +21,8 @@ public:
 
     bool eventPrepare(Message *msg);
 
+    bool eventStart(Message *msg);
+
 private:
     Decoder *decoder;
 
