@@ -11,6 +11,7 @@ Video::Video() {
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
     registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
     decoder = new Decoder();
+    avFrame = av_frame_alloc();
 }
 
 Video::~Video() {
@@ -18,6 +19,10 @@ Video::~Video() {
 }
 
 void Video::release() {
+    if (avFrame) {
+        av_frame_free(&avFrame);
+        avFrame = nullptr;
+    }
     if (decoder) {
         delete decoder;
         decoder = nullptr;
@@ -30,6 +35,6 @@ bool Video::eventPrepare(Message *msg) {
 }
 
 bool Video::eventStart(Message *msg) {
-//    decoder->grab();
+    decoder->grab(avFrame);
     return true;
 }

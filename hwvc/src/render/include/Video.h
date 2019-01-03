@@ -25,6 +25,7 @@ public:
 
 private:
     Decoder *decoder;
+    AVFrame *avFrame;
 
 };
 

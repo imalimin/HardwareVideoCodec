@@ -36,7 +36,7 @@ public:
     /**
      * @return 1: video, 2: audio, 0: failed
      */
-    int grab();
+    int grab(AVFrame *avFrame);
 
     int width();
 
@@ -48,7 +48,6 @@ private:
     AVCodecContext *codecContext = nullptr;
     int audioTrack = -1, videoTrack = -1, currentTrack = -1;
     AVPacket *avPacket = nullptr;
-    AVFrame *avFrame = nullptr;
 
     int getMediaType(int track);
 };

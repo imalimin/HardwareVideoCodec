@@ -18,13 +18,17 @@ Decoder::Decoder() {
 }
 
 Decoder::~Decoder() {
-    if (avFrame) {
-        av_packet_unref(avPacket);
-        avPacket = nullptr;
-    }
     if (avPacket) {
         av_packet_unref(avPacket);
         avPacket = nullptr;
+    }
+    if (codecContext) {
+        avcodec_close(codecContext);
+        codecContext = nullptr;
+    }
+    if (pFormatCtx) {
+        avformat_free_context(pFormatCtx);
+        pFormatCtx = nullptr;
     }
 }
 
@@ -68,11 +72,10 @@ bool Decoder::prepare(string path) {
     }
     //准备资源
     avPacket = av_packet_alloc();
-    avFrame = av_frame_alloc();
     return true;
 }
 
-int Decoder::grab() {
+int Decoder::grab(AVFrame *avFrame) {
     if (currentTrack >= 0 && 0 == avcodec_receive_frame(codecContext, avFrame)) {
         return getMediaType(currentTrack);
     }
@@ -84,7 +87,7 @@ int Decoder::grab() {
         //解码
         if (avcodec_send_packet(codecContext, avPacket) == 0) {
             // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
-            return grab();
+            return grab(avFrame);
         }
     }
     return MEDIA_TYPE_EOS;
