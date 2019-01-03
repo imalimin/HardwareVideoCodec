@@ -56,11 +56,11 @@ bool YUV420PFilter::init(int w, int h) {
 
 void YUV420PFilter::bindResources() {
     Filter::bindResources();
-    glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + 1));
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, this->uTexture);
     glUniform1i(this->uLocation, 1);
 
-    glActiveTexture(static_cast<GLenum>(GL_TEXTURE0 + 2));
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, this->vTexture);
     glUniform1i(this->vLocation, 2);
 }

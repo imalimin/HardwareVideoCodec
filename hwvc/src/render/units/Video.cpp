@@ -59,19 +59,20 @@ bool Video::eventStart(Message *msg) {
     }
     LOGI("grab %d x %d, ", avFrame->width, avFrame->height);
     glBindTexture(GL_TEXTURE_2D, yuv[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, avFrame->width, avFrame->height, 0, GL_ALPHA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width, avFrame->height, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
                  avFrame->data[0]);
     glBindTexture(GL_TEXTURE_2D, yuv[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, avFrame->width / 2, avFrame->height / 2, 0, GL_ALPHA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width / 2, avFrame->height / 2, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
                  avFrame->data[1]);
     glBindTexture(GL_TEXTURE_2D, yuv[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, avFrame->width / 2, avFrame->height / 2, 0, GL_ALPHA,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width / 2, avFrame->height / 2, 0, GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
                  avFrame->data[2]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
-//
+
+    glViewport(0, 0, avFrame->width, avFrame->height);
     yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
 
     eventInvalidate(nullptr);
