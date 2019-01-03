@@ -50,31 +50,31 @@ bool Video::eventStart(Message *msg) {
         LOGI("grab ret=%d", ret);
         return true;
     }
-//    if (!yuvFilter) {
-//        yuvFilter = new YUV420PFilter();
-//        yuvFilter->init(avFrame->width, avFrame->height);
-//        yuv[0] = texAllocator->alloc();
-//        yuv[1] = texAllocator->alloc();
-//        yuv[2] = texAllocator->alloc();
-//    }
-    LOGI("grab %d x %d", avFrame->width, avFrame->height);
-//    glBindTexture(GL_TEXTURE_2D, yuv[0]);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, avFrame->width, avFrame->height, 0, GL_RGBA,
-//                 GL_UNSIGNED_BYTE,
-//                 avFrame->data[0]);
-//    glBindTexture(GL_TEXTURE_2D, yuv[1]);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, avFrame->width / 2, avFrame->height / 2, 0, GL_RGBA,
-//                 GL_UNSIGNED_BYTE,
-//                 avFrame->data[1]);
-//    glBindTexture(GL_TEXTURE_2D, yuv[2]);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, avFrame->width / 2, avFrame->height / 2, 0, GL_RGBA,
-//                 GL_UNSIGNED_BYTE,
-//                 avFrame->data[2]);
-//    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+    if (!yuvFilter) {
+        yuvFilter = new YUV420PFilter();
+        yuvFilter->init(avFrame->width, avFrame->height);
+        yuv[0] = texAllocator->alloc();
+        yuv[1] = texAllocator->alloc();
+        yuv[2] = texAllocator->alloc();
+    }
+    LOGI("grab %d x %d, ", avFrame->width, avFrame->height);
+    glBindTexture(GL_TEXTURE_2D, yuv[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, avFrame->width, avFrame->height, 0, GL_ALPHA,
+                 GL_UNSIGNED_BYTE,
+                 avFrame->data[0]);
+    glBindTexture(GL_TEXTURE_2D, yuv[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, avFrame->width / 2, avFrame->height / 2, 0, GL_ALPHA,
+                 GL_UNSIGNED_BYTE,
+                 avFrame->data[1]);
+    glBindTexture(GL_TEXTURE_2D, yuv[2]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, avFrame->width / 2, avFrame->height / 2, 0, GL_ALPHA,
+                 GL_UNSIGNED_BYTE,
+                 avFrame->data[2]);
+    glBindTexture(GL_TEXTURE_2D, GL_NONE);
 //
-//    yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
-//
-//    eventInvalidate(nullptr);
+    yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
+
+    eventInvalidate(nullptr);
     return true;
 }
 

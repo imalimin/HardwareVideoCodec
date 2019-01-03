@@ -77,7 +77,7 @@ bool Decoder::prepare(string path) {
 
 int Decoder::grab(AVFrame *avFrame) {
     if (currentTrack >= 0 && 0 == avcodec_receive_frame(codecContext, avFrame)) {
-        LOGI("avcodec_receive_frame");
+//        LOGI("avcodec_receive_frame");
         return getMediaType(currentTrack);
     }
     if (avPacket) {
@@ -87,12 +87,37 @@ int Decoder::grab(AVFrame *avFrame) {
         LOGI("av_read_frame");
         currentTrack = avPacket->stream_index;
         //解码
-        if (avcodec_send_packet(codecContext, avPacket) == 0) {
-            // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
-            return grab(avFrame);
+        int ret = 0;
+        if (videoTrack == currentTrack) {
+            if ((ret = avcodec_send_packet(codecContext, avPacket)) == 0) {
+                // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
+                return grab(avFrame);
+            }
+            switch (ret) {
+                case AVERROR(EAGAIN): {
+                    LOGI("you must read output with avcodec_receive_frame");
+                    break;
+                }
+                case AVERROR(EINVAL): {
+                    LOGI("codec not opened, it is an encoder, or requires flush");
+                    break;
+                }
+                case AVERROR(ENOMEM): {
+                    LOGI("failed to add packet to internal queue");
+                    break;
+                }
+                case AVERROR_EOF: {
+                    LOGI("eof");
+                    break;
+                }
+                default:
+                    LOGI("avcodec_send_packet ret=%d", ret);
+            }
+        } else if (audioTrack == currentTrack) {
+            return MEDIA_TYPE_AUDIO;
         }
     }
-    return MEDIA_TYPE_EOS;
+    return MEDIA_TYPE_EOF;
 }
 
 int Decoder::width() {

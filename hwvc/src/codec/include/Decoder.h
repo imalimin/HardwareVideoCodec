@@ -11,7 +11,7 @@
 #include <string>
 
 const int MEDIA_TYPE_UNKNOWN = -1;
-const int MEDIA_TYPE_EOS = 0;
+const int MEDIA_TYPE_EOF = 0;
 const int MEDIA_TYPE_VIDEO = 1;
 const int MEDIA_TYPE_AUDIO = 2;
 
