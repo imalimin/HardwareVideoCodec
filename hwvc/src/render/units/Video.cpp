@@ -12,6 +12,7 @@ Video::Video() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
     registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
+    pipeline = new EventPipeline(__func__);
     decoder = new Decoder();
     avFrame = av_frame_alloc();
 }
@@ -24,10 +25,6 @@ Video::~Video() {
 void Video::release() {
     Unit::release();
     LOGI("Video::release");
-    if (texAllocator) {
-        delete texAllocator;
-        texAllocator = nullptr;
-    }
     if (avFrame) {
         av_frame_free(&avFrame);
         avFrame = nullptr;
@@ -36,11 +33,32 @@ void Video::release() {
         delete decoder;
         decoder = nullptr;
     }
+    pipeline->queueEvent([=] {
+        if (texAllocator) {
+            delete texAllocator;
+            texAllocator = nullptr;
+        }
+        if (egl) {
+            delete egl;
+            egl = nullptr;
+        }
+    });
+    if (pipeline) {
+        delete pipeline;
+        pipeline = nullptr;
+    }
 }
 
 bool Video::eventPrepare(Message *msg) {
-    texAllocator = new TextureAllocator();
-    decoder->prepare("/sdcard/001.mp4");
+    pipeline->queueEvent([=] {
+        if (!egl) {
+            egl = new Egl();
+        }
+        if (texAllocator) {
+            texAllocator = new TextureAllocator();
+        }
+        decoder->prepare("/sdcard/001.mp4");
+    });
     return true;
 }
 
@@ -63,11 +81,13 @@ bool Video::eventStart(Message *msg) {
                  GL_UNSIGNED_BYTE,
                  avFrame->data[0]);
     glBindTexture(GL_TEXTURE_2D, yuv[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width / 2, avFrame->height / 2, 0, GL_LUMINANCE,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width / 2, avFrame->height / 2, 0,
+                 GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
                  avFrame->data[1]);
     glBindTexture(GL_TEXTURE_2D, yuv[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width / 2, avFrame->height / 2, 0, GL_LUMINANCE,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width / 2, avFrame->height / 2, 0,
+                 GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
                  avFrame->data[2]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);

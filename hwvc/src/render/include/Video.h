@@ -11,6 +11,8 @@
 #include "TextureAllocator.h"
 #include "Decoder.h"
 #include "YUV420PFilter.h"
+#include "EventPipeline.h"
+#include "Egl.h"
 
 class Video : public Unit {
 public:
@@ -27,6 +29,8 @@ public:
     bool eventInvalidate(Message *msg);
 
 private:
+    EventPipeline *pipeline = nullptr;
+    Egl *egl = nullptr;
     TextureAllocator *texAllocator = nullptr;
     Decoder *decoder = nullptr;
     AVFrame *avFrame = nullptr;
