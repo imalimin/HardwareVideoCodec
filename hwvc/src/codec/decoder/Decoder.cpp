@@ -77,12 +77,14 @@ bool Decoder::prepare(string path) {
 
 int Decoder::grab(AVFrame *avFrame) {
     if (currentTrack >= 0 && 0 == avcodec_receive_frame(codecContext, avFrame)) {
+        LOGI("avcodec_receive_frame");
         return getMediaType(currentTrack);
     }
     if (avPacket) {
         av_packet_unref(avPacket);
     }
     if (av_read_frame(pFormatCtx, avPacket) >= 0) {
+        LOGI("av_read_frame");
         currentTrack = avPacket->stream_index;
         //解码
         if (avcodec_send_packet(codecContext, avPacket) == 0) {

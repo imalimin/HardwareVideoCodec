@@ -19,7 +19,8 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun initView() {
         mFilterController = FilterController(processor!!, progressLayout)
         filterBtn.setOnClickListener {
-            mFilterController.chooseFilter(this)
+//            mFilterController.chooseFilter(this)
+            processor?.start()
         }
         surfaceView.keepScreenOn = true
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
@@ -34,7 +35,6 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
             override fun surfaceCreated(holder: SurfaceHolder) {
                 processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
-                processor?.start()
             }
         })
 //        surfaceView.surfaceTextureListener = this

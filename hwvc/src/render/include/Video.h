@@ -10,6 +10,7 @@
 #include "Unit.h"
 #include "TextureAllocator.h"
 #include "Decoder.h"
+#include "YUV420PFilter.h"
 
 class Video : public Unit {
 public:
@@ -23,10 +24,14 @@ public:
 
     bool eventStart(Message *msg);
 
-private:
-    Decoder *decoder;
-    AVFrame *avFrame;
+    bool eventInvalidate(Message *msg);
 
+private:
+    TextureAllocator *texAllocator = nullptr;
+    Decoder *decoder = nullptr;
+    AVFrame *avFrame = nullptr;
+    YUV420PFilter *yuvFilter = nullptr;
+    GLuint yuv[3];
 };
 
 
