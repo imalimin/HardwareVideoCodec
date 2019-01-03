@@ -17,3 +17,7 @@ Object::~Object() {
 void Object::notify() {
 
 }
+
+void Object::wait() {
+
+}

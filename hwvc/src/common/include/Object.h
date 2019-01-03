@@ -14,6 +14,8 @@ public:
 
     virtual ~Object();
 
+    virtual void wait();
+
     virtual void notify();
 };
 

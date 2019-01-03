@@ -7,14 +7,19 @@
 #include "../include/EventPipeline.h"
 
 EventPipeline::EventPipeline(string name) {
+    pthread_mutex_init(&mutex, nullptr);
+    pthread_cond_init(&cond, nullptr);
     handlerThread = new HandlerThread(name);
 }
 
 EventPipeline::~EventPipeline() {
+    notify();
     if (nullptr != handlerThread) {
         delete handlerThread;
         handlerThread = nullptr;
     }
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&cond);
 }
 
 void EventPipeline::queueEvent(function<void()> event) {
@@ -22,3 +27,18 @@ void EventPipeline::queueEvent(function<void()> event) {
         event();
     }));
 }
+
+void EventPipeline::wait() {
+    Object::wait();
+    pthread_mutex_lock(&mutex);
+    if (0 != pthread_cond_wait(&cond, &mutex)) {
+        pthread_mutex_unlock(&mutex);
+    }
+}
+
+void EventPipeline::notify() {
+    Object::notify();
+    pthread_mutex_lock(&mutex);
+    pthread_cond_broadcast(&cond);
+    pthread_mutex_unlock(&mutex);
+};

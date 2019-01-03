@@ -91,6 +91,7 @@ bool BlockQueue<T>::isEmpty() {
 
 template<class T>
 void BlockQueue<T>::notify() {
+    Object::notify();
     pthread_mutex_lock(&mutex);
     pthread_cond_broadcast(&cond);
     pthread_mutex_unlock(&mutex);

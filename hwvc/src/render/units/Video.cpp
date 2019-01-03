@@ -50,6 +50,7 @@ void Video::release() {
 }
 
 bool Video::eventPrepare(Message *msg) {
+    pipeline->wait();
     pipeline->queueEvent([=] {
         if (!egl) {
             egl = new Egl();
@@ -59,6 +60,7 @@ bool Video::eventPrepare(Message *msg) {
         }
         decoder->prepare("/sdcard/001.mp4");
     });
+    LOGI(__func__);
     return true;
 }
 
