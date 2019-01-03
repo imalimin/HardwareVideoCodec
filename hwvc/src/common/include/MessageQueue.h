@@ -5,7 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "BlockQueue.h"
-#include "../entity/BlockQueue.cpp"
 #include "Message.h"
 
 #ifndef HARDWAREVIDEOCODEC_MESSAGEQUEUE_H

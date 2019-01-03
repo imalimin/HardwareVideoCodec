@@ -4,55 +4,120 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
+#ifndef HARDWAREVIDEOCODEC_BLOCKQUEUE_H
+#define HARDWAREVIDEOCODEC_BLOCKQUEUE_H
+
 #include <string>
 #include <pthread.h>
 #include <list>
 #include "Object.h"
+#include "log.h"
 
 using namespace std;
-#ifndef HARDWAREVIDEOCODEC_BLOCKQUEUE_H
-#define HARDWAREVIDEOCODEC_BLOCKQUEUE_H
 
 template<class T>
 class BlockQueue : public Object {
 public:
     typedef list<T> Queue;
 
-    BlockQueue();
+    BlockQueue() {
+        m_queue = new Queue();
+        pthread_mutex_init(&mutex, nullptr);
+        pthread_cond_init(&cond, nullptr);
+    }
 
-    virtual ~BlockQueue();
+    virtual ~BlockQueue() {
+        LOGI("~BlockQueue");
+        pthread_mutex_lock(&mutex);
+        if (nullptr != m_queue) {
+            m_queue->clear();
+            delete m_queue;
+            m_queue = nullptr;
+        }
+        pthread_mutex_unlock(&mutex);
+        pthread_mutex_destroy(&mutex);
+        pthread_cond_destroy(&cond);
+    }
 
     /**
      * 阻塞式向队列增加一个元素
      */
-    bool offer(T *entity);
+    bool offer(T *entity) {
+        pthread_mutex_lock(&mutex);
+//        if (size() >= SIZE_CACHE) {
+//            pthread_cond_broadcast(cond);
+//            pthread_mutex_unlock(mutex);
+//            return false;
+//        }
+
+        m_queue->push_back(*entity);
+
+        pthread_cond_broadcast(&cond);
+        pthread_mutex_unlock(&mutex);
+        return true;
+    }
 
     /**
      * 阻塞式从队列拿出一个元素
      */
-    T *take();
+    T *take() {
+        pthread_mutex_lock(&mutex);
+        if (size() <= 0) {
+            if (0 != pthread_cond_wait(&cond, &mutex)) {
+                pthread_mutex_unlock(&mutex);
+                return nullptr;
+            }
+        }
+        T *e = nullptr;
+        if (!isEmpty()) {
+            e = &m_queue->front();
+        }
+
+        pthread_mutex_unlock(&mutex);
+        return e;
+    }
 
     /**
      * 阻塞式从队列删除一个元素
      */
-    void pop();
+    void pop() {
+        pthread_mutex_lock(&mutex);
+        if (isEmpty())
+            return;
+        m_queue->pop_front();
+        pthread_mutex_unlock(&mutex);
+    }
 
     /**
      * 删除所有元素
      */
-    void clear();
+    void clear() {
+        pthread_cond_broadcast(&cond);
+        pthread_mutex_lock(&mutex);
+        m_queue->clear();
+        pthread_mutex_unlock(&mutex);
+    }
 
     /**
      * 获取队列大小
      */
-    int size();
+    int size() {
+        return m_queue->size();
+    }
 
     /**
      * 检查队列是否为空
      */
-    bool isEmpty();
+    bool isEmpty() {
+        return m_queue->empty();
+    }
 
-    virtual void notify() override;
+    virtual void notify() override {
+        Object::notify();
+        pthread_mutex_lock(&mutex);
+        pthread_cond_broadcast(&cond);
+        pthread_mutex_unlock(&mutex);
+    }
 
 private:
     pthread_mutex_t mutex;

@@ -12,7 +12,6 @@ Video::Video() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
     registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
-    pipeline = new EventPipeline(__func__);
     decoder = new Decoder();
     avFrame = av_frame_alloc();
 }
@@ -50,7 +49,9 @@ void Video::release() {
 }
 
 bool Video::eventPrepare(Message *msg) {
-    pipeline->wait();
+    if(!pipeline){
+        pipeline = new EventPipeline(name);
+    }
     pipeline->queueEvent([=] {
         if (!egl) {
             egl = new Egl();
@@ -59,8 +60,9 @@ bool Video::eventPrepare(Message *msg) {
             texAllocator = new TextureAllocator();
         }
         decoder->prepare("/sdcard/001.mp4");
+        pipeline->notify();
     });
-    LOGI(__func__);
+    pipeline->wait();
     return true;
 }
 
