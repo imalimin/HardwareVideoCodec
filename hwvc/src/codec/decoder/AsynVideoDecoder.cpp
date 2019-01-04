@@ -12,13 +12,10 @@ extern "C" {
 #endif
 
 AsynVideoDecoder::AsynVideoDecoder() {
-    cache = new BlockQueue<AVFrame>();
-    recycler = new BlockQueue<AVFrame>();
     decoder = new DefaultVideoDecoder();
-    for (int i = 0; i < 3; ++i) {
-        AVFrame *frame = av_frame_alloc();
-        recycler->offer(frame);
-    }
+    vRecycler = new RecyclerBlockQueue<AVFrame>(3, [] {
+        return av_frame_alloc();
+    });
 }
 
 AsynVideoDecoder::~AsynVideoDecoder() {
@@ -31,15 +28,10 @@ AsynVideoDecoder::~AsynVideoDecoder() {
         delete decoder;
         decoder = nullptr;
     }
-    if (recycler) {
-        recycler->clear();
-        delete recycler;
-        recycler = nullptr;
-    }
-    if (cache) {
-        cache->clear();
-        delete cache;
-        cache = nullptr;
+    if (vRecycler) {
+        vRecycler->clear();
+        delete vRecycler;
+        vRecycler = nullptr;
     }
 }
 
@@ -58,15 +50,15 @@ bool AsynVideoDecoder::prepare(string path) {
 }
 
 int AsynVideoDecoder::grab(Frame *frame) {
-    AVFrame *cacheFrame = cache->take();
-    int size = cacheFrame->width * cacheFrame->height;
-    memcpy(frame->data, cacheFrame->data[0], size);
-    memcpy(frame->data + size, cacheFrame->data[1], size / 4);
-    memcpy(frame->data + size + size / 4, cacheFrame->data[2], size / 4);
-    frame->width = cacheFrame->width;
-    frame->height = cacheFrame->height;
+    AVFrame *f = vRecycler->take();
+    int size = f->width * f->height;
+    memcpy(frame->data, f->data[0], size);
+    memcpy(frame->data + size, f->data[1], size / 4);
+    memcpy(frame->data + size + size / 4, f->data[2], size / 4);
 
-    recycler->offer(av_frame_alloc());
+    frame->width = f->width;
+    frame->height = f->height;
+    vRecycler->recycle(f);
 
     return MEDIA_TYPE_VIDEO;
 }
@@ -90,16 +82,17 @@ void AsynVideoDecoder::loop() {
         return;
     pipeline->queueEvent([this] {
         loop();
-        AVFrame *cacheFrame = recycler->take();
+        AVFrame *cacheFrame = vRecycler->takeCache();
 
         long long time = getCurrentTimeUS();
         int ret = decoder->grab(cacheFrame);
-        LOGI("Grab cost %lld, cache left %d", (getCurrentTimeUS() - time), recycler->size());
+        LOGI("Grab cost %lld, cache left %d", (getCurrentTimeUS() - time),
+             vRecycler->getCacheSize());
 
         if (MEDIA_TYPE_VIDEO == ret) {
-            cache->offer(cacheFrame);
+            vRecycler->offer(cacheFrame);
         } else {
-            recycler->offer(cacheFrame);
+            vRecycler->recycle(cacheFrame);
         }
     });
 }

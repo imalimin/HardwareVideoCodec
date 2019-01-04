@@ -10,7 +10,7 @@
 #include "AbsVideoDecoder.h"
 #include "DefaultVideoDecoder.h"
 #include "Frame.h"
-#include "BlockQueue.h"
+#include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
 
 #ifdef __cplusplus
@@ -33,8 +33,7 @@ public:
 
 private:
     DefaultVideoDecoder *decoder = nullptr;
-    BlockQueue<AVFrame> *cache = nullptr;
-    BlockQueue<AVFrame> *recycler = nullptr;
+    RecyclerBlockQueue<AVFrame> *vRecycler = nullptr;
     EventPipeline *pipeline = nullptr;
     bool lopping = true;
 

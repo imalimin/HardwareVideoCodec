@@ -7,15 +7,19 @@
 #ifndef HARDWAREVIDEOCODEC_RECYCLERBLOCKQUEUE_H
 #define HARDWAREVIDEOCODEC_RECYCLERBLOCKQUEUE_H
 
+#include <functional>
 #include "Object.h"
 #include "BlockQueue.h"
 
 template<class T>
 class RecyclerBlockQueue : public Object {
 public:
-    RecyclerBlockQueue() {
+    RecyclerBlockQueue(int initCount, function<T *()> initor) {
         queue = new BlockQueue<T>();
         recycler = new BlockQueue<T>();
+        for (int i = 0; i < initCount; ++i) {
+            recycle(initor());
+        }
     }
 
     ~RecyclerBlockQueue() {
