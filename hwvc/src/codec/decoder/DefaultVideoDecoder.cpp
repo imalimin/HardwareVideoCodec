@@ -4,7 +4,7 @@
 * This source code is licensed under the GPL license found in the
 * LICENSE file in the root directory of this source tree.
 */
-#include "../include/Decoder.h"
+#include "../include/DefaultVideoDecoder.h"
 #include "log.h"
 
 #ifdef __cplusplus
@@ -13,11 +13,11 @@ extern "C" {
 #include "x264.h"
 #include "x264_config.h"
 
-Decoder::Decoder() {
+DefaultVideoDecoder::DefaultVideoDecoder() {
 
 }
 
-Decoder::~Decoder() {
+DefaultVideoDecoder::~DefaultVideoDecoder() {
     if (avPacket) {
         av_packet_unref(avPacket);
         avPacket = nullptr;
@@ -32,7 +32,7 @@ Decoder::~Decoder() {
     }
 }
 
-bool Decoder::prepare(string path) {
+bool DefaultVideoDecoder::prepare(string path) {
     this->path = path;
     av_register_all();
     pFormatCtx = avformat_alloc_context();
@@ -57,7 +57,7 @@ bool Decoder::prepare(string path) {
         }
     }
     AVCodecParameters *avCodecParameters = pFormatCtx->streams[videoTrack]->codecpar;
-    LOGI("Decoder(%s) %d x %d", path.c_str(), avCodecParameters->width, avCodecParameters->height);
+    LOGI("DefaultVideoDecoder(%s) %d x %d", path.c_str(), avCodecParameters->width, avCodecParameters->height);
     AVCodec *codec = avcodec_find_decoder(avCodecParameters->codec_id);
     if (NULL == codec) {
         LOGE("Couldn't find codec.");
@@ -75,7 +75,7 @@ bool Decoder::prepare(string path) {
     return true;
 }
 
-int Decoder::grab(AVFrame *avFrame) {
+int DefaultVideoDecoder::grab(AVFrame *avFrame) {
     if (currentTrack >= 0 && 0 == avcodec_receive_frame(codecContext, avFrame)) {
 //        LOGI("avcodec_receive_frame");
         return getMediaType(currentTrack);
@@ -84,7 +84,7 @@ int Decoder::grab(AVFrame *avFrame) {
         av_packet_unref(avPacket);
     }
     if (av_read_frame(pFormatCtx, avPacket) >= 0) {
-        LOGI("av_read_frame");
+//        LOGI("av_read_frame");
         currentTrack = avPacket->stream_index;
         //解码
         int ret = 0;
@@ -120,17 +120,17 @@ int Decoder::grab(AVFrame *avFrame) {
     return MEDIA_TYPE_EOF;
 }
 
-int Decoder::width() {
+int DefaultVideoDecoder::width() {
     if (!pFormatCtx) return 0;
     return pFormatCtx->streams[videoTrack]->codecpar->width;
 }
 
-int Decoder::height() {
+int DefaultVideoDecoder::height() {
     if (!pFormatCtx) return 0;
     return pFormatCtx->streams[videoTrack]->codecpar->height;
 }
 
-int Decoder::getMediaType(int track) {
+int DefaultVideoDecoder::getMediaType(int track) {
     if (videoTrack == track) {
         return MEDIA_TYPE_VIDEO;
     }

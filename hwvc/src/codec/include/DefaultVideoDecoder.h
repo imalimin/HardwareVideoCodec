@@ -4,11 +4,10 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#ifndef HARDWAREVIDEOCODEC_DECODER_H
-#define HARDWAREVIDEOCODEC_DECODER_H
+#ifndef HARDWAREVIDEOCODEC_DEFAULTVIDEODECODER_H
+#define HARDWAREVIDEOCODEC_DEFAULTVIDEODECODER_H
 
-#include "Object.h"
-#include <string>
+#include "AbsVideoDecoder.h"
 
 const int MEDIA_TYPE_UNKNOWN = -1;
 const int MEDIA_TYPE_EOF = 0;
@@ -23,24 +22,23 @@ extern "C" {
 #include "ff/libavformat/avformat.h"
 #include "ff/libavutil/avutil.h"
 
-using namespace std;
 
-class Decoder : public Object {
+class DefaultVideoDecoder : public AbsVideoDecoder {
 public:
-    Decoder();
+    DefaultVideoDecoder();
 
-    virtual ~Decoder();
+    virtual ~DefaultVideoDecoder();
 
-    bool prepare(string path);
+    bool prepare(string path) override;
+
+    int width() override;
+
+    int height() override;
 
     /**
      * @return 1: video, 2: audio, 0: failed
      */
     int grab(AVFrame *avFrame);
-
-    int width();
-
-    int height();
 
 private:
     string path;
@@ -56,4 +54,4 @@ private:
 }
 #endif
 
-#endif //HARDWAREVIDEOCODEC_DECODER_H
+#endif //HARDWAREVIDEOCODEC_DEFAULTVIDEODECODER_H

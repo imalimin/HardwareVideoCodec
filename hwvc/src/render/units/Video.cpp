@@ -13,8 +13,7 @@ Video::Video() {
     name = __func__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
     registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
-    decoder = new Decoder();
-    avFrame = av_frame_alloc();
+    decoder = new AsynVideoDecoder();
 }
 
 Video::~Video() {
@@ -26,9 +25,9 @@ Video::~Video() {
 void Video::release() {
     Unit::release();
     LOGI("Video::release");
-    if (avFrame) {
-        av_frame_free(&avFrame);
-        avFrame = nullptr;
+    if (frame) {
+        delete frame;
+        frame = nullptr;
     }
     if (decoder) {
         delete decoder;
@@ -75,6 +74,7 @@ bool Video::eventPrepare(Message *msg) {
 }
 
 bool Video::eventStart(Message *msg) {
+    LOGI("Video::eventStart");
     if (STOP != playState) {
         playState = PLAYING;
         loop();
@@ -96,7 +96,7 @@ bool Video::eventStop(Message *msg) {
 
 bool Video::eventInvalidate(Message *m) {
     Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
-    msg->obj = new ObjectBox(new Size(avFrame->width, avFrame->height));
+    msg->obj = new ObjectBox(new Size(frame->width, frame->height));
     msg->arg1 = yuvFilter->getFrameBuffer()->getFrameTexture();
     postEvent(msg);
     return true;
@@ -106,13 +106,18 @@ void Video::loop() {
     pipeline->queueEvent([this] {
         if (PLAYING != playState)
             return;
+        if (!texAllocator || !decoder) {
+            eventPause(nullptr);
+            return;
+        }
+        LOGI("Video::loop");
         loop();
         egl->makeCurrent();
         checkFilter();
         if (MEDIA_TYPE_VIDEO != grab()) {
             return;
         }
-        glViewport(0, 0, avFrame->width, avFrame->height);
+        glViewport(0, 0, frame->width, frame->height);
         yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
         eventInvalidate(nullptr);
     });
@@ -129,27 +134,31 @@ void Video::checkFilter() {
 }
 
 int Video::grab() {
-    int ret = decoder->grab(avFrame);
+    if (!frame) {
+        frame = new Frame(decoder->width(), decoder->height());
+    }
+    int ret = decoder->grab(frame);
     if (MEDIA_TYPE_VIDEO != ret) {
         LOGI("grab ret=%d", ret);
         return ret;
     }
-    LOGI("grab %d x %d, ", avFrame->width, avFrame->height);
+    LOGI("grab %d x %d, ", frame->width, frame->height);
+    int size = frame->width * frame->height;
     glBindTexture(GL_TEXTURE_2D, yuv[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width, avFrame->height, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0,
                  GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
-                 avFrame->data[0]);
+                 frame->data);
     glBindTexture(GL_TEXTURE_2D, yuv[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width / 2, avFrame->height / 2, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width / 2, frame->height / 2, 0,
                  GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
-                 avFrame->data[1]);
+                 frame->data + size);
     glBindTexture(GL_TEXTURE_2D, yuv[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width / 2, avFrame->height / 2, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width / 2, frame->height / 2, 0,
                  GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
-                 avFrame->data[2]);
+                 frame->data + size + size / 4);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
     return MEDIA_TYPE_VIDEO;
 }

@@ -9,10 +9,11 @@
 
 #include "Unit.h"
 #include "TextureAllocator.h"
-#include "Decoder.h"
+#include "AsynVideoDecoder.h"
 #include "YUV420PFilter.h"
 #include "EventPipeline.h"
 #include "Egl.h"
+#include "Frame.h"
 
 enum PlayState {
     PAUSE = 0,
@@ -42,8 +43,8 @@ private:
     EventPipeline *pipeline = nullptr;
     Egl *egl = nullptr;
     TextureAllocator *texAllocator = nullptr;
-    Decoder *decoder = nullptr;
-    AVFrame *avFrame = nullptr;
+    AsynVideoDecoder *decoder = nullptr;
+    Frame *frame = nullptr;
     YUV420PFilter *yuvFilter = nullptr;
     GLuint yuv[3];
     PlayState playState = STOP;
