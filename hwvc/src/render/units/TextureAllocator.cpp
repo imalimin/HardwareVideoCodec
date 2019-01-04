@@ -32,6 +32,25 @@ GLuint TextureAllocator::alloc() {
     return texture;
 }
 
+GLuint *TextureAllocator::alloc(int len) {
+    GLuint texture[len];
+    glGenTextures(len, texture);
+    for (GLuint tex:texture) {
+        textures.push_back(tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexParameterf(GL_TEXTURE_2D,
+                        GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D,
+                        GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D,
+                        GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D,
+                        GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindTexture(GL_TEXTURE_2D, GL_NONE);
+    }
+    return texture;
+}
+
 GLuint TextureAllocator::alloc(uint8_t *rgba, int width, int height) {
     GLuint texture = alloc();
     glBindTexture(GL_TEXTURE_2D, texture);

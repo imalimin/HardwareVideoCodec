@@ -19,6 +19,8 @@ public:
 
     GLuint alloc();
 
+    GLuint *alloc(int len);
+
     GLuint alloc(uint8_t *rgba, int width, int height);
 
     void recycle(GLuint texture);
