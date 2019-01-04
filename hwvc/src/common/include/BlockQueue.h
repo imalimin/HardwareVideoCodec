@@ -9,7 +9,7 @@
 
 #include <string>
 #include <pthread.h>
-#include <list>
+#include "LinkedStack.h"
 #include "Object.h"
 #include "log.h"
 
@@ -18,7 +18,7 @@ using namespace std;
 template<class T>
 class BlockQueue : public Object {
 public:
-    typedef list<T> Queue;
+    typedef LinkedStack<T> Queue;
 
     BlockQueue() {
         m_queue = new Queue();
@@ -50,7 +50,7 @@ public:
 //            return false;
 //        }
 
-        m_queue->push_back(*entity);
+        m_queue->offer(entity);
 
         pthread_cond_broadcast(&cond);
         pthread_mutex_unlock(&mutex);
@@ -70,22 +70,11 @@ public:
         }
         T *e = nullptr;
         if (!isEmpty()) {
-            e = &m_queue->front();
+            e = m_queue->take();
         }
 
         pthread_mutex_unlock(&mutex);
         return e;
-    }
-
-    /**
-     * 阻塞式从队列删除一个元素
-     */
-    void pop() {
-        pthread_mutex_lock(&mutex);
-        if (isEmpty())
-            return;
-        m_queue->pop_front();
-        pthread_mutex_unlock(&mutex);
     }
 
     /**

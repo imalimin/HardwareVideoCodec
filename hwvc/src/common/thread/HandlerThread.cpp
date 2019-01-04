@@ -18,15 +18,14 @@ HandlerThread::HandlerThread(string name) {
                 break;
             }
             if (nullptr == msg) {
-                this->pop();
                 continue;
             }
             msg->runnable(msg);
+            delete msg;
             if (this->requestQuitSafely && size <= 1) {
                 LOGI("requestQuitSafely");
                 break;
             }
-            this->pop();
         }
     });
     thread->start();
