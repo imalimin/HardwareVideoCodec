@@ -27,16 +27,16 @@ public:
 };
 
 template<class T>
-class LinkedStack : public Object {
+class LinkedQueue : public Object {
 public:
     typedef Node<T> NodeT;
 
-    LinkedStack() {
+    LinkedQueue() {
         head = nullptr;
         len = 0;
     }
 
-    ~LinkedStack() {
+    ~LinkedQueue() {
         if (head) {
             clear();
         }

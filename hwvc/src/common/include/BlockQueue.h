@@ -9,7 +9,7 @@
 
 #include <string>
 #include <pthread.h>
-#include "LinkedStack.h"
+#include "LinkedQueue.h"
 #include "Object.h"
 #include "log.h"
 
@@ -18,7 +18,7 @@ using namespace std;
 template<class T>
 class BlockQueue : public Object {
 public:
-    typedef LinkedStack<T> Queue;
+    typedef LinkedQueue<T> Queue;
 
     BlockQueue() {
         m_queue = new Queue();
