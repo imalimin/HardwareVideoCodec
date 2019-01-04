@@ -36,7 +36,7 @@ void Screen::release() {
 bool Screen::eventPrepare(Message *msg) {
     width = msg->arg1;
     height = msg->arg2;
-    initWindow(static_cast<ANativeWindow *>(msg->tyrUnBox()));
+    initWindow(static_cast<NativeWindow *>(msg->tyrUnBox()));
     return true;
 }
 
@@ -48,9 +48,14 @@ bool Screen::eventDraw(Message *msg) {
     return true;
 }
 
-void Screen::initWindow(ANativeWindow *win) {
+void Screen::initWindow(NativeWindow *nw) {
     if (!egl) {
-        egl = new Egl(win);
+        if (nw->egl) {
+            egl = new Egl(nw->egl, nw->win);
+        } else {
+            egl = new Egl(nw->win);
+            nw->egl = egl;
+        }
         egl->makeCurrent();
         drawer = new NormalDrawer();
         drawer->setRotation(ROTATION_VERTICAL);

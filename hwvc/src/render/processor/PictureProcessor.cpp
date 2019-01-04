@@ -5,6 +5,7 @@
 #include "../include/PictureProcessor.h"
 #include "../include/Render.h"
 #include "../include/Image.h"
+#include "../entity/NativeWindow.h"
 #include "ObjectBox.h"
 
 PictureProcessor::PictureProcessor() {
@@ -26,7 +27,7 @@ PictureProcessor::~PictureProcessor() {
 void PictureProcessor::prepare(ANativeWindow *win, int width, int height) {
     if (pipeline) {
         Message *msg = new Message(EVENT_COMMON_PREPARE, nullptr);
-        msg->obj = new ObjectBox(win);
+        msg->obj = new ObjectBox(new NativeWindow(win, nullptr));
         msg->arg1 = width;
         msg->arg2 = height;
         pipeline->postEvent(msg);

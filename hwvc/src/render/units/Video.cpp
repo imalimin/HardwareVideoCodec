@@ -7,6 +7,7 @@
 #include "../include/Video.h"
 #include "ObjectBox.h"
 #include "Size.h"
+#include "../entity/NativeWindow.h"
 
 Video::Video() {
     name = __func__;
@@ -17,6 +18,7 @@ Video::Video() {
 }
 
 Video::~Video() {
+    eventStop(nullptr);
     release();
     LOGI("Video::~Image");
 }
@@ -49,14 +51,20 @@ void Video::release() {
 }
 
 bool Video::eventPrepare(Message *msg) {
-    if(!pipeline){
+    playState = PAUSE;
+    if (!pipeline) {
         pipeline = new EventPipeline(name);
     }
+    NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
     pipeline->queueEvent([=] {
-        if (!egl) {
+        if (nw->egl) {
+            egl = new Egl(nw->egl, nullptr);
+        } else {
             egl = new Egl();
+            nw->egl = egl;
         }
-        if (texAllocator) {
+        egl->makeCurrent();
+        if (!texAllocator) {
             texAllocator = new TextureAllocator();
         }
         decoder->prepare("/sdcard/001.mp4");
@@ -67,21 +75,69 @@ bool Video::eventPrepare(Message *msg) {
 }
 
 bool Video::eventStart(Message *msg) {
-    int ret = decoder->grab(avFrame);
-    if (MEDIA_TYPE_VIDEO != ret) {
-        LOGI("grab ret=%d", ret);
-        return true;
+    if (STOP != playState) {
+        playState = PLAYING;
+        loop();
     }
+    return true;
+}
+
+bool Video::eventPause(Message *msg) {
+    if (STOP != playState) {
+        playState = PAUSE;
+    }
+    return true;
+}
+
+bool Video::eventStop(Message *msg) {
+    playState = STOP;
+    return true;
+}
+
+bool Video::eventInvalidate(Message *m) {
+    Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
+    msg->obj = new ObjectBox(new Size(avFrame->width, avFrame->height));
+    msg->arg1 = yuvFilter->getFrameBuffer()->getFrameTexture();
+    postEvent(msg);
+    return true;
+}
+
+void Video::loop() {
+    pipeline->queueEvent([this] {
+        if (PLAYING != playState)
+            return;
+        loop();
+        egl->makeCurrent();
+        checkFilter();
+        if (MEDIA_TYPE_VIDEO != grab()) {
+            return;
+        }
+        glViewport(0, 0, avFrame->width, avFrame->height);
+        yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
+        eventInvalidate(nullptr);
+    });
+}
+
+void Video::checkFilter() {
     if (!yuvFilter) {
         yuvFilter = new YUV420PFilter();
-        yuvFilter->init(avFrame->width, avFrame->height);
+        yuvFilter->init(decoder->width(), decoder->height());
         yuv[0] = texAllocator->alloc();
         yuv[1] = texAllocator->alloc();
         yuv[2] = texAllocator->alloc();
     }
+}
+
+int Video::grab() {
+    int ret = decoder->grab(avFrame);
+    if (MEDIA_TYPE_VIDEO != ret) {
+        LOGI("grab ret=%d", ret);
+        return ret;
+    }
     LOGI("grab %d x %d, ", avFrame->width, avFrame->height);
     glBindTexture(GL_TEXTURE_2D, yuv[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width, avFrame->height, 0, GL_LUMINANCE,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, avFrame->width, avFrame->height, 0,
+                 GL_LUMINANCE,
                  GL_UNSIGNED_BYTE,
                  avFrame->data[0]);
     glBindTexture(GL_TEXTURE_2D, yuv[1]);
@@ -95,18 +151,5 @@ bool Video::eventStart(Message *msg) {
                  GL_UNSIGNED_BYTE,
                  avFrame->data[2]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
-
-    glViewport(0, 0, avFrame->width, avFrame->height);
-    yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
-
-    eventInvalidate(nullptr);
-    return true;
-}
-
-bool Video::eventInvalidate(Message *m) {
-    Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
-    msg->obj = new ObjectBox(new Size(avFrame->width, avFrame->height));
-    msg->arg1 = yuvFilter->getFrameBuffer()->getFrameTexture();
-    postEvent(msg);
-    return true;
+    return MEDIA_TYPE_VIDEO;
 }

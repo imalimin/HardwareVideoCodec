@@ -8,6 +8,7 @@
 #include "Unit.h"
 #include "Egl.h"
 #include "BaseDrawer.h"
+#include "../entity/NativeWindow.h"
 
 class Screen : public Unit {
 public:
@@ -27,7 +28,7 @@ private:
     int width = 0;
     int height = 0;
 
-    void initWindow(ANativeWindow *win);
+    void initWindow(NativeWindow *nw);
 
     void draw(GLuint texture);
 

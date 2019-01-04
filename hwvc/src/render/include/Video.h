@@ -14,6 +14,12 @@
 #include "EventPipeline.h"
 #include "Egl.h"
 
+enum PlayState {
+    PAUSE = 0,
+    PLAYING = 1,
+    STOP = -1
+};
+
 class Video : public Unit {
 public:
     Video();
@@ -26,6 +32,10 @@ public:
 
     bool eventStart(Message *msg);
 
+    bool eventPause(Message *msg);
+
+    bool eventStop(Message *msg);
+
     bool eventInvalidate(Message *msg);
 
 private:
@@ -36,6 +46,13 @@ private:
     AVFrame *avFrame = nullptr;
     YUV420PFilter *yuvFilter = nullptr;
     GLuint yuv[3];
+    PlayState playState = STOP;
+
+    void loop();
+
+    void checkFilter();
+
+    int grab();
 };
 
 
