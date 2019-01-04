@@ -12,7 +12,9 @@ class NativeWindow : public Object {
 public:
     ANativeWindow *win;
 
-    NativeWindow(ANativeWindow *win);
+    Egl *egl = nullptr;
+
+    NativeWindow(ANativeWindow *win, Egl *egl);
 
     virtual ~NativeWindow();
 

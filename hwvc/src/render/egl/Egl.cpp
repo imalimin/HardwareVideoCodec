@@ -9,18 +9,18 @@
 
 //eglGetProcAddress( "eglPresentationTimeANDROID")
 Egl::Egl() {
-    init(EGL_NO_CONTEXT, nullptr);
+    init(nullptr, nullptr);
 }
 
-Egl::Egl(EGLContext eglContext) {
-    init(eglContext, nullptr);
+Egl::Egl(Egl *context) {
+    init(context, nullptr);
 }
 
 Egl::Egl(ANativeWindow *win) {
-    init(EGL_NO_CONTEXT, win);
+    init(nullptr, win);
 }
 
-Egl::Egl(EGLContext context, ANativeWindow *win) {
+Egl::Egl(Egl *context, ANativeWindow *win) {
     init(context, win);
 }
 
@@ -35,14 +35,18 @@ Egl::~Egl() {
     eglSurface = EGL_NO_SURFACE;
 }
 
-void Egl::init(EGLContext context, ANativeWindow *win) {
+void Egl::init(Egl *context, ANativeWindow *win) {
     this->eglDisplay = createDisplay(EGL_DEFAULT_DISPLAY);
     if (!this->eglDisplay)
         return;
     this->eglConfig = createConfig(CONFIG_DEFAULT);
     if (!this->eglConfig)
         return;
-    this->eglContext = createContext(context);
+    if (context) {
+        this->eglContext = createContext(context->eglContext);
+    } else {
+        this->eglContext = createContext(EGL_NO_CONTEXT);
+    }
     if (!this->eglContext)
         return;
     if (win) {

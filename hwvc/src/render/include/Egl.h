@@ -24,11 +24,11 @@ class Egl : public Object {
 public:
     Egl();
 
-    Egl(EGLContext context);
+    Egl(Egl *context);
 
     Egl(ANativeWindow *win);
 
-    Egl(EGLContext context, ANativeWindow *win);
+    Egl(Egl *context, ANativeWindow *win);
 
     virtual ~Egl();
 
@@ -46,7 +46,7 @@ private:
     EGLContext eglContext = EGL_NO_CONTEXT;
     EGLSurface eglSurface = EGL_NO_SURFACE;
 
-    void init(EGLContext eglContext, ANativeWindow *win);
+    void init(Egl *context, ANativeWindow *win);
 
     EGLDisplay createDisplay(EGLNativeDisplayType display_id);
 

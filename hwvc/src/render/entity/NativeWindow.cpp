@@ -4,10 +4,12 @@
 
 #include "NativeWindow.h"
 
-NativeWindow::NativeWindow(ANativeWindow *win) {
+NativeWindow::NativeWindow(ANativeWindow *win, Egl *egl) {
     this->win = win;
+    this->egl = egl;
 }
 
 NativeWindow::~NativeWindow() {
-
+    this->win = nullptr;
+    this->egl = nullptr;
 }
