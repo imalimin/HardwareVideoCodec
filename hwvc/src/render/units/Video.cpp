@@ -110,7 +110,6 @@ void Video::loop() {
             eventPause(nullptr);
             return;
         }
-        LOGI("Video::loop");
         loop();
         egl->makeCurrent();
         checkFilter();

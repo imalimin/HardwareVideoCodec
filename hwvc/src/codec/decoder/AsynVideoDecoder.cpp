@@ -5,18 +5,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "../include/AsynVideoDecoder.h"
+#include "TimeUtils.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 AsynVideoDecoder::AsynVideoDecoder() {
-    pthread_mutex_init(&cacheMutex, nullptr);
-    pthread_mutex_init(&recyclerMutex, nullptr);
     cache = new BlockQueue<AVFrame>();
     recycler = new BlockQueue<AVFrame>();
     decoder = new DefaultVideoDecoder();
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < 3; ++i) {
         AVFrame *frame = av_frame_alloc();
         recycler->offer(frame);
     }
@@ -32,22 +31,16 @@ AsynVideoDecoder::~AsynVideoDecoder() {
         delete decoder;
         decoder = nullptr;
     }
-    pthread_mutex_lock(&recyclerMutex);
     if (recycler) {
         recycler->clear();
         delete recycler;
         recycler = nullptr;
     }
-    pthread_mutex_unlock(&recyclerMutex);
-    pthread_mutex_destroy(&recyclerMutex);
-    pthread_mutex_lock(&cacheMutex);
     if (cache) {
         cache->clear();
         delete cache;
         cache = nullptr;
     }
-    pthread_mutex_unlock(&cacheMutex);
-    pthread_mutex_destroy(&cacheMutex);
 }
 
 bool AsynVideoDecoder::prepare(string path) {
@@ -96,11 +89,12 @@ void AsynVideoDecoder::loop() {
     if (!lopping)
         return;
     pipeline->queueEvent([this] {
-        LOGI("AsynVideoDecoder::grab cache left %d", recycler->size());
         loop();
         AVFrame *cacheFrame = recycler->take();
 
+        long long time = getCurrentTimeUS();
         int ret = decoder->grab(cacheFrame);
+        LOGI("Grab cost %lld, cache left %d", (getCurrentTimeUS() - time), recycler->size());
 
         if (MEDIA_TYPE_VIDEO == ret) {
             cache->offer(cacheFrame);

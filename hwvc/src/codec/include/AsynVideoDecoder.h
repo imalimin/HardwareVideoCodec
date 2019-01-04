@@ -32,8 +32,6 @@ public:
     int grab(Frame *frame);
 
 private:
-    pthread_mutex_t cacheMutex;
-    pthread_mutex_t recyclerMutex;
     DefaultVideoDecoder *decoder = nullptr;
     BlockQueue<AVFrame> *cache = nullptr;
     BlockQueue<AVFrame> *recycler = nullptr;
