@@ -22,9 +22,13 @@ DefaultVideoDecoder::~DefaultVideoDecoder() {
         av_packet_unref(avPacket);
         avPacket = nullptr;
     }
-    if (codecContext) {
-        avcodec_close(codecContext);
-        codecContext = nullptr;
+    if (aCodecContext) {
+        avcodec_close(aCodecContext);
+        aCodecContext = nullptr;
+    }
+    if (vCodecContext) {
+        avcodec_close(vCodecContext);
+        vCodecContext = nullptr;
     }
     if (pFormatCtx) {
         avformat_free_context(pFormatCtx);
@@ -56,18 +60,12 @@ bool DefaultVideoDecoder::prepare(string path) {
             audioTrack = i;
         }
     }
-    AVCodecParameters *avCodecParameters = pFormatCtx->streams[videoTrack]->codecpar;
-    LOGI("DefaultVideoDecoder(%s) %d x %d", path.c_str(), avCodecParameters->width, avCodecParameters->height);
-    AVCodec *codec = avcodec_find_decoder(avCodecParameters->codec_id);
-    if (NULL == codec) {
-        LOGE("Couldn't find codec.");
+    if (!openTrack(videoTrack, &vCodecContext)) {
+        LOGE("Open video track failed.");
         return false;
     }
-    //打开编码器
-    codecContext = avcodec_alloc_context3(codec);
-    avcodec_parameters_to_context(codecContext, avCodecParameters);
-    if (avcodec_open2(codecContext, codec, NULL) < 0) {
-        LOGE("Couldn't open codec.");
+    if (!openTrack(audioTrack, &aCodecContext)) {
+        LOGE("Open video track failed.");
         return false;
     }
     //准备资源
@@ -76,8 +74,10 @@ bool DefaultVideoDecoder::prepare(string path) {
 }
 
 int DefaultVideoDecoder::grab(AVFrame *avFrame) {
-    if (currentTrack >= 0 && 0 == avcodec_receive_frame(codecContext, avFrame)) {
+    if (currentTrack == videoTrack && 0 == avcodec_receive_frame(vCodecContext, avFrame)) {
 //        LOGI("avcodec_receive_frame");
+        return getMediaType(currentTrack);
+    } else if (currentTrack == audioTrack && 0 == avcodec_receive_frame(aCodecContext, avFrame)) {
         return getMediaType(currentTrack);
     }
     if (avPacket) {
@@ -89,7 +89,7 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
         //解码
         int ret = 0;
         if (videoTrack == currentTrack) {
-            if ((ret = avcodec_send_packet(codecContext, avPacket)) == 0) {
+            if ((ret = avcodec_send_packet(vCodecContext, avPacket)) == 0) {
                 // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
                 return grab(avFrame);
             }
@@ -114,7 +114,9 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
                     LOGI("avcodec_send_packet ret=%d", ret);
             }
         } else if (audioTrack == currentTrack) {
-            return MEDIA_TYPE_AUDIO;
+            if ((ret = avcodec_send_packet(aCodecContext, avPacket)) == 0) {
+                return grab(avFrame);
+            }
         }
     }
     return MEDIA_TYPE_EOF;
@@ -138,6 +140,27 @@ int DefaultVideoDecoder::getMediaType(int track) {
         return MEDIA_TYPE_AUDIO;
     }
     return MEDIA_TYPE_UNKNOWN;
+}
+
+bool DefaultVideoDecoder::openTrack(int track, AVCodecContext **context) {
+    AVCodecParameters *avCodecParameters = pFormatCtx->streams[track]->codecpar;
+    if (audioTrack == track) {
+        LOGI("DefaultVideoDecoder(%s) %d x %d", path.c_str(), avCodecParameters->width,
+             avCodecParameters->height);
+    }
+    AVCodec *codec = avcodec_find_decoder(avCodecParameters->codec_id);
+    if (NULL == codec) {
+        LOGE("Couldn't find codec.");
+        return false;
+    }
+    //打开编码器
+    *context = avcodec_alloc_context3(codec);
+    avcodec_parameters_to_context(*context, avCodecParameters);
+    if (avcodec_open2(*context, codec, NULL) < 0) {
+        LOGE("Couldn't open codec.");
+        return false;
+    }
+    return true;
 }
 
 #ifdef __cplusplus

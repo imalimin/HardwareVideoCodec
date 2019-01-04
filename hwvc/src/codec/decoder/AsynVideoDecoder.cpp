@@ -13,7 +13,7 @@ extern "C" {
 
 AsynVideoDecoder::AsynVideoDecoder() {
     decoder = new DefaultVideoDecoder();
-    vRecycler = new RecyclerBlockQueue<AVFrame>(3, [] {
+    vRecycler = new RecyclerBlockQueue<AVFrame>(8, [] {
         return av_frame_alloc();
     });
 }
@@ -86,8 +86,8 @@ void AsynVideoDecoder::loop() {
 
         long long time = getCurrentTimeUS();
         int ret = decoder->grab(cacheFrame);
-        LOGI("Grab cost %lld, cache left %d", (getCurrentTimeUS() - time),
-             vRecycler->getCacheSize());
+        LOGI("Grab cost %lld, cache left %d, ret=%d", (getCurrentTimeUS() - time),
+             vRecycler->getCacheSize(), ret);
 
         if (MEDIA_TYPE_VIDEO == ret) {
             vRecycler->offer(cacheFrame);

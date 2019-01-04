@@ -43,11 +43,14 @@ public:
 private:
     string path;
     AVFormatContext *pFormatCtx = nullptr;
-    AVCodecContext *codecContext = nullptr;
+    AVCodecContext *vCodecContext = nullptr;
+    AVCodecContext *aCodecContext = nullptr;
     int audioTrack = -1, videoTrack = -1, currentTrack = -1;
     AVPacket *avPacket = nullptr;
 
     int getMediaType(int track);
+
+    bool openTrack(int track, AVCodecContext **context);
 };
 
 #ifdef __cplusplus
