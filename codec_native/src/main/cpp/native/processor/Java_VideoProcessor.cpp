@@ -9,10 +9,16 @@
 #include "VideoProcessor.h"
 #include <android/native_window_jni.h>
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "ff/libavcodec/jni.h"
+
+jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    av_jni_set_java_vm(vm, NULL);
+    return JNI_VERSION_1_6;
+}
 
 static VideoProcessor *getHandler(jlong handler) {
     return reinterpret_cast<VideoProcessor *>(handler);

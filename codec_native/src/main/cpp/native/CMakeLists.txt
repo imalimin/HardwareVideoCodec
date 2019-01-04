@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.4.1)
 project(hwvc_native)
 include_directories(
         ${CMAKE_SOURCE_DIR}/../hwvc/src/common/include
+        ${CMAKE_SOURCE_DIR}/../hwvc/src/codec/include
         ${CMAKE_SOURCE_DIR}/../hwvc/src/render/include
 )
 

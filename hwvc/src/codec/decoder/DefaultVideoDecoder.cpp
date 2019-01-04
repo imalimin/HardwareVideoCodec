@@ -10,8 +10,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "x264.h"
-#include "x264_config.h"
 
 DefaultVideoDecoder::DefaultVideoDecoder() {
 
@@ -61,7 +59,7 @@ bool DefaultVideoDecoder::prepare(string path) {
         }
     }
     if (!openTrack(videoTrack, &vCodecContext)) {
-        LOGE("Open video track failed.");
+        LOGI("******** Open video track failed. *********");
         return false;
     }
     if (!openTrack(audioTrack, &aCodecContext)) {
@@ -148,7 +146,16 @@ bool DefaultVideoDecoder::openTrack(int track, AVCodecContext **context) {
         LOGI("DefaultVideoDecoder(%s) %d x %d", path.c_str(), avCodecParameters->width,
              avCodecParameters->height);
     }
-    AVCodec *codec = avcodec_find_decoder(avCodecParameters->codec_id);
+    AVCodec *codec = NULL;
+    if (AV_CODEC_ID_H264 == avCodecParameters->codec_id) {
+        codec = avcodec_find_decoder_by_name("h264_mediacodec");
+        if (NULL == codec) {
+            LOGE("Selected AV_CODEC_ID_H264.");
+            codec = avcodec_find_decoder(avCodecParameters->codec_id);
+        }
+    } else {
+        codec = avcodec_find_decoder(avCodecParameters->codec_id);
+    }
     if (NULL == codec) {
         LOGE("Couldn't find codec.");
         return false;
