@@ -93,30 +93,30 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
                 // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
                 return grab(avFrame);
             }
-            switch (ret) {
-                case AVERROR(EAGAIN): {
-                    LOGI("you must read output with avcodec_receive_frame");
-                    break;
-                }
-                case AVERROR(EINVAL): {
-                    LOGI("codec not opened, it is an encoder, or requires flush");
-                    break;
-                }
-                case AVERROR(ENOMEM): {
-                    LOGI("failed to add packet to internal queue");
-                    break;
-                }
-                case AVERROR_EOF: {
-                    LOGI("eof");
-                    break;
-                }
-                default:
-                    LOGI("avcodec_send_packet ret=%d", ret);
-            }
         } else if (audioTrack == currentTrack) {
             if ((ret = avcodec_send_packet(aCodecContext, avPacket)) == 0) {
                 return grab(avFrame);
             }
+        }
+        switch (ret) {
+            case AVERROR(EAGAIN): {
+                LOGI("you must read output with avcodec_receive_frame");
+                break;
+            }
+            case AVERROR(EINVAL): {
+                LOGI("codec not opened, it is an encoder, or requires flush");
+                break;
+            }
+            case AVERROR(ENOMEM): {
+                LOGI("failed to add packet to internal queue");
+                break;
+            }
+            case AVERROR_EOF: {
+                LOGI("eof");
+                break;
+            }
+            default:
+                LOGI("avcodec_send_packet ret=%d", ret);
         }
     }
     return MEDIA_TYPE_EOF;
