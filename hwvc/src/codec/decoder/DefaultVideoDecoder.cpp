@@ -172,7 +172,7 @@ bool DefaultVideoDecoder::openTrack(int track, AVCodecContext **context) {
 }
 
 void DefaultVideoDecoder::printCodecInfo() {
-    char info[40000] = {0};
+    char info[1024] = {0};
     AVCodec *c_temp = av_codec_next(NULL);
     while (c_temp != NULL) {
         if (c_temp->decode != NULL) {
