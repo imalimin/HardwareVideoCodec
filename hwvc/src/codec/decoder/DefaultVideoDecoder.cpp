@@ -37,6 +37,7 @@ DefaultVideoDecoder::~DefaultVideoDecoder() {
 bool DefaultVideoDecoder::prepare(string path) {
     this->path = path;
     av_register_all();
+    printCodecInfo();
     pFormatCtx = avformat_alloc_context();
     //打开输入视频文件
     if (avformat_open_input(&pFormatCtx, path.c_str(), NULL, NULL) != 0) {
@@ -168,6 +169,32 @@ bool DefaultVideoDecoder::openTrack(int track, AVCodecContext **context) {
         return false;
     }
     return true;
+}
+
+void DefaultVideoDecoder::printCodecInfo() {
+    char info[40000] = {0};
+    AVCodec *c_temp = av_codec_next(NULL);
+    while (c_temp != NULL) {
+        if (c_temp->decode != NULL) {
+            sprintf(info, "%s[Dec]", info);
+        } else {
+            sprintf(info, "%s[Enc]", info);
+        }
+        switch (c_temp->type) {
+            case AVMEDIA_TYPE_VIDEO:
+                sprintf(info, "%s[Video]", info);
+                break;
+            case AVMEDIA_TYPE_AUDIO:
+                sprintf(info, "%s[Audio]", info);
+                break;
+            default:
+                sprintf(info, "%s[Other]", info);
+                break;
+        }
+        sprintf(info, "%s[%10s]\n", info, c_temp->name);
+        c_temp = c_temp->next;
+    }
+    LOGI("%s", info);
 }
 
 #ifdef __cplusplus

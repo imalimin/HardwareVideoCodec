@@ -51,6 +51,8 @@ private:
     int getMediaType(int track);
 
     bool openTrack(int track, AVCodecContext **context);
+
+    void printCodecInfo();
 };
 
 #ifdef __cplusplus
