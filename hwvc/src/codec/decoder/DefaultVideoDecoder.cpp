@@ -100,7 +100,7 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
         switch (ret) {
             case AVERROR(EAGAIN): {
                 LOGI("you must read output with avcodec_receive_frame");
-                break;
+                return grab(avFrame);
             }
             case AVERROR(EINVAL): {
                 LOGI("codec not opened, it is an encoder, or requires flush");

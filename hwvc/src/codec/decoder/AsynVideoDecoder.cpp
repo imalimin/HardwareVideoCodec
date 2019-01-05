@@ -99,7 +99,6 @@ void AsynVideoDecoder::loop() {
     if (!lopping)
         return;
     pipeline->queueEvent([this] {
-        loop();
         AVFrame *cacheFrame = vRecycler->takeCache();
 
         long long time = getCurrentTimeUS();
@@ -111,9 +110,12 @@ void AsynVideoDecoder::loop() {
 
         if (MEDIA_TYPE_VIDEO == ret) {
             vRecycler->offer(cacheFrame);
-        } else {
+        } else if (MEDIA_TYPE_AUDIO == ret) {
             vRecycler->recycle(cacheFrame);
+        } else {
+            return;
         }
+        loop();
     });
 }
 
