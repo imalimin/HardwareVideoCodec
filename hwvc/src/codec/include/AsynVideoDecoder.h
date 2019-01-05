@@ -38,6 +38,16 @@ private:
     bool lopping = true;
 
     void loop();
+
+    /**
+     * YUV420P
+     */
+    void copyYV12(Frame *dest, AVFrame *src);
+
+    /**
+     * YUV420SP
+     */
+    void copyNV12(Frame *dest, AVFrame *src);
 };
 
 #ifdef __cplusplus

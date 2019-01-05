@@ -51,16 +51,34 @@ bool AsynVideoDecoder::prepare(string path) {
 
 int AsynVideoDecoder::grab(Frame *frame) {
     AVFrame *f = vRecycler->take();
-    int size = f->width * f->height;
-    memcpy(frame->data, f->data[0], size);
-    memcpy(frame->data + size, f->data[1], size / 4);
-    memcpy(frame->data + size + size / 4, f->data[2], size / 4);
+    if (AV_PIX_FMT_NV12 == f->format) {
+        copyNV12(frame, f);
+    } else {
+        copyYV12(frame, f);
+    }
 
     frame->width = f->width;
     frame->height = f->height;
     vRecycler->recycle(f);
 
     return MEDIA_TYPE_VIDEO;
+}
+
+void AsynVideoDecoder::copyYV12(Frame *dest, AVFrame *src) {
+    int size = src->width * src->height;
+    memcpy(dest->data, src->data[0], size);
+    memcpy(dest->data + size, src->data[1], size / 4);
+    memcpy(dest->data + size + size / 4, src->data[2], size / 4);
+}
+
+void AsynVideoDecoder::copyNV12(Frame *dest, AVFrame *src) {
+    int size = src->width * src->height;
+    memcpy(dest->data, src->data[0], size);
+    int uvSize = size / 4;
+    for (int i = 0; i < uvSize; ++i) {
+        *(dest->data + size + i) = src->data[1][i * 2];
+        *(dest->data + size + uvSize + i) = src->data[1][i * 2 + 1];
+    }
 }
 
 int AsynVideoDecoder::width() {
@@ -86,7 +104,9 @@ void AsynVideoDecoder::loop() {
 
         long long time = getCurrentTimeUS();
         int ret = decoder->grab(cacheFrame);
-        LOGI("Grab cost %lld, cache left %d, ret=%d", (getCurrentTimeUS() - time),
+        LOGI("Grab frame(fmt:%d) cost %lld, cache left %d, ret=%d",
+             cacheFrame->format,
+             (getCurrentTimeUS() - time),
              vRecycler->getCacheSize(), ret);
 
         if (MEDIA_TYPE_VIDEO == ret) {

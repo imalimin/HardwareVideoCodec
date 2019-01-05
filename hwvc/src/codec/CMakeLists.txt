@@ -32,7 +32,7 @@ add_library(
 set_target_properties(
         libavcodec
         PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_SHARED}/libavcodec-58.so")
+        "${PREBUILD_SHARED}/libavcodec.so")
 
 add_library(
         libavformat
@@ -41,7 +41,7 @@ add_library(
 set_target_properties(
         libavformat
         PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_SHARED}/libavformat-58.so")
+        "${PREBUILD_SHARED}/libavformat.so")
 
 add_library(
         libavresample
@@ -50,7 +50,7 @@ add_library(
 set_target_properties(
         libavresample
         PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_SHARED}/libavresample-4.so")
+        "${PREBUILD_SHARED}/libavresample.so")
 
 add_library(
         libavutil
@@ -59,7 +59,7 @@ add_library(
 set_target_properties(
         libavutil
         PROPERTIES IMPORTED_LOCATION
-        "${PREBUILD_SHARED}/libavutil-56.so")
+        "${PREBUILD_SHARED}/libavutil.so")
 
 #------------------STATIC END----------------------
 

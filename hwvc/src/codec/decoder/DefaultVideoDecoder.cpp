@@ -59,12 +59,12 @@ bool DefaultVideoDecoder::prepare(string path) {
             audioTrack = i;
         }
     }
-    if (!openTrack(videoTrack, &vCodecContext)) {
-        LOGI("******** Open video track failed. *********");
+    if (-1 != videoTrack && !openTrack(videoTrack, &vCodecContext)) {
+        LOGE("******** Open video track failed. *********");
         return false;
     }
-    if (!openTrack(audioTrack, &aCodecContext)) {
-        LOGE("Open video track failed.");
+    if (-1 != audioTrack && !openTrack(audioTrack, &aCodecContext)) {
+        LOGE("******** Open audio track failed. *********");
         return false;
     }
     //准备资源
@@ -143,7 +143,7 @@ int DefaultVideoDecoder::getMediaType(int track) {
 
 bool DefaultVideoDecoder::openTrack(int track, AVCodecContext **context) {
     AVCodecParameters *avCodecParameters = pFormatCtx->streams[track]->codecpar;
-    if (audioTrack == track) {
+    if (videoTrack == track) {
         LOGI("DefaultVideoDecoder(%s) %d x %d", path.c_str(), avCodecParameters->width,
              avCodecParameters->height);
     }
@@ -168,6 +168,13 @@ bool DefaultVideoDecoder::openTrack(int track, AVCodecContext **context) {
         LOGE("Couldn't open codec.");
         return false;
     }
+    char *typeName = "unknown";
+    if (AVMEDIA_TYPE_VIDEO == codec->type) {
+        typeName = "video";
+    } else if (AVMEDIA_TYPE_AUDIO == codec->type) {
+        typeName = "audio";
+    }
+    LOGI("Open %s track with %s, fmt=%d", typeName, codec->name, avCodecParameters->format);
     return true;
 }
 
