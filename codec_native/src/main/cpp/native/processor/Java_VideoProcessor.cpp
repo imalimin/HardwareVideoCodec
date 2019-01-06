@@ -37,7 +37,6 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_VideoProcessor_setSourc
         char *str = new char[len];
         memcpy(str, pPath, len);
         getHandler(handler)->setSource(str);
-        delete[]str;
         env->ReleaseStringUTFChars(path, pPath);
     }
 }

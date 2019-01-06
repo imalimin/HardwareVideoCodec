@@ -48,6 +48,10 @@ void Video::release() {
         delete decoder;
         decoder = nullptr;
     }
+    if (path) {
+        delete[]path;
+        path = nullptr;
+    }
 }
 
 bool Video::eventPrepare(Message *msg) {
