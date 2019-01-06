@@ -67,6 +67,10 @@ bool DefaultVideoDecoder::prepare(string path) {
         LOGE("******** Open audio track failed. *********");
         return false;
     }
+    if (-1 == videoTrack && -1 == audioTrack) {
+        LOGE("******** This file not contain video or audio track. *********");
+        return false;
+    }
     //准备资源
     avPacket = av_packet_alloc();
     return true;
@@ -86,7 +90,7 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
 //        LOGI("av_read_frame");
         currentTrack = avPacket->stream_index;
         //解码
-        int ret = 0;
+        int ret = -1;
         if (videoTrack == currentTrack) {
             if ((ret = avcodec_send_packet(vCodecContext, avPacket)) == 0) {
                 // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
@@ -96,6 +100,8 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
             if ((ret = avcodec_send_packet(aCodecContext, avPacket)) == 0) {
                 return grab(avFrame);
             }
+        } else{
+            return grab(avFrame);
         }
         switch (ret) {
             case AVERROR(EAGAIN): {
