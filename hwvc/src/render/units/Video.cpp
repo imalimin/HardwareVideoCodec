@@ -10,7 +10,7 @@
 #include "../entity/NativeWindow.h"
 
 Video::Video() {
-    name = __func__;
+    name = "Video";
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
     registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
     decoder = new AsynVideoDecoder();
@@ -24,15 +24,7 @@ Video::~Video() {
 
 void Video::release() {
     Unit::release();
-    LOGI("Video::release");
-    if (frame) {
-        delete frame;
-        frame = nullptr;
-    }
-    if (decoder) {
-        delete decoder;
-        decoder = nullptr;
-    }
+    eventStop(nullptr);
     pipeline->queueEvent([=] {
         if (texAllocator) {
             delete texAllocator;
@@ -47,6 +39,14 @@ void Video::release() {
         delete pipeline;
         pipeline = nullptr;
     }
+    if (frame) {
+        delete frame;
+        frame = nullptr;
+    }
+    if (decoder) {
+        delete decoder;
+        decoder = nullptr;
+    }
 }
 
 bool Video::eventPrepare(Message *msg) {
@@ -54,6 +54,7 @@ bool Video::eventPrepare(Message *msg) {
     if (!pipeline) {
         pipeline = new EventPipeline(name);
     }
+    decoder->prepare("/sdcard/001.mp4");
     NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
     pipeline->queueEvent([=] {
         if (nw->egl) {
@@ -66,10 +67,10 @@ bool Video::eventPrepare(Message *msg) {
         if (!texAllocator) {
             texAllocator = new TextureAllocator();
         }
-        decoder->prepare("/sdcard/001.mp4");
-        pipeline->notify();
+        pipeline->wait(10);
+        lock.notify();
     });
-    pipeline->wait();
+    lock.wait();
     return true;
 }
 

@@ -20,10 +20,6 @@ public:
 
     void queueEvent(function<void()> event);
 
-    virtual void wait() override;
-
-    virtual void notify() override;
-
 private:
     HandlerThread *handlerThread = nullptr;
     pthread_mutex_t mutex;

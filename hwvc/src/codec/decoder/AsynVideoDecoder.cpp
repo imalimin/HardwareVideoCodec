@@ -20,18 +20,21 @@ AsynVideoDecoder::AsynVideoDecoder() {
 
 AsynVideoDecoder::~AsynVideoDecoder() {
     lopping = false;
+    if (vRecycler) {
+        vRecycler->notify();
+    }
     if (pipeline) {
         delete pipeline;
         pipeline = nullptr;
-    }
-    if (decoder) {
-        delete decoder;
-        decoder = nullptr;
     }
     if (vRecycler) {
         vRecycler->clear();
         delete vRecycler;
         vRecycler = nullptr;
+    }
+    if (decoder) {
+        delete decoder;
+        decoder = nullptr;
     }
 }
 
@@ -99,12 +102,17 @@ void AsynVideoDecoder::loop() {
     if (!lopping)
         return;
     pipeline->queueEvent([this] {
+        if (!vRecycler)
+            return;
         AVFrame *cacheFrame = vRecycler->takeCache();
-
+        if (!cacheFrame) {
+            return;
+        }
         long long time = getCurrentTimeUS();
         int ret = decoder->grab(cacheFrame);
-        LOGI("Grab frame(fmt:%d) cost %lld, cache left %d, ret=%d",
+        LOGI("Grab frame(fmt:%d,type:%d) cost %lld, cache left %d, ret=%d",
              cacheFrame->format,
+             cacheFrame->key_frame,
              (getCurrentTimeUS() - time),
              vRecycler->getCacheSize(), ret);
 

@@ -7,6 +7,7 @@
 #ifndef HARDWAREVIDEOCODEC_OBJECT_H
 #define HARDWAREVIDEOCODEC_OBJECT_H
 
+#include "pthread.h"
 
 class Object {
 public:
@@ -16,7 +17,13 @@ public:
 
     virtual void wait();
 
+    void wait(int ms);
+
     virtual void notify();
+
+private:
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
 };
 
 

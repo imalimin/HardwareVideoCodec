@@ -81,7 +81,7 @@ public:
      * 删除所有元素
      */
     void clear() {
-        pthread_cond_broadcast(&cond);
+        notify();
         pthread_mutex_lock(&mutex);
         m_queue->clear();
         pthread_mutex_unlock(&mutex);
@@ -98,14 +98,15 @@ public:
      * 检查队列是否为空
      */
     bool isEmpty() {
-        return m_queue->empty();
+        if (m_queue) {
+            return m_queue->empty();
+        }
+        return true;
     }
 
     virtual void notify() override {
         Object::notify();
-        pthread_mutex_lock(&mutex);
         pthread_cond_broadcast(&cond);
-        pthread_mutex_unlock(&mutex);
     }
 
 private:

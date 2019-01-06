@@ -14,7 +14,7 @@ EventPipeline::EventPipeline(string name) {
 
 EventPipeline::~EventPipeline() {
     notify();
-    if (nullptr != handlerThread) {
+    if (handlerThread) {
         delete handlerThread;
         handlerThread = nullptr;
     }
@@ -23,22 +23,9 @@ EventPipeline::~EventPipeline() {
 }
 
 void EventPipeline::queueEvent(function<void()> event) {
-    handlerThread->sendMessage(new Message(0, [=](Message *msg) {
-        event();
-    }));
-}
-
-void EventPipeline::wait() {
-    Object::wait();
-    pthread_mutex_lock(&mutex);
-    if (0 != pthread_cond_wait(&cond, &mutex)) {
-        pthread_mutex_unlock(&mutex);
+    if (handlerThread) {
+        handlerThread->sendMessage(new Message(0, [=](Message *msg) {
+            event();
+        }));
     }
 }
-
-void EventPipeline::notify() {
-    Object::notify();
-    pthread_mutex_lock(&mutex);
-    pthread_cond_broadcast(&cond);
-    pthread_mutex_unlock(&mutex);
-};

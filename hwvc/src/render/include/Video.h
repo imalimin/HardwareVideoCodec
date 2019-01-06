@@ -48,6 +48,7 @@ private:
     YUV420PFilter *yuvFilter = nullptr;
     GLuint yuv[3];
     PlayState playState = STOP;
+    Object lock;
 
     void loop();
 

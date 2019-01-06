@@ -8,9 +8,15 @@
 #include "../include/log.h"
 
 HandlerThread::HandlerThread(string name) {
+    pthread_mutex_init(&mutex, nullptr);
     queue = new MessageQueue();
     thread = new Thread(name, [this]() {
         while (this->thread->isRunning()) {
+            pthread_mutex_lock(&mutex);
+            if (shouldQuit()) {
+                break;
+            }
+            pthread_mutex_unlock(&mutex);
             Message *msg = this->take();
             int size = this->size();
             if (this->requestQuit && !this->requestQuitSafely) {
@@ -22,7 +28,7 @@ HandlerThread::HandlerThread(string name) {
             }
             msg->runnable(msg);
             delete msg;
-            if (this->requestQuitSafely && size <= 1) {
+            if (this->requestQuitSafely && size <= 0) {
                 LOGI("requestQuitSafely");
                 break;
             }
@@ -31,8 +37,21 @@ HandlerThread::HandlerThread(string name) {
     thread->start();
 }
 
+bool HandlerThread::shouldQuit() {
+    if (thread->interrupted()) {
+        return true;
+    }
+    if (this->requestQuit && !this->requestQuitSafely) {
+        return true;
+    }
+    if (this->requestQuitSafely && size() <= 0) {
+        return true;
+    }
+    return false;
+
+}
+
 HandlerThread::~HandlerThread() {
-    LOGI("~HandlerThread");
     quitSafely();
 }
 
@@ -61,7 +80,9 @@ void HandlerThread::pop() {
 }
 
 void HandlerThread::quit() {
+    pthread_mutex_lock(&mutex);
     this->requestQuit = true;
+    pthread_mutex_unlock(&mutex);
     if (nullptr != queue) {
         queue->notify();
     }
@@ -74,6 +95,7 @@ void HandlerThread::quit() {
         delete this->queue;
         this->queue = nullptr;
     }
+    pthread_mutex_destroy(&mutex);
 }
 
 void HandlerThread::quitSafely() {

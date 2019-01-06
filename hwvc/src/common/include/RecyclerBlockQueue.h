@@ -57,7 +57,10 @@ public:
      * 取出一个缓存
      */
     T *takeCache() {
-        return recycler->take();
+        if (recycler) {
+            return recycler->take();
+        }
+        return nullptr;
     }
 
     /**
@@ -73,6 +76,12 @@ public:
 
     int getCacheSize() {
         return recycler->size();
+    }
+
+    void notify() override {
+        Object::notify();
+        queue->notify();
+        recycler->notify();
     }
 
 private:

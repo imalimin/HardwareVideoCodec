@@ -12,7 +12,7 @@
 #include "ObjectBox.h"
 
 VideoProcessor::VideoProcessor() {
-    pipeline = new UnitPipeline(__func__);
+    pipeline = new UnitPipeline("VideoProcessor");
     pipeline->registerAnUnit(new Video());
     pipeline->registerAnUnit(new Render());
     pipeline->registerAnUnit(new Screen());

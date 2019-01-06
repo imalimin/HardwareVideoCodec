@@ -24,6 +24,7 @@ public:
 
 private:
     Thread *thread = nullptr;
+    pthread_mutex_t mutex;
     MessageQueue *queue = nullptr;
     bool requestQuitSafely = false;
     bool requestQuit = false;
@@ -35,6 +36,8 @@ private:
     void pop();
 
     int size();
+
+    bool shouldQuit();
 };
 
 
