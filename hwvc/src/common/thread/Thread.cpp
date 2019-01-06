@@ -12,7 +12,7 @@ static void *run(void *arg) {
     Thread *thread = static_cast<Thread *>(arg);
     LOGI("Thread(%ld) start", pthread_self());
     thread->runnable();
-    LOGI("Thread(%ld) stop", pthread_self());
+    LOGI("Thread(%ld:%s) stop", pthread_self(), thread->name.c_str());
     return nullptr;
 }
 
@@ -21,7 +21,6 @@ Thread::Thread(string name, function<void()> runnable) {
     this->name = name;
     this->runnable = runnable;
     pthread_mutex_init(&mutex, nullptr);
-    pthread_cond_init(&cond, nullptr);
 }
 
 Thread::~Thread() {
@@ -50,7 +49,6 @@ void Thread::createThread() {
 void Thread::stop() {
     pthread_attr_destroy(&attr);
     pthread_mutex_destroy(&mutex);
-    pthread_cond_destroy(&cond);
 }
 
 bool Thread::isRunning() {
@@ -59,11 +57,14 @@ bool Thread::isRunning() {
 
 void Thread::interrupt() {
     lock();
+    if (inter) {
+        return;
+    }
     inter = true;
+    unLock();
     if (pthread_join(thread, 0)) {
         LOGE("Thread(%ld) join failed", thread);
     }
-    unLock();
 }
 
 bool Thread::interrupted() {
@@ -74,13 +75,9 @@ bool Thread::interrupted() {
 }
 
 void Thread::lock() {
-    if (NULL == &mutex)
-        return;
     pthread_mutex_lock(&mutex);
 }
 
 void Thread::unLock() {
-    if (NULL == &mutex)
-        return;
     pthread_mutex_unlock(&mutex);
 }

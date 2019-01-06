@@ -16,6 +16,7 @@ using namespace std;
 
 class Thread : public Object {
 public:
+    string name;
     function<void()> runnable;
 
     Thread(string name, function<void()> runnable);
@@ -33,11 +34,9 @@ public:
     void stop();
 
 private:
-    string name;
     pthread_attr_t attr;
     pthread_t thread;
     pthread_mutex_t mutex;
-    pthread_cond_t cond;
     bool inter = false;
 
     void createThread();
