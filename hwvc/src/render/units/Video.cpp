@@ -13,6 +13,7 @@ Video::Video() {
     name = "Video";
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
     registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
+    registerEvent(EVENT_VIDEO_SET_SOURCE, reinterpret_cast<EventFunc>(&Video::eventSetSource));
     decoder = new AsynVideoDecoder();
 }
 
@@ -54,7 +55,7 @@ bool Video::eventPrepare(Message *msg) {
     if (!pipeline) {
         pipeline = new EventPipeline(name);
     }
-    decoder->prepare("/sdcard/001.mp4");
+    decoder->prepare(path);
     NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
     pipeline->queueEvent([=] {
         if (nw->egl) {
@@ -100,6 +101,11 @@ bool Video::eventInvalidate(Message *m) {
     msg->obj = new ObjectBox(new Size(frame->width, frame->height));
     msg->arg1 = yuvFilter->getFrameBuffer()->getFrameTexture();
     postEvent(msg);
+    return true;
+}
+
+bool Video::eventSetSource(Message *msg) {
+    this->path = static_cast<char *>(msg->tyrUnBox());
     return true;
 }
 

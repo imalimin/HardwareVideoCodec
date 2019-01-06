@@ -18,6 +18,8 @@ public:
 
     virtual ~VideoProcessor();
 
+    void setSource(char *path);
+
     void prepare(ANativeWindow *win, int width, int height);
 
     void start();

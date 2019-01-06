@@ -10,6 +10,7 @@
 #include "../include/Video.h"
 #include "../entity/NativeWindow.h"
 #include "ObjectBox.h"
+#include "String.h"
 
 VideoProcessor::VideoProcessor() {
     pipeline = new UnitPipeline("VideoProcessor");
@@ -23,6 +24,14 @@ VideoProcessor::~VideoProcessor() {
         pipeline->release();
         delete pipeline;
         pipeline = nullptr;
+    }
+}
+
+void VideoProcessor::setSource(char *path) {
+    if (pipeline) {
+        Message *msg = new Message(EVENT_VIDEO_SET_SOURCE, nullptr);
+        msg->obj = new ObjectBox(path);
+        pipeline->postEvent(msg);
     }
 }
 

@@ -29,6 +29,11 @@ class VideoProcessor : CPPObject(), FilterSupport {
     override fun invalidate() {
     }
 
+    fun setSource(path: String) {
+        if (0L == handler) return
+        setSource(handler, path);
+    }
+
     fun prepare(surface: Surface, width: Int, height: Int) {
         if (0L == handler) return
         prepare(handler, surface, width, height)
@@ -50,6 +55,7 @@ class VideoProcessor : CPPObject(), FilterSupport {
     }
 
     private external fun create(): Long
+    private external fun setSource(handler: Long, path: String)
     private external fun prepare(handler: Long, surface: Surface, width: Int, height: Int)
     private external fun start(handler: Long)
     private external fun pause(handler: Long)

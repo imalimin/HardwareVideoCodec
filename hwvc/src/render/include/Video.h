@@ -39,6 +39,8 @@ public:
 
     bool eventInvalidate(Message *msg);
 
+    bool eventSetSource(Message *msg);
+
 private:
     EventPipeline *pipeline = nullptr;
     Egl *egl = nullptr;
@@ -49,6 +51,7 @@ private:
     GLuint yuv[3];
     PlayState playState = STOP;
     Object lock;
+    char *path;
 
     void loop();
 

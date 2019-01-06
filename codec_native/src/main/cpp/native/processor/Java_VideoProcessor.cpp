@@ -29,6 +29,19 @@ JNIEXPORT jlong JNICALL Java_com_lmy_hwvcnative_processor_VideoProcessor_create
     return reinterpret_cast<jlong>(new VideoProcessor());
 }
 
+JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_VideoProcessor_setSource
+        (JNIEnv *env, jobject thiz, jlong handler, jstring path) {
+    if (handler) {
+        int len = env->GetStringUTFLength(path) + 1;
+        const char *pPath = env->GetStringUTFChars(path, JNI_FALSE);
+        char *str = new char[len];
+        memcpy(str, pPath, len);
+        getHandler(handler)->setSource(str);
+        delete[]str;
+        env->ReleaseStringUTFChars(path, pPath);
+    }
+}
+
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_VideoProcessor_prepare
         (JNIEnv *env, jobject thiz, jlong handler, jobject surface, jint width, jint height) {
     if (handler) {
