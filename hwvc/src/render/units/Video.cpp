@@ -27,6 +27,11 @@ void Video::release() {
     Unit::release();
     eventStop(nullptr);
     pipeline->queueEvent([=] {
+        if (audioPlayer) {
+            audioPlayer->stop();
+            delete audioPlayer;
+            audioPlayer = nullptr;
+        }
         if (texAllocator) {
             delete texAllocator;
             texAllocator = nullptr;
@@ -124,7 +129,17 @@ void Video::loop() {
         loop();
         egl->makeCurrent();
         checkFilter();
-        if (MEDIA_TYPE_VIDEO != grab()) {
+        int ret = grab();
+        if (MEDIA_TYPE_VIDEO != ret) {
+            if (MEDIA_TYPE_AUDIO == ret) {
+                if (!audioPlayer) {
+                    audioPlayer = new AudioPlayer(decoder->getChannels(),
+                                                  decoder->getSampleHz(),
+                                                  frame->size);
+                    audioPlayer->start();
+                }
+                audioPlayer->write(frame->data, frame->size);
+            }
             return;
         }
         glViewport(0, 0, frame->width, frame->height);

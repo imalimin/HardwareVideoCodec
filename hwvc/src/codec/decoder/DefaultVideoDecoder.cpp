@@ -71,6 +71,8 @@ bool DefaultVideoDecoder::prepare(string path) {
         LOGE("******** This file not contain video or audio track. *********");
         return false;
     }
+    LOGI("DefaultVideoDecoder::prepare(%d x %d, channels=%d, sampleHz=%d)",
+         width(), height(), getChannels(), getSampleHz());
     //准备资源
     avPacket = av_packet_alloc();
     return true;
@@ -100,7 +102,7 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
             if ((ret = avcodec_send_packet(aCodecContext, avPacket)) == 0) {
                 return grab(avFrame);
             }
-        } else{
+        } else {
             return grab(avFrame);
         }
         switch (ret) {
@@ -208,6 +210,14 @@ void DefaultVideoDecoder::printCodecInfo() {
         c_temp = c_temp->next;
     }
     LOGI("%s", info);
+}
+
+int DefaultVideoDecoder::getChannels() {
+    return pFormatCtx->streams[audioTrack]->codecpar->channels;
+}
+
+int DefaultVideoDecoder::getSampleHz() {
+    return pFormatCtx->streams[audioTrack]->codecpar->sample_rate;
 }
 
 #ifdef __cplusplus

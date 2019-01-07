@@ -29,16 +29,20 @@ public:
 
     virtual ~DefaultVideoDecoder();
 
-    bool prepare(string path) override;
+    virtual bool prepare(string path) override;
 
-    int width() override;
+    virtual int width() override;
 
-    int height() override;
+    virtual int height() override;
+
+    virtual int getChannels() override;
+
+    virtual int getSampleHz() override;
 
     /**
      * @return 1: video, 2: audio, 0: failed
      */
-    int grab(AVFrame *avFrame);
+    virtual int grab(AVFrame *avFrame);
 
 private:
     string path;

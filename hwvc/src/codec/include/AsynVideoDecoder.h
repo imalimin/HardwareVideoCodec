@@ -23,11 +23,15 @@ public:
 
     virtual ~AsynVideoDecoder();
 
-    bool prepare(string path) override;
+    virtual bool prepare(string path) override;
 
-    int width() override;
+    virtual int width() override;
 
-    int height() override;
+    virtual int height() override;
+
+    virtual int getChannels() override;
+
+    virtual int getSampleHz() override;
 
     int grab(Frame *frame);
 

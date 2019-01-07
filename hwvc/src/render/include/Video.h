@@ -14,6 +14,7 @@
 #include "EventPipeline.h"
 #include "Egl.h"
 #include "Frame.h"
+#include "AudioPlayer.h"
 
 enum PlayState {
     PAUSE = 0,
@@ -52,6 +53,7 @@ private:
     PlayState playState = STOP;
     Object lock;
     char *path;
+    AudioPlayer *audioPlayer = nullptr;
 
     void loop();
 

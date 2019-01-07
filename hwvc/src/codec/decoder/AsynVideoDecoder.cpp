@@ -54,6 +54,21 @@ bool AsynVideoDecoder::prepare(string path) {
 
 int AsynVideoDecoder::grab(Frame *frame) {
     AVFrame *f = vRecycler->take();
+    if (8 == f->format) {
+        int size = 0;
+        for (int i = 0; i < f->channels; ++i) {
+            if (f->linesize[i] <= 0) continue;
+            memcpy(frame->data + size, f->data[i], f->linesize[i]);
+            size += f->linesize[i];
+        }
+        frame->offset = 0;
+        frame->size = size;
+        LOGI("%d, %d, %d/%d", f->channels, f->linesize[0], f->linesize[1], size);
+        vRecycler->recycle(f);
+        return MEDIA_TYPE_AUDIO;
+    } else{
+
+    }
     if (AV_PIX_FMT_NV12 == f->format) {
         copyNV12(frame, f);
     } else {
@@ -69,6 +84,8 @@ int AsynVideoDecoder::grab(Frame *frame) {
 
 void AsynVideoDecoder::copyYV12(Frame *dest, AVFrame *src) {
     int size = src->width * src->height;
+    dest->offset = 0;
+    dest->size = size * 3 / 2;
     memcpy(dest->data, src->data[0], size);
     memcpy(dest->data + size, src->data[1], size / 4);
     memcpy(dest->data + size + size / 4, src->data[2], size / 4);
@@ -119,12 +136,26 @@ void AsynVideoDecoder::loop() {
         if (MEDIA_TYPE_VIDEO == ret) {
             vRecycler->offer(cacheFrame);
         } else if (MEDIA_TYPE_AUDIO == ret) {
-            vRecycler->recycle(cacheFrame);
+            vRecycler->offer(cacheFrame);
         } else {
             return;
         }
         loop();
     });
+}
+
+int AsynVideoDecoder::getChannels() {
+    if (decoder) {
+        return decoder->getChannels();
+    }
+    return 0;
+}
+
+int AsynVideoDecoder::getSampleHz() {
+    if (decoder) {
+        return decoder->getSampleHz();
+    }
+    return 0;
 }
 
 #ifdef __cplusplus

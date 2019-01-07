@@ -23,7 +23,8 @@ public:
     int width = 0;
     int height = 0;
     int channels = 0;
-
+    int offset = 0;
+    int size = 0;
 };
 #ifdef __cplusplus
 }

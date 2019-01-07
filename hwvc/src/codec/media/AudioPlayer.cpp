@@ -5,17 +5,25 @@
 * LICENSE file in the root directory of this source tree.
 */
 #include "../include/AudioPlayer.h"
+#include "log.h"
 
-AudioPlayer::AudioPlayer(int channels, int sampleHz) {
+void bufferQueueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
+    AudioPlayer *player = static_cast<AudioPlayer *>(context);
+    player->bufferEnqueue(slBufferQueueItf);
+}
+
+AudioPlayer::AudioPlayer(int channels, int sampleHz, int minBufferSize) {
     this->channels = channels;
     this->sampleHz = sampleHz;
-    this->quietSize = static_cast<size_t>(sampleHz / 1000 * 2);
-    this->quietBuffer = static_cast<uint8_t *>(malloc(this->quietSize));
-    memset(this->quietBuffer, 0, this->quietSize);
-    LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, quietSize=%d",
+    this->minBufferSize = minBufferSize;
+    this->recycler = new RecyclerBlockQueue<uint8_t *>(8, [minBufferSize] {
+        uint8_t *data = new uint8_t[minBufferSize];
+        return &data;
+    });
+    LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d",
          this->channels,
          this->sampleHz,
-         this->quietSize);
+         this->minBufferSize);
     engineObject = nullptr;
     engineItf = nullptr;
     mixObject = nullptr;
@@ -68,16 +76,6 @@ int AudioPlayer::start() {
 
 string AudioPlayer::getString() {
     return "Test";
-}
-
-uint8_t *AudioPlayer::readBuffer(size_t *size) {
-    if (!requestRead) {
-        *size = this->quietSize;
-        return this->quietBuffer;
-    }
-    requestRead = false;
-    *size = this->size;
-    return this->buffer;
 }
 
 static SLuint32 getChannelMask(int channels) {
@@ -138,7 +136,7 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
         return 0;
     }
     result = (*bufferQueueItf)->RegisterCallback(bufferQueueItf,
-                                                 callback,
+                                                 bufferQueueCallback,
                                                  this);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Player RegisterCallback failed!");
@@ -149,26 +147,27 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
         LOGE("Player SetPlayState start failed!");
         return 0;
     }
-    callback(bufferQueueItf, this);
+    bufferQueueCallback(bufferQueueItf, this);
     return 1;
 }
 
+void AudioPlayer::bufferEnqueue(SLBufferQueueItf slBufferQueueItf) {
+    if (buffer) {
+        recycler->recycle(&buffer);
+    }
+    buffer = *(recycler->take());
+    (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer, minBufferSize);
+}
+
 int AudioPlayer::write(uint8_t *buffer, size_t size) {
-    this->size = size;
-    this->buffer = buffer;
-    this->requestRead = true;
-//    (*bufferQueueItf)->Clear(bufferQueueItf);
+    uint8_t *cache = *recycler->takeCache();
+    memcpy(cache, buffer, size);
+    recycler->offer(&cache);
     return 1;
 }
 
 void AudioPlayer::stop() {
     destroyEngine();
-    if (nullptr != quietBuffer) {
-        free(quietBuffer);
-        quietBuffer = nullptr;
-        quietSize = 0;
-    }
-    callback = nullptr;
 }
 
 void AudioPlayer::destroyEngine() {

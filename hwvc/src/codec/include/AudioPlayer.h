@@ -8,16 +8,16 @@
 #define HARDWAREVIDEOCODEC_AUDIOPLAYER_H
 
 #include <string>
-#include "../log/log.h"
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 #include <Object.h>
+#include "RecyclerBlockQueue.h"
 
 using namespace std;
 
 class AudioPlayer : public Object {
 public:
-    AudioPlayer(int channels, int sampleHz);
+    AudioPlayer(int channels, int sampleHz, int minBufferSize);
 
     virtual ~AudioPlayer();
 
@@ -29,29 +29,20 @@ public:
 
     string getString();
 
-    uint8_t *readBuffer(size_t *size);
+    void bufferEnqueue(SLBufferQueueItf slBufferQueueItf);
 
 private:
     unsigned int channels = 0;
     unsigned int sampleHz = 0;
-    bool requestRead = false;
-    size_t size = 0;
+    int minBufferSize = 0;
     uint8_t *buffer = nullptr;
-    size_t quietSize = 0;
-    uint8_t *quietBuffer = nullptr;
+    RecyclerBlockQueue<uint8_t *> *recycler = nullptr;
     SLObjectItf engineObject = nullptr;
     SLEngineItf engineItf = nullptr;
     SLObjectItf mixObject = nullptr;
     SLObjectItf playObject = nullptr;
     SLPlayItf playItf = nullptr;
     SLBufferQueueItf bufferQueueItf = nullptr;
-    slBufferQueueCallback callback = [](SLBufferQueueItf slBufferQueueItf, void *context) {
-        AudioPlayer *player = static_cast<AudioPlayer *>(context);
-        size_t size = 0;
-        uint8_t *buf = player->readBuffer(&size);
-//        LOGE("getQueueCallBack, size=%d", size);
-        (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buf, size);
-    };
 
     int createEngine();
 
