@@ -13,6 +13,7 @@ void bufferQueueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
 }
 
 AudioPlayer::AudioPlayer(int channels, int sampleHz, int minBufferSize) {
+    this->pipeline = new EventPipeline("AudioPlayer");
     this->channels = channels;
     this->sampleHz = sampleHz;
     this->minBufferSize = minBufferSize;
@@ -66,12 +67,17 @@ int AudioPlayer::createEngine() {
 }
 
 int AudioPlayer::start() {
-    int ret = createEngine();
-    if (!ret) {
-        LOGE("AudioPlayer start failed");
-        stop();
+    if (!pipeline) {
+        return 0;
     }
-    return ret;
+    pipeline->queueEvent([this] {
+        int ret = this->createEngine();
+        if (!ret) {
+            LOGE("AudioPlayer start failed");
+            this->stop();
+        }
+    });
+    return 1;
 }
 
 string AudioPlayer::getString() {
@@ -172,7 +178,13 @@ int AudioPlayer::write(uint8_t *buffer, size_t size) {
 }
 
 void AudioPlayer::stop() {
-    destroyEngine();
+    if (pipeline) {
+        pipeline->queueEvent([this] {
+            this->destroyEngine();
+        });
+        delete pipeline;
+        pipeline = nullptr;
+    }
 }
 
 void AudioPlayer::destroyEngine() {

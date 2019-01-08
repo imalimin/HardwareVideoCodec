@@ -13,6 +13,7 @@
 #include <Object.h>
 #include "RecyclerBlockQueue.h"
 #include "../include/Frame.h"
+#include "EventPipeline.h"
 
 using namespace std;
 
@@ -33,6 +34,7 @@ public:
     void bufferEnqueue(SLBufferQueueItf slBufferQueueItf);
 
 private:
+    EventPipeline *pipeline = nullptr;
     unsigned int channels = 0;
     unsigned int sampleHz = 0;
     int minBufferSize = 0;
