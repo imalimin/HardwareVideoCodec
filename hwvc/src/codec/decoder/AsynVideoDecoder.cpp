@@ -54,7 +54,7 @@ bool AsynVideoDecoder::prepare(string path) {
 
 int AsynVideoDecoder::grab(Frame *frame) {
     AVFrame *f = vRecycler->take();
-    if (8 == f->format) {
+    if (AV_SAMPLE_FMT_FLTP == f->format) {
         int size = 0;
         for (int i = 0; i < f->channels; ++i) {
             if (f->linesize[i] <= 0) continue;

@@ -16,9 +16,8 @@ AudioPlayer::AudioPlayer(int channels, int sampleHz, int minBufferSize) {
     this->channels = channels;
     this->sampleHz = sampleHz;
     this->minBufferSize = minBufferSize;
-    this->recycler = new RecyclerBlockQueue<uint8_t *>(8, [minBufferSize] {
-        uint8_t *data = new uint8_t[minBufferSize];
-        return &data;
+    this->recycler = new RecyclerBlockQueue<Frame>(8, [minBufferSize] {
+        return new Frame(minBufferSize);
     });
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d",
          this->channels,
@@ -69,6 +68,7 @@ int AudioPlayer::createEngine() {
 int AudioPlayer::start() {
     int ret = createEngine();
     if (!ret) {
+        LOGE("AudioPlayer start failed");
         stop();
     }
     return ret;
@@ -95,8 +95,8 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
     SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM,
                             channels,
                             sampleHz * 1000,
-                            SL_PCMSAMPLEFORMAT_FIXED_16,
-                            SL_PCMSAMPLEFORMAT_FIXED_16,
+                            SL_PCMSAMPLEFORMAT_FIXED_32,
+                            SL_PCMSAMPLEFORMAT_FIXED_32,
                             getChannelMask(channels),
                             SL_BYTEORDER_LITTLEENDIAN};
     SLDataSource dataSource = {&queue, &pcm};
@@ -147,22 +147,27 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
         LOGE("Player SetPlayState start failed!");
         return 0;
     }
-    bufferQueueCallback(bufferQueueItf, this);
+    buffer = new Frame(minBufferSize);
+    (*bufferQueueItf)->Enqueue(bufferQueueItf, buffer->data, buffer->size);
     return 1;
 }
 
 void AudioPlayer::bufferEnqueue(SLBufferQueueItf slBufferQueueItf) {
     if (buffer) {
-        recycler->recycle(&buffer);
+        recycler->recycle(buffer);
     }
-    buffer = *(recycler->take());
-    (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer, minBufferSize);
+    buffer = recycler->take();
+    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->data, buffer->size);
 }
 
 int AudioPlayer::write(uint8_t *buffer, size_t size) {
-    uint8_t *cache = *recycler->takeCache();
-    memcpy(cache, buffer, size);
-    recycler->offer(&cache);
+    Frame *cache = recycler->takeCache();
+    if (!cache) {
+        LOGE("Cache invalid");
+        return 0;
+    }
+    memcpy(cache->data, buffer, size);
+    recycler->offer(cache);
     return 1;
 }
 

@@ -17,6 +17,8 @@ class Frame : public Object {
 public:
     Frame(int w, int h);
 
+    Frame(int size);
+
     ~Frame();
 
     uint8_t *data = nullptr;

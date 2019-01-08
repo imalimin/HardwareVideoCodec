@@ -13,11 +13,21 @@ extern "C" {
 Frame::Frame(int w, int h) {
     this->width = w;
     this->height = h;
-    data = (uint8_t *) malloc(w * h * 3 / 2);
+    this->size = w * h * 3 / 2;
+    this->offset = 0;
+    this->data = new uint8_t[this->size];
+}
+
+Frame::Frame(int size) {
+    this->width = 0;
+    this->height = 0;
+    this->size = size;
+    this->offset = 0;
+    this->data = new uint8_t[this->size];
 }
 
 Frame::~Frame() {
-    free(data);
+    delete[]data;
     this->width = 0;
     this->height = 0;
 }
