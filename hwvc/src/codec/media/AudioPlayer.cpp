@@ -12,10 +12,11 @@ void bufferQueueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
     player->bufferEnqueue(slBufferQueueItf);
 }
 
-AudioPlayer::AudioPlayer(int channels, int sampleHz, int minBufferSize) {
+AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSize) {
     this->pipeline = new EventPipeline("AudioPlayer");
     this->channels = channels;
     this->sampleHz = sampleHz;
+    this->format = format;
     this->minBufferSize = minBufferSize;
     this->recycler = new RecyclerBlockQueue<Frame>(8, [minBufferSize] {
         return new Frame(minBufferSize);
@@ -101,8 +102,8 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
     SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM,
                             channels,
                             sampleHz * 1000,
-                            SL_PCMSAMPLEFORMAT_FIXED_32,
-                            SL_PCMSAMPLEFORMAT_FIXED_32,
+                            format,
+                            format,
                             getChannelMask(channels),
                             SL_BYTEORDER_LITTLEENDIAN};
     SLDataSource dataSource = {&queue, &pcm};

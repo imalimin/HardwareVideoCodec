@@ -29,6 +29,7 @@ DefaultVideoDecoder::~DefaultVideoDecoder() {
         vCodecContext = nullptr;
     }
     if (pFormatCtx) {
+        avformat_close_input(&pFormatCtx);
         avformat_free_context(pFormatCtx);
         pFormatCtx = nullptr;
     }

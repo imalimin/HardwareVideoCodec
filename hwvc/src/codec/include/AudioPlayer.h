@@ -19,7 +19,7 @@ using namespace std;
 
 class AudioPlayer : public Object {
 public:
-    AudioPlayer(int channels, int sampleHz, int minBufferSize);
+    AudioPlayer(int channels, int sampleHz, int format, int minBufferSize);
 
     virtual ~AudioPlayer();
 
@@ -37,6 +37,7 @@ private:
     EventPipeline *pipeline = nullptr;
     unsigned int channels = 0;
     unsigned int sampleHz = 0;
+    SLuint32 format = SL_PCMSAMPLEFORMAT_FIXED_16;
     int minBufferSize = 0;
     Frame *buffer = nullptr;
     RecyclerBlockQueue<Frame> *recycler = nullptr;

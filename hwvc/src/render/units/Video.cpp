@@ -135,6 +135,7 @@ void Video::loop() {
                 if (!audioPlayer) {
                     audioPlayer = new AudioPlayer(decoder->getChannels(),
                                                   decoder->getSampleHz(),
+                                                  SL_PCMSAMPLEFORMAT_FIXED_16,
                                                   frame->size);
                     audioPlayer->start();
                 }
