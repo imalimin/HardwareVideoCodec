@@ -69,7 +69,6 @@ file(
         ${PROJECT_SOURCE_DIR}/*cpp
         ${PROJECT_SOURCE_DIR}/decoder/*cpp
         ${PROJECT_SOURCE_DIR}/entity/*cpp
-        ${PROJECT_SOURCE_DIR}/media/*cpp
 )
 add_library( # Sets the name of the library.
         hwvc_codec
@@ -98,5 +97,4 @@ target_link_libraries( # Specifies the target library.
         hwvcom
         # Links the target library to the log library
         # included in the NDK.
-        OpenSLES
         ${log-lib})

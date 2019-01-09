@@ -10,9 +10,9 @@
 #include <string>
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
-#include <Object.h>
+#include "Object.h"
+#include "ObjectBox.h"
 #include "RecyclerBlockQueue.h"
-#include "../include/Frame.h"
 #include "EventPipeline.h"
 
 using namespace std;
@@ -39,8 +39,8 @@ private:
     unsigned int sampleHz = 0;
     SLuint32 format = SL_PCMSAMPLEFORMAT_FIXED_16;
     int minBufferSize = 0;
-    Frame *buffer = nullptr;
-    RecyclerBlockQueue<Frame> *recycler = nullptr;
+    ObjectBox *buffer = nullptr;
+    RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
     SLObjectItf engineObject = nullptr;
     SLEngineItf engineItf = nullptr;
     SLObjectItf mixObject = nullptr;

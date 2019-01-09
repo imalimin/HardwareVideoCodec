@@ -5,7 +5,8 @@
 * LICENSE file in the root directory of this source tree.
 */
 #include "../include/AudioPlayer.h"
-#include "log.h"
+#include "../include/log.h"
+#include "../include/ObjectBox.h"
 
 void bufferQueueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
     AudioPlayer *player = static_cast<AudioPlayer *>(context);
@@ -18,8 +19,8 @@ AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSi
     this->sampleHz = sampleHz;
     this->format = format;
     this->minBufferSize = minBufferSize;
-    this->recycler = new RecyclerBlockQueue<Frame>(8, [minBufferSize] {
-        return new Frame(minBufferSize);
+    this->recycler = new RecyclerBlockQueue<ObjectBox>(8, [minBufferSize] {
+        return new ObjectBox(new uint8_t[minBufferSize]);
     });
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d",
          this->channels,
@@ -154,8 +155,8 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
         LOGE("Player SetPlayState start failed!");
         return 0;
     }
-    buffer = new Frame(minBufferSize);
-    (*bufferQueueItf)->Enqueue(bufferQueueItf, buffer->data, buffer->size);
+    buffer = new ObjectBox(new uint8_t[minBufferSize]);
+    (*bufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
     return 1;
 }
 
@@ -164,16 +165,16 @@ void AudioPlayer::bufferEnqueue(SLBufferQueueItf slBufferQueueItf) {
         recycler->recycle(buffer);
     }
     buffer = recycler->take();
-    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->data, buffer->size);
+    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
 }
 
 int AudioPlayer::write(uint8_t *buffer, size_t size) {
-    Frame *cache = recycler->takeCache();
+    ObjectBox *cache = recycler->takeCache();
     if (!cache) {
         LOGE("Cache invalid");
         return 0;
     }
-    memcpy(cache->data, buffer, size);
+    memcpy(cache->ptr, buffer, size);
     recycler->offer(cache);
     return 1;
 }

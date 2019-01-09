@@ -57,6 +57,7 @@ file(
         ${PROJECT_SOURCE_DIR}/thread/*.cpp
         ${PROJECT_SOURCE_DIR}/decoder/*.cpp
         ${PROJECT_SOURCE_DIR}/utils/*.cpp
+        ${PROJECT_SOURCE_DIR}/media/*cpp
 )
 add_library(
         hwvcom
@@ -78,6 +79,7 @@ target_link_libraries(
         libjpeg
         libturbojpeg
         libpng
+        OpenSLES
         ${zlib}
         ${log-lib}
 )
