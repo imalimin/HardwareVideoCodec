@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.TextureView
+import com.lmy.hwvcnative.HWVC
 import com.lmy.hwvcnative.processor.PictureProcessor
 import com.lmy.hwvcnative.processor.VideoProcessor
 import kotlinx.android.synthetic.main.activity_main.*
@@ -19,7 +20,7 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun initView() {
         mFilterController = FilterController(processor!!, progressLayout)
         filterBtn.setOnClickListener {
-//            mFilterController.chooseFilter(this)
+            //            mFilterController.chooseFilter(this)
             processor?.start()
         }
         processor?.setSource("${Environment.getExternalStorageDirectory().path}/002.mp4")
@@ -61,18 +62,5 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     override fun onDestroy() {
         super.onDestroy()
-    }
-
-    companion object {
-        init {
-            System.loadLibrary("avcodec")
-            System.loadLibrary("avformat")
-            System.loadLibrary("avresample")
-            System.loadLibrary("avutil")
-            System.loadLibrary("hwvcom")
-            System.loadLibrary("hwvc_codec")
-            System.loadLibrary("hwvc_render")
-            System.loadLibrary("hwvc_native")
-        }
     }
 }

@@ -57,16 +57,17 @@ int AsynVideoDecoder::grab(Frame *frame) {
     if (AV_SAMPLE_FMT_FLTP == f->format) {
         int size = 0;
         for (int i = 0; i < f->channels; ++i) {
-            if (f->linesize[i] <= 0) continue;
-            memcpy(frame->data + size, f->data[i], f->linesize[i]);
-            size += f->linesize[i];
+//            if (f->linesize[i] <= 0) continue;
+            memcpy(frame->data + size, f->data[i], f->linesize[0]);
+            size += f->linesize[0];
         }
         frame->offset = 0;
         frame->size = size;
-        LOGI("%d, %d, %d/%d", f->channels, f->linesize[0], f->linesize[1], size);
+        LOGI("audio %d, %d, %d/%d", f->channels, size, f->linesize[0], f->linesize[1]);
+        av_frame_unref(f);
         vRecycler->recycle(f);
         return MEDIA_TYPE_AUDIO;
-    } else{
+    } else {
 
     }
     if (AV_PIX_FMT_NV12 == f->format) {
@@ -77,6 +78,7 @@ int AsynVideoDecoder::grab(Frame *frame) {
 
     frame->width = f->width;
     frame->height = f->height;
+    av_frame_unref(f);
     vRecycler->recycle(f);
 
     return MEDIA_TYPE_VIDEO;

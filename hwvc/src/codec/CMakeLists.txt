@@ -61,6 +61,15 @@ set_target_properties(
         PROPERTIES IMPORTED_LOCATION
         "${PREBUILD_SHARED}/libavutil.so")
 
+add_library(
+        libswresample
+        SHARED
+        IMPORTED)
+set_target_properties(
+        libswresample
+        PROPERTIES IMPORTED_LOCATION
+        "${PREBUILD_SHARED}/libswresample.so")
+
 #------------------STATIC END----------------------
 
 file(
@@ -94,6 +103,7 @@ target_link_libraries( # Specifies the target library.
         libavformat
         libavresample
         libavutil
+        libswresample
         hwvcom
         # Links the target library to the log library
         # included in the NDK.
