@@ -54,16 +54,14 @@ bool AsynVideoDecoder::prepare(string path) {
 
 int AsynVideoDecoder::grab(Frame *frame) {
     AVFrame *f = vRecycler->take();
-    if (AV_SAMPLE_FMT_FLTP == f->format) {
+    if (AV_SAMPLE_FMT_S32 == f->format) {
         int size = 0;
-        for (int i = 0; i < f->channels; ++i) {
-//            if (f->linesize[i] <= 0) continue;
-            memcpy(frame->data + size, f->data[i], f->linesize[0]);
-            size += f->linesize[0];
-        }
+        //对于音频，只有linesize[0]被使用，因为音频中，每一个声道的大小应该相等
+        memcpy(frame->data + size, f->data[0], f->linesize[0]);
+        size += f->linesize[0];
         frame->offset = 0;
         frame->size = size;
-        LOGI("audio %d, %d, %d/%d", f->channels, size, f->linesize[0], f->linesize[1]);
+        LOGI("audio channels=%d, size=%d, nb_samples=%d, %d", f->channels, size, f->nb_samples, f->linesize[0]);
         av_frame_unref(f);
         vRecycler->recycle(f);
         return MEDIA_TYPE_AUDIO;

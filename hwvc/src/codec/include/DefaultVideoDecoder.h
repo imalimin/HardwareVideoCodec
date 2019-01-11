@@ -21,6 +21,7 @@ extern "C" {
 #include "ff/libavcodec/avcodec.h"
 #include "ff/libavformat/avformat.h"
 #include "ff/libavutil/avutil.h"
+#include "ff/libswresample/swresample.h"
 
 
 class DefaultVideoDecoder : public AbsVideoDecoder {
@@ -49,14 +50,20 @@ private:
     AVFormatContext *pFormatCtx = nullptr;
     AVCodecContext *vCodecContext = nullptr;
     AVCodecContext *aCodecContext = nullptr;
+    SwrContext *swrContext = nullptr;
     int audioTrack = -1, videoTrack = -1, currentTrack = -1;
     AVPacket *avPacket = nullptr;
+    AVFrame *resampleFrame = nullptr;
+
+    void initSwr();
 
     int getMediaType(int track);
 
     bool openTrack(int track, AVCodecContext **context);
 
     void printCodecInfo();
+
+    void resample(AVFrame *avFrame);
 };
 
 #ifdef __cplusplus

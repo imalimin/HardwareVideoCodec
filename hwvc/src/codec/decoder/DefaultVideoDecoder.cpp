@@ -18,6 +18,12 @@ DefaultVideoDecoder::DefaultVideoDecoder() {
 DefaultVideoDecoder::~DefaultVideoDecoder() {
     if (avPacket) {
         av_packet_unref(avPacket);
+        av_packet_free(&avPacket);
+        avPacket = nullptr;
+    }
+    if (resampleFrame) {
+        av_frame_unref(resampleFrame);
+        av_frame_free(&resampleFrame);
         avPacket = nullptr;
     }
     if (aCodecContext) {
@@ -72,11 +78,39 @@ bool DefaultVideoDecoder::prepare(string path) {
         LOGE("******** This file not contain video or audio track. *********");
         return false;
     }
-    LOGI("DefaultVideoDecoder::prepare(%d x %d, channels=%d, sampleHz=%d)",
-         width(), height(), getChannels(), getSampleHz());
+    LOGI("DefaultVideoDecoder::prepare(%d x %d, channels=%d, sampleHz=%d, frameSize=%d)",
+         width(), height(), getChannels(), getSampleHz(), aCodecContext->frame_size);
+    int oRawLineSize = 0;
+    int oRawBuffSize = av_samples_get_buffer_size(&oRawLineSize, getChannels(),
+                                                  aCodecContext->frame_size,
+                                                  AV_SAMPLE_FMT_S32,
+                                                  0);
+    resampleFrame = av_frame_alloc();
+    resampleFrame->nb_samples = aCodecContext->frame_size;
+    resampleFrame->format = AV_SAMPLE_FMT_S32;
+    resampleFrame->channels = getChannels();
+    int ret = avcodec_fill_audio_frame(resampleFrame, getChannels(), AV_SAMPLE_FMT_S32,
+                                       (const uint8_t *) av_malloc(oRawBuffSize), oRawBuffSize, 0);
+    if (ret < 0) {
+        LOGE("******** resampleFrame alloc failed(size=%d). *********", oRawBuffSize);
+        return false;
+    }
+    initSwr();
     //准备资源
     avPacket = av_packet_alloc();
     return true;
+}
+
+void DefaultVideoDecoder::initSwr() {
+    if (!av_sample_fmt_is_planar(aCodecContext->sample_fmt)) {
+        return;
+    }
+    swrContext = swr_alloc_set_opts(nullptr, resampleFrame->channel_layout,
+                                    static_cast<AVSampleFormat>(resampleFrame->format),
+                                    resampleFrame->sample_rate,
+                                    aCodecContext->channel_layout,
+                                    aCodecContext->sample_fmt,
+                                    getSampleHz(), 0, nullptr);
 }
 
 int DefaultVideoDecoder::grab(AVFrame *avFrame) {
@@ -84,12 +118,14 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
 //        LOGI("avcodec_receive_frame");
         return getMediaType(currentTrack);
     } else if (currentTrack == audioTrack && 0 == avcodec_receive_frame(aCodecContext, avFrame)) {
+        resample(avFrame);
         return getMediaType(currentTrack);
     }
     if (avPacket) {
         av_packet_unref(avPacket);
     }
-    if (av_read_frame(pFormatCtx, avPacket) >= 0) {
+    int ret = 0;
+    if ((ret = av_read_frame(pFormatCtx, avPacket)) == 0) {
 //        LOGI("av_read_frame");
         currentTrack = avPacket->stream_index;
         //解码
@@ -127,7 +163,19 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
                 LOGI("avcodec_send_packet ret=%d", ret);
         }
     }
-    return MEDIA_TYPE_EOF;
+    if (AVERROR_EOF == ret) {
+        return MEDIA_TYPE_EOF;
+    }
+    return MEDIA_TYPE_UNKNOWN;
+}
+
+void DefaultVideoDecoder::resample(AVFrame *avFrame) {
+    swr_convert(swrContext, resampleFrame->data, aCodecContext->frame_size,
+                (const uint8_t **) (avFrame->data), aCodecContext->frame_size);
+    LOGI("resample: fmt=%d, %d/%d", resampleFrame->format, resampleFrame->linesize[0],
+         resampleFrame->nb_samples);
+    memcpy(avFrame->data[0], resampleFrame->data, resampleFrame->linesize[0]);
+    avFrame->format = resampleFrame->format;
 }
 
 int DefaultVideoDecoder::width() {
@@ -183,7 +231,8 @@ bool DefaultVideoDecoder::openTrack(int track, AVCodecContext **context) {
     } else if (AVMEDIA_TYPE_AUDIO == codec->type) {
         typeName = "audio";
     }
-    LOGI("Open %s track with %s, fmt=%d", typeName, codec->name, avCodecParameters->format);
+    LOGI("Open %s track with %s, fmt=%d, frameSize=%d", typeName, codec->name,
+         avCodecParameters->format, avCodecParameters->frame_size);
     return true;
 }
 
@@ -214,11 +263,11 @@ void DefaultVideoDecoder::printCodecInfo() {
 }
 
 int DefaultVideoDecoder::getChannels() {
-    return pFormatCtx->streams[audioTrack]->codecpar->channels;
+    return aCodecContext->channels;
 }
 
 int DefaultVideoDecoder::getSampleHz() {
-    return pFormatCtx->streams[audioTrack]->codecpar->sample_rate;
+    return aCodecContext->sample_rate;
 }
 
 #ifdef __cplusplus
