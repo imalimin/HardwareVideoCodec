@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-class AsynVideoDecoder : public AbsVideoDecoder {
+class AsynVideoDecoder : public AbsVideoDecoder, public AbsAudioDecoder {
 public:
     AsynVideoDecoder();
 
@@ -32,6 +32,10 @@ public:
     virtual int getChannels() override;
 
     virtual int getSampleHz() override;
+
+    virtual int getSampleFormat() override;
+
+    virtual int getPerSampleSize() override;
 
     int grab(Frame *frame);
 

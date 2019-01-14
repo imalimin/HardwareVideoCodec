@@ -65,6 +65,11 @@ bool Video::eventPrepare(Message *msg) {
         pipeline = new EventPipeline(name);
     }
     decoder->prepare(path);
+    audioPlayer = new AudioPlayer(decoder->getChannels(),
+                                  decoder->getSampleHz(),
+                                  SL_PCMSAMPLEFORMAT_FIXED_32,
+                                  decoder->getPerSampleSize());
+    audioPlayer->start();
     NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
     pipeline->queueEvent([=] {
         if (nw->egl) {
@@ -132,13 +137,6 @@ void Video::loop() {
         int ret = grab();
         if (MEDIA_TYPE_VIDEO != ret) {
             if (MEDIA_TYPE_AUDIO == ret) {
-                if (!audioPlayer) {
-                    audioPlayer = new AudioPlayer(decoder->getChannels(),
-                                                  decoder->getSampleHz(),
-                                                  SL_PCMSAMPLEFORMAT_FIXED_16,
-                                                  frame->size);
-                    audioPlayer->start();
-                }
                 audioPlayer->write(frame->data, frame->size);
             }
             return;

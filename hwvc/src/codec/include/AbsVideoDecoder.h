@@ -9,7 +9,7 @@
 
 #include "AbsDecoder.h"
 
-class AbsVideoDecoder : public AbsDecoder {
+class AbsVideoDecoder : virtual public AbsDecoder {
 public:
     AbsVideoDecoder();
 
@@ -20,10 +20,6 @@ public:
     virtual int width()=0;
 
     virtual int height()=0;
-
-    virtual int getChannels()=0;
-
-    virtual int getSampleHz()=0;
 };
 
 

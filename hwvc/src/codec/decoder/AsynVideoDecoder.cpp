@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-AsynVideoDecoder::AsynVideoDecoder() {
+AsynVideoDecoder::AsynVideoDecoder() : AbsDecoder(), AbsAudioDecoder(), AbsVideoDecoder() {
     decoder = new DefaultVideoDecoder();
     vRecycler = new RecyclerBlockQueue<AVFrame>(8, [] {
         return av_frame_alloc();
@@ -54,14 +54,15 @@ bool AsynVideoDecoder::prepare(string path) {
 
 int AsynVideoDecoder::grab(Frame *frame) {
     AVFrame *f = vRecycler->take();
-    if (AV_SAMPLE_FMT_S32 == f->format) {
+    if (AV_SAMPLE_FMT_S32 == f->format || AV_SAMPLE_FMT_FLT == f->format) {
         int size = 0;
         //对于音频，只有linesize[0]被使用，因为音频中，每一个声道的大小应该相等
         memcpy(frame->data + size, f->data[0], f->linesize[0]);
         size += f->linesize[0];
         frame->offset = 0;
         frame->size = size;
-        LOGI("audio channels=%d, size=%d, nb_samples=%d, %d", f->channels, size, f->nb_samples, f->linesize[0]);
+        LOGI("audio channels=%d, size=%d, nb_samples=%d, %d", f->channels, size, f->nb_samples,
+             f->linesize[0]);
         av_frame_unref(f);
         vRecycler->recycle(f);
         return MEDIA_TYPE_AUDIO;
@@ -154,6 +155,20 @@ int AsynVideoDecoder::getChannels() {
 int AsynVideoDecoder::getSampleHz() {
     if (decoder) {
         return decoder->getSampleHz();
+    }
+    return 0;
+}
+
+int AsynVideoDecoder::getSampleFormat() {
+    if (decoder) {
+        return decoder->getSampleFormat();
+    }
+    return 0;
+}
+
+int AsynVideoDecoder::getPerSampleSize() {
+    if (decoder) {
+        return decoder->getPerSampleSize();
     }
     return 0;
 }

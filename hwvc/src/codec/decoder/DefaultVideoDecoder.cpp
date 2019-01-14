@@ -5,13 +5,14 @@
 * LICENSE file in the root directory of this source tree.
 */
 #include "../include/DefaultVideoDecoder.h"
+#include <cassert>
 #include "log.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-DefaultVideoDecoder::DefaultVideoDecoder() {
+DefaultVideoDecoder::DefaultVideoDecoder() : AbsDecoder(), AbsAudioDecoder(), AbsVideoDecoder() {
 
 }
 
@@ -80,21 +81,7 @@ bool DefaultVideoDecoder::prepare(string path) {
     }
     LOGI("DefaultVideoDecoder::prepare(%d x %d, channels=%d, sampleHz=%d, frameSize=%d)",
          width(), height(), getChannels(), getSampleHz(), aCodecContext->frame_size);
-    int oRawLineSize = 0;
-    int oRawBuffSize = av_samples_get_buffer_size(&oRawLineSize, getChannels(),
-                                                  aCodecContext->frame_size,
-                                                  AV_SAMPLE_FMT_S32,
-                                                  0);
-    resampleFrame = av_frame_alloc();
-    resampleFrame->nb_samples = aCodecContext->frame_size;
-    resampleFrame->format = AV_SAMPLE_FMT_S32;
-    resampleFrame->channels = getChannels();
-    int ret = avcodec_fill_audio_frame(resampleFrame, getChannels(), AV_SAMPLE_FMT_S32,
-                                       (const uint8_t *) av_malloc(oRawBuffSize), oRawBuffSize, 0);
-    if (ret < 0) {
-        LOGE("******** resampleFrame alloc failed(size=%d). *********", oRawBuffSize);
-        return false;
-    }
+    outputSampleFormat = aCodecContext->sample_fmt;
     initSwr();
     //准备资源
     avPacket = av_packet_alloc();
@@ -105,12 +92,41 @@ void DefaultVideoDecoder::initSwr() {
     if (!av_sample_fmt_is_planar(aCodecContext->sample_fmt)) {
         return;
     }
-    swrContext = swr_alloc_set_opts(nullptr, resampleFrame->channel_layout,
-                                    static_cast<AVSampleFormat>(resampleFrame->format),
+    outputSampleFormat = getBestSampleFormat(aCodecContext->sample_fmt);
+    int oRawLineSize = 0;
+    int oRawBuffSize = av_samples_get_buffer_size(&oRawLineSize, getChannels(),
+                                                  aCodecContext->frame_size,
+                                                  outputSampleFormat,
+                                                  0);
+    resampleFrame = av_frame_alloc();
+    resampleFrame->nb_samples = aCodecContext->frame_size;
+    resampleFrame->format = outputSampleFormat;
+    resampleFrame->channels = getChannels();
+    resampleFrame->channel_layout = aCodecContext->channel_layout;
+    resampleFrame->sample_rate = getSampleHz();
+    int ret = avcodec_fill_audio_frame(resampleFrame, getChannels(), outputSampleFormat,
+                                       (const uint8_t *) av_malloc(oRawBuffSize), oRawBuffSize, 0);
+    if (ret < 0) {
+        LOGE("******** resampleFrame alloc failed(size=%d). *********", oRawBuffSize);
+        return;
+    }
+    LOGI("DefaultVideoDecoder::initSwr: %lld, %d, %d => %lld, %d, %d",
+         resampleFrame->channel_layout,
+         AVSampleFormat(resampleFrame->format),
+         resampleFrame->sample_rate,
+         aCodecContext->channel_layout,
+         aCodecContext->sample_fmt,
+         getSampleHz());
+    swrContext = swr_alloc_set_opts(swrContext, resampleFrame->channel_layout,
+                                    AVSampleFormat(resampleFrame->format),
                                     resampleFrame->sample_rate,
                                     aCodecContext->channel_layout,
                                     aCodecContext->sample_fmt,
                                     getSampleHz(), 0, nullptr);
+    if (!swrContext || 0 != swr_init(swrContext)) {
+        LOGE("DefaultVideoDecoder::initSwr failed");
+        return;
+    }
 }
 
 int DefaultVideoDecoder::grab(AVFrame *avFrame) {
@@ -170,11 +186,20 @@ int DefaultVideoDecoder::grab(AVFrame *avFrame) {
 }
 
 void DefaultVideoDecoder::resample(AVFrame *avFrame) {
-    swr_convert(swrContext, resampleFrame->data, aCodecContext->frame_size,
-                (const uint8_t **) (avFrame->data), aCodecContext->frame_size);
-    LOGI("resample: fmt=%d, %d/%d", resampleFrame->format, resampleFrame->linesize[0],
+    if (!swrContext) {
+        return;
+    }
+    int ret = swr_convert(swrContext, resampleFrame->data, aCodecContext->frame_size,
+                          (const uint8_t **) (avFrame->data), aCodecContext->frame_size);
+    if (ret < 0) {
+        LOGE("DefaultVideoDecoder::resample failed");
+        return;
+    }
+    LOGI("DefaultVideoDecoder::resample: fmt=%d, %d/%d => fmt=%d, %d/%d", avFrame->format,
+         avFrame->linesize[0],
+         avFrame->nb_samples, resampleFrame->format, resampleFrame->linesize[0],
          resampleFrame->nb_samples);
-    memcpy(avFrame->data[0], resampleFrame->data, resampleFrame->linesize[0]);
+    memcpy(avFrame->data[0], resampleFrame->data[0], resampleFrame->linesize[0]);
     avFrame->format = resampleFrame->format;
 }
 
@@ -268,6 +293,26 @@ int DefaultVideoDecoder::getChannels() {
 
 int DefaultVideoDecoder::getSampleHz() {
     return aCodecContext->sample_rate;
+}
+
+AVSampleFormat DefaultVideoDecoder::getBestSampleFormat(AVSampleFormat in) {
+    AVSampleFormat out = av_get_packed_sample_fmt(in);
+    if (AV_SAMPLE_FMT_FLT == out || AV_SAMPLE_FMT_DBL == out) {
+        out = AV_SAMPLE_FMT_S32;
+    }
+    return out;
+}
+
+int DefaultVideoDecoder::getSampleFormat() {
+    assert(aCodecContext);
+    return aCodecContext->sample_fmt;
+}
+
+int DefaultVideoDecoder::getPerSampleSize() {
+    assert(aCodecContext);
+    return aCodecContext->frame_size *
+           av_get_bytes_per_sample(outputSampleFormat) *
+           aCodecContext->channels;
 }
 
 #ifdef __cplusplus

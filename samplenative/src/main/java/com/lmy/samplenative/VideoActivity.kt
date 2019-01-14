@@ -23,7 +23,7 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
             //            mFilterController.chooseFilter(this)
             processor?.start()
         }
-        processor?.setSource("${Environment.getExternalStorageDirectory().path}/002.mp4")
+        processor?.setSource("${Environment.getExternalStorageDirectory().path}/001.mp4")
         surfaceView.keepScreenOn = true
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceChanged(holder: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {

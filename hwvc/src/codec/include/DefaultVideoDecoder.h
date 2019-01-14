@@ -8,6 +8,7 @@
 #define HARDWAREVIDEOCODEC_DEFAULTVIDEODECODER_H
 
 #include "AbsVideoDecoder.h"
+#include "AbsAudioDecoder.h"
 
 const int MEDIA_TYPE_UNKNOWN = -1;
 const int MEDIA_TYPE_EOF = 0;
@@ -24,7 +25,7 @@ extern "C" {
 #include "ff/libswresample/swresample.h"
 
 
-class DefaultVideoDecoder : public AbsVideoDecoder {
+class DefaultVideoDecoder : public AbsVideoDecoder, public AbsAudioDecoder {
 public:
     DefaultVideoDecoder();
 
@@ -40,6 +41,10 @@ public:
 
     virtual int getSampleHz() override;
 
+    virtual int getSampleFormat() override;
+
+    virtual int getPerSampleSize() override;
+
     /**
      * @return 1: video, 2: audio, 0: failed
      */
@@ -54,6 +59,7 @@ private:
     int audioTrack = -1, videoTrack = -1, currentTrack = -1;
     AVPacket *avPacket = nullptr;
     AVFrame *resampleFrame = nullptr;
+    AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
 
     void initSwr();
 
@@ -64,6 +70,8 @@ private:
     void printCodecInfo();
 
     void resample(AVFrame *avFrame);
+
+    AVSampleFormat getBestSampleFormat(AVSampleFormat in);
 };
 
 #ifdef __cplusplus
