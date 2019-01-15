@@ -1,11 +1,14 @@
 package com.lmy.samplenative
 
+import android.content.Intent
 import android.graphics.SurfaceTexture
 import android.os.Environment
+import android.text.TextUtils
 import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.TextureView
+import android.widget.Toast
 import com.lmy.hwvcnative.HWVC
 import com.lmy.hwvcnative.processor.PictureProcessor
 import com.lmy.hwvcnative.processor.VideoProcessor
@@ -19,6 +22,21 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
+        var uri = intent.data
+        if (uri == null)
+            uri = intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        if (uri == null) {
+            finish()
+            Toast.makeText(this, "没有找到该文件", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+        val path = getRealFilePath(uri)
+        if (TextUtils.isEmpty(path)) {
+            Toast.makeText(this, "没有找到该文件", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
         mFilterController = FilterController(processor!!, progressLayout)
         filterBtn.setOnClickListener {
             mFilterController.chooseFilter(this)
@@ -29,9 +47,9 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
             } else {
                 processor?.start()
             }
-            playing = !playing;
+            playing = !playing
         }
-        processor?.setSource("${Environment.getExternalStorageDirectory().path}/002.mp4")
+        processor?.setSource(path!!)
         surfaceView.keepScreenOn = true
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceChanged(holder: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
