@@ -13,7 +13,7 @@ extern "C" {
 
 AsynVideoDecoder::AsynVideoDecoder() : AbsDecoder(), AbsAudioDecoder(), AbsVideoDecoder() {
     decoder = new DefaultVideoDecoder();
-    vRecycler = new RecyclerBlockQueue<AVFrame>(8, [] {
+    vRecycler = new RecyclerBlockQueue<AVFrame>(16, [] {
         return av_frame_alloc();
     });
 }

@@ -78,6 +78,7 @@ file(
         ${PROJECT_SOURCE_DIR}/*cpp
         ${PROJECT_SOURCE_DIR}/decoder/*cpp
         ${PROJECT_SOURCE_DIR}/entity/*cpp
+        ${PROJECT_SOURCE_DIR}/utils/*cpp
 )
 add_library( # Sets the name of the library.
         hwvc_codec

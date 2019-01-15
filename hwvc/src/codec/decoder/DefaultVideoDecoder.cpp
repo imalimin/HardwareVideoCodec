@@ -11,6 +11,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "../include/FFUtils.h"
 
 DefaultVideoDecoder::DefaultVideoDecoder() : AbsDecoder(), AbsAudioDecoder(), AbsVideoDecoder() {
 
@@ -199,8 +200,7 @@ void DefaultVideoDecoder::resample(AVFrame *avFrame) {
          avFrame->linesize[0],
          avFrame->nb_samples, resampleFrame->format, resampleFrame->linesize[0],
          resampleFrame->nb_samples);
-    memcpy(avFrame->data[0], resampleFrame->data[0], resampleFrame->linesize[0]);
-    avFrame->format = resampleFrame->format;
+    FFUtils::avSamplesCopy(avFrame, resampleFrame);
 }
 
 int DefaultVideoDecoder::width() {

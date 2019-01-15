@@ -7,6 +7,7 @@
 #include "../include/Video.h"
 #include "ObjectBox.h"
 #include "Size.h"
+#include "TimeUtils.h"
 
 Video::Video() {
     name = "Video";
@@ -147,7 +148,9 @@ int Video::grab() {
         LOGI("grab ret=%d", ret);
         return ret;
     }
-    LOGI("grab %d x %d, ", frame->width, frame->height);
+    LOGI("Video::grab %d x %d, delta time: %lld", frame->width, frame->height,
+         (getCurrentTimeUS() - lastShowTime) / 1000);
+    lastShowTime = getCurrentTimeUS();
     int size = frame->width * frame->height;
     glBindTexture(GL_TEXTURE_2D, yuv[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0,
