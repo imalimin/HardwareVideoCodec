@@ -29,13 +29,14 @@ void Object::wait() {
     }
 }
 
-void Object::wait(int ms) {
+void Object::wait(int us) {
+    if (us <= 0) return;
     struct timeval now;
     struct timespec waitTime;
     gettimeofday(&now, NULL);
-    int sec = ms / 1000;
-    int msec = ms % 1000;
+    int sec = us / 1000000;
+    int usec = us % 1000000;
     waitTime.tv_sec = now.tv_sec + sec;
-    waitTime.tv_nsec = now.tv_usec * 1000 + msec * 1000000;
+    waitTime.tv_nsec = now.tv_usec * 1000 + usec * 1000;
     pthread_cond_timedwait(&cond, &mutex, &waitTime);
 }
