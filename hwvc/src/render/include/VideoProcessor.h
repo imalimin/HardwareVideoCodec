@@ -24,6 +24,8 @@ public:
 
     void start();
 
+    void setFilter(Filter *filter);
+
 private:
     UnitPipeline *pipeline = nullptr;
 };

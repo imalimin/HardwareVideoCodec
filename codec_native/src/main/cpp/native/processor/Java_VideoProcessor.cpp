@@ -60,6 +60,13 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_VideoProcessor_start
     }
 }
 
+JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_VideoProcessor_setFilter
+        (JNIEnv *env, jobject thiz, jlong handler, jlong filter) {
+    if (handler && filter) {
+        getHandler(handler)->setFilter(reinterpret_cast<Filter *>(filter));
+    }
+}
+
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_VideoProcessor_release
         (JNIEnv *env, jobject thiz, jlong handler) {
     if (handler) {

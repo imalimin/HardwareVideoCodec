@@ -19,11 +19,13 @@ class VideoProcessor : CPPObject(), FilterSupport {
     }
 
     override fun setFilter(filter: Filter) {
-
+        if (0L == handler) return
+        this.filter = filter
+        setFilter(handler, filter.handler)
     }
 
     override fun getFilter(): Filter? {
-        return filter
+        return this.filter
     }
 
     override fun invalidate() {
@@ -57,6 +59,7 @@ class VideoProcessor : CPPObject(), FilterSupport {
     private external fun create(): Long
     private external fun setSource(handler: Long, path: String)
     private external fun prepare(handler: Long, surface: Surface, width: Int, height: Int)
+    private external fun setFilter(handler: Long, filter: Long)
     private external fun start(handler: Long)
     private external fun pause(handler: Long)
     private external fun release(handler: Long)

@@ -20,8 +20,7 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun initView() {
         mFilterController = FilterController(processor!!, progressLayout)
         filterBtn.setOnClickListener {
-            //            mFilterController.chooseFilter(this)
-            processor?.start()
+            mFilterController.chooseFilter(this)
         }
         processor?.setSource("${Environment.getExternalStorageDirectory().path}/002.mp4")
         surfaceView.keepScreenOn = true
@@ -37,6 +36,7 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
             override fun surfaceCreated(holder: SurfaceHolder) {
                 processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
+                processor?.start()
             }
         })
 //        surfaceView.surfaceTextureListener = this
