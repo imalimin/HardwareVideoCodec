@@ -331,7 +331,13 @@ void DefaultVideoDecoder::matchPts(AVFrame *frame, int track) {
 }
 
 void DefaultVideoDecoder::seek(int64_t us) {
+    int64_t pts = av_rescale(us, pFormatCtx->streams[videoTrack]->codec->time_base.den,
+                             pFormatCtx->streams[videoTrack]->codec->time_base.num);;
+    av_seek_frame(pFormatCtx, videoTrack, pts, AVSEEK_FLAG_BACKWARD);
 
+    pts = av_rescale(us, pFormatCtx->streams[audioTrack]->codec->time_base.den,
+                     pFormatCtx->streams[audioTrack]->codec->time_base.num);;
+    av_seek_frame(pFormatCtx, audioTrack, pts, AVSEEK_FLAG_BACKWARD);
 }
 
 int64_t DefaultVideoDecoder::getVideoDuration() {
