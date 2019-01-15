@@ -15,12 +15,21 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     private lateinit var mFilterController: FilterController
     private var processor: VideoProcessor? = VideoProcessor()
     private var surface: Surface? = null
+    private var playing: Boolean = true
 
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
         mFilterController = FilterController(processor!!, progressLayout)
         filterBtn.setOnClickListener {
             mFilterController.chooseFilter(this)
+        }
+        playBtn.setOnClickListener {
+            if (playing) {
+                processor?.pause()
+            } else {
+                processor?.start()
+            }
+            playing = !playing;
         }
         processor?.setSource("${Environment.getExternalStorageDirectory().path}/002.mp4")
         surfaceView.keepScreenOn = true

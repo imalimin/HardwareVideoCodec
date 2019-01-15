@@ -52,6 +52,13 @@ void VideoProcessor::start() {
     }
 }
 
+void VideoProcessor::pause() {
+    if (pipeline) {
+        Message *msg = new Message(EVENT_VIDEO_PAUSE, nullptr);
+        pipeline->postEvent(msg);
+    }
+}
+
 void VideoProcessor::setFilter(Filter *filter) {
     Message *msg = new Message(EVENT_RENDER_SET_FILTER, nullptr);
     msg->obj = new ObjectBox(filter);
