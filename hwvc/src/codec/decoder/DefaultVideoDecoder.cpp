@@ -83,15 +83,17 @@ bool DefaultVideoDecoder::prepare(string path) {
     LOGI("DefaultVideoDecoder::prepare(%d x %d, channels=%d, sampleHz=%d, frameSize=%d)",
          width(), height(), getChannels(), getSampleHz(), aCodecContext->frame_size);
     outputSampleFormat = aCodecContext->sample_fmt;
-    initSwr();
+    if (initSwr() < 0) {
+        return false;
+    }
     //准备资源
     avPacket = av_packet_alloc();
     return true;
 }
 
-void DefaultVideoDecoder::initSwr() {
+int DefaultVideoDecoder::initSwr() {
     if (!av_sample_fmt_is_planar(aCodecContext->sample_fmt)) {
-        return;
+        return -1;
     }
     outputSampleFormat = getBestSampleFormat(aCodecContext->sample_fmt);
     int oRawLineSize = 0;
@@ -109,7 +111,7 @@ void DefaultVideoDecoder::initSwr() {
                                        (const uint8_t *) av_malloc(oRawBuffSize), oRawBuffSize, 0);
     if (ret < 0) {
         LOGE("******** resampleFrame alloc failed(size=%d). *********", oRawBuffSize);
-        return;
+        return ret;
     }
     LOGI("DefaultVideoDecoder::initSwr: %lld, %d, %d => %lld, %d, %d",
          resampleFrame->channel_layout,
@@ -126,8 +128,9 @@ void DefaultVideoDecoder::initSwr() {
                                     getSampleHz(), 0, nullptr);
     if (!swrContext || 0 != swr_init(swrContext)) {
         LOGE("DefaultVideoDecoder::initSwr failed");
-        return;
+        return -1;
     }
+    return 0;
 }
 
 int DefaultVideoDecoder::grab(AVFrame *avFrame) {

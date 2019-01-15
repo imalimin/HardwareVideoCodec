@@ -64,7 +64,7 @@ private:
     AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
     AVRational outputRational = AVRational{1, 1000000};
 
-    void initSwr();
+    int initSwr();
 
     int getMediaType(int track);
 

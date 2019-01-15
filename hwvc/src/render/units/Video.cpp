@@ -66,10 +66,13 @@ bool Video::eventPrepare(Message *msg) {
     if (!pipeline) {
         pipeline = new EventPipeline(name);
     }
-    decoder->prepare(path);
-    createAudioPlayer();
-    NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
-    initEGL(nw);
+    if (decoder->prepare(path)) {
+        createAudioPlayer();
+        NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
+        initEGL(nw);
+    } else {
+        LOGE("Video::open %s failed", path);
+    }
     return true;
 }
 
