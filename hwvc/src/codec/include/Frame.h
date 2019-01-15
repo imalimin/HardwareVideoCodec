@@ -27,6 +27,7 @@ public:
     int channels = 0;
     int offset = 0;
     int size = 0;
+    int64_t pts = 0;
 };
 #ifdef __cplusplus
 }

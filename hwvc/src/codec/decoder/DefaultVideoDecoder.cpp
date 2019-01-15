@@ -132,10 +132,11 @@ void DefaultVideoDecoder::initSwr() {
 
 int DefaultVideoDecoder::grab(AVFrame *avFrame) {
     if (currentTrack == videoTrack && 0 == avcodec_receive_frame(vCodecContext, avFrame)) {
-//        LOGI("avcodec_receive_frame");
+        matchPts(avFrame, videoTrack);
         return getMediaType(currentTrack);
     } else if (currentTrack == audioTrack && 0 == avcodec_receive_frame(aCodecContext, avFrame)) {
         resample(avFrame);
+        matchPts(avFrame, audioTrack);
         return getMediaType(currentTrack);
     }
     if (avPacket) {
@@ -313,6 +314,17 @@ int DefaultVideoDecoder::getPerSampleSize() {
     return aCodecContext->frame_size *
            av_get_bytes_per_sample(outputSampleFormat) *
            aCodecContext->channels;
+}
+
+void DefaultVideoDecoder::matchPts(AVFrame *frame, int track) {
+    frame->pts = av_rescale_q_rnd(frame->pts,
+                                  pFormatCtx->streams[track]->time_base,
+                                  pFormatCtx->streams[track]->codec->time_base,
+                                  AV_ROUND_NEAR_INF);
+    frame->pts = av_rescale_q_rnd(frame->pts,
+                                  pFormatCtx->streams[track]->codec->time_base,
+                                  outputRational,
+                                  AV_ROUND_NEAR_INF);
 }
 
 #ifdef __cplusplus

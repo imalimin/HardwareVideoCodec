@@ -150,7 +150,12 @@ int Video::grab() {
     }
     LOGI("Video::grab %d x %d, delta time: %lld", frame->width, frame->height,
          (getCurrentTimeUS() - lastShowTime) / 1000);
+    if (lastPts > 0) {
+        int64_t t = (frame->pts - lastPts) - (getCurrentTimeUS() - lastShowTime);
+        lock.wait(t);
+    }
     lastShowTime = getCurrentTimeUS();
+    lastPts = frame->pts;
     int size = frame->width * frame->height;
     glBindTexture(GL_TEXTURE_2D, yuv[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0,
@@ -202,7 +207,7 @@ void Video::initEGL(NativeWindow *nw) {
         if (!texAllocator) {
             texAllocator = new TextureAllocator();
         }
-        pipeline->wait(10);
+        pipeline->wait(10000);
         lock.notify();
     });
     lock.wait();

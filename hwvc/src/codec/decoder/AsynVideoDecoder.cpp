@@ -54,6 +54,7 @@ bool AsynVideoDecoder::prepare(string path) {
 
 int AsynVideoDecoder::grab(Frame *frame) {
     AVFrame *f = vRecycler->take();
+    frame->pts = f->pts;
     if (AV_SAMPLE_FMT_S32 == f->format || AV_SAMPLE_FMT_FLT == f->format) {
         int size = 0;
         //对于音频，只有linesize[0]被使用，因为音频中，每一个声道的大小应该相等

@@ -60,6 +60,7 @@ private:
     AVPacket *avPacket = nullptr;
     AVFrame *resampleFrame = nullptr;
     AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
+    AVRational outputRational = AVRational{1, 1000000};
 
     void initSwr();
 
@@ -72,6 +73,8 @@ private:
     void resample(AVFrame *avFrame);
 
     AVSampleFormat getBestSampleFormat(AVSampleFormat in);
+
+    void matchPts(AVFrame *frame, int track);
 };
 
 #ifdef __cplusplus

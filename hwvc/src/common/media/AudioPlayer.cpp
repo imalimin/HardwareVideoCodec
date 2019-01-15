@@ -19,7 +19,7 @@ AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSi
     this->sampleHz = sampleHz;
     this->format = format;
     this->minBufferSize = minBufferSize;
-    this->recycler = new RecyclerBlockQueue<ObjectBox>(8, [minBufferSize] {
+    this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [minBufferSize] {
         return new ObjectBox(new uint8_t[minBufferSize]);
     });
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d",

@@ -55,6 +55,7 @@ private:
     Object lock;
     char *path;
     AudioPlayer *audioPlayer = nullptr;
+    int64_t lastPts = 0;
     int64_t lastShowTime = 0;
 
     void loop();
