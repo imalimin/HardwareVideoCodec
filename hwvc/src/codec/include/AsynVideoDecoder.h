@@ -41,6 +41,10 @@ public:
 
     int grab(Frame *frame);
 
+    virtual int64_t getVideoDuration() override;
+
+    virtual int64_t getAudioDuration() override;
+
 private:
     DefaultVideoDecoder *decoder = nullptr;
     RecyclerBlockQueue<AVFrame> *vRecycler = nullptr;

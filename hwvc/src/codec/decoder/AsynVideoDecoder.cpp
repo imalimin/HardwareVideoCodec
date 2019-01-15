@@ -180,6 +180,20 @@ void AsynVideoDecoder::seek(int64_t us) {
     }
 }
 
+int64_t AsynVideoDecoder::getVideoDuration() {
+    if (decoder) {
+        decoder->getVideoDuration();
+    }
+    return 0;
+}
+
+int64_t AsynVideoDecoder::getAudioDuration() {
+    if (decoder) {
+        decoder->getAudioDuration();
+    }
+    return 0;
+}
+
 #ifdef __cplusplus
 }
 #endif

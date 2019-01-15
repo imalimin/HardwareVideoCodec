@@ -334,6 +334,14 @@ void DefaultVideoDecoder::seek(int64_t us) {
 
 }
 
+int64_t DefaultVideoDecoder::getVideoDuration() {
+    return pFormatCtx->streams[videoTrack]->duration;
+}
+
+int64_t DefaultVideoDecoder::getAudioDuration() {
+    return pFormatCtx->streams[audioTrack]->duration;
+}
+
 #ifdef __cplusplus
 }
 #endif

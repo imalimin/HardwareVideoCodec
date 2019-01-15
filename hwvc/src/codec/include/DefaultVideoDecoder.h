@@ -52,6 +52,10 @@ public:
      */
     virtual int grab(AVFrame *avFrame);
 
+    virtual int64_t getVideoDuration() override;
+
+    virtual int64_t getAudioDuration() override;
+
 private:
     string path;
     AVFormatContext *pFormatCtx = nullptr;
