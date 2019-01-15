@@ -26,6 +26,8 @@ public:
 
     void pause();
 
+    void seek(int64_t us);
+
     void setFilter(Filter *filter);
 
 private:

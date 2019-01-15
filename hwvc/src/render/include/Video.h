@@ -37,6 +37,8 @@ public:
 
     bool eventPause(Message *msg);
 
+    bool eventSeek(Message *msg);
+
     bool eventStop(Message *msg);
 
     bool eventInvalidate(Message *msg);

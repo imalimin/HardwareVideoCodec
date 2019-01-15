@@ -59,6 +59,14 @@ void VideoProcessor::pause() {
     }
 }
 
+void VideoProcessor::seek(int64_t us) {
+    if (pipeline) {
+        Message *msg = new Message(EVENT_VIDEO_SEEK, nullptr);
+        msg->arg2 = us;
+        pipeline->postEvent(msg);
+    }
+}
+
 void VideoProcessor::setFilter(Filter *filter) {
     Message *msg = new Message(EVENT_RENDER_SET_FILTER, nullptr);
     msg->obj = new ObjectBox(filter);

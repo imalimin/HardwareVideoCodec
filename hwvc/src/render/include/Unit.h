@@ -27,7 +27,8 @@ static const int EVENT_SCREEN_DRAW = 0x0040000;
 
 static const int EVENT_VIDEO_START = 0x0050000;
 static const int EVENT_VIDEO_PAUSE = 0x0050001;
-static const int EVENT_VIDEO_SET_SOURCE = 0x0050002;
+static const int EVENT_VIDEO_SEEK = 0x0050002;
+static const int EVENT_VIDEO_SET_SOURCE = 0x0050003;
 
 typedef bool (Unit::*EventFunc)(Message *);
 

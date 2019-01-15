@@ -17,6 +17,8 @@ public:
 
     virtual bool prepare(string path)=0;
 
+    virtual void seek(int64_t us)=0;
+
     virtual int width()=0;
 
     virtual int height()=0;

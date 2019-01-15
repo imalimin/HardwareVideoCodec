@@ -174,6 +174,12 @@ int AsynVideoDecoder::getPerSampleSize() {
     return 0;
 }
 
+void AsynVideoDecoder::seek(int64_t us) {
+    if (decoder) {
+        decoder->seek(us);
+    }
+}
+
 #ifdef __cplusplus
 }
 #endif

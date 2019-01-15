@@ -327,6 +327,10 @@ void DefaultVideoDecoder::matchPts(AVFrame *frame, int track) {
                                   AV_ROUND_NEAR_INF);
 }
 
+void DefaultVideoDecoder::seek(int64_t us) {
+
+}
+
 #ifdef __cplusplus
 }
 #endif

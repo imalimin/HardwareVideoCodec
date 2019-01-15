@@ -51,6 +51,11 @@ class VideoProcessor : CPPObject(), FilterSupport {
         pause(handler)
     }
 
+    fun seek(us: Long) {
+        if (0L == handler) return
+        seek(handler, us)
+    }
+
     fun release() {
         release(handler)
         handler = 0
@@ -62,5 +67,6 @@ class VideoProcessor : CPPObject(), FilterSupport {
     private external fun setFilter(handler: Long, filter: Long)
     private external fun start(handler: Long)
     private external fun pause(handler: Long)
+    private external fun seek(handler: Long, us: Long)
     private external fun release(handler: Long)
 }

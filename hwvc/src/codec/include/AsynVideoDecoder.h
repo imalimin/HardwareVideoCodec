@@ -37,6 +37,8 @@ public:
 
     virtual int getPerSampleSize() override;
 
+    virtual void seek(int64_t us) override;
+
     int grab(Frame *frame);
 
 private:

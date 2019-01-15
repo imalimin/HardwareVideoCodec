@@ -45,6 +45,8 @@ public:
 
     virtual int getPerSampleSize() override;
 
+    virtual void seek(int64_t us) override;
+
     /**
      * @return 1: video, 2: audio, 0: failed
      */
