@@ -15,6 +15,7 @@
 #include "Egl.h"
 #include "Frame.h"
 #include "AudioPlayer.h"
+#include "../entity/NativeWindow.h"
 
 enum PlayState {
     PAUSE = 0,
@@ -60,6 +61,10 @@ private:
     void checkFilter();
 
     int grab();
+
+    void createAudioPlayer();
+
+    void initEGL(NativeWindow *nw);
 };
 
 

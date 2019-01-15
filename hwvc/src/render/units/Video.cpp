@@ -7,7 +7,6 @@
 #include "../include/Video.h"
 #include "ObjectBox.h"
 #include "Size.h"
-#include "../entity/NativeWindow.h"
 
 Video::Video() {
     name = "Video";
@@ -26,12 +25,12 @@ Video::~Video() {
 void Video::release() {
     Unit::release();
     eventStop(nullptr);
+    if (audioPlayer) {
+        audioPlayer->stop();
+        delete audioPlayer;
+        audioPlayer = nullptr;
+    }
     pipeline->queueEvent([=] {
-        if (audioPlayer) {
-            audioPlayer->stop();
-            delete audioPlayer;
-            audioPlayer = nullptr;
-        }
         if (texAllocator) {
             delete texAllocator;
             texAllocator = nullptr;
@@ -65,27 +64,9 @@ bool Video::eventPrepare(Message *msg) {
         pipeline = new EventPipeline(name);
     }
     decoder->prepare(path);
-    audioPlayer = new AudioPlayer(decoder->getChannels(),
-                                  decoder->getSampleHz(),
-                                  SL_PCMSAMPLEFORMAT_FIXED_32,
-                                  decoder->getPerSampleSize());
-    audioPlayer->start();
+    createAudioPlayer();
     NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
-    pipeline->queueEvent([=] {
-        if (nw->egl) {
-            egl = new Egl(nw->egl, nullptr);
-        } else {
-            egl = new Egl();
-            nw->egl = egl;
-        }
-        egl->makeCurrent();
-        if (!texAllocator) {
-            texAllocator = new TextureAllocator();
-        }
-        pipeline->wait(10);
-        lock.notify();
-    });
-    lock.wait();
+    initEGL(nw);
     return true;
 }
 
@@ -185,4 +166,41 @@ int Video::grab() {
                  frame->data + size + size / 4);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
     return MEDIA_TYPE_VIDEO;
+}
+
+void Video::createAudioPlayer() {
+    int format;
+    switch (decoder->getSampleFormat()) {
+        case AV_SAMPLE_FMT_S16:
+            format = SL_PCMSAMPLEFORMAT_FIXED_16;
+            break;
+        case AV_SAMPLE_FMT_U8:
+            format = SL_PCMSAMPLEFORMAT_FIXED_8;
+            break;
+        default:
+            format = SL_PCMSAMPLEFORMAT_FIXED_32;
+    }
+    audioPlayer = new AudioPlayer(decoder->getChannels(),
+                                  decoder->getSampleHz(),
+                                  format,
+                                  decoder->getPerSampleSize());
+    audioPlayer->start();
+}
+
+void Video::initEGL(NativeWindow *nw) {
+    pipeline->queueEvent([=] {
+        if (nw->egl) {
+            egl = new Egl(nw->egl, nullptr);
+        } else {
+            egl = new Egl();
+            nw->egl = egl;
+        }
+        egl->makeCurrent();
+        if (!texAllocator) {
+            texAllocator = new TextureAllocator();
+        }
+        pipeline->wait(10);
+        lock.notify();
+    });
+    lock.wait();
 }

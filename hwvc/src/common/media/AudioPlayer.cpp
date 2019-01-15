@@ -165,7 +165,9 @@ void AudioPlayer::bufferEnqueue(SLBufferQueueItf slBufferQueueItf) {
         recycler->recycle(buffer);
     }
     buffer = recycler->take();
-    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
+    if (buffer) {
+        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
+    }
 }
 
 int AudioPlayer::write(uint8_t *buffer, size_t size) {
@@ -180,12 +182,19 @@ int AudioPlayer::write(uint8_t *buffer, size_t size) {
 }
 
 void AudioPlayer::stop() {
+    if (recycler) {
+        recycler->notify();
+    }
     if (pipeline) {
         pipeline->queueEvent([this] {
             this->destroyEngine();
         });
         delete pipeline;
         pipeline = nullptr;
+    }
+    if (recycler) {
+        delete recycler;
+        recycler = nullptr;
     }
 }
 
