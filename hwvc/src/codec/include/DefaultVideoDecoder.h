@@ -67,6 +67,8 @@ private:
     AVFrame *resampleFrame = nullptr;
     AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
     AVRational outputRational = AVRational{1, 1000000};
+    int64_t videoDurationUs = -1;
+    int64_t audioDurationUs = -1;
 
     int initSwr();
 

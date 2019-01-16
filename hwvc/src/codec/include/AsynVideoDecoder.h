@@ -13,6 +13,12 @@
 #include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
 
+enum PlayState {
+    PAUSE = 0,
+    PLAYING = 1,
+    STOP = -1
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -39,6 +45,10 @@ public:
 
     virtual void seek(int64_t us) override;
 
+    virtual void start();
+
+    virtual void pause();
+
     int grab(Frame *frame);
 
     virtual int64_t getVideoDuration() override;
@@ -49,7 +59,7 @@ private:
     DefaultVideoDecoder *decoder = nullptr;
     RecyclerBlockQueue<AVFrame> *vRecycler = nullptr;
     EventPipeline *pipeline = nullptr;
-    bool lopping = true;
+    PlayState playState = STOP;
 
     void loop();
 
@@ -62,6 +72,10 @@ private:
      * YUV420SP
      */
     void copyNV12(Frame *dest, AVFrame *src);
+
+    bool grab();
+
+    bool grabAnVideoFrame();
 };
 
 #ifdef __cplusplus

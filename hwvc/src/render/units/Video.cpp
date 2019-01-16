@@ -82,12 +82,18 @@ bool Video::eventStart(Message *msg) {
         playState = PLAYING;
         loop();
     }
+    if (decoder) {
+        decoder->start();
+    }
     return true;
 }
 
 bool Video::eventPause(Message *msg) {
     if (STOP != playState) {
         playState = PAUSE;
+    }
+    if (decoder) {
+        decoder->pause();
     }
     return true;
 }

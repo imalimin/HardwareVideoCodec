@@ -17,12 +17,6 @@
 #include "AudioPlayer.h"
 #include "../entity/NativeWindow.h"
 
-enum PlayState {
-    PAUSE = 0,
-    PLAYING = 1,
-    STOP = -1
-};
-
 class Video : public Unit {
 public:
     Video();

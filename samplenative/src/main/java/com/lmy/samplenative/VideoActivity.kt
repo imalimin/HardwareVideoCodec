@@ -2,25 +2,25 @@ package com.lmy.samplenative
 
 import android.content.Intent
 import android.graphics.SurfaceTexture
-import android.os.Environment
 import android.text.TextUtils
 import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.TextureView
+import android.widget.SeekBar
 import android.widget.Toast
-import com.lmy.hwvcnative.HWVC
-import com.lmy.hwvcnative.processor.PictureProcessor
 import com.lmy.hwvcnative.processor.VideoProcessor
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_video.*
 
-class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
+class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener,
+        SeekBar.OnSeekBarChangeListener {
+
     private lateinit var mFilterController: FilterController
     private var processor: VideoProcessor? = VideoProcessor()
     private var surface: Surface? = null
     private var playing: Boolean = true
 
-    override fun getLayoutResource(): Int = R.layout.activity_main
+    override fun getLayoutResource(): Int = R.layout.activity_video
     override fun initView() {
         var uri = intent.data
         if (uri == null)
@@ -41,6 +41,7 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
         filterBtn.setOnClickListener {
             mFilterController.chooseFilter(this)
         }
+        seekBar.setOnSeekBarChangeListener(this)
         playBtn.setOnClickListener {
             if (playing) {
                 processor?.pause()
@@ -89,5 +90,17 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     override fun onDestroy() {
         super.onDestroy()
+    }
+
+    override fun onProgressChanged(seekBar: SeekBar, progress: Int, p2: Boolean) {
+        processor?.seek(progress.toLong())
+    }
+
+    override fun onStartTrackingTouch(seekBar: SeekBar) {
+        processor?.pause()
+    }
+
+    override fun onStopTrackingTouch(seekBar: SeekBar) {
+        processor?.start()
     }
 }

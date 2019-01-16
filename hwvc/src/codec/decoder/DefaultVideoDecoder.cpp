@@ -80,8 +80,9 @@ bool DefaultVideoDecoder::prepare(string path) {
         LOGE("******** This file not contain video or audio track. *********");
         return false;
     }
-    LOGI("DefaultVideoDecoder::prepare(%d x %d, channels=%d, sampleHz=%d, frameSize=%d)",
-         width(), height(), getChannels(), getSampleHz(), aCodecContext->frame_size);
+    LOGI("DefaultVideoDecoder::prepare(%d x %d, du=%lld/%lld channels=%d, sampleHz=%d, frameSize=%d)",
+         width(), height(), getVideoDuration(), getAudioDuration(),
+         getChannels(), getSampleHz(), aCodecContext->frame_size);
     outputSampleFormat = aCodecContext->sample_fmt;
     if (initSwr() < 0) {
         return false;
@@ -331,21 +332,46 @@ void DefaultVideoDecoder::matchPts(AVFrame *frame, int track) {
 }
 
 void DefaultVideoDecoder::seek(int64_t us) {
-    int64_t pts = av_rescale(us, pFormatCtx->streams[videoTrack]->codec->time_base.den,
-                             pFormatCtx->streams[videoTrack]->codec->time_base.num);;
-    av_seek_frame(pFormatCtx, videoTrack, pts, AVSEEK_FLAG_BACKWARD);
+    int64_t vPts = pFormatCtx->streams[videoTrack]->duration * us / 100;
+    av_seek_frame(pFormatCtx, videoTrack, vPts, AVSEEK_FLAG_BACKWARD);
 
-    pts = av_rescale(us, pFormatCtx->streams[audioTrack]->codec->time_base.den,
-                     pFormatCtx->streams[audioTrack]->codec->time_base.num);;
-    av_seek_frame(pFormatCtx, audioTrack, pts, AVSEEK_FLAG_BACKWARD);
+    int64_t aPts = pFormatCtx->streams[audioTrack]->duration * us / 100;
+    av_seek_frame(pFormatCtx, audioTrack, aPts, AVSEEK_FLAG_BACKWARD);
+    LOGI("DefaultVideoDecoder::seek: %lld/%lld, %lld/%lld",
+         vPts, pFormatCtx->streams[videoTrack]->duration,
+         aPts, pFormatCtx->streams[audioTrack]->duration);
 }
 
 int64_t DefaultVideoDecoder::getVideoDuration() {
-    return pFormatCtx->streams[videoTrack]->duration;
+    if (videoDurationUs >= 0) {
+        return videoDurationUs;
+    }
+    videoDurationUs = pFormatCtx->streams[videoTrack]->duration;
+    videoDurationUs = av_rescale_q_rnd(videoDurationUs,
+                                       pFormatCtx->streams[videoTrack]->time_base,
+                                       pFormatCtx->streams[videoTrack]->codec->time_base,
+                                       AV_ROUND_NEAR_INF);
+    videoDurationUs = av_rescale_q_rnd(videoDurationUs,
+                                       pFormatCtx->streams[videoTrack]->codec->time_base,
+                                       outputRational,
+                                       AV_ROUND_NEAR_INF);
+    return videoDurationUs;
 }
 
 int64_t DefaultVideoDecoder::getAudioDuration() {
-    return pFormatCtx->streams[audioTrack]->duration;
+    if (audioDurationUs >= 0) {
+        return audioDurationUs;
+    }
+    audioDurationUs = pFormatCtx->streams[audioTrack]->duration;
+    audioDurationUs = av_rescale_q_rnd(audioDurationUs,
+                                       pFormatCtx->streams[audioTrack]->time_base,
+                                       pFormatCtx->streams[audioTrack]->codec->time_base,
+                                       AV_ROUND_NEAR_INF);
+    audioDurationUs = av_rescale_q_rnd(audioDurationUs,
+                                       pFormatCtx->streams[audioTrack]->codec->time_base,
+                                       outputRational,
+                                       AV_ROUND_NEAR_INF);
+    return audioDurationUs;
 }
 
 #ifdef __cplusplus

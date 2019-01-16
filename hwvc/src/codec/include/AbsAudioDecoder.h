@@ -18,8 +18,6 @@ public:
 
     virtual bool prepare(string path)=0;
 
-    virtual void seek(int64_t us)=0;
-
     virtual int getChannels()=0;
 
     virtual int getSampleHz()=0;

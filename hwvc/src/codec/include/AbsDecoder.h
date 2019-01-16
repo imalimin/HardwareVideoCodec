@@ -20,6 +20,8 @@ public:
 
     virtual bool prepare(string path)=0;
 
+    virtual void seek(int64_t us)=0;
+
 };
 
 

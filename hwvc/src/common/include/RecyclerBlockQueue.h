@@ -70,6 +70,19 @@ public:
         recycler->offer(e);
     }
 
+    /**
+     * 回收所有数据
+     */
+    void recycleAll() {
+        if (0 == size()) return;
+        while (size() > 0) {
+            T *e = take();
+            if(e){
+                recycle(e);
+            }
+        }
+    }
+
     int size() {
         return queue->size();
     }

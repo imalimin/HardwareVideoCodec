@@ -19,7 +19,7 @@ AsynVideoDecoder::AsynVideoDecoder() : AbsDecoder(), AbsAudioDecoder(), AbsVideo
 }
 
 AsynVideoDecoder::~AsynVideoDecoder() {
-    lopping = false;
+    playState = STOP;
     if (vRecycler) {
         vRecycler->notify();
     }
@@ -39,6 +39,7 @@ AsynVideoDecoder::~AsynVideoDecoder() {
 }
 
 bool AsynVideoDecoder::prepare(string path) {
+    playState = PAUSE;
     if (decoder) {
         if (!decoder->prepare(path)) {
             return false;
@@ -47,13 +48,15 @@ bool AsynVideoDecoder::prepare(string path) {
     if (!pipeline) {
         pipeline = new EventPipeline("AsynVideoDecoder");
     }
-    lopping = true;
-    loop();
+    start();
     return true;
 }
 
 int AsynVideoDecoder::grab(Frame *frame) {
     AVFrame *f = vRecycler->take();
+    if (!f) {
+        return MEDIA_TYPE_UNKNOWN;
+    }
     frame->pts = f->pts;
     if (AV_SAMPLE_FMT_S32 == f->format || AV_SAMPLE_FMT_FLT == f->format) {
         int size = 0;
@@ -118,32 +121,77 @@ int AsynVideoDecoder::height() {
 }
 
 void AsynVideoDecoder::loop() {
-    if (!lopping)
+    if (PLAYING != playState)
         return;
     pipeline->queueEvent([this] {
-        if (!vRecycler)
-            return;
-        AVFrame *cacheFrame = vRecycler->takeCache();
-        if (!cacheFrame) {
-            return;
-        }
-        long long time = getCurrentTimeUS();
-        int ret = decoder->grab(cacheFrame);
-        LOGI("Grab frame(fmt:%d,type:%d) cost %lld, cache left %d, ret=%d",
-             cacheFrame->format,
-             cacheFrame->key_frame,
-             (getCurrentTimeUS() - time),
-             vRecycler->getCacheSize(), ret);
-
-        if (MEDIA_TYPE_VIDEO == ret) {
-            vRecycler->offer(cacheFrame);
-        } else if (MEDIA_TYPE_AUDIO == ret) {
-            vRecycler->offer(cacheFrame);
-        } else {
+        if (!grab()) {
             return;
         }
         loop();
     });
+}
+
+void AsynVideoDecoder::start() {
+    if (STOP == playState) {
+        return;
+    }
+    playState = PLAYING;
+    loop();
+}
+
+void AsynVideoDecoder::pause() {
+    if (STOP != playState) {
+        playState = PAUSE;
+        vRecycler->notify();
+    }
+}
+
+bool AsynVideoDecoder::grab() {
+    if (!vRecycler)
+        return false;
+    AVFrame *cacheFrame = vRecycler->takeCache();
+    if (!cacheFrame) {
+        return false;
+    }
+    long long time = getCurrentTimeUS();
+    int ret = decoder->grab(cacheFrame);
+    LOGI("Grab frame(fmt:%d,type:%d) cost %lld, cache left %d, ret=%d",
+         cacheFrame->format,
+         cacheFrame->key_frame,
+         (getCurrentTimeUS() - time),
+         vRecycler->getCacheSize(), ret);
+    if (MEDIA_TYPE_VIDEO == ret) {
+        vRecycler->offer(cacheFrame);
+    } else if (MEDIA_TYPE_AUDIO == ret) {
+        vRecycler->offer(cacheFrame);
+    } else {
+        return false;
+    }
+    return true;
+}
+
+bool AsynVideoDecoder::grabAnVideoFrame() {
+    if (!vRecycler) {
+        return false;
+    }
+    while (true) {
+        AVFrame *cacheFrame = vRecycler->takeCache();
+        if (!cacheFrame) {
+            return false;
+        }
+        int ret = decoder->grab(cacheFrame);
+        if (MEDIA_TYPE_VIDEO == ret) {
+            vRecycler->offer(cacheFrame);
+            return true;
+        } else if (MEDIA_TYPE_AUDIO == ret) {
+            vRecycler->offer(cacheFrame);
+            if (0 == vRecycler->getCacheSize()) {
+                vRecycler->recycle(vRecycler->take());
+            }
+        } else {
+            return false;
+        }
+    }
 }
 
 int AsynVideoDecoder::getChannels() {
@@ -175,9 +223,15 @@ int AsynVideoDecoder::getPerSampleSize() {
 }
 
 void AsynVideoDecoder::seek(int64_t us) {
-    if (decoder) {
-        decoder->seek(us);
+    if (!decoder) {
+        return;
     }
+    vRecycler->notify();
+    pipeline->queueEvent([this, us] {
+        vRecycler->recycleAll();
+        decoder->seek(us);
+        grabAnVideoFrame();
+    });
 }
 
 int64_t AsynVideoDecoder::getVideoDuration() {
