@@ -183,12 +183,8 @@ bool AsynVideoDecoder::grabAnVideoFrame() {
         if (MEDIA_TYPE_VIDEO == ret) {
             vRecycler->offer(cacheFrame);
             return true;
-        } else if (MEDIA_TYPE_AUDIO == ret) {
-            vRecycler->offer(cacheFrame);
-            if (0 == vRecycler->getCacheSize()) {
-                vRecycler->recycle(vRecycler->take());
-            }
         } else {
+            vRecycler->recycle(cacheFrame);
             return false;
         }
     }

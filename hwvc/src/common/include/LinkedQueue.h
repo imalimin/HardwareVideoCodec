@@ -77,6 +77,34 @@ public:
         return e;
     }
 
+    void remove(int pos) {
+        if (pos < 0 || pos > size() - 1) {
+            return;
+        }
+        if (0 == pos) {
+            NodeT *h = head;
+            head = head->next;
+            delete h;
+            --len;
+            return;
+        }
+        NodeT *cur = head;
+        NodeT *pre = nullptr;
+        for (int i = 0; i < pos; ++i) {
+            pre = cur;
+            cur = cur->next;
+        }
+        if (pre) {
+            pre->next = cur->next;
+            delete cur;
+            --len;
+        }
+    }
+
+    T *next() {
+        return nullptr;
+    }
+
     int size() {
         return len;
     }
