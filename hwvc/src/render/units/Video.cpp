@@ -167,7 +167,6 @@ int Video::grab() {
     }
     int ret = decoder->grab(frame);
     if (MEDIA_TYPE_VIDEO != ret) {
-        LOGI("grab ret=%d", ret);
         return ret;
     }
     LOGI("Video::grab %d x %d, delta time: %lld", frame->width, frame->height,

@@ -201,10 +201,10 @@ void DefaultVideoDecoder::resample(AVFrame *avFrame) {
         LOGE("DefaultVideoDecoder::resample failed");
         return;
     }
-    LOGI("DefaultVideoDecoder::resample: fmt=%d, %d/%d => fmt=%d, %d/%d", avFrame->format,
-         avFrame->linesize[0],
-         avFrame->nb_samples, resampleFrame->format, resampleFrame->linesize[0],
-         resampleFrame->nb_samples);
+//    LOGI("DefaultVideoDecoder::resample: fmt=%d, %d/%d => fmt=%d, %d/%d", avFrame->format,
+//         avFrame->linesize[0],
+//         avFrame->nb_samples, resampleFrame->format, resampleFrame->linesize[0],
+//         resampleFrame->nb_samples);
     FFUtils::avSamplesCopy(avFrame, resampleFrame);
 }
 
