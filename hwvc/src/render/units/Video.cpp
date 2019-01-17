@@ -35,6 +35,7 @@ void Video::release() {
     }
     pipeline->queueEvent([=] {
         if (texAllocator) {
+            egl->makeCurrent();
             delete texAllocator;
             texAllocator = nullptr;
         }
@@ -180,6 +181,7 @@ int Video::grab() {
     lastShowTime = getCurrentTimeUS();
     lastPts = frame->pts;
     int size = frame->width * frame->height;
+    egl->makeCurrent();
     glBindTexture(GL_TEXTURE_2D, yuv[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0,
                  GL_LUMINANCE,

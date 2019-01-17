@@ -12,6 +12,8 @@
 
 class PictureProcessor : public Object {
 public:
+    ANativeWindow *win;
+
     PictureProcessor();
 
     virtual ~PictureProcessor();

@@ -56,19 +56,25 @@ void Screen::initWindow(NativeWindow *nw) {
             egl = new Egl(nw->win);
             nw->egl = egl;
         }
+        //这里不知道为什么会阻塞
         egl->makeCurrent();
+        //这里不知道为什么会阻塞
         drawer = new NormalDrawer();
         drawer->setRotation(ROTATION_VERTICAL);
+        LOGI("Screen::initWindow %d x %d", egl->width(), egl->height());
     }
 }
 
 void Screen::draw(GLuint texture) {
+    egl->makeCurrent();
 //    string glslVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 //    LOGE("version: %s", glslVersion.c_str());
     glViewport(0, 0, egl->width(), egl->height());
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
+    //这里不知道为什么会阻塞
     drawer->draw(texture);
+    //这里不知道为什么会阻塞
     egl->swapBuffers();
 }
 

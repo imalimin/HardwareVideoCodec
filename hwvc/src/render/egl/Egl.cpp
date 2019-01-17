@@ -100,9 +100,9 @@ EGLContext Egl::createContext(EGLContext context) {
 }
 
 EGLSurface Egl::createPbufferSurface() {
-    EGLint values;
+//    EGLint values;
+//    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
     int surfaceAttribs[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
-    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
     EGLSurface eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttribs);
     if (nullptr == eglSurface || EGL_NO_SURFACE == eglSurface) {
         LOGE("eglCreatePbufferSurface failed: %d", eglGetError());
@@ -142,16 +142,16 @@ EGLint Egl::getParams(EGLint attribute) {
 
 void Egl::makeCurrent() {
     if (EGL_NO_CONTEXT == eglContext) {
-        LOGE("$name egl failed had release!");
+        LOGE("name egl failed had release!");
         return;
     }
     if (!eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
-        LOGE("$name makeCurrent failed: %d", eglGetError());
+        LOGE("name makeCurrent failed: %d", eglGetError());
     }
 }
 
 void Egl::swapBuffers() {
     if (!eglSwapBuffers(eglDisplay, eglSurface)) {
-        LOGE("$name swapBuffers,failed!");
+        LOGE("name swapBuffers,failed!");
     }
 }
