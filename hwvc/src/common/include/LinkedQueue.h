@@ -7,127 +7,148 @@
 #ifndef HARDWAREVIDEOCODEC_LINKEDSTACK_H
 #define HARDWAREVIDEOCODEC_LINKEDSTACK_H
 
-#include "Object.h"
+#include "Collection.h"
 #include "../include/log.h"
 
-template<class T>
-class Node : public Object {
-public:
-    T *data;
-    Node *next;
-
-    Node(T *data) {
-        this->data = data;
-        next = nullptr;
-    }
-
-    ~Node() {
-        next = nullptr;
-    }
-};
+using namespace std;
 
 template<class T>
-class LinkedQueue : public Object {
-public:
-    typedef Node<T> NodeT;
+class LinkedQueue : public Collection<T> {
+    class Item {
+    public:
+        Item(T *d, Item *nxt = 0, Item *pre = 0) :
+                data(d), next(nxt), prev(pre) {
+        }
 
-    LinkedQueue() {
-        head = nullptr;
-        len = 0;
+        ~Item() {
+            next = nullptr;
+            prev = nullptr;
+            if (data) {
+                delete data;
+            }
+        }
+
+        T *data;
+        Item *next;
+        Item *prev;
+    };
+
+    int len;
+    Item *head;
+    Item *tail;
+
+    LinkedQueue(const LinkedQueue &);
+
+public:
+
+    LinkedQueue() : len(0), head(0), tail(0) {
     }
 
     ~LinkedQueue() {
-        if (head) {
-            clear();
-        }
+        clear();
     }
 
-    void offer(T *e) {
-        if (!head) {
-            head = new NodeT(e);
-            head->next = nullptr;
+    void offer(T *e);
+
+    T *take();
+
+    bool empty();
+
+    void clear();
+
+    bool add(T *e) override;
+
+    int contains(T *e) override;
+
+    bool isEmpty() override;
+
+    bool remove(T *e) override;
+
+    int size() override;
+};
+
+template<class T>
+void LinkedQueue<T>::offer(T *e) {
+    int index = len;
+    if (index > 0 || index <= len) {
+        if (len == 0) {
+            Item *first = new Item(e);
+            head = first;
+            tail = first;
+        } else if (index == 0) {
+            Item *temp = new Item(e, head, 0);
+            head->prev = temp;
+            head = temp;
+        } else if (index == len) {
+            Item *temp = new Item(e, 0, tail);
+            tail->next = temp;
+            tail = temp;
         } else {
-            NodeT *node = new NodeT(e);
-            node->next = head;
-            head = node;
+            Item *itemPrev = head;
+            for (int i = 1; i < index; i++) {
+                itemPrev = itemPrev->next;
+            }
+            Item *itemNext = itemPrev->next;
+            Item *newItem = new Item(e, itemNext, itemPrev);
+            itemPrev->next = newItem;
+            itemNext->prev = newItem;
         }
         ++len;
     }
+}
 
-    T *take() {
-        if (0 == len)
-            return nullptr;
-        if (1 == len) {
-            T *e = head->data;
-            delete head;
-            head = nullptr;
-            --len;
-            return e;
-        }
-        NodeT *tmp = head;
-        for (int i = 0; i < len - 2; ++i) {
-            tmp = tmp->next;
-        }
-        NodeT *node = tmp->next;
-        tmp->next = nullptr;
-        T *e = node->data;
-        node->data = nullptr;
-        delete node;
-        --len;
-        return e;
-    }
-
-    void remove(int pos) {
-        if (pos < 0 || pos > size() - 1) {
-            return;
-        }
-        if (0 == pos) {
-            NodeT *h = head;
-            head = head->next;
-            delete h;
-            --len;
-            return;
-        }
-        NodeT *cur = head;
-        NodeT *pre = nullptr;
-        for (int i = 0; i < pos; ++i) {
-            pre = cur;
-            cur = cur->next;
-        }
-        if (pre) {
-            pre->next = cur->next;
-            delete cur;
-            --len;
-        }
-    }
-
-    T *next() {
+template<class T>
+T *LinkedQueue<T>::take() {
+    if (0 == len) {
         return nullptr;
     }
+    Item *result = head;
+    head = head->next;
+    --len;
+    return result->data;
+}
 
-    int size() {
-        return len;
-    }
+template<class T>
+int LinkedQueue<T>::size() {
+    return len;
+}
 
-    bool empty() {
-        return 0 == len;
-    }
+template<class T>
+bool LinkedQueue<T>::empty() {
+    return isEmpty();
+}
 
-    void clear() {
-        NodeT *tmp;
-        for (int i = 0; i < len; i++) {
-            tmp = head;
-            head = head->next;
-            delete tmp;
+template<class T>
+void LinkedQueue<T>::clear() {
+    if (len != 0) {
+        while (head->next != nullptr) {
+            Item *item = head;
+            head = item->next;
+            delete item;
+            item = nullptr;
         }
-        head = nullptr;
-        len = 0;
     }
+}
 
-private:
-    int len = 0;
-    NodeT *head = nullptr;
-};
+template<class T>
+bool LinkedQueue<T>::add(T *e) {
+    return false;
+}
+
+template<class T>
+int LinkedQueue<T>::contains(T *e) {
+    return 0;
+}
+
+template<class T>
+bool LinkedQueue<T>::isEmpty() {
+    return 0 == len;
+}
+
+template<class T>
+bool LinkedQueue<T>::remove(T *e) {
+    return nullptr;
+}
 
 
 #endif //HARDWAREVIDEOCODEC_LINKEDSTACK_H

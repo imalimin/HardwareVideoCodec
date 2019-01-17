@@ -7,497 +7,223 @@
 #ifndef HARDWAREVIDEOCODEC_LINKEDLIST_H
 #define HARDWAREVIDEOCODEC_LINKEDLIST_H
 
-#include <memory>
-#include <stdexcept>
-#include <vector>
-#include <algorithm>
+#include "List.h"
+#include <iostream>
 
-using std::shared_ptr;
-using std::make_shared;
+using namespace std;
 
-template<typename Data>
-class List {
-    friend class const_iterator;
+template<class T>
+class LinkedList : public List<T> {
+    struct Item { // 链表结构
+        Item(T *d, Item *nxt = 0, Item *pre = 0) : // d:保存数据，nxt:指向前一个链表结构，pre:指向下一个链表结构。
+                data(d), next(nxt), prev(pre) {
+        }
 
-private:
-    struct Node {
-        Node() = default;
-
-        Data data;
-        shared_ptr <Node> prev = nullptr;
-        shared_ptr <Node> next = nullptr;
+        T *data;
+        Item *next;
+        Item *prev;
     };
 
-    shared_ptr <Node> head = make_shared<Node>();
-    shared_ptr <Node> tail = make_shared<Node>();
-
-    void initialize() {
-        head->next = tail;
-        tail->prev = head;
-    }
-
-    size_t List_Size = 0;
-
+    int len; // 长度
+    Item *head; // 链表的头指针
+    Item *tail; // 链表的尾指针
+    LinkedList(const LinkedList &); // 隐藏拷贝函数
 public:
-    // CLASS const_iterator
-    class const_iterator {
-        friend class List<Data>;
+    LinkedList() :
+            len(0), head(0), tail(0) {
+    }
 
+    virtual ~LinkedList() {
+        if (len != 0) {
+            while (head->next != 0) {
+                Item *item = head;
+                head = item->next;
+                delete item;
+                item = 0;
+            }
+        }
+    }
+
+    bool add(T *e);
+
+    int contains(T *e);
+
+    bool isEmpty();
+
+    bool remove(T *e);
+
+    int size();
+
+    void add(int index, T *e);
+
+    T *get(int index);
+
+    T *remove(int index);
+
+    void clear();
+
+    class Iterator;
+
+    friend class Iterator;
+
+    class Iterator {
+        LinkedList &ll;
+        int index;
     public:
-        const_iterator() = default;
-
-        ~const_iterator() = default;
-
-        const_iterator(shared_ptr <Node> p) : ptr(p) {}
-
-        const Data &operator*() const {
-            return ptr->data;
+        Iterator(LinkedList &list) :
+                ll(list), index(0) {
         }
 
-        const_iterator &operator+(long long LL) {
-            for (auto i = 0; i != LL; ++i) {
-                if (ptr->next != nullptr) {
-                    ptr = ptr->next;
-                }
+        bool hasNext() {
+            if (index < ll.len) {
+                return true;
             }
-            return *this;
+            return false;
         }
 
-        const_iterator &operator-(long long LL) {
-            for (auto i = 0; i != LL; ++i) {
-                if (ptr->prev != nullptr) {
-                    ptr = ptr->prev;
-                }
+        T *next() {
+            if (hasNext()) {
+                return ll.get(index++);
             }
-            return *this;
+            return 0;
         }
-
-        const_iterator &operator++() {
-            ptr = ptr->next;
-            return *this;
-        }
-
-        const_iterator &operator++(int) {
-            const_iterator temp = *this;
-            ++*this;
-            return temp;
-        }
-
-        const_iterator &operator--() {
-            ptr = ptr->prev;
-            return *this;
-        }
-
-        const_iterator &operator--(int) {
-            const_iterator temp = *this;
-            --*this;
-            return temp;
-        }
-
-        bool operator==(const const_iterator &rhs) const {
-            return ptr == rhs.ptr;
-        }
-
-        bool operator!=(const const_iterator &rhs) const {
-            return !(*this == rhs);
-        }
-
-    protected:
-        shared_ptr <Node> ptr;
     };
-
-    // CLASS iterator
-    class iterator : public const_iterator {
-        friend class List<Data>;
-
-    public:
-        iterator() = default;
-
-        ~iterator() = default;
-
-        Data &operator*() {
-            return ptr->data;
-        }
-
-        const Data &operator*() const {
-            return const_iterator::operator*();
-        }
-
-        iterator &operator+(long long LL) {
-            for (auto i = 0; i != LL; ++i) {
-                if (ptr->next != nullptr) {
-                    ptr = ptr->next;
-                }
-            }
-            return *this;
-        }
-
-        iterator &operator-(long long LL) {
-            for (auto i = 0; i != LL; ++i) {
-                if (ptr->prev != nullptr) {
-                    ptr = ptr->prev;
-                }
-            }
-            return *this;
-        }
-
-        iterator &operator++() {
-            ptr = ptr->next;
-            return *this;
-        }
-
-        iterator &operator++(int) {
-            iterator temp = *this;
-            ++*this;
-            return temp;
-        }
-
-        iterator &operator--() {
-            ptr = ptr->prev;
-            return *this;
-        }
-
-        iterator &operator--(int) {
-            iterator temp = *this;
-            --*this;
-            return temp;
-        }
-
-    protected:
-        iterator(shared_ptr <Node> p) : const_iterator(p) {}
-    };
-
-    // CLASS const_reverse_iterator
-    class const_reverse_iterator {
-        friend class List<Data>;
-
-    public:
-        const_reverse_iterator() = default;
-
-        ~const_reverse_iterator() = default;
-
-        const_reverse_iterator(shared_ptr <Node> p) : ptr(p) {}
-
-        const Data &operator*() const {
-            return ptr->data;
-        }
-
-        const_reverse_iterator &operator+(long long LL) {
-            for (auto i = 0; i != LL; ++i) {
-                if (ptr->prev != nullptr) {
-                    ptr = ptr->prev;
-                }
-            }
-            return *this;
-        }
-
-        const_reverse_iterator &operator-(long long LL) {
-            for (auto i = 0; i != LL; ++i) {
-                if (ptr->next != nullptr) {
-                    ptr = ptr->next;
-                }
-            }
-            return *this;
-        }
-
-        const_reverse_iterator &operator++() {
-            ptr = ptr->prev;
-            return *this;
-        }
-
-        const_reverse_iterator &operator++(int) {
-            const_reverse_iterator temp = *this;
-            ++*this;
-            return temp;
-        }
-
-        const_reverse_iterator &operator--() {
-            ptr = ptr->next;
-            return *this;
-        }
-
-        const_reverse_iterator &operator--(int) {
-            const_reverse_iterator temp = *this;
-            --*this;
-            return temp;
-        }
-
-        bool operator==(const const_reverse_iterator &rhs) {
-            return ptr == rhs.ptr;
-        }
-
-        bool operator!=(const const_reverse_iterator &rhs) {
-            return !(*this == rhs);
-        }
-
-    protected:
-        shared_ptr <Node> ptr;
-    };
-
-    // CLASS reverse_iterator
-    class reverse_iterator : public const_reverse_iterator {
-        friend class List<Data>;
-
-    public:
-        reverse_iterator() = default;
-
-        ~reverse_iterator() = default;
-
-        Data &operator*() {
-            return ptr->data;
-        }
-
-        const Data &operator*() const {
-            return const_reverse_iterator::operator*();
-        }
-
-        reverse_iterator &operator+(long long LL) {
-            for (auto i = 0; i != LL; ++i) {
-                if (ptr->prev != nullptr) {
-                    ptr = ptr->prev;
-                }
-            }
-            return *this;
-        }
-
-        reverse_iterator &operator-(long long LL) {
-            for (auto i = 0; i != LL; ++i) {
-                if (ptr->next != nullptr) {
-                    ptr = ptr->next;
-                }
-            }
-            return *this;
-        }
-
-        reverse_iterator &operator++() {
-            ptr = ptr->prev;
-            return *this;
-        }
-
-        reverse_iterator &operator++(int) {
-            reverse_iterator temp = *this;
-            ++*this;
-            return temp;
-        }
-
-        reverse_iterator &operator--() {
-            ptr = ptr->next;
-            return *this;
-        }
-
-        reverse_iterator &operator--(int) {
-            reverse_iterator temp = *this;
-            --*this;
-            return temp;
-        }
-
-    protected:
-        reverse_iterator(shared_ptr <Node> p) : const_reverse_iterator(p) {}
-    };
-
-public:
-    List() { initialize(); }
-
-    ~List() = default;
-
-    //List(const List &rhs) {
-    //  clear();
-    //  for (auto &i : rhs) {
-    //      push_back(i);
-    //  }
-    //}
-    //List& operator=(const List &rhs) {
-    //  if (this == &rhs) {
-    //      return *this;
-    //  }
-    //  clear();
-    //  for (auto &i : rhs) {
-    //      push_back(i);
-    //  }
-    //  return *this;
-    //}
-
-    iterator begin() {
-        return iterator(head->next);
-    }
-
-    const_iterator begin() const {
-        return const_iterator(head->next);
-    }
-
-    reverse_iterator rbegin() {
-        return reverse_iterator(tail->prev);
-    }
-
-    const_reverse_iterator rbegin() const {
-        return const_reverse_iterator(tail->prev);
-    }
-
-    iterator end() {
-        return iterator(tail);
-    }
-
-    const_iterator end() const {
-        return const_iterator(tail);
-    }
-
-    reverse_iterator rend() {
-        return reverse_iterator(head);
-    }
-
-    const_reverse_iterator rend() const {
-        return const_reverse_iterator(head);
-    }
-
-    // Front insert.
-    iterator front_insert(iterator itr, const Data &data) {
-        shared_ptr <Node> p = itr.ptr;
-        ++List_Size;
-        auto a = make_shared<Node>();
-        a->data = data;
-        a->prev = p->prev;
-        a->next = p;
-        p->prev = a;
-        a->prev->next = a;
-        return iterator(a);
-        //return iterator(p->prev = p->prev->next = make_shared<Node>(data, p->prev, p));
-    }
-
-    iterator front_insert(iterator itr) {
-        shared_ptr <Node> p = itr.ptr;
-        ++List_Size;
-        auto a = make_shared<Node>();
-        a->prev = p->prev;
-        a->next = p;
-        p->prev = a;
-        a->prev->next = a;
-        return iterator(a);
-    }
-
-    // Back_insert.
-    iterator back_insert(iterator itr, const Data &data) {
-        shared_ptr <Node> p = itr.ptr;
-        ++List_Size;
-        auto a = make_shared<Node>();
-        a->data = data;
-        a->prev = p;
-        a->next = p->next;
-        p->next = a;
-        a->next->prev = a;
-        return iterator(a);
-        //return iterator(p->next = p->next->prev = make_shared<Node>(data, p, p->next));
-    }
-
-    iterator back_insert(iterator itr) {
-        shared_ptr <Node> p = itr.ptr;
-        ++List_Size;
-        auto a = make_shared<Node>();
-        a->prev = p;
-        a->next = p->next;
-        p->next = a;
-        a->next->prev = a;
-        return iterator(a);
-    }
-
-    iterator erase(iterator itr) {
-        shared_ptr <Node> p = itr.ptr;
-        iterator itaval(p->next);
-        try {
-            if (p == head) {
-                throw runtime_error("No elements can erase!");
-            } else if (p == tail) {
-                throw runtime_error("No elements can erase!");
-            } else {
-                p->prev->next = p->next;
-                p->next->prev = p->prev;
-                --List_Size;
-            }
-        }
-        catch (runtime_error err) {
-            cout << err.what() << endl;
-        }
-        return itaval;
-    }
-
-    iterator erase(iterator begin, iterator end) {  // [begin, end)
-        while (begin != end) {
-            begin = erase(begin);
-        }
-        return iterator(end);
-    }
-
-    void clear() {
-        while (!empty()) {
-            pop_front();
-        }
-    }
-
-    void print() {
-        for (auto &i : *this) {
-            cout << i << endl;
-        }
-    }
-
-    void resize(long long LL) {
-        for (auto i = 0; i != LL; ++i) {
-            push_back();
-        }
-    }
-
-    void resize(long long LL, const Data &x) {
-        for (auto i = 0; i != LL; ++i) {
-            push_back(x);
-        }
-    }
-
-    void sort() {
-        std::vector <Data> temp_v;
-        for (auto &i : *this) {
-            temp_v.push_back(i);
-        }
-        std::stable_sort(temp_v.begin(), temp_v.end());
-        clear();
-        for (auto &i : temp_v) {
-            push_back(i);
-        }
-    }
-
-    iterator search(const Data &x) {
-        auto temp_count = 0;
-        for (auto &i : *this) {
-            if (i != x) {
-                ++temp_count;
-            } else {
-                break;
-            }
-        }
-        return begin() + temp_count;
-    }
-
-    bool empty() { return List_Size == 0; }
-
-    size_t size() { return List_Size; }
-
-    Data &front() { return *begin(); }
-
-    const Data &front() const { return front(); }
-
-    Data &back() { return *--end(); }
-
-    const Data &back() const { return back(); }
-
-    void push_front() { front_insert(begin()); }
-
-    void push_front(const Data &x) { front_insert(begin(), x); }
-
-    void push_back() { back_insert(--end()); }
-
-    void push_back(const Data &x) { back_insert(--end(), x); }
-
-    void pop_front() { erase(begin()); }
-
-    void pop_back() { erase(--end()); }
-
 };
+
+
+template<class T>
+bool LinkedList<T>::add(T *e) {
+    add(len, e);
+    return true;
+}
+
+template<class T>
+int LinkedList<T>::contains(T *e) {
+    Item *temp = head;
+    for (int i = 0; i < len; i++) {
+        if (temp->data == e) {
+            return i;
+        }
+        temp = temp->next;
+    }
+    return -1;
+}
+
+template<class T>
+bool LinkedList<T>::isEmpty() {
+    if (len == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<class T>
+bool LinkedList<T>::remove(T *e) {
+    int index = contains(e);
+    if (index != -1) {
+        remove(index);
+        return true;
+    }
+    return false;
+}
+
+template<class T>
+int LinkedList<T>::size() {
+    return len;
+}
+
+template<class T>
+void LinkedList<T>::add(int index, T *e) { // 插入
+    if (index > 0 || index <= len) {
+        if (len == 0) {
+            Item *first = new Item(e);
+            head = first;
+            tail = first;
+        } else if (index == 0) {
+            Item *temp = new Item(e, head, 0);
+            head->prev = temp;
+            head = temp;
+        } else if (index == len) {
+            Item *temp = new Item(e, 0, tail);
+            tail->next = temp;
+            tail = temp;
+        } else {
+            Item *itemPrev = head;
+            for (int i = 1; i < index; i++) {
+                itemPrev = itemPrev->next;
+            }
+            Item *itemNext = itemPrev->next;
+            Item *newItem = new Item(e, itemNext, itemPrev);
+            itemPrev->next = newItem;
+            itemNext->prev = newItem;
+        }
+        len++;
+    }
+}
+
+template<class T>
+T *LinkedList<T>::get(int index) {
+    if (index >= 0 || index < len) {
+        Item *result = head;
+        for (int i = 0; i < index; i++) {
+            result = result->next;
+        }
+        return result->data;
+    }
+    return 0;
+}
+
+template<class T>
+T *LinkedList<T>::remove(int index) {
+    if (index > 0 || index <= len) {
+        if (index == 0) {
+            Item *temp = head;
+            head = temp->next;
+            head->prev = 0;
+            T *result = temp->data;
+            delete temp;
+            temp = 0;
+            --len;
+            return result;
+        } else if (index == len) {
+            Item *temp = tail;
+            tail = temp->prev;
+            tail->next = 0;
+            T *result = temp->data;
+            delete temp;
+            temp = 0;
+            --len;
+            return result;
+        } else {
+            Item *item = head;
+            for (int i = 0; i < index; i++) {
+                item = item->next;
+            }
+            Item *itemPrev = item->prev;
+            Item *itemNext = item->next;
+            itemPrev->next = itemNext;
+            itemNext->prev = itemPrev;
+            T *result = item->data;
+            delete item;
+            item = 0;
+            --len;
+            return result;
+        }
+    }
+    return 0;
+}
+
+template<class T>
+void LinkedList<T>::clear() {
+    Item *item = head;
+    for (int i = 0; i < len; i++) {
+        Item *tmp = item;
+        item = item->next;
+        delete temp;
+    }
+    head = nullptr;
+    tail = nullptr;
+}
 
 #endif //HARDWAREVIDEOCODEC_LINKEDLIST_H
