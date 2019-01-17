@@ -34,6 +34,12 @@ void UnitPipeline::postEvent(Message *msg1) {
     }
 }
 
+void UnitPipeline::removeAllMessage(int what) {
+    if(pipeline){
+        pipeline->removeAllMessage(what);
+    }
+}
+
 void UnitPipeline::dispatch(Message *msg) {
     for (auto itr = units.cbegin(); itr != units.cend(); itr++) {
         bool ret = (*itr)->dispatch(msg);

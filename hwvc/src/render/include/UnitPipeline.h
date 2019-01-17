@@ -22,6 +22,8 @@ public:
 
     void postEvent(Message *msg);
 
+    void removeAllMessage(int what);
+
     int registerAnUnit(Unit *unit);
 
     void release();

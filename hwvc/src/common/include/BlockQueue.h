@@ -109,6 +109,12 @@ public:
         pthread_cond_broadcast(&cond);
     }
 
+    void remove(function<bool(T *e)> filter) {
+        pthread_mutex_lock(&mutex);
+        m_queue->remove(filter);
+        pthread_mutex_unlock(&mutex);
+    }
+
 private:
     pthread_mutex_t mutex;
     pthread_cond_t cond;

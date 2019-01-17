@@ -61,6 +61,7 @@ void VideoProcessor::pause() {
 
 void VideoProcessor::seek(int64_t us) {
     if (pipeline) {
+        pipeline->removeAllMessage(EVENT_VIDEO_SEEK);
         Message *msg = new Message(EVENT_VIDEO_SEEK, nullptr);
         msg->arg2 = us;
         pipeline->postEvent(msg);

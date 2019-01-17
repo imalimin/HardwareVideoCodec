@@ -7,13 +7,14 @@
 #ifndef HARDWAREVIDEOCODEC_LINKEDSTACK_H
 #define HARDWAREVIDEOCODEC_LINKEDSTACK_H
 
-#include "Collection.h"
+#include "List.h"
 #include "../include/log.h"
+#include <functional>
 
 using namespace std;
 
 template<class T>
-class LinkedQueue : public Collection<T> {
+class LinkedQueue : public List<T> {
     class Item {
     public:
         Item(T *d, Item *nxt = 0, Item *pre = 0) :
@@ -44,7 +45,7 @@ public:
     LinkedQueue() : len(0), head(0), tail(0) {
     }
 
-    ~LinkedQueue() {
+    virtual ~LinkedQueue() {
         clear();
     }
 
@@ -65,6 +66,57 @@ public:
     bool remove(T *e) override;
 
     int size() override;
+
+    void add(int index, T *e) override;
+
+    T *get(int index) override;
+
+    T *remove(int index) override;
+
+    void remove(function<bool(T *e)> filter);
+
+    class Iterator;
+
+    friend class Iterator;
+
+    class Iterator {
+        LinkedQueue &ll;
+        int index;
+        Item *current;
+    public:
+        Iterator(LinkedQueue &list) :
+                ll(list), index(0), current(list.head) {
+        }
+
+        bool hasNext() {
+            if (current->next) {
+                return true;
+            }
+            return false;
+        }
+
+        T *next() {
+            if (hasNext()) {
+                ++index;
+                Item *tmp = current;
+                current = current->next;
+                return tmp->data;
+            }
+            return nullptr;
+        }
+
+        void remove() {
+            if (!current) {
+                return;
+            }
+            if (current->prev) {
+                ll.remove(current->prev);
+            }
+        }
+    };
+
+private:
+    void remove(Item *item);
 };
 
 template<class T>
@@ -105,7 +157,10 @@ T *LinkedQueue<T>::take() {
     Item *result = head;
     head = head->next;
     --len;
-    return result->data;
+    T *e = result->data;
+    result->data = nullptr;
+    delete result;
+    return e;
 }
 
 template<class T>
@@ -147,8 +202,68 @@ bool LinkedQueue<T>::isEmpty() {
 
 template<class T>
 bool LinkedQueue<T>::remove(T *e) {
+    //TODO
+    return false;
+}
+
+template<class T>
+void LinkedQueue<T>::add(int index, T *e) {
+    //TODO
+}
+
+template<class T>
+T *LinkedQueue<T>::get(int index) {
+    //TODO
     return nullptr;
 }
 
+template<class T>
+T *LinkedQueue<T>::remove(int index) {
+    //TODO
+    return nullptr;
+}
+
+template<class T>
+void LinkedQueue<T>::remove(Item *item) {
+    if (!item) {
+        return;
+    }
+    if (head == item && tail != item) {//头部
+        head = item->next;
+        head->prev = nullptr;
+        delete item;
+        item = nullptr;
+    } else if (head != item && tail == item) {//尾部
+        tail = item->prev;
+        tail->next = nullptr;
+        delete item;
+        item = nullptr;
+    } else if (head == item && tail == item) {//唯一元素
+        delete item;
+        item = nullptr;
+        head = nullptr;
+        tail = nullptr;
+    } else {//中间元素
+        Item *itemPrev = item->prev;
+        Item *itemNext = item->next;
+        itemPrev->next = itemNext;
+        itemNext->prev = itemPrev;
+        delete item;
+        item = nullptr;
+    }
+    --len;
+    return;
+}
+
+template<class T>
+void LinkedQueue<T>::remove(function<bool(T *e)> filter) {
+    if (isEmpty()) {
+        return;
+    }
+    Item *current = head;
+    if (filter(current->data)) {
+        remove(current);
+    }
+}
 
 #endif //HARDWAREVIDEOCODEC_LINKEDSTACK_H

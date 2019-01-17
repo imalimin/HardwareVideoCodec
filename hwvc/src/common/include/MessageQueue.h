@@ -26,6 +26,10 @@ public:
 
     virtual void notify() override;
 
+    void remove(function<bool(Message *e)> filter) {
+        queue->remove(filter);
+    }
+
 private:
     BlockQueue<Message> *queue = nullptr;
 };

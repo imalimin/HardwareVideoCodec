@@ -104,3 +104,9 @@ void HandlerThread::quitSafely() {
     }
     quit();
 }
+
+void HandlerThread::removeAllMessage(int what) {
+    queue->remove([what](Message *msg) {
+        return what == msg->what;
+    });
+}

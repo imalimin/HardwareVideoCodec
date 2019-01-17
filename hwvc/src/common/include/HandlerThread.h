@@ -18,6 +18,8 @@ public:
 
     void sendMessage(Message *msg);
 
+    void removeAllMessage(int what);
+
     void quit();
 
     void quitSafely();
