@@ -165,7 +165,9 @@ int Video::grab() {
     if (!frame) {
         frame = new Frame(decoder->width(), decoder->height());
     }
+//    long long time = getCurrentTimeUS();
     int ret = decoder->grab(frame);
+//    LOGI("Video::grab cost: %lld", getCurrentTimeUS() - time);
     if (MEDIA_TYPE_VIDEO != ret) {
         return ret;
     }
