@@ -65,8 +65,8 @@ int AsynVideoDecoder::grab(Frame *frame) {
         size += f->linesize[0];
         frame->offset = 0;
         frame->size = size;
-        LOGI("audio channels=%d, size=%d, nb_samples=%d, %d", f->channels, size, f->nb_samples,
-             f->linesize[0]);
+//        LOGI("AsynVideoDecoder::audio channels=%d, size=%d, nb_samples=%d, %d", f->channels, size, f->nb_samples,
+//             f->linesize[0]);
         av_frame_unref(f);
         vRecycler->recycle(f);
         return MEDIA_TYPE_AUDIO;
@@ -155,11 +155,11 @@ bool AsynVideoDecoder::grab() {
     }
     long long time = getCurrentTimeUS();
     int ret = decoder->grab(cacheFrame);
-    LOGI("Grab frame(fmt:%d,type:%d) cost %lld, cache left %d, ret=%d",
-         cacheFrame->format,
-         cacheFrame->key_frame,
-         (getCurrentTimeUS() - time),
-         vRecycler->getCacheSize(), ret);
+//    LOGI("Grab frame(fmt:%d,type:%d) cost %lld, cache left %d, ret=%d",
+//         cacheFrame->format,
+//         cacheFrame->key_frame,
+//         (getCurrentTimeUS() - time),
+//         vRecycler->getCacheSize(), ret);
     if (MEDIA_TYPE_VIDEO == ret) {
         vRecycler->offer(cacheFrame);
     } else if (MEDIA_TYPE_AUDIO == ret) {

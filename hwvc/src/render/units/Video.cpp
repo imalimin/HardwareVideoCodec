@@ -171,11 +171,11 @@ int Video::grab() {
     if (MEDIA_TYPE_VIDEO != ret) {
         return ret;
     }
-    LOGI("Video::grab %d x %d, delta time: %lld", frame->width, frame->height,
-         (getCurrentTimeUS() - lastShowTime) / 1000);
     if (lastPts > 0) {
         int64_t t = (frame->pts - lastPts) - (getCurrentTimeUS() - lastShowTime);
         lock.wait(t);
+        LOGI("Video::grab %d x %d, delta time: %lld, wait time: %lld", frame->width, frame->height,
+             (getCurrentTimeUS() - lastShowTime) / 1000, t);
     }
     lastShowTime = getCurrentTimeUS();
     lastPts = frame->pts;
