@@ -14,6 +14,7 @@
 #include "ObjectBox.h"
 #include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
+#include "SimpleLock.h"
 
 using namespace std;
 
@@ -29,12 +30,15 @@ public:
 
     virtual int write(uint8_t *buffer, size_t size);
 
+    virtual void flush();
+
     string getString();
 
     void bufferEnqueue(SLBufferQueueItf slBufferQueueItf);
 
 private:
     EventPipeline *pipeline = nullptr;
+    SimpleLock *lock = nullptr;
     unsigned int channels = 0;
     unsigned int sampleHz = 0;
     SLuint32 format = SL_PCMSAMPLEFORMAT_FIXED_16;

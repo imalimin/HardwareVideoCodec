@@ -14,6 +14,7 @@ void bufferQueueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
 }
 
 AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSize) {
+    this->lock = new SimpleLock();
     this->pipeline = new EventPipeline("AudioPlayer");
     this->channels = channels;
     this->sampleHz = sampleHz;
@@ -181,6 +182,12 @@ int AudioPlayer::write(uint8_t *buffer, size_t size) {
     return 1;
 }
 
+void AudioPlayer::flush() {
+    pipeline->queueEvent([this] {
+        recycler->recycleAll();
+    });
+}
+
 void AudioPlayer::stop() {
     if (recycler) {
         recycler->notify();
@@ -195,6 +202,10 @@ void AudioPlayer::stop() {
     if (recycler) {
         delete recycler;
         recycler = nullptr;
+    }
+    if (lock) {
+        delete lock;
+        lock = nullptr;
     }
 }
 

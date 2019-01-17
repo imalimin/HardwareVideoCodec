@@ -82,6 +82,9 @@ bool Video::eventStart(Message *msg) {
         playState = PLAYING;
         loop();
     }
+    if (audioPlayer) {
+        audioPlayer->flush();
+    }
     if (decoder) {
         decoder->start();
     }
