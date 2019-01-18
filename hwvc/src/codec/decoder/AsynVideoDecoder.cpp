@@ -53,6 +53,9 @@ bool AsynVideoDecoder::prepare(string path) {
 }
 
 int AsynVideoDecoder::grab(Frame *frame) {
+    if (STOP == playState) {
+        return MEDIA_TYPE_UNKNOWN;
+    }
     AVFrame *f = vRecycler->take();
     if (!f) {
         return MEDIA_TYPE_UNKNOWN;
@@ -82,7 +85,9 @@ int AsynVideoDecoder::grab(Frame *frame) {
     frame->width = f->width;
     frame->height = f->height;
     av_frame_unref(f);
-    vRecycler->recycle(f);
+    if (vRecycler) {
+        vRecycler->recycle(f);
+    }
 
     return MEDIA_TYPE_VIDEO;
 }

@@ -15,9 +15,11 @@ class Render : public Unit {
 public:
     Render();
 
+    Render(HandlerThread *handlerThread);
+
     virtual ~Render();
 
-    virtual void release() override;
+    bool eventRelease(Message *msg) override;
 
     void checkFilter(int width, int height);
 

@@ -9,45 +9,39 @@
 #include "Size.h"
 #include "TimeUtils.h"
 
-Video::Video() {
-    name = "Video";
+Video::Video() : Unit() {
+    name = __FUNCTION__;
+    this->lock = new SimpleLock();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
     registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
     registerEvent(EVENT_VIDEO_PAUSE, reinterpret_cast<EventFunc>(&Video::eventPause));
     registerEvent(EVENT_VIDEO_SEEK, reinterpret_cast<EventFunc>(&Video::eventSeek));
     registerEvent(EVENT_VIDEO_SET_SOURCE, reinterpret_cast<EventFunc>(&Video::eventSetSource));
+    registerEvent(EVENT_VIDEO_LOOP, reinterpret_cast<EventFunc>(&Video::eventLoop));
+    decoder = new AsynVideoDecoder();
+}
+
+Video::Video(HandlerThread *handlerThread) : Unit(handlerThread) {
+    name = __FUNCTION__;
+    this->lock = new SimpleLock();
+    registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
+    registerEvent(EVENT_VIDEO_START, reinterpret_cast<EventFunc>(&Video::eventStart));
+    registerEvent(EVENT_VIDEO_PAUSE, reinterpret_cast<EventFunc>(&Video::eventPause));
+    registerEvent(EVENT_VIDEO_SEEK, reinterpret_cast<EventFunc>(&Video::eventSeek));
+    registerEvent(EVENT_VIDEO_SET_SOURCE, reinterpret_cast<EventFunc>(&Video::eventSetSource));
+    registerEvent(EVENT_VIDEO_LOOP, reinterpret_cast<EventFunc>(&Video::eventLoop));
     decoder = new AsynVideoDecoder();
 }
 
 Video::~Video() {
-    eventStop(nullptr);
-    release();
-    LOGI("Video::~Image");
-}
-
-void Video::release() {
-    Unit::release();
-    eventStop(nullptr);
+    LOGI("Video::~Video");
+    lock->lock();
     if (audioPlayer) {
         audioPlayer->stop();
         delete audioPlayer;
         audioPlayer = nullptr;
     }
-    pipeline->queueEvent([=] {
-        if (texAllocator) {
-            egl->makeCurrent();
-            delete texAllocator;
-            texAllocator = nullptr;
-        }
-        if (egl) {
-            delete egl;
-            egl = nullptr;
-        }
-    });
-    if (pipeline) {
-        delete pipeline;
-        pipeline = nullptr;
-    }
+    LOGI("Video::~audioPlayer");
     if (frame) {
         delete frame;
         frame = nullptr;
@@ -60,20 +54,45 @@ void Video::release() {
         delete[]path;
         path = nullptr;
     }
+    lock->unlock();
+    if (lock) {
+        delete lock;
+        lock = nullptr;
+    }
+}
+
+bool Video::eventRelease(Message *msg) {
+    LOGI("Video::eventRelease");
+    post([this] {
+        eventStop(nullptr);
+        if (texAllocator) {
+            egl->makeCurrent();
+            delete texAllocator;
+            texAllocator = nullptr;
+        }
+        if (egl) {
+            delete egl;
+            egl = nullptr;
+        }
+    });
+    return true;
 }
 
 bool Video::eventPrepare(Message *msg) {
     playState = PAUSE;
-    if (!pipeline) {
-        pipeline = new EventPipeline(name);
-    }
+    NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
     if (decoder->prepare(path)) {
         createAudioPlayer();
-        NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
-        initEGL(nw);
     } else {
         LOGE("Video::open %s failed", path);
+        return true;
     }
+    post([this, nw] {
+        initEGL(nw);
+        wait(10000);
+        lock->notify();
+    });
+    lock->wait();
     return true;
 }
 
@@ -81,7 +100,7 @@ bool Video::eventStart(Message *msg) {
     LOGI("Video::eventStart");
     if (STOP != playState) {
         playState = PLAYING;
-        loop();
+        sendLoop();
     }
     if (audioPlayer) {
         audioPlayer->flush();
@@ -104,9 +123,7 @@ bool Video::eventPause(Message *msg) {
 
 bool Video::eventSeek(Message *msg) {
     int64_t us = msg->arg2;
-    pipeline->queueEvent([this, us] {
-        decoder->seek(us);
-    });
+    decoder->seek(us);
     return true;
 }
 
@@ -128,28 +145,37 @@ bool Video::eventSetSource(Message *msg) {
     return true;
 }
 
-void Video::loop() {
-    pipeline->queueEvent([this] {
-        if (PLAYING != playState)
+void Video::sendLoop() {
+    postEvent(new Message(EVENT_VIDEO_LOOP, nullptr));
+}
+
+bool Video::eventLoop(Message *msg) {
+    post([this] {
+        if (PLAYING != playState) {
             return;
+        }
         if (!texAllocator || !decoder) {
             eventPause(nullptr);
             return;
         }
-        loop();
-        egl->makeCurrent();
-        checkFilter();
+        lock->lock();
+        sendLoop();
         int ret = grab();
+        lock->unlock();
+        checkFilter();
         if (MEDIA_TYPE_VIDEO != ret) {
-            if (MEDIA_TYPE_AUDIO == ret) {
+            if (MEDIA_TYPE_AUDIO == ret && audioPlayer && frame) {
                 audioPlayer->write(frame->data, frame->size);
             }
             return;
         }
+        lock->lock();
         glViewport(0, 0, frame->width, frame->height);
+        lock->unlock();
         yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
         eventInvalidate(nullptr);
     });
+    return true;
 }
 
 void Video::checkFilter() {
@@ -172,14 +198,17 @@ int Video::grab() {
     if (MEDIA_TYPE_VIDEO != ret) {
         return ret;
     }
+    int64_t curPts = frame->pts;
+
     if (lastPts > 0) {
-        int64_t t = (frame->pts - lastPts) - (getCurrentTimeUS() - lastShowTime);
-        lock.wait(t);
-        LOGI("Video::grab %d x %d, delta time: %lld, wait time: %lld", frame->width, frame->height,
+        int64_t t = (curPts - lastPts) - (getCurrentTimeUS() - lastShowTime);
+        lock->wait(t);
+        LOGI("Video::grab %d x %d, delta time: %lld, wait time: %lld", 0, 0,
              (getCurrentTimeUS() - lastShowTime) / 1000, t);
     }
     lastShowTime = getCurrentTimeUS();
-    lastPts = frame->pts;
+
+    lastPts = curPts;
     int size = frame->width * frame->height;
     egl->makeCurrent();
     glBindTexture(GL_TEXTURE_2D, yuv[0]);
@@ -221,19 +250,16 @@ void Video::createAudioPlayer() {
 }
 
 void Video::initEGL(NativeWindow *nw) {
-    pipeline->queueEvent([=] {
-        if (nw->egl) {
-            egl = new Egl(nw->egl, nullptr);
-        } else {
-            egl = new Egl();
-            nw->egl = egl;
-        }
-        egl->makeCurrent();
-        if (!texAllocator) {
-            texAllocator = new TextureAllocator();
-        }
-        pipeline->wait(10000);
-        lock.notify();
-    });
-    lock.wait();
+    if (nw->egl) {
+        LOGI("Video::init EGL with context");
+        egl = new Egl(nw->egl, nullptr);
+    } else {
+        LOGI("Video::init EGL");
+        egl = new Egl();
+        nw->egl = egl;
+    }
+    egl->makeCurrent();
+    if (!texAllocator) {
+        texAllocator = new TextureAllocator();
+    }
 }

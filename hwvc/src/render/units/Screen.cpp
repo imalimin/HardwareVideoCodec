@@ -7,52 +7,68 @@
 #include "Size.h"
 
 Screen::Screen() {
-    name = __func__;
+    name = __FUNCTION__;
+    registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Screen::eventPrepare));
+    registerEvent(EVENT_SCREEN_DRAW, reinterpret_cast<EventFunc>(&Screen::eventDraw));
+}
+
+Screen::Screen(HandlerThread *handlerThread) : Unit(handlerThread) {
+    name = __FUNCTION__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Screen::eventPrepare));
     registerEvent(EVENT_SCREEN_DRAW, reinterpret_cast<EventFunc>(&Screen::eventDraw));
 }
 
 Screen::~Screen() {
-    release();
     LOGI("Screen::~Screen");
 }
 
-void Screen::release() {
-    Unit::release();
-    LOGI("Screen::release");
-    if (egl) {
-        egl->makeCurrent();
-    }
-    if (drawer) {
-        delete drawer;
-        drawer = nullptr;
-    }
-    if (egl) {
-        delete egl;
-        egl = nullptr;
-    }
+bool Screen::eventRelease(Message *msg) {
+    LOGI("Screen::eventRelease");
+    post([this] {
+        if (egl) {
+            egl->makeCurrent();
+        }
+        if (drawer) {
+            delete drawer;
+            drawer = nullptr;
+        }
+        if (egl) {
+            delete egl;
+            egl = nullptr;
+        }
+    });
+    return true;
 }
 
 bool Screen::eventPrepare(Message *msg) {
     width = msg->arg1;
     height = msg->arg2;
-    initWindow(static_cast<NativeWindow *>(msg->tyrUnBox()));
+    NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
+    post([this, nw] {
+        initWindow(nw);
+    });
     return true;
 }
 
 bool Screen::eventDraw(Message *msg) {
     Size *size = static_cast<Size *>(msg->tyrUnBox());
-    egl->makeCurrent();
-    setScaleType(size->width, size->height);
-    draw(msg->arg1);
+    GLuint tex = msg->arg1;
+    post([this, size, tex] {
+        egl->makeCurrent();
+        setScaleType(size->width, size->height);
+        draw(tex);
+        delete size;
+    });
     return true;
 }
 
 void Screen::initWindow(NativeWindow *nw) {
     if (!egl) {
         if (nw->egl) {
+            LOGI("Screen::init EGL with context");
             egl = new Egl(nw->egl, nw->win);
         } else {
+            LOGI("Screen::init EGL");
             egl = new Egl(nw->win);
             nw->egl = egl;
         }

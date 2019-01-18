@@ -17,7 +17,7 @@ public:
 
     virtual void wait();
 
-    void wait(int ms);
+    void wait(int us);
 
     virtual void notify();
 

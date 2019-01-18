@@ -16,6 +16,8 @@ class EventPipeline : public Object {
 public:
     EventPipeline(string name);
 
+    EventPipeline(HandlerThread *handlerThread);
+
     virtual ~EventPipeline();
 
     void queueEvent(function<void()> event);
@@ -24,6 +26,7 @@ private:
     HandlerThread *handlerThread = nullptr;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
+    bool shouldQuitThread = false;
 };
 
 #endif //HARDWAREVIDEOCODEC_EVENTPIPELINE_H

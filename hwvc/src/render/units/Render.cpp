@@ -10,7 +10,15 @@
 #include "../include/ObjectBox.h"
 
 Render::Render() {
-    name = __func__;
+    name = __FUNCTION__;
+    filter = new NormalFilter();
+    registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Render::eventPrepare));
+    registerEvent(EVENT_RENDER_FILTER, reinterpret_cast<EventFunc>(&Render::eventFilter));
+    registerEvent(EVENT_RENDER_SET_FILTER, reinterpret_cast<EventFunc>(&Render::eventSetFilter));
+}
+
+Render::Render(HandlerThread *handlerThread) : Unit(handlerThread) {
+    name = __FUNCTION__;
     filter = new NormalFilter();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Render::eventPrepare));
     registerEvent(EVENT_RENDER_FILTER, reinterpret_cast<EventFunc>(&Render::eventFilter));
@@ -18,17 +26,18 @@ Render::Render() {
 }
 
 Render::~Render() {
-    release();
     LOGI("Render::~Render");
 }
 
-void Render::release() {
-    Unit::release();
-    LOGI("Render::release");
-    if (filter) {
-        delete filter;
-        filter = nullptr;
-    }
+bool Render::eventRelease(Message *msg) {
+    LOGI("Render::eventRelease");
+    post([this] {
+        if (filter) {
+            delete filter;
+            filter = nullptr;
+        }
+    });
+    return true;
 }
 
 void Render::checkFilter(int width, int height) {
@@ -58,19 +67,25 @@ bool Render::eventPrepare(Message *msg) {
 
 bool Render::eventFilter(Message *msg) {
     Size *size = static_cast<Size *>(msg->tyrUnBox());
-    checkFilter(size->width, size->height);
-    glViewport(0, 0, size->width, size->height);
-    renderFilter(msg->arg1);
-    renderScreen();
-    delete size;
+    GLuint tex = msg->arg1;
+    post([this, size, tex] {
+        checkFilter(size->width, size->height);
+        glViewport(0, 0, size->width, size->height);
+        renderFilter(tex);
+        renderScreen();
+        delete size;
+    });
     return true;
 }
 
 bool Render::eventSetFilter(Message *msg) {
-    if (filter) {
-        delete filter;
-        filter = nullptr;
-    }
-    filter = static_cast<Filter *>(msg->tyrUnBox());
+    Filter *newFilter = static_cast<Filter *>(msg->tyrUnBox());
+    post([this, newFilter] {
+        if (filter) {
+            delete filter;
+            filter = nullptr;
+        }
+        filter = newFilter;
+    });
     return true;
 }

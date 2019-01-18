@@ -13,10 +13,12 @@
 #include "String.h"
 
 VideoProcessor::VideoProcessor() {
+    unitHandler = new HandlerThread("VideoUnits");
+    screenHandler = new HandlerThread("ScreenUnit");
     pipeline = new UnitPipeline("VideoProcessor");
-    pipeline->registerAnUnit(new Video());
-    pipeline->registerAnUnit(new Render());
-    pipeline->registerAnUnit(new Screen());
+    pipeline->registerAnUnit(new Video(unitHandler));
+    pipeline->registerAnUnit(new Render(unitHandler));
+    pipeline->registerAnUnit(new Screen(screenHandler));
 }
 
 VideoProcessor::~VideoProcessor() {
@@ -24,6 +26,14 @@ VideoProcessor::~VideoProcessor() {
         pipeline->release();
         delete pipeline;
         pipeline = nullptr;
+    }
+    if (unitHandler) {
+        delete unitHandler;
+        unitHandler = nullptr;
+    }
+    if (screenHandler) {
+        delete screenHandler;
+        screenHandler = nullptr;
     }
 }
 

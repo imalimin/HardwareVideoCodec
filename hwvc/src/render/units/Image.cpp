@@ -18,13 +18,11 @@ Image::Image() {
 }
 
 Image::~Image() {
-    release();
     LOGI("Image::~Image");
 }
 
-void Image::release() {
-    Unit::release();
-    LOGI("Image::release");
+bool Image::eventRelease(Message *msg) {
+    LOGI("Image::eventRelease");
     if (pDecoder) {
         delete pDecoder;
         pDecoder = nullptr;
@@ -41,6 +39,7 @@ void Image::release() {
         delete[]rgba;
         rgba = nullptr;
     }
+    return true;
 }
 
 void Image::show(string path) {

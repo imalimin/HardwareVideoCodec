@@ -32,6 +32,8 @@ public:
 
 private:
     UnitPipeline *pipeline = nullptr;
+    HandlerThread *unitHandler = nullptr;
+    HandlerThread *screenHandler = nullptr;
 };
 
 

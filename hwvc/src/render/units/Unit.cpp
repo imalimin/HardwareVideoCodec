@@ -20,21 +20,28 @@ bool Event::dispatch(Unit *unit, Message *msg) {
     return (unit->*handler)(msg);
 }
 
-Unit::Unit() {
-    name = __func__;
+Unit::Unit() : Unit(nullptr) {
+}
+
+Unit::Unit(HandlerThread *handlerThread) {
+    name = __FUNCTION__;
+    registerEvent(EVENT_COMMON_RELEASE, reinterpret_cast<EventFunc>(&Unit::eventRelease));
+    if (handlerThread) {
+        eventPipeline = new EventPipeline(handlerThread);
+    }
 }
 
 Unit::~Unit() {
-//    release();
-}
-
-void Unit::release() {
-    LOGI("Unit::release");
+    LOGI("~Unit");
     if (eventMap.empty()) return;
     for (auto itr = eventMap.rbegin(); itr != eventMap.rend(); itr++) {
 //        delete itr->second;
     }
     eventMap.clear();
+    if (eventPipeline) {
+        delete eventPipeline;
+        eventPipeline = nullptr;
+    }
 }
 
 bool Unit::registerEvent(int what, EventFunc handler) {
@@ -60,4 +67,14 @@ bool Unit::dispatch(Message *msg) {
         return itr->second->dispatch(this, msg);
     }
     return false;
+}
+
+void Unit::post(function<void()> runnable) {
+    if (runnable) {
+        if (eventPipeline) {
+            eventPipeline->queueEvent(runnable);
+        } else {
+            runnable();
+        }
+    }
 }

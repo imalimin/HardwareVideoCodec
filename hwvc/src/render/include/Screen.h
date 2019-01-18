@@ -14,9 +14,11 @@ class Screen : public Unit {
 public:
     Screen();
 
+    Screen(HandlerThread *handlerThread);
+
     virtual ~Screen();
 
-    virtual void release() override;
+    bool eventRelease(Message *msg) override;
 
     bool eventPrepare(Message *msg);
 

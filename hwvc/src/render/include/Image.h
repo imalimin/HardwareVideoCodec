@@ -19,7 +19,7 @@ public:
 
     virtual ~Image();
 
-    virtual void release() override;
+    bool eventRelease(Message *msg) override;
 
     bool eventPrepare(Message *msg);
 

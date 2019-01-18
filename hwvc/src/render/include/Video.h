@@ -15,15 +15,18 @@
 #include "Egl.h"
 #include "Frame.h"
 #include "AudioPlayer.h"
+#include "SimpleLock.h"
 #include "../entity/NativeWindow.h"
 
 class Video : public Unit {
 public:
     Video();
 
+    Video(HandlerThread *handlerThread);
+
     virtual ~Video();
 
-    virtual void release() override;
+    bool eventRelease(Message *msg) override;
 
     bool eventPrepare(Message *msg);
 
@@ -39,8 +42,9 @@ public:
 
     bool eventSetSource(Message *msg);
 
+    bool eventLoop(Message *msg);
+
 private:
-    EventPipeline *pipeline = nullptr;
     Egl *egl = nullptr;
     TextureAllocator *texAllocator = nullptr;
     AsynVideoDecoder *decoder = nullptr;
@@ -48,13 +52,13 @@ private:
     YUV420PFilter *yuvFilter = nullptr;
     GLuint yuv[3];
     PlayState playState = STOP;
-    Object lock;
+    SimpleLock *lock;
     char *path;
     AudioPlayer *audioPlayer = nullptr;
     int64_t lastPts = 0;
     int64_t lastShowTime = 0;
 
-    void loop();
+    void sendLoop();
 
     void checkFilter();
 
