@@ -25,14 +25,21 @@ Egl::Egl(Egl *context, ANativeWindow *win) {
 }
 
 Egl::~Egl() {
-    makeCurrent();
-    eglDestroySurface(eglDisplay, eglSurface);
-    eglDestroyContext(eglDisplay, eglContext);
-    eglTerminate(eglDisplay);
-    eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    if (eglDisplay != EGL_NO_DISPLAY) {
+        if (!eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
+            LOGE("~Egl makeCurrent failed: %d", eglGetError());
+        }
+        if (eglContext != EGL_NO_CONTEXT){
+            eglDestroyContext(eglDisplay, eglContext);
+        }
+        if (eglSurface != EGL_NO_SURFACE){
+            eglDestroySurface(eglDisplay, eglSurface);
+        }
+        eglTerminate(eglDisplay);
+    }
     eglContext = EGL_NO_CONTEXT;
-    eglDisplay = EGL_NO_DISPLAY;
     eglSurface = EGL_NO_SURFACE;
+    eglDisplay = EGL_NO_DISPLAY;
 }
 
 void Egl::init(Egl *context, ANativeWindow *win) {

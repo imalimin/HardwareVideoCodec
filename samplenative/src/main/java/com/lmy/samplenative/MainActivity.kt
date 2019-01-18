@@ -33,6 +33,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
             }
 
             override fun surfaceCreated(holder: SurfaceHolder) {
+                holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
                 processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
                 processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
             }

@@ -66,7 +66,6 @@ void Screen::initWindow(NativeWindow *nw) {
 }
 
 void Screen::draw(GLuint texture) {
-    egl->makeCurrent();
 //    string glslVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 //    LOGE("version: %s", glslVersion.c_str());
     glViewport(0, 0, egl->width(), egl->height());
