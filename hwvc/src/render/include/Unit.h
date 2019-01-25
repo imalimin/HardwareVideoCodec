@@ -15,22 +15,22 @@
 
 using namespace std;
 
-static const int EVENT_COMMON_RELEASE = 0x0010000;
-static const int EVENT_COMMON_PREPARE = 0x0010001;
-static const int EVENT_COMMON_INVALIDATE = 0x0010002;
+static constexpr int EVENT_COMMON_RELEASE = 0x0010000;
+static constexpr int EVENT_COMMON_PREPARE = 0x0010001;
+static constexpr int EVENT_COMMON_INVALIDATE = 0x0010002;
 
-static const int EVENT_IMAGE_SHOW = 0x0020000;
+static constexpr int EVENT_IMAGE_SHOW = 0x0020000;
 
-static const int EVENT_RENDER_FILTER = 0x0030000;// 绘制滤镜
-static const int EVENT_RENDER_SET_FILTER = 0x0030001;// 更新滤镜
+static constexpr int EVENT_RENDER_FILTER = 0x0030000;// 绘制滤镜
+static constexpr int EVENT_RENDER_SET_FILTER = 0x0030001;// 更新滤镜
 
-static const int EVENT_SCREEN_DRAW = 0x0040000;
+static constexpr int EVENT_SCREEN_DRAW = 0x0040000;
 
-static const int EVENT_VIDEO_START = 0x0050000;
-static const int EVENT_VIDEO_PAUSE = 0x0050001;
-static const int EVENT_VIDEO_SEEK = 0x0050002;
-static const int EVENT_VIDEO_SET_SOURCE = 0x0050003;
-static const int EVENT_VIDEO_LOOP = 0x0050004;
+static constexpr int EVENT_VIDEO_START = 0x0050000;
+static constexpr int EVENT_VIDEO_PAUSE = 0x0050001;
+static constexpr int EVENT_VIDEO_SEEK = 0x0050002;
+static constexpr int EVENT_VIDEO_SET_SOURCE = 0x0050003;
+static constexpr int EVENT_VIDEO_LOOP = 0x0050004;
 
 typedef bool (Unit::*EventFunc)(Message *);
 
