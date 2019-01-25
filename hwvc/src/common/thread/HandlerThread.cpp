@@ -7,48 +7,42 @@
 #include "../include/HandlerThread.h"
 #include "../include/log.h"
 
+void HandlerThread::run() {
+    while (true) {
+        pthread_mutex_lock(&mutex);
+        if (shouldQuit()) {
+            break;
+        }
+        pthread_mutex_unlock(&mutex);
+        Message *msg = this->take();
+        int size = this->size();
+        if (this->requestQuit && !this->requestQuitSafely) {
+            LOGI("requestQuit, %ld, %ld", msg, pthread_self());
+            break;
+        }
+        if (nullptr == msg) {
+            continue;
+        }
+        msg->runnable(msg);
+        delete msg;
+        if (this->requestQuitSafely && size <= 0) {
+            LOGI("requestQuitSafely");
+            break;
+        }
+    }
+}
+
 HandlerThread::HandlerThread(string name) {
     pthread_mutex_init(&mutex, nullptr);
     queue = new MessageQueue();
-    thread = new Thread(name, [this]() {
-        while (this->thread->isRunning()) {
-            pthread_mutex_lock(&mutex);
-            if (shouldQuit()) {
-                break;
-            }
-            pthread_mutex_unlock(&mutex);
-            Message *msg = this->take();
-            int size = this->size();
-            if (this->requestQuit && !this->requestQuitSafely) {
-                LOGI("requestQuit, %ld, %ld", msg, this->thread);
-                break;
-            }
-            if (nullptr == msg) {
-                continue;
-            }
-            msg->runnable(msg);
-            delete msg;
-            if (this->requestQuitSafely && size <= 0) {
-                LOGI("requestQuitSafely");
-                break;
-            }
-        }
-    });
-    thread->start();
+    mThread = new thread(&HandlerThread::run, this);
 }
 
 bool HandlerThread::shouldQuit() {
-    if (thread->interrupted()) {
-        return true;
-    }
     if (this->requestQuit && !this->requestQuitSafely) {
         return true;
     }
-    if (this->requestQuitSafely && size() <= 0) {
-        return true;
-    }
-    return false;
-
+    return this->requestQuitSafely && size() <= 0;
 }
 
 HandlerThread::~HandlerThread() {
@@ -86,10 +80,10 @@ void HandlerThread::quit() {
     if (nullptr != queue) {
         queue->notify();
     }
-    if (nullptr != thread) {
-        thread->interrupt();
-        delete thread;
-        thread = nullptr;
+    if (nullptr != mThread) {
+        mThread->join();
+        delete mThread;
+        mThread = nullptr;
     }
     if (this->queue) {
         delete this->queue;

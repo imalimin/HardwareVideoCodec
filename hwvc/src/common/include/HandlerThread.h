@@ -4,7 +4,8 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include "Thread.h"
+#include <thread>
+#include <pthread.h>
 #include "MessageQueue.h"
 
 #ifndef HARDWAREVIDEOCODEC_HANDLERTHREAD_H
@@ -25,7 +26,7 @@ public:
     void quitSafely();
 
 private:
-    Thread *thread = nullptr;
+    std::thread *mThread = nullptr;
     pthread_mutex_t mutex;
     MessageQueue *queue = nullptr;
     bool requestQuitSafely = false;
@@ -40,6 +41,8 @@ private:
     int size();
 
     bool shouldQuit();
+
+    void run();
 };
 
 
