@@ -4,6 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
+#include <malloc.h>
 #include "SpecificData.h"
 
 SpecificData::SpecificData(const char *data, int size) {
