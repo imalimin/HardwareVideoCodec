@@ -83,22 +83,6 @@ int AudioPlayer::start() {
     return 1;
 }
 
-string AudioPlayer::getString() {
-    return "Test";
-}
-
-static SLuint32 getChannelMask(int channels) {
-    switch (channels) {
-        case 1:
-            return SL_SPEAKER_FRONT_CENTER;
-        case 3:
-            return SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT | SL_SPEAKER_FRONT_CENTER;
-        case 2:
-        default:
-            return SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-    }
-}
-
 int AudioPlayer::createBufferQueueAudioPlayer() {
     SLDataLocator_BufferQueue queue = {SL_DATALOCATOR_BUFFERQUEUE, 2};
     SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM,

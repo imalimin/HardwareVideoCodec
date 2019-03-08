@@ -4,8 +4,8 @@
 * This source code is licensed under the GPL license found in the
 * LICENSE file in the root directory of this source tree.
 */
-#ifndef HARDWAREVIDEOCODEC_AUDIOPLAYER_H
-#define HARDWAREVIDEOCODEC_AUDIOPLAYER_H
+#ifndef HARDWAREVIDEOCODEC_AUDIORECORDER_H
+#define HARDWAREVIDEOCODEC_AUDIORECORDER_H
 
 #include <string>
 #include "AudioDevice.h"
@@ -14,46 +14,43 @@
 #include "EventPipeline.h"
 #include "SimpleLock.h"
 
-using namespace std;
-
-class AudioPlayer : public SLAudioDevice {
+class AudioRecorder : public SLAudioDevice {
 public:
-    AudioPlayer(int channels, int sampleHz, int format, int minBufferSize);
+    AudioRecorder(unsigned int channels, unsigned int sampleHz, int format, int minBufferSize);
 
-    virtual ~AudioPlayer();
+    virtual ~AudioRecorder();
 
     virtual int start();
 
     virtual void stop();
 
-    virtual int write(uint8_t *buffer, size_t size);
+    virtual size_t read(uint8_t *buffer);
 
     virtual void flush();
 
-    void bufferEnqueue(SLBufferQueueItf slBufferQueueItf);
+    void bufferDequeue(SLBufferQueueItf slBufferQueueItf);
 
 private:
-    EventPipeline *pipeline = nullptr;
-    SimpleLock *lock = nullptr;
     unsigned int channels = 0;
     unsigned int sampleHz = 0;
     SLuint32 format = SL_PCMSAMPLEFORMAT_FIXED_16;
     int minBufferSize = 0;
-    ObjectBox *buffer = nullptr;
     RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
+
     SLObjectItf engineObject = nullptr;
     SLEngineItf engineItf = nullptr;
-    SLObjectItf mixObject = nullptr;
-    SLObjectItf playObject = nullptr;
-    SLPlayItf playItf = nullptr;
+
+    SLObjectItf recordObject = nullptr;
+    SLRecordItf recordItf = nullptr;
     SLBufferQueueItf bufferQueueItf = nullptr;
 
     int createEngine();
 
     void destroyEngine();
 
-    int createBufferQueueAudioPlayer();
+    int createBufferQueueObject();
+
 };
 
 
-#endif //HARDWAREVIDEOCODEC_AUDIOPLAYER_H
+#endif //HARDWAREVIDEOCODEC_AUDIORECORDER_H
