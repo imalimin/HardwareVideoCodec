@@ -126,7 +126,7 @@ int AudioRecorder::createBufferQueueObject() {
     };
     const SLInterfaceID ids[1] = {SL_IID_BUFFERQUEUE};
     const SLboolean req[1] = {SL_BOOLEAN_TRUE};
-    SLresult result = (*engineItf)->CreateAudioPlayer(engineItf,
+    SLresult result = (*engineItf)->CreateAudioRecorder(engineItf,
                                                       &recordObject,
                                                       &dataSource,
                                                       &slDataSink,
