@@ -34,7 +34,7 @@ AudioRecorder::AudioRecorder(unsigned int channels, unsigned int sampleHz, int f
     });
     int ret = this->createEngine();
     if (!ret) {
-        LOGE("AudioPlayer start failed");
+        LOGE("AudioRecorder start failed");
     }
 }
 
@@ -124,7 +124,7 @@ int AudioRecorder::createBufferQueueObject() {
             &buffer_queue,
             &format
     };
-    const SLInterfaceID ids[1] = {SL_IID_BUFFERQUEUE};
+    const SLInterfaceID ids[1] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
     const SLboolean req[1] = {SL_BOOLEAN_TRUE};
     SLresult result = (*engineItf)->CreateAudioRecorder(engineItf,
                                                       &recordObject,
@@ -147,7 +147,7 @@ int AudioRecorder::createBufferQueueObject() {
         LOGE("Recorder GetInterface failed!");
         return 0;
     }
-    result = (*recordObject)->GetInterface(recordObject, SL_IID_BUFFERQUEUE, &bufferQueueItf);
+    result = (*recordObject)->GetInterface(recordObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &bufferQueueItf);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Recorder GetInterface buffer queue failed!");
         return 0;
