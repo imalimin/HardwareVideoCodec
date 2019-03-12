@@ -111,7 +111,7 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
                                                                 &playObject,
                                                                 &dataSource,
                                                                 &slDataSink,
-                                                                2,
+                                                                sizeof(ids) / sizeof(ids[0]),
                                                                 ids,
                                                                 req);
     if (SL_RESULT_SUCCESS != result) {

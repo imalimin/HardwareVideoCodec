@@ -133,18 +133,29 @@ int AudioRecorder::createBufferQueueObject() {
             &buffer_queue,
             &format
     };
-    const SLInterfaceID ids[1] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
-    const SLboolean req[1] = {SL_BOOLEAN_TRUE};
+    const SLInterfaceID ids[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
+    const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
     SLresult result = (*engine->getEngine())->CreateAudioRecorder(engine->getEngine(),
                                                                   &recordObject,
                                                                   &dataSource,
                                                                   &slDataSink,
-                                                                  1,
+                                                                  sizeof(ids) / sizeof(ids[0]),
                                                                   ids,
                                                                   req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioRecorder failed! ret=%d", result);
         return 0;
+    }
+    // Configure the voice recognition preset which has no
+    // signal processing for lower latency.
+    SLAndroidConfigurationItf inputConfig;
+    result = (*recordObject)->GetInterface(recordObject, SL_IID_ANDROIDCONFIGURATION,
+                                           &inputConfig);
+    if (SL_RESULT_SUCCESS == result) {
+        SLuint32 presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
+        (*inputConfig)
+                ->SetConfiguration(inputConfig, SL_ANDROID_KEY_RECORDING_PRESET,
+                                   &presetValue, sizeof(SLuint32));
     }
     result = (*recordObject)->Realize(recordObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
