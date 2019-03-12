@@ -57,7 +57,8 @@ file(
         ${PROJECT_SOURCE_DIR}/thread/*.cpp
         ${PROJECT_SOURCE_DIR}/decoder/*.cpp
         ${PROJECT_SOURCE_DIR}/utils/*.cpp
-        ${PROJECT_SOURCE_DIR}/media/*cpp
+        ${PROJECT_SOURCE_DIR}/media/*.cpp
+        ${PROJECT_SOURCE_DIR}/media/sles/*.cpp
 )
 add_library(
         hwvcom

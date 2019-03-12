@@ -9,8 +9,9 @@
 Echoer::Echoer(int channels, int sampleHz, int format, int minBufferSize) {
     this->minBufferSize = minBufferSize;
     this->buffer = new uint8_t[minBufferSize];
-    recorder = new AudioRecorder(channels, sampleHz, format, minBufferSize);
-    player = new AudioPlayer(channels, sampleHz, format, minBufferSize);
+    this->engine = new SLEngine();
+    recorder = new AudioRecorder(engine, channels, sampleHz, format, minBufferSize);
+    player = new AudioPlayer(engine, channels, sampleHz, format, minBufferSize);
     this->pipeline = new EventPipeline("Echoer");
 }
 
@@ -46,6 +47,10 @@ void Echoer::stop() {
         recorder->stop();
         delete recorder;
         recorder = nullptr;
+    }
+    if (engine) {
+        delete engine;
+        engine = nullptr;
     }
     if (buffer) {
         delete[] buffer;

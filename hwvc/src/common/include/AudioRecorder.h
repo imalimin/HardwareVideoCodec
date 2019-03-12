@@ -13,10 +13,14 @@
 #include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
 #include "SimpleLock.h"
+#include "SLEngine.h"
 
 class AudioRecorder : public SLAudioDevice {
 public:
     AudioRecorder(unsigned int channels, unsigned int sampleHz, int format, int minBufferSize);
+
+    AudioRecorder(SLEngine *engine, unsigned int channels, unsigned int sampleHz, int format,
+                  int minBufferSize);
 
     virtual ~AudioRecorder();
 
@@ -37,8 +41,8 @@ private:
     int minBufferSize = 0;
     RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
 
-    SLObjectItf engineObject = nullptr;
-    SLEngineItf engineItf = nullptr;
+    SLEngine *engine = nullptr;
+    bool ownEngine = false;
 
     SLObjectItf recordObject = nullptr;
     SLRecordItf recordItf = nullptr;
@@ -49,6 +53,8 @@ private:
     void destroyEngine();
 
     int createBufferQueueObject();
+
+    void initialize(SLEngine *engine, int channels, int sampleHz, int format, int minBufferSize);
 
 };
 

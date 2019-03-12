@@ -14,7 +14,18 @@ void bufferQueueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
 }
 
 AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSize) {
+    initialize(nullptr, channels, sampleHz, format, minBufferSize);
+}
+
+AudioPlayer::AudioPlayer(SLEngine *engine, int channels, int sampleHz, int format,
+                         int minBufferSize) {
+    initialize(engine, channels, sampleHz, format, minBufferSize);
+}
+
+void AudioPlayer::initialize(SLEngine *engine, int channels, int sampleHz, int format,
+                             int minBufferSize) {
     this->lock = new SimpleLock();
+    this->engine = engine;
     this->channels = channels;
     this->sampleHz = sampleHz;
     this->format = format;
@@ -28,8 +39,6 @@ AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSi
          this->channels,
          this->sampleHz,
          this->minBufferSize);
-    engineObject = nullptr;
-    engineItf = nullptr;
     mixObject = nullptr;
     playObject = nullptr;
     playItf = nullptr;
@@ -37,6 +46,7 @@ AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSi
     if (!ret) {
         LOGE("AudioPlayer create failed");
     }
+
 }
 
 AudioPlayer::~AudioPlayer() {
@@ -45,23 +55,18 @@ AudioPlayer::~AudioPlayer() {
 }
 
 int AudioPlayer::createEngine() {
-    SLresult result = slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("slCreateEngine failed!");
-        return 0;
-    }
-    result = (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Engine Realize failed!");
-        return 0;
-    }
-    result = (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineItf);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Engine GetInterface failed!");
-        return 0;
+    if (!engine) {
+        ownEngine = true;
+        engine = new SLEngine();
+        if (!engine || !engine->valid()) {
+            LOGE("AudioPlayer create failed");
+            stop();
+            return 0;
+        }
     }
 
-    result = (*engineItf)->CreateOutputMix(engineItf, &mixObject, 0, nullptr, nullptr);
+    SLresult result = (*engine->getEngine())->CreateOutputMix(engine->getEngine(), &mixObject, 0,
+                                                              nullptr, nullptr);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateOutputMix failed!");
         return 0;
@@ -102,13 +107,13 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
     SLDataSink slDataSink = {&slDataLocator_outputMix, NULL};
     const SLInterfaceID ids[2] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME};
     const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-    SLresult result = (*engineItf)->CreateAudioPlayer(engineItf,
-                                                      &playObject,
-                                                      &dataSource,
-                                                      &slDataSink,
-                                                      2,
-                                                      ids,
-                                                      req);
+    SLresult result = (*engine->getEngine())->CreateAudioPlayer(engine->getEngine(),
+                                                                &playObject,
+                                                                &dataSource,
+                                                                &slDataSink,
+                                                                2,
+                                                                ids,
+                                                                req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioPlayer failed! ret=%d", result);
         return 0;
@@ -193,9 +198,9 @@ void AudioPlayer::destroyEngine() {
         (*mixObject)->Destroy(mixObject);
         mixObject = nullptr;
     }
-    if (nullptr != engineObject) {
-        (*engineObject)->Destroy(engineObject);
-        engineObject = nullptr;
-        engineItf = nullptr;
+    if (ownEngine && engine) {
+        delete engine;
+        engine = nullptr;
+        ownEngine = false;
     }
 }

@@ -23,6 +23,17 @@ void AudioRecorder::bufferDequeue(SLBufferQueueItf slBufferQueueItf) {
 
 AudioRecorder::AudioRecorder(unsigned int channels, unsigned int sampleHz, int format,
                              int minBufferSize) {
+    initialize(nullptr, channels, sampleHz, format, minBufferSize);
+}
+
+AudioRecorder::AudioRecorder(SLEngine *engine, unsigned int channels, unsigned int sampleHz,
+                             int format, int minBufferSize) {
+    initialize(engine, channels, sampleHz, format, minBufferSize);
+}
+
+void AudioRecorder::initialize(SLEngine *engine, int channels, int sampleHz, int format,
+                               int minBufferSize) {
+    this->engine = engine;
     this->channels = channels;
     this->sampleHz = sampleHz;
     this->format = format;
@@ -39,6 +50,7 @@ AudioRecorder::AudioRecorder(unsigned int channels, unsigned int sampleHz, int f
     if (!ret) {
         LOGE("AudioRecorder start failed");
     }
+
 }
 
 AudioRecorder::~AudioRecorder() {
@@ -87,20 +99,14 @@ void AudioRecorder::AudioRecorder::flush() {
 }
 
 int AudioRecorder::createEngine() {
-    SLresult result = slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("slCreateEngine failed!");
-        return 0;
-    }
-    result = (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Engine Realize failed!");
-        return 0;
-    }
-    result = (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineItf);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Engine GetInterface failed!");
-        return 0;
+    if (!engine) {
+        ownEngine = true;
+        engine = new SLEngine();
+        if (!engine || !engine->valid()) {
+            LOGE("AudioPlayer create failed");
+            stop();
+            return 0;
+        }
     }
     return createBufferQueueObject();
 }
@@ -129,13 +135,13 @@ int AudioRecorder::createBufferQueueObject() {
     };
     const SLInterfaceID ids[1] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
     const SLboolean req[1] = {SL_BOOLEAN_TRUE};
-    SLresult result = (*engineItf)->CreateAudioRecorder(engineItf,
-                                                      &recordObject,
-                                                      &dataSource,
-                                                      &slDataSink,
-                                                      1,
-                                                      ids,
-                                                      req);
+    SLresult result = (*engine->getEngine())->CreateAudioRecorder(engine->getEngine(),
+                                                                  &recordObject,
+                                                                  &dataSource,
+                                                                  &slDataSink,
+                                                                  1,
+                                                                  ids,
+                                                                  req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioRecorder failed! ret=%d", result);
         return 0;
@@ -150,7 +156,8 @@ int AudioRecorder::createBufferQueueObject() {
         LOGE("Recorder GetInterface failed!");
         return 0;
     }
-    result = (*recordObject)->GetInterface(recordObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &bufferQueueItf);
+    result = (*recordObject)->GetInterface(recordObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
+                                           &bufferQueueItf);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Recorder GetInterface buffer queue failed!");
         return 0;
@@ -172,9 +179,9 @@ void AudioRecorder::destroyEngine() {
         bufferQueueItf = nullptr;
         recordItf = nullptr;
     }
-    if (nullptr != engineObject) {
-        (*engineObject)->Destroy(engineObject);
-        engineObject = nullptr;
-        engineItf = nullptr;
+    if (ownEngine && engine) {
+        delete engine;
+        engine = nullptr;
+        ownEngine = false;
     }
 }

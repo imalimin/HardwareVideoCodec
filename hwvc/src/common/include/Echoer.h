@@ -10,6 +10,7 @@
 #include "AudioPlayer.h"
 #include "AudioRecorder.h"
 #include "EventPipeline.h"
+#include "SLEngine.h"
 
 class Echoer : public Object {
 public:
@@ -23,6 +24,7 @@ public:
 
 private:
     int minBufferSize = 0;
+    SLEngine *engine = nullptr;
     AudioPlayer *player;
     AudioRecorder *recorder;
     EventPipeline *pipeline = nullptr;

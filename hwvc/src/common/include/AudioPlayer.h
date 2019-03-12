@@ -13,12 +13,15 @@
 #include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
 #include "SimpleLock.h"
+#include "SLEngine.h"
 
 using namespace std;
 
 class AudioPlayer : public SLAudioDevice {
 public:
     AudioPlayer(int channels, int sampleHz, int format, int minBufferSize);
+
+    AudioPlayer(SLEngine *engine, int channels, int sampleHz, int format, int minBufferSize);
 
     virtual ~AudioPlayer();
 
@@ -39,8 +42,8 @@ private:
     SLuint32 format = SL_PCMSAMPLEFORMAT_FIXED_16;
     int minBufferSize = 0;
     RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
-    SLObjectItf engineObject = nullptr;
-    SLEngineItf engineItf = nullptr;
+    SLEngine *engine = nullptr;
+    bool ownEngine = false;
     SLObjectItf mixObject = nullptr;
     SLObjectItf playObject = nullptr;
     SLPlayItf playItf = nullptr;
@@ -51,6 +54,8 @@ private:
     void destroyEngine();
 
     int createBufferQueueAudioPlayer();
+
+    void initialize(SLEngine *engine, int channels, int sampleHz, int format, int minBufferSize);
 };
 
 
