@@ -20,13 +20,15 @@ Echoer::~Echoer() {
 
 void Echoer::start() {
     running = true;
-    if (recorder) {
-        recorder->start();
-    }
-    if (player) {
-        player->start();
-    }
-    loop();
+    pipeline->queueEvent([this] {
+        if (recorder) {
+            recorder->start();
+        }
+        if (player) {
+            player->start();
+        }
+        loop();
+    });
 }
 
 void Echoer::stop() {

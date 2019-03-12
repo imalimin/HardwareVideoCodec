@@ -33,13 +33,11 @@ public:
     void bufferEnqueue(SLBufferQueueItf slBufferQueueItf);
 
 private:
-    EventPipeline *pipeline = nullptr;
     SimpleLock *lock = nullptr;
     unsigned int channels = 0;
     unsigned int sampleHz = 0;
     SLuint32 format = SL_PCMSAMPLEFORMAT_FIXED_16;
     int minBufferSize = 0;
-    ObjectBox *buffer = nullptr;
     RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
     SLObjectItf engineObject = nullptr;
     SLEngineItf engineItf = nullptr;

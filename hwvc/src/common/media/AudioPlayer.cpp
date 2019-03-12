@@ -15,13 +15,14 @@ void bufferQueueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
 
 AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSize) {
     this->lock = new SimpleLock();
-    this->pipeline = new EventPipeline("AudioPlayer");
     this->channels = channels;
     this->sampleHz = sampleHz;
     this->format = format;
     this->minBufferSize = minBufferSize;
     this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [minBufferSize] {
-        return new ObjectBox(new uint8_t[minBufferSize]);
+        uint8_t *buf = new uint8_t[minBufferSize];
+        memset(buf, 0, minBufferSize);
+        return new ObjectBox(buf);
     });
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d",
          this->channels,
@@ -32,6 +33,10 @@ AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSi
     mixObject = nullptr;
     playObject = nullptr;
     playItf = nullptr;
+    int ret = this->createEngine();
+    if (!ret) {
+        LOGE("AudioPlayer create failed");
+    }
 }
 
 AudioPlayer::~AudioPlayer() {
@@ -70,16 +75,16 @@ int AudioPlayer::createEngine() {
 }
 
 int AudioPlayer::start() {
-    if (!pipeline) {
+    SLresult result = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
+    if (SL_RESULT_SUCCESS != result) {
+        LOGE("Recorder SetRecordState start failed!");
         return 0;
     }
-    pipeline->queueEvent([this] {
-        int ret = this->createEngine();
-        if (!ret) {
-            LOGE("AudioPlayer start failed");
-            this->stop();
-        }
-    });
+    uint8_t *buffer = new uint8_t[minBufferSize];
+    memset(buffer, 0, minBufferSize);
+    write(buffer, minBufferSize);
+    delete[]buffer;
+    bufferEnqueue(bufferQueueItf);
     return 1;
 }
 
@@ -135,24 +140,16 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
         LOGE("Player RegisterCallback failed!");
         return 0;
     }
-    result = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Player SetPlayState start failed!");
-        return 0;
-    }
-    buffer = new ObjectBox(new uint8_t[minBufferSize]);
-    (*bufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
     return 1;
 }
 
 void AudioPlayer::bufferEnqueue(SLBufferQueueItf slBufferQueueItf) {
-    if (buffer) {
-        recycler->recycle(buffer);
-    }
-    buffer = recycler->take();
+    LOGE("AudioPlayer...");
+    auto *buffer = recycler->take();
     if (buffer) {
         (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
     }
+    recycler->recycle(buffer);
 }
 
 int AudioPlayer::write(uint8_t *buffer, size_t size) {
@@ -167,22 +164,14 @@ int AudioPlayer::write(uint8_t *buffer, size_t size) {
 }
 
 void AudioPlayer::flush() {
-    pipeline->queueEvent([this] {
-        recycler->recycleAll();
-    });
+    recycler->recycleAll();
 }
 
 void AudioPlayer::stop() {
     if (recycler) {
         recycler->notify();
     }
-    if (pipeline) {
-        pipeline->queueEvent([this] {
-            this->destroyEngine();
-        });
-        delete pipeline;
-        pipeline = nullptr;
-    }
+    this->destroyEngine();
     if (recycler) {
         delete recycler;
         recycler = nullptr;

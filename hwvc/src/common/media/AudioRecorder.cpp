@@ -13,6 +13,7 @@ void bufferDequeueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
 }
 
 void AudioRecorder::bufferDequeue(SLBufferQueueItf slBufferQueueItf) {
+    LOGE("AudioRecorder...");
     ObjectBox *cache = recycler->takeCache();
     if (cache) {
         (*slBufferQueueItf)->Enqueue(bufferQueueItf, cache->ptr, minBufferSize);
@@ -30,7 +31,9 @@ AudioRecorder::AudioRecorder(unsigned int channels, unsigned int sampleHz, int f
          this->channels,
          this->sampleHz);
     this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [minBufferSize] {
-        return new ObjectBox(new uint8_t[minBufferSize]);
+        uint8_t *buf = new uint8_t[minBufferSize];
+        memset(buf, 0, minBufferSize);
+        return new ObjectBox(buf);
     });
     int ret = this->createEngine();
     if (!ret) {
