@@ -25,8 +25,8 @@ public:
 private:
     int minBufferSize = 0;
     SLEngine *engine = nullptr;
-    AudioPlayer *player;
-    AudioRecorder *recorder;
+    AudioPlayer *player = nullptr;
+    AudioRecorder *recorder = nullptr;
     EventPipeline *pipeline = nullptr;
     uint8_t *buffer = nullptr;
     bool running = false;

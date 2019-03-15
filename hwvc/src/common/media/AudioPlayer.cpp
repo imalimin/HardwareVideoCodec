@@ -8,7 +8,7 @@
 #include "../include/log.h"
 #include "../include/ObjectBox.h"
 
-void bufferQueueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
+void bufferQueueCallback(SLAndroidSimpleBufferQueueItf slBufferQueueItf, void *context) {
     AudioPlayer *player = static_cast<AudioPlayer *>(context);
     player->bufferEnqueue(slBufferQueueItf);
 }
@@ -80,21 +80,22 @@ int AudioPlayer::createEngine() {
 }
 
 int AudioPlayer::start() {
-    SLresult result = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Recorder SetRecordState start failed!");
-        return 0;
-    }
+    (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
     uint8_t *buffer = new uint8_t[minBufferSize];
     memset(buffer, 0, minBufferSize);
     write(buffer, minBufferSize);
     delete[]buffer;
     bufferEnqueue(bufferQueueItf);
+    SLresult result = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
+    if (SL_RESULT_SUCCESS != result) {
+        LOGE("Recorder SetRecordState start failed!");
+        return 0;
+    }
     return 1;
 }
 
 int AudioPlayer::createBufferQueueAudioPlayer() {
-    SLDataLocator_BufferQueue queue = {SL_DATALOCATOR_BUFFERQUEUE, 2};
+    SLDataLocator_AndroidSimpleBufferQueue queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
     SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM,
                             channels,
                             sampleHz * 1000,
@@ -148,7 +149,7 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
     return 1;
 }
 
-void AudioPlayer::bufferEnqueue(SLBufferQueueItf slBufferQueueItf) {
+void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
     LOGE("AudioPlayer...");
     auto *buffer = recycler->take();
     if (buffer) {

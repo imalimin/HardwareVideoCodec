@@ -7,18 +7,24 @@
 
 #include "../include/AudioRecorder.h"
 
-void bufferDequeueCallback(SLBufferQueueItf slBufferQueueItf, void *context) {
+void bufferDequeueCallback(SLAndroidSimpleBufferQueueItf slBufferQueueItf, void *context) {
     AudioRecorder *recorder = static_cast<AudioRecorder *>(context);
     recorder->bufferDequeue(slBufferQueueItf);
 }
 
-void AudioRecorder::bufferDequeue(SLBufferQueueItf slBufferQueueItf) {
+void AudioRecorder::bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
     LOGE("AudioRecorder...");
-    ObjectBox *cache = recycler->takeCache();
-    if (cache) {
-        (*slBufferQueueItf)->Enqueue(bufferQueueItf, cache->ptr, minBufferSize);
+    if (buffer) {
+        if (pcmFile) {
+            fwrite(buffer->ptr, 1, minBufferSize, pcmFile);
+        }
+        recycler->offer(buffer);
+        buffer = nullptr;
     }
-    recycler->offer(cache);
+    buffer = recycler->takeCache();
+    if (buffer) {
+        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
+    }
 }
 
 AudioRecorder::AudioRecorder(unsigned int channels, unsigned int sampleHz, int format,
@@ -33,6 +39,7 @@ AudioRecorder::AudioRecorder(SLEngine *engine, unsigned int channels, unsigned i
 
 void AudioRecorder::initialize(SLEngine *engine, int channels, int sampleHz, int format,
                                int minBufferSize) {
+    pcmFile = fopen("/sdcard/pcm_tmp.pcm", "w");
     this->engine = engine;
     this->channels = channels;
     this->sampleHz = sampleHz;
@@ -59,25 +66,37 @@ AudioRecorder::~AudioRecorder() {
 }
 
 int AudioRecorder::start() {
+    (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
+    (*bufferQueueItf)->Clear(bufferQueueItf);
+    bufferDequeue(bufferQueueItf);
     SLresult result = (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_RECORDING);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Recorder SetRecordState start failed!");
         return 0;
     }
-    bufferDequeue(bufferQueueItf);
     return 1;
 }
 
 void AudioRecorder::stop() {
-    SLresult result = (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Recorder SetRecordState stop failed!");
+    if (recordItf) {
+        SLresult result = (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
+        if (SL_RESULT_SUCCESS != result) {
+            LOGE("Recorder SetRecordState stop failed!");
+        }
+    }
+    if (pcmFile) {
+        fclose(pcmFile);
+        pcmFile = nullptr;
     }
     if (recycler) {
         recycler->notify();
     }
     destroyEngine();
     if (recycler) {
+        if (buffer) {
+            recycler->offer(buffer);
+            buffer = nullptr;
+        }
         delete recycler;
         recycler = nullptr;
     }
@@ -112,35 +131,34 @@ int AudioRecorder::createEngine() {
 }
 
 int AudioRecorder::createBufferQueueObject() {
-    SLDataLocator_IODevice io = {SL_DATALOCATOR_IODEVICE,
-                                 SL_IODEVICE_AUDIOINPUT,
-                                 SL_DEFAULTDEVICEID_AUDIOINPUT,
-                                 NULL};
-    SLDataSource dataSource = {&io, NULL};
+    SLDataFormat_PCM format_pcm = {SL_DATAFORMAT_PCM,
+                                   channels,
+                                   sampleHz * 1000,
+                                   this->format,
+                                   this->format,
+                                   getChannelMask(channels),
+                                   SL_BYTEORDER_LITTLEENDIAN};
+    // configure audio source
+    SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE,
+                                      SL_IODEVICE_AUDIOINPUT,
+                                      SL_DEFAULTDEVICEID_AUDIOINPUT, NULL};
+    SLDataSource audioSrc = {&loc_dev, NULL};
 
-    SLDataLocator_AndroidSimpleBufferQueue buffer_queue = {
-            SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
-            2
-    };
-    SLDataFormat_PCM format = {SL_DATAFORMAT_PCM,
-                               channels,
-                               sampleHz * 1000,
-                               this->format,
-                               this->format,
-                               getChannelMask(channels),
-                               SL_BYTEORDER_LITTLEENDIAN};
-    SLDataSink slDataSink = {
-            &buffer_queue,
-            &format
-    };
-    const SLInterfaceID ids[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE, SL_IID_ANDROIDCONFIGURATION};
+    // configure audio sink
+    SLDataLocator_AndroidSimpleBufferQueue loc_bq = {
+            SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
+
+    SLDataSink audioSnk = {&loc_bq, &format_pcm};
+
+    // (requires the RECORD_AUDIO permission)
+    const SLInterfaceID id[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
+                                 SL_IID_ANDROIDCONFIGURATION};
     const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
     SLresult result = (*engine->getEngine())->CreateAudioRecorder(engine->getEngine(),
                                                                   &recordObject,
-                                                                  &dataSource,
-                                                                  &slDataSink,
-                                                                  sizeof(ids) / sizeof(ids[0]),
-                                                                  ids,
+                                                                  &audioSrc, &audioSnk,
+                                                                  sizeof(id) / sizeof(id[0]),
+                                                                  id,
                                                                   req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioRecorder failed! ret=%d", result);

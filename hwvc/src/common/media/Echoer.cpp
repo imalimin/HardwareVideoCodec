@@ -22,11 +22,11 @@ Echoer::~Echoer() {
 void Echoer::start() {
     running = true;
     pipeline->queueEvent([this] {
-        if (recorder) {
-            recorder->start();
-        }
         if (player) {
             player->start();
+        }
+        if (recorder) {
+            recorder->start();
         }
         loop();
     });
@@ -62,7 +62,9 @@ void Echoer::stop() {
 void Echoer::loop() {
     pipeline->queueEvent([this] {
         recorder->read(buffer);
-        player->write(buffer, minBufferSize);
+        if (player) {
+            player->write(buffer, minBufferSize);
+        }
         if (this->running) {
             this->loop();
         }

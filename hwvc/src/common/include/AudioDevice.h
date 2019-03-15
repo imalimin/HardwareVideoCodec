@@ -18,6 +18,11 @@ class AudioDevice : Object {
 class SLAudioDevice : AudioDevice {
 public:
     SLuint32 getChannelMask(int channels);
+
+    void getSampleFormat(SLDataFormat_PCM *pFormat,
+                         int format,
+                         int channels,
+                         int sampleRate);
 };
 
 

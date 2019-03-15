@@ -32,7 +32,7 @@ public:
 
     virtual void flush();
 
-    void bufferDequeue(SLBufferQueueItf slBufferQueueItf);
+    void bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf);
 
 private:
     unsigned int channels = 0;
@@ -46,7 +46,9 @@ private:
 
     SLObjectItf recordObject = nullptr;
     SLRecordItf recordItf = nullptr;
-    SLBufferQueueItf bufferQueueItf = nullptr;
+    SLAndroidSimpleBufferQueueItf bufferQueueItf = nullptr;
+    ObjectBox *buffer = nullptr;
+    FILE *pcmFile = nullptr;
 
     int createEngine();
 

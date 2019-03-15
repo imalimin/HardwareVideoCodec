@@ -33,7 +33,7 @@ public:
 
     virtual void flush();
 
-    void bufferEnqueue(SLBufferQueueItf slBufferQueueItf);
+    void bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf);
 
 private:
     SimpleLock *lock = nullptr;
@@ -47,7 +47,7 @@ private:
     SLObjectItf mixObject = nullptr;
     SLObjectItf playObject = nullptr;
     SLPlayItf playItf = nullptr;
-    SLBufferQueueItf bufferQueueItf = nullptr;
+    SLAndroidSimpleBufferQueueItf bufferQueueItf = nullptr;
 
     int createEngine();
 
