@@ -14,6 +14,7 @@
 #include "EventPipeline.h"
 #include "SimpleLock.h"
 #include "SLEngine.h"
+#include "SLRecorder.h"
 #include "HwResult.h"
 
 class AudioRecorder : public SLAudioDevice {
@@ -46,10 +47,7 @@ private:
 
     SLEngine *engine = nullptr;
     bool ownEngine = false;
-
-    SLObjectItf recordObject = nullptr;
-    SLRecordItf recordItf = nullptr;
-    SLAndroidSimpleBufferQueueItf bufferQueueItf = nullptr;
+    SLRecorder *recorder = nullptr;
     ObjectBox *buffer = nullptr;
     FILE *pcmFile = nullptr;
 

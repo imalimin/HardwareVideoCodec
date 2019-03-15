@@ -15,7 +15,15 @@ class AudioDevice : public Object {
 public:
     AudioDevice(uint16_t channels, uint32_t sampleRate, uint16_t format, uint32_t samplesPerBuffer);
 
-    uint32_t getBufferByteSize();
+    virtual uint16_t getChannels();
+
+    virtual uint32_t getSampleRate();
+
+    virtual uint16_t getFormat();
+
+    virtual uint32_t getSamplesPerBuffer();
+
+    virtual uint32_t getBufferByteSize();
 
 protected:
     uint16_t channels = 0;
@@ -29,12 +37,9 @@ public:
     SLAudioDevice(uint16_t channels, uint32_t sampleRate, uint16_t format,
                   uint32_t samplesPerBuffer);
 
-    SLuint32 getChannelMask(int channels);
+    SLuint32 getChannelMask();
 
-    void getSampleFormat(SLDataFormat_PCM *pFormat,
-                         int format,
-                         int channels,
-                         int sampleRate);
+    void getSampleFormat(SLDataFormat_PCM *pFormat);
 };
 
 

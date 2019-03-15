@@ -23,7 +23,7 @@ void AudioRecorder::bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf
     }
     buffer = recycler->takeCache();
     if (buffer) {
-        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
+        (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer->ptr, getBufferByteSize());
     }
 }
 
@@ -73,21 +73,27 @@ AudioRecorder::~AudioRecorder() {
 }
 
 HwResult AudioRecorder::start() {
-    (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
-    (*bufferQueueItf)->Clear(bufferQueueItf);
-    bufferDequeue(bufferQueueItf);
-    SLresult result = (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_RECORDING);
-    if (SL_RESULT_SUCCESS != result) {
+    HwResult ret = recorder->stop();
+    if (Hw::SUCCESS != ret) {
+        return ret;
+    }
+    ret = recorder->clear();
+    if (Hw::SUCCESS != ret) {
+        return ret;
+    }
+    bufferDequeue(recorder->getQueue());
+    ret = recorder->start();
+    if (Hw::SUCCESS != ret) {
         LOGE("Recorder SetRecordState start failed!");
-        return Hw::FAILED;
+        return ret;
     }
     return Hw::SUCCESS;
 }
 
 void AudioRecorder::stop() {
-    if (recordItf) {
-        SLresult result = (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
-        if (SL_RESULT_SUCCESS != result) {
+    if (recorder) {
+        HwResult ret = recorder->stop();
+        if (Hw::SUCCESS != ret) {
             LOGE("Recorder SetRecordState stop failed!");
         }
     }
@@ -139,82 +145,22 @@ HwResult AudioRecorder::createEngine() {
 }
 
 HwResult AudioRecorder::createBufferQueueObject() {
-    SLDataFormat_PCM format_pcm = {SL_DATAFORMAT_PCM,
-                                   channels,
-                                   sampleRate * 1000,
-                                   this->format,
-                                   this->format,
-                                   getChannelMask(channels),
-                                   SL_BYTEORDER_LITTLEENDIAN};
-    // configure audio source
-    SLDataLocator_IODevice loc_dev = {SL_DATALOCATOR_IODEVICE,
-                                      SL_IODEVICE_AUDIOINPUT,
-                                      SL_DEFAULTDEVICEID_AUDIOINPUT, NULL};
-    SLDataSource audioSrc = {&loc_dev, NULL};
-
-    // configure audio sink
-    SLDataLocator_AndroidSimpleBufferQueue loc_bq = {
-            SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
-
-    SLDataSink audioSnk = {&loc_bq, &format_pcm};
-
-    // (requires the RECORD_AUDIO permission)
-    const SLInterfaceID id[2] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-                                 SL_IID_ANDROIDCONFIGURATION};
-    const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-    SLresult result = (*engine->getEngine())->CreateAudioRecorder(engine->getEngine(),
-                                                                  &recordObject,
-                                                                  &audioSrc, &audioSnk,
-                                                                  sizeof(id) / sizeof(id[0]),
-                                                                  id,
-                                                                  req);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("CreateAudioRecorder failed! ret=%d", result);
-        return Hw::FAILED;
+    recorder = new SLRecorder(engine);
+    HwResult ret = recorder->initialize(this);
+    if (Hw::FAILED == ret) {
+        return ret;
     }
-    // Configure the voice recognition preset which has no
-    // signal processing for lower latency.
-    SLAndroidConfigurationItf inputConfig;
-    result = (*recordObject)->GetInterface(recordObject, SL_IID_ANDROIDCONFIGURATION,
-                                           &inputConfig);
-    if (SL_RESULT_SUCCESS == result) {
-        SLuint32 presetValue = SL_ANDROID_RECORDING_PRESET_VOICE_RECOGNITION;
-        (*inputConfig)
-                ->SetConfiguration(inputConfig, SL_ANDROID_KEY_RECORDING_PRESET,
-                                   &presetValue, sizeof(SLuint32));
-    }
-    result = (*recordObject)->Realize(recordObject, SL_BOOLEAN_FALSE);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Recorder Realize failed!");
-        return Hw::FAILED;
-    }
-    result = (*recordObject)->GetInterface(recordObject, SL_IID_RECORD, &recordItf);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Recorder GetInterface failed!");
-        return Hw::FAILED;
-    }
-    result = (*recordObject)->GetInterface(recordObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
-                                           &bufferQueueItf);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Recorder GetInterface buffer queue failed!");
-        return Hw::FAILED;
-    }
-    result = (*bufferQueueItf)->RegisterCallback(bufferQueueItf,
-                                                 bufferDequeueCallback,
-                                                 this);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Player RegisterCallback failed!");
-        return Hw::FAILED;
+    ret = recorder->registerCallback(bufferDequeueCallback, this);
+    if (Hw::FAILED == ret) {
+        return ret;
     }
     return Hw::SUCCESS;
 }
 
 void AudioRecorder::destroyEngine() {
-    if (nullptr != recordObject) {
-        (*recordObject)->Destroy(recordObject);
-        recordObject = nullptr;
-        bufferQueueItf = nullptr;
-        recordItf = nullptr;
+    if (recorder) {
+        delete recorder;
+        recorder = nullptr;
     }
     if (ownEngine && engine) {
         delete engine;

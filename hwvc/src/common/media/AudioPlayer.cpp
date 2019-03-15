@@ -110,7 +110,7 @@ HwResult AudioPlayer::createBufferQueueAudioPlayer() {
                             sampleRate * 1000,
                             format,
                             format,
-                            getChannelMask(channels),
+                            getChannelMask(),
                             SL_BYTEORDER_LITTLEENDIAN};
     SLDataSource dataSource = {&queue, &pcm};
     SLDataLocator_OutputMix slDataLocator_outputMix = {SL_DATALOCATOR_OUTPUTMIX, mixObject};
