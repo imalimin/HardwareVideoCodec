@@ -14,6 +14,7 @@
 #include "EventPipeline.h"
 #include "SimpleLock.h"
 #include "SLEngine.h"
+#include "HwResult.h"
 
 class AudioRecorder : public SLAudioDevice {
 public:
@@ -24,7 +25,7 @@ public:
 
     virtual ~AudioRecorder();
 
-    virtual int start();
+    virtual HwResult start();
 
     virtual void stop();
 
@@ -50,11 +51,11 @@ private:
     ObjectBox *buffer = nullptr;
     FILE *pcmFile = nullptr;
 
-    int createEngine();
+    HwResult createEngine();
 
     void destroyEngine();
 
-    int createBufferQueueObject();
+    HwResult createBufferQueueObject();
 
     void initialize(SLEngine *engine, int channels, int sampleHz, int format, int minBufferSize);
 

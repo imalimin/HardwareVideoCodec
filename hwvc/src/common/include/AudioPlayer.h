@@ -14,6 +14,7 @@
 #include "EventPipeline.h"
 #include "SimpleLock.h"
 #include "SLEngine.h"
+#include "HwResult.h"
 
 using namespace std;
 
@@ -25,11 +26,11 @@ public:
 
     virtual ~AudioPlayer();
 
-    virtual int start();
+    virtual HwResult start();
 
     virtual void stop();
 
-    virtual int write(uint8_t *buffer, size_t size);
+    virtual HwResult write(uint8_t *buffer, size_t size);
 
     virtual void flush();
 
@@ -49,11 +50,11 @@ private:
     SLPlayItf playItf = nullptr;
     SLAndroidSimpleBufferQueueItf bufferQueueItf = nullptr;
 
-    int createEngine();
+    HwResult createEngine();
 
     void destroyEngine();
 
-    int createBufferQueueAudioPlayer();
+    HwResult createBufferQueueAudioPlayer();
 
     void initialize(SLEngine *engine, int channels, int sampleHz, int format, int minBufferSize);
 };

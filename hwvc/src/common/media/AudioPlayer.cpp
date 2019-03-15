@@ -42,8 +42,8 @@ void AudioPlayer::initialize(SLEngine *engine, int channels, int sampleHz, int f
     mixObject = nullptr;
     playObject = nullptr;
     playItf = nullptr;
-    int ret = this->createEngine();
-    if (!ret) {
+    HwResult ret = this->createEngine();
+    if (Hw::SUCCESS != ret) {
         LOGE("AudioPlayer create failed");
     }
 
@@ -54,14 +54,14 @@ AudioPlayer::~AudioPlayer() {
     stop();
 }
 
-int AudioPlayer::createEngine() {
+HwResult AudioPlayer::createEngine() {
     if (!engine) {
         ownEngine = true;
         engine = new SLEngine();
         if (!engine || !engine->valid()) {
             LOGE("AudioPlayer create failed");
             stop();
-            return 0;
+            return Hw::FAILED;
         }
     }
 
@@ -69,17 +69,17 @@ int AudioPlayer::createEngine() {
                                                               nullptr, nullptr);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateOutputMix failed!");
-        return 0;
+        return Hw::FAILED;
     }
     result = (*mixObject)->Realize(mixObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("OutputMix Realize failed!");
-        return 0;
+        return Hw::FAILED;
     }
     return createBufferQueueAudioPlayer();
 }
 
-int AudioPlayer::start() {
+HwResult AudioPlayer::start() {
     (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
     uint8_t *buffer = new uint8_t[minBufferSize];
     memset(buffer, 0, minBufferSize);
@@ -89,12 +89,12 @@ int AudioPlayer::start() {
     SLresult result = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Recorder SetRecordState start failed!");
-        return 0;
+        return Hw::FAILED;
     }
-    return 1;
+    return Hw::SUCCESS;
 }
 
-int AudioPlayer::createBufferQueueAudioPlayer() {
+HwResult AudioPlayer::createBufferQueueAudioPlayer() {
     SLDataLocator_AndroidSimpleBufferQueue queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
     SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM,
                             channels,
@@ -117,36 +117,36 @@ int AudioPlayer::createBufferQueueAudioPlayer() {
                                                                 req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioPlayer failed! ret=%d", result);
-        return 0;
+        return Hw::FAILED;
     }
     result = (*playObject)->Realize(playObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Player Realize failed!");
-        return 0;
+        return Hw::FAILED;
     }
     result = (*playObject)->GetInterface(playObject, SL_IID_PLAY, &playItf);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Player GetInterface failed!");
-        return 0;
+        return Hw::FAILED;
     }
     result = (*playObject)->GetInterface(playObject, SL_IID_BUFFERQUEUE, &bufferQueueItf);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Player GetInterface buffer queue failed!");
-        return 0;
+        return Hw::FAILED;
     }
     result = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Player SetPlayState stop failed!");
-        return 0;
+        return Hw::FAILED;
     }
     result = (*bufferQueueItf)->RegisterCallback(bufferQueueItf,
                                                  bufferQueueCallback,
                                                  this);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Player RegisterCallback failed!");
-        return 0;
+        return Hw::FAILED;
     }
-    return 1;
+    return Hw::SUCCESS;
 }
 
 void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
@@ -158,15 +158,15 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     recycler->recycle(buffer);
 }
 
-int AudioPlayer::write(uint8_t *buffer, size_t size) {
+HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
     ObjectBox *cache = recycler->takeCache();
     if (!cache) {
         LOGE("Cache invalid");
-        return 0;
+        return Hw::FAILED;
     }
     memcpy(cache->ptr, buffer, size);
     recycler->offer(cache);
-    return 1;
+    return Hw::SUCCESS;
 }
 
 void AudioPlayer::flush() {

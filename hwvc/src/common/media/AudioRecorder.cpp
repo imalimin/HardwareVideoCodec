@@ -53,8 +53,8 @@ void AudioRecorder::initialize(SLEngine *engine, int channels, int sampleHz, int
         memset(buf, 0, minBufferSize);
         return new ObjectBox(buf);
     });
-    int ret = this->createEngine();
-    if (!ret) {
+    HwResult ret = this->createEngine();
+    if (Hw::SUCCESS != ret) {
         LOGE("AudioRecorder start failed");
     }
 
@@ -65,16 +65,16 @@ AudioRecorder::~AudioRecorder() {
     stop();
 }
 
-int AudioRecorder::start() {
+HwResult AudioRecorder::start() {
     (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
     (*bufferQueueItf)->Clear(bufferQueueItf);
     bufferDequeue(bufferQueueItf);
     SLresult result = (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_RECORDING);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Recorder SetRecordState start failed!");
-        return 0;
+        return Hw::FAILED;
     }
-    return 1;
+    return Hw::SUCCESS;
 }
 
 void AudioRecorder::stop() {
@@ -117,20 +117,20 @@ void AudioRecorder::AudioRecorder::flush() {
 
 }
 
-int AudioRecorder::createEngine() {
+HwResult AudioRecorder::createEngine() {
     if (!engine) {
         ownEngine = true;
         engine = new SLEngine();
         if (!engine || !engine->valid()) {
             LOGE("AudioPlayer create failed");
             stop();
-            return 0;
+            return Hw::FAILED;
         }
     }
     return createBufferQueueObject();
 }
 
-int AudioRecorder::createBufferQueueObject() {
+HwResult AudioRecorder::createBufferQueueObject() {
     SLDataFormat_PCM format_pcm = {SL_DATAFORMAT_PCM,
                                    channels,
                                    sampleHz * 1000,
@@ -162,7 +162,7 @@ int AudioRecorder::createBufferQueueObject() {
                                                                   req);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("CreateAudioRecorder failed! ret=%d", result);
-        return 0;
+        return Hw::FAILED;
     }
     // Configure the voice recognition preset which has no
     // signal processing for lower latency.
@@ -178,27 +178,27 @@ int AudioRecorder::createBufferQueueObject() {
     result = (*recordObject)->Realize(recordObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Recorder Realize failed!");
-        return 0;
+        return Hw::FAILED;
     }
     result = (*recordObject)->GetInterface(recordObject, SL_IID_RECORD, &recordItf);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Recorder GetInterface failed!");
-        return 0;
+        return Hw::FAILED;
     }
     result = (*recordObject)->GetInterface(recordObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
                                            &bufferQueueItf);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Recorder GetInterface buffer queue failed!");
-        return 0;
+        return Hw::FAILED;
     }
     result = (*bufferQueueItf)->RegisterCallback(bufferQueueItf,
                                                  bufferDequeueCallback,
                                                  this);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Player RegisterCallback failed!");
-        return 0;
+        return Hw::FAILED;
     }
-    return 1;
+    return Hw::SUCCESS;
 }
 
 void AudioRecorder::destroyEngine() {
