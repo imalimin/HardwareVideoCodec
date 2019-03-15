@@ -7,6 +7,31 @@
 #include <assert.h>
 #include "../include/AudioDevice.h"
 
+AudioDevice::AudioDevice(uint16_t channels,
+                         uint32_t sampleRate,
+                         uint16_t format,
+                         uint32_t samplesPerBuffer) {
+    this->channels = channels;
+    this->sampleRate = sampleRate;
+    this->format = format;
+    this->samplesPerBuffer = samplesPerBuffer;
+}
+
+uint32_t AudioDevice::getBufferByteSize() {
+    uint32_t bufSize = samplesPerBuffer * channels * format;
+    bufSize = (bufSize + 7) >> 3;  // bits --> byte
+    return bufSize;
+}
+
+SLAudioDevice::SLAudioDevice(uint16_t channels,
+                             uint32_t sampleRate,
+                             uint16_t format,
+                             uint32_t samplesPerBuffer) : AudioDevice(channels,
+                                                                      sampleRate,
+                                                                      format,
+                                                                      samplesPerBuffer) {
+}
+
 SLuint32 SLAudioDevice::getChannelMask(int channels) {
     switch (channels) {
         case 1:

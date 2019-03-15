@@ -18,10 +18,16 @@
 
 class AudioRecorder : public SLAudioDevice {
 public:
-    AudioRecorder(unsigned int channels, unsigned int sampleHz, int format, int minBufferSize);
+    AudioRecorder(uint16_t channels,
+                  uint32_t sampleRate,
+                  uint16_t format,
+                  uint32_t samplesPerBuffer);
 
-    AudioRecorder(SLEngine *engine, unsigned int channels, unsigned int sampleHz, int format,
-                  int minBufferSize);
+    AudioRecorder(SLEngine *engine,
+                  uint16_t channels,
+                  uint32_t sampleRate,
+                  uint16_t format,
+                  uint32_t samplesPerBuffer);
 
     virtual ~AudioRecorder();
 
@@ -36,10 +42,6 @@ public:
     void bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf);
 
 private:
-    unsigned int channels = 0;
-    unsigned int sampleHz = 0;
-    SLuint32 format = SL_PCMSAMPLEFORMAT_FIXED_16;
-    int minBufferSize = 0;
     RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
 
     SLEngine *engine = nullptr;
@@ -57,7 +59,7 @@ private:
 
     HwResult createBufferQueueObject();
 
-    void initialize(SLEngine *engine, int channels, int sampleHz, int format, int minBufferSize);
+    void initialize(SLEngine *engine);
 
 };
 

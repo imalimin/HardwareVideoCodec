@@ -11,12 +11,24 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
-class AudioDevice : Object {
+class AudioDevice : public Object {
+public:
+    AudioDevice(uint16_t channels, uint32_t sampleRate, uint16_t format, uint32_t samplesPerBuffer);
 
+    uint32_t getBufferByteSize();
+
+protected:
+    uint16_t channels = 0;
+    uint32_t sampleRate = 0;
+    uint16_t format = SL_PCMSAMPLEFORMAT_FIXED_16;
+    uint32_t samplesPerBuffer = 0;
 };
 
-class SLAudioDevice : AudioDevice {
+class SLAudioDevice : public AudioDevice {
 public:
+    SLAudioDevice(uint16_t channels, uint32_t sampleRate, uint16_t format,
+                  uint32_t samplesPerBuffer);
+
     SLuint32 getChannelMask(int channels);
 
     void getSampleFormat(SLDataFormat_PCM *pFormat,

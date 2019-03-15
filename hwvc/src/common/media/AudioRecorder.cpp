@@ -16,41 +16,48 @@ void AudioRecorder::bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf
     LOGE("AudioRecorder...");
     if (buffer) {
         if (pcmFile) {
-            fwrite(buffer->ptr, 1, minBufferSize, pcmFile);
+            fwrite(buffer->ptr, 1, getBufferByteSize(), pcmFile);
         }
         recycler->offer(buffer);
         buffer = nullptr;
     }
     buffer = recycler->takeCache();
     if (buffer) {
-        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
+        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
     }
 }
 
-AudioRecorder::AudioRecorder(unsigned int channels, unsigned int sampleHz, int format,
-                             int minBufferSize) {
-    initialize(nullptr, channels, sampleHz, format, minBufferSize);
+AudioRecorder::AudioRecorder(uint16_t channels,
+                             uint32_t sampleRate,
+                             uint16_t format,
+                             uint32_t samplesPerBuffer) : SLAudioDevice(channels,
+                                                                        sampleRate,
+                                                                        format,
+                                                                        samplesPerBuffer) {
+    initialize(nullptr);
 }
 
-AudioRecorder::AudioRecorder(SLEngine *engine, unsigned int channels, unsigned int sampleHz,
-                             int format, int minBufferSize) {
-    initialize(engine, channels, sampleHz, format, minBufferSize);
+AudioRecorder::AudioRecorder(SLEngine *engine,
+                             uint16_t channels,
+                             uint32_t sampleRate,
+                             uint16_t format,
+                             uint32_t samplesPerBuffer) : SLAudioDevice(channels,
+                                                                        sampleRate,
+                                                                        format,
+                                                                        samplesPerBuffer) {
+    initialize(engine);
 }
 
-void AudioRecorder::initialize(SLEngine *engine, int channels, int sampleHz, int format,
-                               int minBufferSize) {
+void AudioRecorder::initialize(SLEngine *engine) {
     pcmFile = fopen("/sdcard/pcm_tmp.pcm", "w");
     this->engine = engine;
-    this->channels = channels;
-    this->sampleHz = sampleHz;
-    this->format = format;
-    this->minBufferSize = minBufferSize;
     LOGI("Create AudioRecorder, channels=%d, sampleHz=%d",
          this->channels,
-         this->sampleHz);
-    this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [minBufferSize] {
-        uint8_t *buf = new uint8_t[minBufferSize];
-        memset(buf, 0, minBufferSize);
+         this->sampleRate);
+    uint32_t bufSize = getBufferByteSize();
+    this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [bufSize] {
+        uint8_t *buf = new uint8_t[bufSize];
+        memset(buf, 0, bufSize);
         return new ObjectBox(buf);
     });
     HwResult ret = this->createEngine();
@@ -108,9 +115,10 @@ size_t AudioRecorder::read(uint8_t *buffer) {
         LOGE("Cache invalid");
         return 0;
     }
-    memcpy(cache->ptr, buffer, minBufferSize);
+    uint32_t bufSize = getBufferByteSize();
+    memcpy(cache->ptr, buffer, bufSize);
     recycler->recycle(cache);
-    return minBufferSize;
+    return bufSize;
 }
 
 void AudioRecorder::AudioRecorder::flush() {
@@ -133,7 +141,7 @@ HwResult AudioRecorder::createEngine() {
 HwResult AudioRecorder::createBufferQueueObject() {
     SLDataFormat_PCM format_pcm = {SL_DATAFORMAT_PCM,
                                    channels,
-                                   sampleHz * 1000,
+                                   sampleRate * 1000,
                                    this->format,
                                    this->format,
                                    getChannelMask(channels),

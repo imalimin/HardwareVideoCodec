@@ -13,32 +13,40 @@ void bufferQueueCallback(SLAndroidSimpleBufferQueueItf slBufferQueueItf, void *c
     player->bufferEnqueue(slBufferQueueItf);
 }
 
-AudioPlayer::AudioPlayer(int channels, int sampleHz, int format, int minBufferSize) {
-    initialize(nullptr, channels, sampleHz, format, minBufferSize);
+AudioPlayer::AudioPlayer(uint16_t channels,
+                         uint32_t sampleRate,
+                         uint16_t format,
+                         uint32_t samplesPerBuffer) : SLAudioDevice(channels,
+                                                                    sampleRate,
+                                                                    format,
+                                                                    samplesPerBuffer) {
+    initialize(nullptr);
 }
 
-AudioPlayer::AudioPlayer(SLEngine *engine, int channels, int sampleHz, int format,
-                         int minBufferSize) {
-    initialize(engine, channels, sampleHz, format, minBufferSize);
+AudioPlayer::AudioPlayer(SLEngine *engine,
+                         uint16_t channels,
+                         uint32_t sampleRate,
+                         uint16_t format,
+                         uint32_t samplesPerBuffer) : SLAudioDevice(channels,
+                                                                    sampleRate,
+                                                                    format,
+                                                                    samplesPerBuffer) {
+    initialize(engine);
 }
 
-void AudioPlayer::initialize(SLEngine *engine, int channels, int sampleHz, int format,
-                             int minBufferSize) {
+void AudioPlayer::initialize(SLEngine *engine) {
     this->lock = new SimpleLock();
     this->engine = engine;
-    this->channels = channels;
-    this->sampleHz = sampleHz;
-    this->format = format;
-    this->minBufferSize = minBufferSize;
-    this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [minBufferSize] {
-        uint8_t *buf = new uint8_t[minBufferSize];
-        memset(buf, 0, minBufferSize);
+    uint32_t bufSize = getBufferByteSize();
+    this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [bufSize] {
+        uint8_t *buf = new uint8_t[bufSize];
+        memset(buf, 0, bufSize);
         return new ObjectBox(buf);
     });
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d",
          this->channels,
-         this->sampleHz,
-         this->minBufferSize);
+         this->sampleRate,
+         this->samplesPerBuffer);
     mixObject = nullptr;
     playObject = nullptr;
     playItf = nullptr;
@@ -81,9 +89,10 @@ HwResult AudioPlayer::createEngine() {
 
 HwResult AudioPlayer::start() {
     (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
-    uint8_t *buffer = new uint8_t[minBufferSize];
-    memset(buffer, 0, minBufferSize);
-    write(buffer, minBufferSize);
+    uint32_t bufSize = getBufferByteSize();
+    uint8_t *buffer = new uint8_t[bufSize];
+    memset(buffer, 0, bufSize);
+    write(buffer, bufSize);
     delete[]buffer;
     bufferEnqueue(bufferQueueItf);
     SLresult result = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
@@ -98,7 +107,7 @@ HwResult AudioPlayer::createBufferQueueAudioPlayer() {
     SLDataLocator_AndroidSimpleBufferQueue queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
     SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM,
                             channels,
-                            sampleHz * 1000,
+                            sampleRate * 1000,
                             format,
                             format,
                             getChannelMask(channels),
@@ -153,7 +162,7 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     LOGE("AudioPlayer...");
     auto *buffer = recycler->take();
     if (buffer) {
-        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, minBufferSize);
+        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
     }
     recycler->recycle(buffer);
 }
