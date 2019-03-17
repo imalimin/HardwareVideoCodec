@@ -11,7 +11,7 @@ Echoer::Echoer(int channels, int sampleHz, int format, int minBufferSize) {
     this->buffer = new uint8_t[minBufferSize];
     this->engine = new SLEngine();
     recorder = new AudioRecorder(engine, channels, sampleHz, format, minBufferSize);
-//    player = new AudioPlayer(engine, channels, sampleHz, format, minBufferSize);
+    player = new AudioPlayer(engine, channels, sampleHz, format, minBufferSize);
     this->pipeline = new EventPipeline("Echoer");
 }
 

@@ -104,23 +104,34 @@ HwResult AudioPlayer::start() {
 }
 
 HwResult AudioPlayer::createBufferQueueAudioPlayer() {
-    SLDataLocator_AndroidSimpleBufferQueue queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
-    SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM,
-                            channels,
-                            sampleRate * 1000,
-                            format,
-                            format,
-                            getChannelMask(),
-                            SL_BYTEORDER_LITTLEENDIAN};
-    SLDataSource dataSource = {&queue, &pcm};
-    SLDataLocator_OutputMix slDataLocator_outputMix = {SL_DATALOCATOR_OUTPUTMIX, mixObject};
-    SLDataSink slDataSink = {&slDataLocator_outputMix, NULL};
-    const SLInterfaceID ids[2] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME};
-    const SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+    // configure audio source
+    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
+            SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
+
+    SLAndroidDataFormat_PCM_EX format_pcm = {SL_DATAFORMAT_PCM,
+                                             channels,
+                                             sampleRate * 1000,
+                                             format,
+                                             format,
+                                             getChannelMask(),
+                                             SL_BYTEORDER_LITTLEENDIAN};
+    SLDataSource audioSrc = {&loc_bufq, &format_pcm};
+
+    // configure audio sink
+    SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX,
+                                          mixObject};
+    SLDataSink audioSnk = {&loc_outmix, NULL};
+    /*
+     * create fast path audio player: SL_IID_BUFFERQUEUE and SL_IID_VOLUME
+     * and other non-signal processing interfaces are ok.
+     */
+    SLInterfaceID ids[2] = {SL_IID_BUFFERQUEUE, SL_IID_VOLUME};
+    SLboolean req[2] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
+
     SLresult result = (*engine->getEngine())->CreateAudioPlayer(engine->getEngine(),
                                                                 &playObject,
-                                                                &dataSource,
-                                                                &slDataSink,
+                                                                &audioSrc,
+                                                                &audioSnk,
                                                                 sizeof(ids) / sizeof(ids[0]),
                                                                 ids,
                                                                 req);

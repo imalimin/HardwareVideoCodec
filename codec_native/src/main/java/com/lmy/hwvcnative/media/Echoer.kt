@@ -4,7 +4,7 @@ import com.lmy.hwvcnative.CPPObject
 
 class Echoer : CPPObject() {
     init {
-        handler = create(1, 48000, 0x0010, 384)
+        handler = create(1, 48000, 0x0010, 192)
     }
 
     fun start() {

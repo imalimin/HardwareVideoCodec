@@ -16,7 +16,7 @@ SLRecorder::~SLRecorder() {
 }
 
 HwResult SLRecorder::initialize(SLAudioDevice *device) {
-    SLDataFormat_PCM format_pcm = {SL_DATAFORMAT_PCM,
+    SLAndroidDataFormat_PCM_EX format_pcm = {SL_DATAFORMAT_PCM,
                                    device->getChannels(),
                                    device->getSampleRate() * 1000,
                                    device->getFormat(),
@@ -59,6 +59,10 @@ HwResult SLRecorder::initialize(SLAudioDevice *device) {
         (*inputConfig)
                 ->SetConfiguration(inputConfig, SL_ANDROID_KEY_RECORDING_PRESET,
                                    &presetValue, sizeof(SLuint32));
+//        SLuint32 mode = SL_ANDROID_PERFORMANCE_NONE;
+//        (*inputConfig)
+//                ->SetConfiguration(inputConfig, SL_ANDROID_KEY_PERFORMANCE_MODE,
+//                                   &presetValue, sizeof(SLuint32));
     }
     result = (*recordObject)->Realize(recordObject, SL_BOOLEAN_FALSE);
     if (SL_RESULT_SUCCESS != result) {
