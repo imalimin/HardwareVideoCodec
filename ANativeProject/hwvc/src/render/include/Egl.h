@@ -41,6 +41,7 @@ public:
     int height();
 
 private:
+    ANativeWindow *win = nullptr;
     EGLDisplay eglDisplay = EGL_NO_DISPLAY;
     EGLConfig eglConfig = nullptr;
     EGLContext eglContext = EGL_NO_CONTEXT;

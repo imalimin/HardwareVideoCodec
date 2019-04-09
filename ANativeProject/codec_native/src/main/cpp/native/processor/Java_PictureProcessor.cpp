@@ -50,11 +50,8 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_releas
         (JNIEnv *env, jobject thiz, jlong handler) {
     if (handler) {
         PictureProcessor *p = getHandler(handler);
-        if (p->win) {
-            ANativeWindow_release(p->win);
-            p->win = nullptr;
-        }
         delete p;
+        LOGI("%s", __FUNCTION__);
     }
 }
 

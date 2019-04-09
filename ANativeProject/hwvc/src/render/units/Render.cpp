@@ -50,10 +50,12 @@ void Render::checkFilter(int width, int height) {
 }
 
 void Render::renderFilter(GLuint texture) {
+    LOGI("%s", __func__);
     filter->draw(texture);
 }
 
 void Render::renderScreen() {
+    LOGI("%s", __func__);
     Message *msg = new Message(EVENT_SCREEN_DRAW, nullptr);
     msg->obj = new ObjectBox(new Size(filter->getFrameBuffer()->width(),
                                       filter->getFrameBuffer()->height()));
@@ -62,10 +64,12 @@ void Render::renderScreen() {
 }
 
 bool Render::eventPrepare(Message *msg) {
+    LOGI("%s", __func__);
     return true;
 }
 
 bool Render::eventFilter(Message *msg) {
+    LOGI("%s", __func__);
     Size *size = static_cast<Size *>(msg->tyrUnBox());
     GLuint tex = msg->arg1;
     post([this, size, tex] {
@@ -79,6 +83,7 @@ bool Render::eventFilter(Message *msg) {
 }
 
 bool Render::eventSetFilter(Message *msg) {
+    LOGI("%s", __func__);
     Filter *newFilter = static_cast<Filter *>(msg->tyrUnBox());
     post([this, newFilter] {
         if (filter) {

@@ -6,6 +6,7 @@
  */
 #include "../include/Egl.h"
 #include "log.h"
+#include <android/native_window_jni.h>
 
 //eglGetProcAddress( "eglPresentationTimeANDROID")
 Egl::Egl() {
@@ -40,9 +41,15 @@ Egl::~Egl() {
     eglContext = EGL_NO_CONTEXT;
     eglSurface = EGL_NO_SURFACE;
     eglDisplay = EGL_NO_DISPLAY;
+    if (this->win) {
+        ANativeWindow_release(this->win);
+        this->win = nullptr;
+    }
+    LOGI("%s", __func__);
 }
 
 void Egl::init(Egl *context, ANativeWindow *win) {
+    this->win = win;
     this->eglDisplay = createDisplay(EGL_DEFAULT_DISPLAY);
     if (!this->eglDisplay)
         return;
@@ -56,8 +63,8 @@ void Egl::init(Egl *context, ANativeWindow *win) {
     }
     if (!this->eglContext)
         return;
-    if (win) {
-        this->eglSurface = createWindowSurface(win);
+    if (this->win) {
+        this->eglSurface = createWindowSurface(this->win);
     } else {
         this->eglSurface = createPbufferSurface();
     }

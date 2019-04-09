@@ -41,6 +41,7 @@ bool Screen::eventRelease(Message *msg) {
 }
 
 bool Screen::eventPrepare(Message *msg) {
+    LOGI("%s", __func__);
     width = msg->arg1;
     height = msg->arg2;
     NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
@@ -51,6 +52,7 @@ bool Screen::eventPrepare(Message *msg) {
 }
 
 bool Screen::eventDraw(Message *msg) {
+    LOGI("%s", __func__);
     Size *size = static_cast<Size *>(msg->tyrUnBox());
     GLuint tex = msg->arg1;
     post([this, size, tex] {
@@ -72,9 +74,11 @@ void Screen::initWindow(NativeWindow *nw) {
             egl = new Egl(nw->win);
             nw->egl = egl;
         }
-        //这里不知道为什么会阻塞
+        LOGI("%s makeCurrent a", __FUNCTION__);
+        //TODO 这里不知道为什么会阻塞
         egl->makeCurrent();
-        //这里不知道为什么会阻塞
+        LOGI("%s makeCurrent b", __FUNCTION__);
+        //TODO 这里不知道为什么会阻塞
         drawer = new NormalDrawer();
         drawer->setRotation(ROTATION_VERTICAL);
         LOGI("Screen::initWindow %d x %d", egl->width(), egl->height());
@@ -82,14 +86,15 @@ void Screen::initWindow(NativeWindow *nw) {
 }
 
 void Screen::draw(GLuint texture) {
+    LOGI("%s", __func__);
 //    string glslVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 //    LOGE("version: %s", glslVersion.c_str());
     glViewport(0, 0, egl->width(), egl->height());
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
-    //这里不知道为什么会阻塞
+    //TODO 这里不知道为什么会阻塞
     drawer->draw(texture);
-    //这里不知道为什么会阻塞
+    //TODO 这里不知道为什么会阻塞
     egl->swapBuffers();
 }
 
