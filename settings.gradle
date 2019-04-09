@@ -1,1 +1,5 @@
-include ':app', ':codec', ':rtmp', ':codec_native', ':samplenative'
+include ':app'
+include ':codec'
+include ':rtmp'
+include ':ANativeProject:samplenative'
+include ':ANativeProject:codec_native'
