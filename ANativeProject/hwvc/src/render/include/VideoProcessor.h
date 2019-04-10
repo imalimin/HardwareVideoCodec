@@ -11,6 +11,7 @@
 #include "UnitPipeline.h"
 #include "Screen.h"
 #include "Filter.h"
+#include "HwWindow.h"
 
 class VideoProcessor : public Object {
 public:
@@ -20,7 +21,7 @@ public:
 
     void setSource(char *path);
 
-    void prepare(ANativeWindow *win, int width, int height);
+    void prepare(HwWindow *win, int width, int height);
 
     void start();
 

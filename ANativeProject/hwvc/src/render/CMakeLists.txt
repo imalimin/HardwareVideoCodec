@@ -22,15 +22,16 @@ file(
         GLOB
         SOURCES
         ${PROJECT_SOURCE_DIR}/*cpp
+        ${PROJECT_SOURCE_DIR}/entity/*cpp
         ${PROJECT_SOURCE_DIR}/filter/*cpp
         ${PROJECT_SOURCE_DIR}/drawer/*cpp
         ${PROJECT_SOURCE_DIR}/texture/*cpp
         ${PROJECT_SOURCE_DIR}/egl/*cpp
         ${PROJECT_SOURCE_DIR}/units/*cpp
         ${PROJECT_SOURCE_DIR}/processor/*cpp
-        ${PROJECT_SOURCE_DIR}/entity/*cpp
         ${PROJECT_SOURCE_DIR}/tinyxml/*cpp
 )
+message(STATUS "${SOURCES}")
 add_library( # Sets the name of the library.
         hwvc_render
 

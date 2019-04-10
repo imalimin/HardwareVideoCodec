@@ -8,6 +8,7 @@
 #include <log.h>
 #include "PictureProcessor.h"
 #include <android/native_window_jni.h>
+#include "../include/HwAndroidWindow.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,12 +26,7 @@ JNIEXPORT jlong JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_creat
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_PictureProcessor_prepare
         (JNIEnv *env, jobject thiz, jlong handler, jobject surface, jint width, jint height) {
     if (handler) {
-        ANativeWindow *win = ANativeWindow_fromSurface(env, surface);
-        if (!win) {
-            LOGE("ANativeWindow_fromSurface failed");
-            return;
-        }
-        getHandler(handler)->prepare(win, width, height);
+        getHandler(handler)->prepare(new HwAndroidWindow(env, surface), width, height);
     }
 }
 

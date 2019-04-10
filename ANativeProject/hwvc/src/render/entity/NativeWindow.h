@@ -7,14 +7,15 @@
 
 #include "Object.h"
 #include "../include/Egl.h"
+#include "../include/HwWindow.h"
 
 class NativeWindow : public Object {
 public:
-    ANativeWindow *win;
+    HwWindow *win;
 
     Egl *egl = nullptr;
 
-    NativeWindow(ANativeWindow *win, Egl *egl);
+    NativeWindow(HwWindow *win, Egl *egl);
 
     virtual ~NativeWindow();
 

@@ -24,8 +24,7 @@ PictureProcessor::~PictureProcessor() {
     }
 }
 
-void PictureProcessor::prepare(ANativeWindow *win, int width, int height) {
-    this->win = win;
+void PictureProcessor::prepare(HwWindow *win, int width, int height) {
     if (pipeline) {
         Message *msg = new Message(EVENT_COMMON_PREPARE, nullptr);
         msg->obj = new ObjectBox(new NativeWindow(win, nullptr));

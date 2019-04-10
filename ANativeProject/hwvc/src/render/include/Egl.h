@@ -9,6 +9,7 @@
 
 #include <EGL/egl.h>
 #include "Object.h"
+#include "HwWindow.h"
 
 const int CONFIG_DEFAULT[] = {EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
                               EGL_RED_SIZE, 8,
@@ -26,9 +27,9 @@ public:
 
     Egl(Egl *context);
 
-    Egl(ANativeWindow *win);
+    Egl(HwWindow *win);
 
-    Egl(Egl *context, ANativeWindow *win);
+    Egl(Egl *context, HwWindow *win);
 
     virtual ~Egl();
 
@@ -41,13 +42,13 @@ public:
     int height();
 
 private:
-    ANativeWindow *win = nullptr;
+    HwWindow *win = nullptr;
     EGLDisplay eglDisplay = EGL_NO_DISPLAY;
     EGLConfig eglConfig = nullptr;
     EGLContext eglContext = EGL_NO_CONTEXT;
     EGLSurface eglSurface = EGL_NO_SURFACE;
 
-    void init(Egl *context, ANativeWindow *win);
+    void init(Egl *context, HwWindow *win);
 
     EGLDisplay createDisplay(EGLNativeDisplayType display_id);
 
@@ -57,7 +58,7 @@ private:
 
     EGLSurface createPbufferSurface();
 
-    EGLSurface createWindowSurface(ANativeWindow *win);
+    EGLSurface createWindowSurface(HwWindow *win);
 
     EGLint getParams(EGLint attribute);
 };

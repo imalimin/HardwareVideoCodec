@@ -9,16 +9,15 @@
 #include "UnitPipeline.h"
 #include "Screen.h"
 #include "Filter.h"
+#include "HwWindow.h"
 
 class PictureProcessor : public Object {
 public:
-    ANativeWindow *win;
-
     PictureProcessor();
 
     virtual ~PictureProcessor();
 
-    void prepare(ANativeWindow *win, int width, int height);
+    void prepare(HwWindow *win, int width, int height);
 
     void show(char *file);
 

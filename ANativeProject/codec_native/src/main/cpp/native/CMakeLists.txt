@@ -9,11 +9,12 @@ include_directories(
 file(
         GLOB
         SOURCES
-        ${PROJECT_SOURCE_DIR}/*cpp
-        ${PROJECT_SOURCE_DIR}/filter/*cpp
-        ${PROJECT_SOURCE_DIR}/processor/*cpp
-        ${PROJECT_SOURCE_DIR}/utils/*cpp
-        ${PROJECT_SOURCE_DIR}/media/*cpp
+        ${PROJECT_SOURCE_DIR}/*.cpp
+        ${PROJECT_SOURCE_DIR}/filter/*.cpp
+        ${PROJECT_SOURCE_DIR}/processor/*.cpp
+        ${PROJECT_SOURCE_DIR}/utils/*.cpp
+        ${PROJECT_SOURCE_DIR}/media/*.cpp
+        ${PROJECT_SOURCE_DIR}/entity/*.cpp
 )
 add_library( # Sets the name of the library.
         hwvc_native

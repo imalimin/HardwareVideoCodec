@@ -4,7 +4,7 @@
 
 #include "NativeWindow.h"
 
-NativeWindow::NativeWindow(ANativeWindow *win, Egl *egl) {
+NativeWindow::NativeWindow(HwWindow *win, Egl *egl) {
     this->win = win;
     this->egl = egl;
 }

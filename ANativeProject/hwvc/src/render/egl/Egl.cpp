@@ -17,11 +17,11 @@ Egl::Egl(Egl *context) {
     init(context, nullptr);
 }
 
-Egl::Egl(ANativeWindow *win) {
+Egl::Egl(HwWindow *win) {
     init(nullptr, win);
 }
 
-Egl::Egl(Egl *context, ANativeWindow *win) {
+Egl::Egl(Egl *context, HwWindow *win) {
     init(context, win);
 }
 
@@ -42,13 +42,13 @@ Egl::~Egl() {
     eglSurface = EGL_NO_SURFACE;
     eglDisplay = EGL_NO_DISPLAY;
     if (this->win) {
-        ANativeWindow_release(this->win);
+        delete this->win;
         this->win = nullptr;
     }
     LOGI("%s", __func__);
 }
 
-void Egl::init(Egl *context, ANativeWindow *win) {
+void Egl::init(Egl *context, HwWindow *win) {
     this->win = win;
     this->eglDisplay = createDisplay(EGL_DEFAULT_DISPLAY);
     if (!this->eglDisplay)
@@ -125,13 +125,13 @@ EGLSurface Egl::createPbufferSurface() {
     return eglSurface;
 }
 
-EGLSurface Egl::createWindowSurface(ANativeWindow *win) {
+EGLSurface Egl::createWindowSurface(HwWindow *win) {
     int attribList[] = {EGL_NONE};
 //    EGLint values;
 //    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
     EGLSurface eglSurface = eglCreateWindowSurface(eglDisplay,
                                                    eglConfig, // 选好的可用EGLConfig
-                                                   win, // 指定原生窗口
+                                                   win->getANativeWindow(), // 指定原生窗口
                                                    attribList); // 指定窗口属性列表，可以为null，一般指定渲染所用的缓冲区使用但缓冲或者后台缓冲，默认为后者。
     if (nullptr == eglSurface || EGL_NO_SURFACE == eglSurface) {
         LOGE("eglCreateWindowSurface failed: %d", eglGetError());
