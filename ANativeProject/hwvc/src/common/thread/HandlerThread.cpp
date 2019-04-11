@@ -30,9 +30,11 @@ void HandlerThread::run() {
             break;
         }
     }
+    LOGI("HandlerThread(%s) quit", this->name.c_str());
 }
 
 HandlerThread::HandlerThread(string name) {
+    this->name = name;
     pthread_mutex_init(&mutex, nullptr);
     queue = new MessageQueue();
     mThread = new thread(&HandlerThread::run, this);

@@ -26,6 +26,7 @@ public:
     void quitSafely();
 
 private:
+    string name;
     std::thread *mThread = nullptr;
     pthread_mutex_t mutex;
     MessageQueue *queue = nullptr;
