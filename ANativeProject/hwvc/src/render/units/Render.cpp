@@ -26,7 +26,6 @@ Render::Render(HandlerThread *handlerThread) : Unit(handlerThread) {
 }
 
 Render::~Render() {
-    LOGI("Render::~Render");
 }
 
 bool Render::eventRelease(Message *msg) {
@@ -34,6 +33,7 @@ bool Render::eventRelease(Message *msg) {
     post([this] {
         if (filter) {
             delete filter;
+            LOGI("Render::eventRelease filter");
             filter = nullptr;
         }
     });

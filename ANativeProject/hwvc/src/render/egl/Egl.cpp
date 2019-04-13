@@ -30,10 +30,10 @@ Egl::~Egl() {
         if (!eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
             LOGE("~Egl makeCurrent failed: %d", eglGetError());
         }
-        if (eglContext != EGL_NO_CONTEXT){
+        if (eglContext != EGL_NO_CONTEXT) {
             eglDestroyContext(eglDisplay, eglContext);
         }
-        if (eglSurface != EGL_NO_SURFACE){
+        if (eglSurface != EGL_NO_SURFACE) {
             eglDestroySurface(eglDisplay, eglSurface);
         }
         eglTerminate(eglDisplay);
@@ -51,18 +51,24 @@ Egl::~Egl() {
 void Egl::init(Egl *context, HwWindow *win) {
     this->win = win;
     this->eglDisplay = createDisplay(EGL_DEFAULT_DISPLAY);
-    if (!this->eglDisplay)
+    if (!this->eglDisplay) {
+        LOGE("$s failed", __func__);
         return;
+    }
     this->eglConfig = createConfig(CONFIG_DEFAULT);
-    if (!this->eglConfig)
+    if (!this->eglConfig) {
+        LOGE("$s failed", __func__);
         return;
+    }
     if (context) {
         this->eglContext = createContext(context->eglContext);
     } else {
         this->eglContext = createContext(EGL_NO_CONTEXT);
     }
-    if (!this->eglContext)
+    if (!this->eglContext) {
+        LOGE("$s failed", __func__);
         return;
+    }
     if (this->win) {
         this->eglSurface = createWindowSurface(this->win);
     } else {

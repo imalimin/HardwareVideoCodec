@@ -9,7 +9,7 @@
 #include "Size.h"
 
 Image::Image() {
-    name = __func__;
+    name = __FUNCTION__;
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Image::eventPrepare));
     registerEvent(EVENT_IMAGE_SHOW, reinterpret_cast<EventFunc>(&Image::eventShow));
     registerEvent(EVENT_COMMON_INVALIDATE, reinterpret_cast<EventFunc>(&Image::eventInvalidate));
@@ -18,7 +18,6 @@ Image::Image() {
 }
 
 Image::~Image() {
-    LOGI("Image::~Image");
 }
 
 bool Image::eventRelease(Message *msg) {

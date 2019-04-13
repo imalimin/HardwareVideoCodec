@@ -19,7 +19,6 @@ Screen::Screen(HandlerThread *handlerThread) : Unit(handlerThread) {
 }
 
 Screen::~Screen() {
-    LOGI("Screen::~Screen");
 }
 
 bool Screen::eventRelease(Message *msg) {
@@ -56,7 +55,9 @@ bool Screen::eventDraw(Message *msg) {
     Size *size = static_cast<Size *>(msg->tyrUnBox());
     GLuint tex = msg->arg1;
     post([this, size, tex] {
+        LOGI("eventDraw makeCurrent a");
         egl->makeCurrent();
+        LOGI("eventDraw makeCurrent b");
         setScaleType(size->width, size->height);
         draw(tex);
         delete size;

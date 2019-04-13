@@ -32,7 +32,7 @@ Unit::Unit(HandlerThread *handlerThread) {
 }
 
 Unit::~Unit() {
-    LOGI("~Unit");
+    LOGI("~Unit(%s)", name.c_str());
     if (eventMap.empty()) return;
     for (auto itr = eventMap.rbegin(); itr != eventMap.rend(); itr++) {
 //        delete itr->second;

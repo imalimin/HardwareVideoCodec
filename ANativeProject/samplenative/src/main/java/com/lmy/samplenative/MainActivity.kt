@@ -23,19 +23,21 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
         }
         surfaceView.keepScreenOn = true
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceChanged(holder: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
+            override fun surfaceChanged(holder: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
+                Log.i("HWVC", "surfaceChanged: $p1, $p2, $p3 | ${surfaceView.width}, ${surfaceView.height}")
+                holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
+                processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
+                processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
             }
 
             override fun surfaceDestroyed(p0: SurfaceHolder?) {
                 processor?.release()
                 processor = null
-                Log.i("00000", "surfaceDestroyed")
+                Log.i("HWVC", "surfaceDestroyed")
             }
 
             override fun surfaceCreated(holder: SurfaceHolder) {
-                holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
-                processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
-                processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
+                Log.i("HWVC", "surfaceCreated")
             }
         })
 //        surfaceView.surfaceTextureListener = this
