@@ -11,15 +11,24 @@
 #include "Object.h"
 #include "HwWindow.h"
 
-const int CONFIG_DEFAULT[] = {EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-                              EGL_RED_SIZE, 8,
-                              EGL_GREEN_SIZE, 8,
-                              EGL_BLUE_SIZE, 8,
-                              EGL_ALPHA_SIZE, 8,
-                              EGL_DEPTH_SIZE, 0,
-                              EGL_STENCIL_SIZE, 0,
-                              EGL_SAMPLES, 4,
-                              EGL_NONE};
+const int CONFIG_WIN[] = {EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+                          EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+                          EGL_RED_SIZE, 8,
+                          EGL_GREEN_SIZE, 8,
+                          EGL_BLUE_SIZE, 8,
+                          EGL_ALPHA_SIZE, 8,
+                          EGL_DEPTH_SIZE, 0,
+                          EGL_STENCIL_SIZE, 0,
+                          EGL_NONE};
+const int CONFIG_BUFFER[] = {EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+                             EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+                             EGL_RED_SIZE, 8,
+                             EGL_GREEN_SIZE, 8,
+                             EGL_BLUE_SIZE, 8,
+                             EGL_ALPHA_SIZE, 8,
+                             EGL_DEPTH_SIZE, 0,
+                             EGL_STENCIL_SIZE, 0,
+                             EGL_NONE};
 
 class Egl : public Object {
 public:
@@ -61,6 +70,8 @@ private:
     EGLSurface createWindowSurface(HwWindow *win);
 
     EGLint getParams(EGLint attribute);
+
+    bool checkError();
 };
 
 
