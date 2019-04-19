@@ -5,6 +5,7 @@
 #include "../include/Screen.h"
 #include "../include/NormalDrawer.h"
 #include "Size.h"
+#include "Logcat.h"
 
 Screen::Screen() {
     name = __FUNCTION__;
@@ -22,7 +23,7 @@ Screen::~Screen() {
 }
 
 bool Screen::eventRelease(Message *msg) {
-    LOGI("Screen::eventRelease");
+    Logcat::i("HWVC", "Screen::eventRelease");
     post([this] {
         if (egl) {
             egl->makeCurrent();
@@ -40,7 +41,7 @@ bool Screen::eventRelease(Message *msg) {
 }
 
 bool Screen::eventPrepare(Message *msg) {
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "%s", __func__);
     width = msg->arg1;
     height = msg->arg2;
     NativeWindow *nw = static_cast<NativeWindow *>(msg->tyrUnBox());
@@ -51,13 +52,13 @@ bool Screen::eventPrepare(Message *msg) {
 }
 
 bool Screen::eventDraw(Message *msg) {
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "%s", __func__);
     Size *size = static_cast<Size *>(msg->tyrUnBox());
     GLuint tex = msg->arg1;
     post([this, size, tex] {
-        LOGI("eventDraw makeCurrent a");
+        Logcat::i("HWVC", "eventDraw makeCurrent a");
         egl->makeCurrent();
-        LOGI("eventDraw makeCurrent b");
+        Logcat::i("HWVC", "eventDraw makeCurrent b");
         setScaleType(size->width, size->height);
         draw(tex);
         delete size;
@@ -68,26 +69,26 @@ bool Screen::eventDraw(Message *msg) {
 void Screen::initWindow(NativeWindow *nw) {
     if (!egl) {
         if (nw->egl) {
-            LOGI("Screen::init EGL with context");
+            Logcat::i("HWVC", "Screen::init EGL with context");
             egl = new Egl(nw->egl, nw->win);
         } else {
-            LOGI("Screen::init EGL");
+            Logcat::i("HWVC", "Screen::init EGL");
             egl = new Egl(nw->win);
             nw->egl = egl;
         }
-        LOGI("%s makeCurrent a", __FUNCTION__);
+        Logcat::i("HWVC", "%s makeCurrent a", __FUNCTION__);
         //TODO 这里不知道为什么会阻塞
         egl->makeCurrent();
-        LOGI("%s makeCurrent b", __FUNCTION__);
+        Logcat::i("HWVC", "%s makeCurrent b", __FUNCTION__);
         //TODO 这里不知道为什么会阻塞
         drawer = new NormalDrawer();
         drawer->setRotation(ROTATION_VERTICAL);
-        LOGI("Screen::initWindow %d x %d", egl->width(), egl->height());
+        Logcat::i("HWVC", "Screen::initWindow %d x %d", egl->width(), egl->height());
     }
 }
 
 void Screen::draw(GLuint texture) {
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "%s", __func__);
 //    string glslVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 //    LOGE("version: %s", glslVersion.c_str());
     glViewport(0, 0, egl->width(), egl->height());
