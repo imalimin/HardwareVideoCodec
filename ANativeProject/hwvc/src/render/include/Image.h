@@ -33,7 +33,7 @@ private:
     TextureAllocator *texAllocator = nullptr;
     int width = 0, height = 0;
     uint8_t *rgba = nullptr;
-    GLuint tex;
+    GLuint tex = GL_NONE;
 
     void show(string path);
 

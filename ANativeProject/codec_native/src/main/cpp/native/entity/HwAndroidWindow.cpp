@@ -22,6 +22,6 @@ HwAndroidWindow::HwAndroidWindow(JNIEnv *env, jobject surface) {
 
 HwAndroidWindow::~HwAndroidWindow() {
     if (getANativeWindow()) {
-        ANativeWindow_release(getANativeWindow());
+        ANativeWindow_release(reinterpret_cast<ANativeWindow *>(getANativeWindow()));
     }
 }

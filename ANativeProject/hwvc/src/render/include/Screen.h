@@ -26,7 +26,7 @@ public:
 
 private:
     Egl *egl = nullptr;
-    BaseDrawer *drawer;
+    BaseDrawer *drawer = nullptr;
     int width = 0;
     int height = 0;
 

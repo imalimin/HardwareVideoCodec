@@ -16,12 +16,12 @@ public:
 
     virtual ~HwWindow();
 
-    ANativeWindow *getANativeWindow();
+    NativeWindowType getANativeWindow();
 
-    void setANativeWindow(ANativeWindow *win);
+    void setANativeWindow(NativeWindowType win);
 
 private:
-    ANativeWindow *win = nullptr;
+    NativeWindowType win = nullptr;
 };
 
 #endif //HARDWAREVIDEOCODEC_HWWINDOW_H

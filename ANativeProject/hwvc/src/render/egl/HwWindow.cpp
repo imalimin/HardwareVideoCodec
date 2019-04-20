@@ -15,10 +15,10 @@ HwWindow::~HwWindow() {
     this->win = nullptr;
 }
 
-ANativeWindow *HwWindow::getANativeWindow() {
+NativeWindowType HwWindow::getANativeWindow() {
     return win;
 }
 
-void HwWindow::setANativeWindow(ANativeWindow *win) {
+void HwWindow::setANativeWindow(NativeWindowType win) {
     this->win = win;
 }
