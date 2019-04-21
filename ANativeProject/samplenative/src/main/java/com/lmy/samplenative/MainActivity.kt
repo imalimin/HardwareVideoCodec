@@ -14,6 +14,23 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     private lateinit var mFilterController: FilterController
     private var processor: PictureProcessor? = PictureProcessor()
     private var surface: Surface? = null
+    private val surfaceCallback = object : SurfaceHolder.Callback {
+        override fun surfaceChanged(holder: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
+            Log.i("HWVC", "surfaceChanged: $p1, $p2, $p3 | ${surfaceView.width}, ${surfaceView.height}")
+            processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
+            processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
+        }
+
+        override fun surfaceDestroyed(p0: SurfaceHolder?) {
+            processor?.release()
+            processor = null
+            Log.i("HWVC", "surfaceDestroyed")
+        }
+
+        override fun surfaceCreated(holder: SurfaceHolder) {
+            Log.i("HWVC", "surfaceCreated")
+        }
+    }
 
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
@@ -22,24 +39,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
             mFilterController.chooseFilter(this)
         }
         surfaceView.keepScreenOn = true
-        surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceChanged(holder: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
-                Log.i("HWVC", "surfaceChanged: $p1, $p2, $p3 | ${surfaceView.width}, ${surfaceView.height}")
-                holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
-                processor?.prepare(holder.surface, surfaceView.width, surfaceView.height)
-                processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
-            }
-
-            override fun surfaceDestroyed(p0: SurfaceHolder?) {
-                processor?.release()
-                processor = null
-                Log.i("HWVC", "surfaceDestroyed")
-            }
-
-            override fun surfaceCreated(holder: SurfaceHolder) {
-                Log.i("HWVC", "surfaceCreated")
-            }
-        })
+        surfaceView.holder.addCallback(surfaceCallback)
 //        surfaceView.surfaceTextureListener = this
     }
 
@@ -64,6 +64,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        surfaceView.holder.removeCallback(surfaceCallback)
     }
 
     companion object {

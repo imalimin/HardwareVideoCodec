@@ -9,6 +9,12 @@
 #include <android/native_window_jni.h>
 
 //eglGetProcAddress( "eglPresentationTimeANDROID")
+/**
+ * 1. eglGetConfigs
+ * 2. eglBindAPI
+ * 3. eglSwapInterval
+ * 4. ANativeWindow_setBuffersGeometry
+ */
 Egl::Egl() {
     init(nullptr, nullptr);
 }
@@ -31,15 +37,23 @@ Egl::~Egl() {
             checkError();
             LOGE("~Egl makeCurrent failed");
         }
-        if (eglContext != EGL_NO_CONTEXT) {
-            eglDestroyContext(eglDisplay, eglContext);
+        if (eglSurface == EGL_NO_SURFACE || EGL_TRUE != eglDestroySurface(eglDisplay, eglSurface)) {
+            LOGE("~Egl eglDestroySurface failed");
         }
-        if (eglSurface != EGL_NO_SURFACE) {
-            eglDestroySurface(eglDisplay, eglSurface);
+        if (eglContext == EGL_NO_CONTEXT || EGL_TRUE != eglDestroyContext(eglDisplay, eglContext)) {
+            LOGE("~Egl eglDestroyContext failed");
         }
-        eglTerminate(eglDisplay);
+        eglContext = EGL_NO_CONTEXT;
+        eglSurface = EGL_NO_SURFACE;
+//        if (EGL_TRUE != eglReleaseThread()) {
+//            LOGE("~Egl eglReleaseThread failed");
+//        }
+        if (EGL_TRUE != eglTerminate(eglDisplay)) {
+            LOGE("~Egl eglTerminate failed");
+        }
     }
     eglContext = EGL_NO_CONTEXT;
+    eglConfig = nullptr;
     eglSurface = EGL_NO_SURFACE;
     eglDisplay = EGL_NO_DISPLAY;
     if (this->win) {
@@ -65,15 +79,6 @@ void Egl::init(Egl *context, HwWindow *win) {
         LOGE("$s bad config", __func__);
         return;
     }
-    if (context) {
-        createContext(context->eglContext);
-    } else {
-        createContext(EGL_NO_CONTEXT);
-    }
-    if (EGL_NO_CONTEXT == this->eglContext) {
-        LOGE("$s bad context", __func__);
-        return;
-    }
     if (this->win) {
         createWindowSurface(this->win);
     } else {
@@ -83,7 +88,18 @@ void Egl::init(Egl *context, HwWindow *win) {
         LOGE("$s bad surface", __func__);
         return;
     }
+    if (context) {
+        createContext(context->eglContext);
+    } else {
+        createContext(EGL_NO_CONTEXT);
+    }
+    if (EGL_NO_CONTEXT == this->eglContext) {
+        LOGE("$s bad context", __func__);
+        return;
+    }
     makeCurrent();
+    //If interval is set to a value of 0, buffer swaps are not synchronized to a video frame, and the swap happens as soon as the render is complete.
+//    eglSwapInterval(eglDisplay, 0);
 }
 
 EGLDisplay Egl::createDisplay(EGLNativeDisplayType display_id) {
@@ -105,18 +121,31 @@ EGLDisplay Egl::createDisplay(EGLNativeDisplayType display_id) {
 
 EGLConfig Egl::createConfig(const int *configSpec) {
     EGLint configsCount = 0;
-    const EGLint maxConfigs = 1;
+    const EGLint maxConfigs = 2;
     EGLConfig configs[maxConfigs];
-    EGLBoolean ret = eglChooseConfig(eglDisplay, // 创建的和本地窗口系统的连接
-                                     configSpec, // 指定渲染表面的参数列表，可以为null
-                                     configs, // 调用成功，返会符合条件的EGLConfig列表
-                                     maxConfigs, // 最多返回的符合条件的EGLConfig个数
-                                     &configsCount); // 实际返回的符合条件的EGLConfig个数
+    //Get a list of all EGL frame buffer configurations for a display
+    EGLBoolean ret = eglGetConfigs(eglDisplay, configs, maxConfigs, &configsCount);
+    if (ret != EGL_TRUE || configsCount <= 0) {
+        LOGE("eglChooseConfig failed");
+        return nullptr;
+    }
+
+    // Get a list of EGL frame buffer configurations that match specified attributes
+    ret = eglChooseConfig(eglDisplay, // 创建的和本地窗口系统的连接
+                          configSpec, // 指定渲染表面的参数列表，可以为null
+                          configs, // 调用成功，返会符合条件的EGLConfig列表
+                          maxConfigs, // 最多返回的符合条件的EGLConfig个数
+                          &configsCount); // 实际返回的符合条件的EGLConfig个数
     if (EGL_TRUE != ret || configsCount <= 0 || !checkError()) {
         LOGE("eglChooseConfig failed");
         return nullptr;
     }
     eglConfig = configs[0];
+    EGLint format;
+    eglGetConfigAttrib(eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, &format);
+    if (win && win->getANativeWindow()) {
+        ANativeWindow_setBuffersGeometry(win->getANativeWindow(), 0, 0, format);
+    }
     return configs[0];
 }
 
@@ -139,6 +168,11 @@ EGLSurface Egl::createPbufferSurface() {
         LOGE("eglCreatePbufferSurface failed");
         return EGL_NO_SURFACE;
     }
+//    EGLBoolean ret = eglBindAPI(EGL_OPENGL_ES_API);
+//    if (EGL_TRUE != ret) {
+//        LOGE("eglBindAPI failed");
+//        return EGL_NO_SURFACE;
+//    }
     return eglSurface;
 }
 
@@ -154,6 +188,11 @@ EGLSurface Egl::createWindowSurface(HwWindow *win) {
         LOGE("eglCreateWindowSurface failed");
         return EGL_NO_SURFACE;
     }
+//    EGLBoolean ret = eglBindAPI(EGL_OPENGL_ES_API);
+//    if (EGL_TRUE != ret) {
+//        LOGE("eglBindAPI failed");
+//        return EGL_NO_SURFACE;
+//    }
     return eglSurface;
 }
 
@@ -172,7 +211,7 @@ EGLint Egl::getParams(EGLint attribute) {
 }
 
 void Egl::makeCurrent() {
-    if (EGL_NO_CONTEXT == eglContext) {
+    if (EGL_NO_DISPLAY == eglDisplay) {
         LOGE("name egl failed had release!");
         return;
     }
@@ -190,7 +229,7 @@ void Egl::swapBuffers() {
 }
 
 bool Egl::checkError() {
-    LOGE("Egl::checkError");
+//    LOGE("Egl::checkError");
     EGLint error = eglGetError();
     if (EGL_SUCCESS != error) {
         LOGE("Bad EGL environment: %d", error);

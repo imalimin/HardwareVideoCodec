@@ -31,11 +31,13 @@ void UnitPipeline::postEvent(Message *msg1) {
             this->dispatch(msg2);
         };
         pipeline->sendMessage(msg1);
+    } else {
+        this->dispatch(msg1);
     }
 }
 
 void UnitPipeline::removeAllMessage(int what) {
-    if(pipeline){
+    if (pipeline) {
         pipeline->removeAllMessage(what);
     }
 }
