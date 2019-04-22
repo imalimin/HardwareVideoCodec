@@ -25,17 +25,17 @@ Screen::~Screen() {
 bool Screen::eventRelease(Message *msg) {
     Logcat::i("HWVC", "Screen::eventRelease");
     post([this] {
-        if (egl) {
-            egl->makeCurrent();
-        }
+//        if (egl) {
+//            egl->makeCurrent();
+//        }
         if (drawer) {
             delete drawer;
             drawer = nullptr;
         }
-        if (egl) {
-            delete egl;
-            egl = nullptr;
-        }
+//        if (egl) {
+//            delete egl;
+//            egl = nullptr;
+//        }
     });
     return true;
 }
@@ -57,7 +57,7 @@ bool Screen::eventDraw(Message *msg) {
     GLuint tex = msg->arg1;
     post([this, size, tex] {
         Logcat::i("HWVC", "eventDraw makeCurrent a");
-        egl->makeCurrent();
+//        egl->makeCurrent();
         Logcat::i("HWVC", "eventDraw makeCurrent b");
         setScaleType(size->width, size->height);
         draw(tex);
@@ -67,42 +67,44 @@ bool Screen::eventDraw(Message *msg) {
 }
 
 void Screen::initWindow(NativeWindow *nw) {
-    if (!egl) {
-        if (nw->egl) {
-            Logcat::i("HWVC", "Screen::init EGL with context");
-            egl = new Egl(nw->egl, nw->win);
-        } else {
-            Logcat::i("HWVC", "Screen::init EGL");
-            egl = new Egl(nw->win);
-            nw->egl = egl;
-        }
-        Logcat::i("HWVC", "%s makeCurrent a", __FUNCTION__);
-        //TODO 这里不知道为什么会阻塞
-        egl->makeCurrent();
-        Logcat::i("HWVC", "%s makeCurrent b", __FUNCTION__);
-        //TODO 这里不知道为什么会阻塞
-        drawer = new NormalDrawer();
-        drawer->setRotation(ROTATION_VERTICAL);
-        Logcat::i("HWVC", "Screen::initWindow %d x %d", egl->width(), egl->height());
-    }
+//    if (!egl) {
+//        if (nw->egl) {
+//            Logcat::i("HWVC", "Screen::init EGL with context");
+//            egl = new Egl(nw->egl, nw->win);
+//        } else {
+//            Logcat::i("HWVC", "Screen::init EGL");
+//            egl = new Egl(nw->win);
+//            nw->egl = egl;
+//        }
+//        Logcat::i("HWVC", "%s makeCurrent a", __FUNCTION__);
+//        //TODO 这里不知道为什么会阻塞
+//        egl->makeCurrent();
+//        Logcat::i("HWVC", "%s makeCurrent b", __FUNCTION__);
+//        //TODO 这里不知道为什么会阻塞
+//        drawer = new NormalDrawer();
+//        drawer->setRotation(ROTATION_VERTICAL);
+//        Logcat::i("HWVC", "Screen::initWindow %d x %d", egl->width(), egl->height());
+//    }
+    drawer = new NormalDrawer();
+    drawer->setRotation(ROTATION_VERTICAL);
 }
 
 void Screen::draw(GLuint texture) {
     Logcat::i("HWVC", "%s", __func__);
 //    string glslVersion = (const char *) glGetString(GL_SHADING_LANGUAGE_VERSION);
 //    LOGE("version: %s", glslVersion.c_str());
-    glViewport(0, 0, egl->width(), egl->height());
+    glViewport(0, 0, 1440, 2872);
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
     //TODO 这里不知道为什么会阻塞
     drawer->draw(texture);
     //TODO 这里不知道为什么会阻塞
-    egl->swapBuffers();
+//    egl->swapBuffers();
 }
 
 void Screen::setScaleType(int dw, int dh) {
-    int viewWidth = egl->width();
-    int viewHeight = egl->height();
+    int viewWidth = 1440;
+    int viewHeight = 2872;
     float viewScale = viewWidth / (float) viewHeight;
     float picScale = dw / (float) dh;
 
