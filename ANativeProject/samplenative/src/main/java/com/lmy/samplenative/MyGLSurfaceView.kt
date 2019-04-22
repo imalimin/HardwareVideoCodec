@@ -23,19 +23,24 @@ class MyGLSurfaceView : GLSurfaceView {
 
     private fun init() {
         setEGLConfigChooser(8, 8, 8, 0, 16, 0)
-        setEGLContextClientVersion(3)
+        setEGLContextClientVersion(2)
         setRenderer(Renderer())
     }
 
     class Renderer() : GLSurfaceView.Renderer {
         private var processor: PictureProcessor? = PictureProcessor()
+        private var showed = false
         override fun onDrawFrame(gl: GL10?) {
-            processor?.invalidate()
+            if (!showed) {
+                showed = true
+                processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
+            } else {
+                processor?.invalidate()
+            }
         }
 
         override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
             processor?.prepare(Surface(SurfaceTexture(0)), width, height)
-            processor?.show("${Environment.getExternalStorageDirectory().path}/1.jpg")
         }
 
         override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
