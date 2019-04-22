@@ -98,6 +98,11 @@ void Egl::init(Egl *context, HwWindow *win) {
         return;
     }
     makeCurrent();
+    int width = 0, height = 0;
+    if (!eglQuerySurface(eglDisplay, eglSurface, EGL_WIDTH, &width) ||
+        !eglQuerySurface(eglDisplay, eglSurface, EGL_HEIGHT, &height)) {
+        Logcat::e("HWVC", "Egl init failed");
+    }
     //If interval is set to a value of 0, buffer swaps are not synchronized to a video frame, and the swap happens as soon as the render is complete.
 //    eglSwapInterval(eglDisplay, 0);
 }
@@ -141,10 +146,13 @@ EGLConfig Egl::createConfig(const int *configSpec) {
         return nullptr;
     }
     eglConfig = configs[0];
-    EGLint format;
-    eglGetConfigAttrib(eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, &format);
     if (win && win->getANativeWindow()) {
-        ANativeWindow_setBuffersGeometry(win->getANativeWindow(), 0, 0, format);
+        EGLint format;
+        if (EGL_TRUE != eglGetConfigAttrib(eglDisplay, eglConfig, EGL_NATIVE_VISUAL_ID, &format)) {
+            Logcat::e("HWVC", "eglGetConfigAttrib failed");
+        } else {
+            ANativeWindow_setBuffersGeometry(win->getANativeWindow(), 0, 0, format);
+        }
     }
     return configs[0];
 }
