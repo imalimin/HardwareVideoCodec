@@ -4,7 +4,7 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include <log.h>
+#include "Logcat.h"
 #include "../include/Render.h"
 #include "../include/NormalFilter.h"
 #include "../include/ObjectBox.h"
@@ -29,11 +29,11 @@ Render::~Render() {
 }
 
 bool Render::eventRelease(Message *msg) {
-    LOGI("Render::eventRelease");
+    Logcat::i("HWVC", "Render::eventRelease");
     post([this] {
         if (filter) {
             delete filter;
-            LOGI("Render::eventRelease filter");
+            Logcat::i("HWVC", "Render::eventRelease filter");
             filter = nullptr;
         }
     });
@@ -43,19 +43,16 @@ bool Render::eventRelease(Message *msg) {
 void Render::checkFilter(int width, int height) {
     if (filter) {
         bool ret = filter->init(width, height);
-        if (ret) {
-            LOGI("Init filter");
-        }
     }
 }
 
 void Render::renderFilter(GLuint texture) {
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "Render::renderFilter");
     filter->draw(texture);
 }
 
 void Render::renderScreen() {
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "Render::renderScreen");
     Message *msg = new Message(EVENT_SCREEN_DRAW, nullptr);
     msg->obj = new ObjectBox(new Size(filter->getFrameBuffer()->width(),
                                       filter->getFrameBuffer()->height()));
@@ -64,12 +61,12 @@ void Render::renderScreen() {
 }
 
 bool Render::eventPrepare(Message *msg) {
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "Render::eventPrepare");
     return true;
 }
 
 bool Render::eventFilter(Message *msg) {
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "Render::eventFilter");
     Size *size = static_cast<Size *>(msg->tyrUnBox());
     GLuint tex = msg->arg1;
     post([this, size, tex] {
@@ -83,7 +80,7 @@ bool Render::eventFilter(Message *msg) {
 }
 
 bool Render::eventSetFilter(Message *msg) {
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "Render::eventSetFilter");
     Filter *newFilter = static_cast<Filter *>(msg->tyrUnBox());
     post([this, newFilter] {
         if (filter) {

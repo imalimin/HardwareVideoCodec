@@ -7,6 +7,7 @@
 #include "../include/Image.h"
 #include "ObjectBox.h"
 #include "Size.h"
+#include "Logcat.h"
 
 Image::Image() {
     name = __FUNCTION__;
@@ -21,7 +22,7 @@ Image::~Image() {
 }
 
 bool Image::eventRelease(Message *msg) {
-    LOGI("Image::eventRelease");
+    Logcat::i("HWVC", "Image::eventRelease");
     if (pDecoder) {
         delete pDecoder;
         pDecoder = nullptr;
@@ -60,10 +61,10 @@ bool Image::decode(string path) {
         ret = decoder->decodeFile(path, &rgba, &width, &height);
     }
     if (!ret || 0 == width || 0 == height) {
-        LOGE("Image decode %s failed", path.c_str());
+        Logcat::i("HWVC", "Image decode %s failed", path.c_str());
         return false;
     }
-    LOGI("Image decode(%d x %d) %s", width, height, path.c_str());
+    Logcat::i("HWVC", "Image decode(%d x %d) %s", width, height, path.c_str());
     return true;
 }
 

@@ -43,27 +43,28 @@ Egl::~Egl() {
         if (eglContext == EGL_NO_CONTEXT || EGL_TRUE != eglDestroyContext(eglDisplay, eglContext)) {
             LOGE("~Egl eglDestroyContext failed");
         }
-        eglContext = EGL_NO_CONTEXT;
-        eglSurface = EGL_NO_SURFACE;
-//        if (EGL_TRUE != eglReleaseThread()) {
-//            LOGE("~Egl eglReleaseThread failed");
-//        }
         if (EGL_TRUE != eglTerminate(eglDisplay)) {
             LOGE("~Egl eglTerminate failed");
         }
     }
     eglContext = EGL_NO_CONTEXT;
-    eglConfig = nullptr;
     eglSurface = EGL_NO_SURFACE;
     eglDisplay = EGL_NO_DISPLAY;
+    eglConfig = nullptr;
     if (this->win) {
         delete this->win;
         this->win = nullptr;
     }
-    LOGI("%s", __func__);
+    Logcat::i("HWVC", "Egl::~Egl");
 }
 
 void Egl::init(Egl *context, HwWindow *win) {
+    if (EGL_NO_DISPLAY != eglDisplay
+        || EGL_NO_SURFACE != eglContext
+        || EGL_NO_SURFACE != eglSurface) {
+        Logcat::e("HWVC", "Dirty env!!!!!!!!!!");
+        return;
+    }
     this->win = win;
     createDisplay(EGL_DEFAULT_DISPLAY);
     if (EGL_NO_DISPLAY == this->eglDisplay) {
@@ -168,39 +169,39 @@ EGLContext Egl::createContext(EGLContext context) {
 }
 
 EGLSurface Egl::createPbufferSurface() {
-    EGLint values;
-    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
-    int surfaceAttribs[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
-    eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttribs);
+//    EGLint values;
+//    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
+    int attrib_list[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
+    eglSurface = eglCreatePbufferSurface(eglDisplay, eglConfig, attrib_list);
     if (nullptr == eglSurface || EGL_NO_SURFACE == eglSurface || !checkError()) {
         LOGE("eglCreatePbufferSurface failed");
         return EGL_NO_SURFACE;
     }
-//    EGLBoolean ret = eglBindAPI(EGL_OPENGL_ES_API);
-//    if (EGL_TRUE != ret) {
-//        LOGE("eglBindAPI failed");
-//        return EGL_NO_SURFACE;
-//    }
+    EGLBoolean ret = eglBindAPI(EGL_OPENGL_ES_API);
+    if (EGL_TRUE != ret) {
+        LOGE("eglBindAPI failed");
+        return EGL_NO_SURFACE;
+    }
     return eglSurface;
 }
 
 EGLSurface Egl::createWindowSurface(HwWindow *win) {
-    int attribList[] = {EGL_NONE};
-    EGLint values;
-    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
+//    EGLint values;
+//    eglQueryContext(eglDisplay, eglContext, EGL_CONTEXT_CLIENT_VERSION, &values);
+    int attrib_list[] = {EGL_NONE};
     eglSurface = eglCreateWindowSurface(eglDisplay,
                                         eglConfig, // 选好的可用EGLConfig
                                         win->getANativeWindow(), // 指定原生窗口
-                                        attribList); // 指定窗口属性列表，可以为null，一般指定渲染所用的缓冲区使用但缓冲或者后台缓冲，默认为后者。
+                                        attrib_list); // 指定窗口属性列表，可以为null，一般指定渲染所用的缓冲区使用但缓冲或者后台缓冲，默认为后者。
     if (nullptr == eglSurface || EGL_NO_SURFACE == eglSurface || !checkError()) {
         LOGE("eglCreateWindowSurface failed");
         return EGL_NO_SURFACE;
     }
-//    EGLBoolean ret = eglBindAPI(EGL_OPENGL_ES_API);
-//    if (EGL_TRUE != ret) {
-//        LOGE("eglBindAPI failed");
-//        return EGL_NO_SURFACE;
-//    }
+    EGLBoolean ret = eglBindAPI(EGL_OPENGL_ES_API);
+    if (EGL_TRUE != ret) {
+        LOGE("eglBindAPI failed");
+        return EGL_NO_SURFACE;
+    }
     return eglSurface;
 }
 
@@ -223,8 +224,6 @@ void Egl::makeCurrent() {
         LOGE("name egl failed had release!");
         return;
     }
-    LOGI("Egl makeCurrent(%ld), %ld, %ld, %ld, %ld", pthread_self(), eglDisplay, eglConfig,
-         eglContext, eglSurface);
     if (!eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext) || !checkError()) {
         LOGE("name makeCurrent failed");
     }
@@ -232,12 +231,11 @@ void Egl::makeCurrent() {
 
 void Egl::swapBuffers() {
     if (!eglSwapBuffers(eglDisplay, eglSurface)) {
-        LOGE("name swapBuffers,failed!");
+        LOGE("name swapBuffers failed!");
     }
 }
 
 bool Egl::checkError() {
-//    LOGE("Egl::checkError");
     EGLint error = eglGetError();
     if (EGL_SUCCESS != error) {
         LOGE("Bad EGL environment: %d", error);

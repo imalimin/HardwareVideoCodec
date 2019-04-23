@@ -34,12 +34,12 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     override fun getLayoutResource(): Int = R.layout.activity_main
     override fun initView() {
-//        mFilterController = FilterController(processor!!, progressLayout)
+        mFilterController = FilterController(processor!!, progressLayout)
         filterBtn.setOnClickListener {
             mFilterController.chooseFilter(this)
         }
         surfaceView.keepScreenOn = true
-//        surfaceView.holder.addCallback(surfaceCallback)
+        surfaceView.holder.addCallback(surfaceCallback)
 //        surfaceView.surfaceTextureListener = this
     }
 
@@ -64,7 +64,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
 
     override fun onDestroy() {
         super.onDestroy()
-//        surfaceView.holder.removeCallback(surfaceCallback)
+        surfaceView.holder.removeCallback(surfaceCallback)
     }
 
     companion object {

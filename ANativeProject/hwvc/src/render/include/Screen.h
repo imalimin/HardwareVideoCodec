@@ -25,7 +25,7 @@ public:
     bool eventDraw(Message *msg);
 
 private:
-//    Egl *egl = nullptr;
+    Egl *egl = nullptr;
     BaseDrawer *drawer = nullptr;
     int width = 0;
     int height = 0;
