@@ -35,10 +35,9 @@ NormalDrawer::NormalDrawer(string vertex, string fragment) {
     init();
 }
 
-GLuint NormalDrawer::getProgram() {
-    return createProgram(this->vertex, this->fragment);
+NormalDrawer::~NormalDrawer() {
 }
 
-NormalDrawer::~NormalDrawer() {
-    BaseDrawer::~BaseDrawer();
+GLuint NormalDrawer::getProgram() {
+    return createProgram(this->vertex, this->fragment);
 }
