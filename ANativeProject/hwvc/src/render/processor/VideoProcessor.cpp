@@ -17,8 +17,8 @@ VideoProcessor::VideoProcessor() {
     screenHandler = new HandlerThread("ScreenUnit");
     pipeline = new UnitPipeline("VideoProcessor");
     pipeline->registerAnUnit(new Video(unitHandler));
-    pipeline->registerAnUnit(new Render(unitHandler));
-    pipeline->registerAnUnit(new Screen(screenHandler));
+//    pipeline->registerAnUnit(new Render(unitHandler));
+//    pipeline->registerAnUnit(new Screen(screenHandler));
 }
 
 VideoProcessor::~VideoProcessor() {

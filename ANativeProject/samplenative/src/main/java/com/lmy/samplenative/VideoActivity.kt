@@ -59,7 +59,7 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener,
             override fun surfaceDestroyed(p0: SurfaceHolder?) {
                 processor?.release()
                 processor = null
-                Log.i("00000", "surfaceDestroyed")
+                Log.i("HWVC", "surfaceDestroyed")
             }
 
             override fun surfaceCreated(holder: SurfaceHolder) {

@@ -8,6 +8,8 @@
 #include "ObjectBox.h"
 #include "Size.h"
 #include "TimeUtils.h"
+#include "HwVideoFrame.h"
+#include "HwAudioFrame.h"
 
 Video::Video() : Unit() {
     name = __FUNCTION__;
@@ -42,10 +44,6 @@ Video::~Video() {
         audioPlayer = nullptr;
     }
     LOGI("Video::~audioPlayer");
-    if (frame) {
-        delete frame;
-        frame = nullptr;
-    }
     if (decoder) {
         delete decoder;
         decoder = nullptr;
@@ -132,14 +130,6 @@ bool Video::eventStop(Message *msg) {
     return true;
 }
 
-bool Video::eventInvalidate(Message *m) {
-    Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
-    msg->obj = new ObjectBox(new Size(frame->width, frame->height));
-    msg->arg1 = yuvFilter->getFrameBuffer()->getFrameTexture();
-    postEvent(msg);
-    return true;
-}
-
 bool Video::eventSetSource(Message *msg) {
     this->path = static_cast<char *>(msg->tyrUnBox());
     return true;
@@ -159,21 +149,20 @@ bool Video::eventLoop(Message *msg) {
             return;
         }
         lock->lock();
-        sendLoop();
         int ret = grab();
         lock->unlock();
-        checkFilter();
-        if (MEDIA_TYPE_VIDEO != ret) {
-            if (MEDIA_TYPE_AUDIO == ret && audioPlayer && frame) {
-                audioPlayer->write(frame->data, frame->size);
-            }
-            return;
+        if (MEDIA_TYPE_EOF == ret) {
+            eventStop(nullptr);
         }
-        lock->lock();
-        glViewport(0, 0, frame->width, frame->height);
-        lock->unlock();
-        yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
-        eventInvalidate(nullptr);
+        sendLoop();
+
+
+//        if (MEDIA_TYPE_VIDEO != ret) {
+//            if (MEDIA_TYPE_AUDIO == ret && audioPlayer && frame) {
+//                audioPlayer->write(frame->data, frame->size);
+//            }
+//            return;
+//        }
     });
     return true;
 }
@@ -189,45 +178,77 @@ void Video::checkFilter() {
 }
 
 int Video::grab() {
+    int64_t time = getCurrentTimeUS();
+    HwAbsFrame *frame = nullptr;
+    int ret = decoder->grab(&frame);
+    Logcat::i("HWVC", "Video::grab cost: %lld, ret: %d", getCurrentTimeUS() - time, ret);
     if (!frame) {
-        frame = new Frame(decoder->width(), decoder->height());
-    }
-//    long long time = getCurrentTimeUS();
-    int ret = decoder->grab(frame);
-//    LOGI("Video::grab cost: %lld", getCurrentTimeUS() - time);
-    if (MEDIA_TYPE_VIDEO != ret) {
         return ret;
     }
-    int64_t curPts = frame->pts;
+    int64_t curPts = frame->getPts();
 
-    if (lastPts > 0) {
-        int64_t t = (curPts - lastPts) - (getCurrentTimeUS() - lastShowTime);
-        lock->wait(t);
-        LOGI("Video::grab %d x %d, delta time: %lld, wait time: %lld", 0, 0,
-             (getCurrentTimeUS() - lastShowTime) / 1000, t);
-    }
+//    if (lastPts > 0) {
+//        int64_t t = (curPts - lastPts) - (getCurrentTimeUS() - lastShowTime);
+//        lock->wait(t);
+//        LOGI("Video::grab %d x %d, delta time: %lld, wait time: %lld", 0, 0,
+//             (getCurrentTimeUS() - lastShowTime) / 1000, t);
+//    }
     lastShowTime = getCurrentTimeUS();
 
     lastPts = curPts;
-    int size = frame->width * frame->height;
-    egl->makeCurrent();
-    glBindTexture(GL_TEXTURE_2D, yuv[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width, frame->height, 0,
-                 GL_LUMINANCE,
-                 GL_UNSIGNED_BYTE,
-                 frame->data);
-    glBindTexture(GL_TEXTURE_2D, yuv[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width / 2, frame->height / 2, 0,
-                 GL_LUMINANCE,
-                 GL_UNSIGNED_BYTE,
-                 frame->data + size);
-    glBindTexture(GL_TEXTURE_2D, yuv[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width / 2, frame->height / 2, 0,
-                 GL_LUMINANCE,
-                 GL_UNSIGNED_BYTE,
-                 frame->data + size + size / 4);
-    glBindTexture(GL_TEXTURE_2D, GL_NONE);
-    return MEDIA_TYPE_VIDEO;
+    if (frame->isVideo()) {
+//        checkFilter();
+//        HwVideoFrame *videoFrame = dynamic_cast<HwVideoFrame *>(frame);
+//        int size = videoFrame->getWidth() * videoFrame->getHeight();
+//        egl->makeCurrent();
+//        glBindTexture(GL_TEXTURE_2D, yuv[0]);
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->getWidth(),
+//                     videoFrame->getHeight(), 0,
+//                     GL_LUMINANCE,
+//                     GL_UNSIGNED_BYTE,
+//                     frame->getData());
+//        glBindTexture(GL_TEXTURE_2D, yuv[1]);
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->getWidth() / 2,
+//                     videoFrame->getHeight() / 2, 0,
+//                     GL_LUMINANCE,
+//                     GL_UNSIGNED_BYTE,
+//                     frame->getData() + size);
+//        glBindTexture(GL_TEXTURE_2D, yuv[2]);
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->getWidth() / 2,
+//                     videoFrame->getHeight() / 2, 0,
+//                     GL_LUMINANCE,
+//                     GL_UNSIGNED_BYTE,
+//                     frame->getData() + size + size / 4);
+//        glBindTexture(GL_TEXTURE_2D, GL_NONE);
+//
+////        lock->lock();
+//        glViewport(0, 0, videoFrame->getWidth(), videoFrame->getHeight());
+////        lock->unlock();
+//        yuvFilter->draw(yuv[0], yuv[1], yuv[2]);
+//        invalidate(yuvFilter->getFrameBuffer()->getFrameTexture(), videoFrame->getWidth(),
+//                   videoFrame->getHeight());
+        return MEDIA_TYPE_VIDEO;
+    } else if (frame->isAudio()) {
+        HwAudioFrame *audioFrame = dynamic_cast<HwAudioFrame *>(frame);
+        if (audioPlayer) {
+            Logcat::i("HWVC", "Video::play audio: %d, %lld, %lld",
+                      audioFrame->getChannels(),
+                      audioFrame->getSampleCount(),
+                      audioFrame->getDataSize());
+            audioPlayer->write(audioFrame->getData(),
+                               static_cast<size_t>(audioFrame->getDataSize()));
+        }
+        return MEDIA_TYPE_AUDIO;
+    }
+    return ret;
+}
+
+bool Video::invalidate(int tex, uint32_t width, uint32_t height) {
+    Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
+    msg->obj = new ObjectBox(new Size(width, height));
+    msg->arg1 = yuvFilter->getFrameBuffer()->getFrameTexture();
+    postEvent(msg);
+    return true;
 }
 
 void Video::createAudioPlayer() {

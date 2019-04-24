@@ -76,9 +76,10 @@ file(
         GLOB
         SOURCES
         ${PROJECT_SOURCE_DIR}/*cpp
-        ${PROJECT_SOURCE_DIR}/decoder/*cpp
-        ${PROJECT_SOURCE_DIR}/entity/*cpp
-        ${PROJECT_SOURCE_DIR}/utils/*cpp
+        ${PROJECT_SOURCE_DIR}/decoder/*.cpp
+        ${PROJECT_SOURCE_DIR}/entity/*.cpp
+        ${PROJECT_SOURCE_DIR}/utils/*.cpp
+        ${PROJECT_SOURCE_DIR}/sources/*.cpp
 )
 add_library( # Sets the name of the library.
         hwvc_codec

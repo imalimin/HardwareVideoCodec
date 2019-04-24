@@ -9,6 +9,8 @@
 
 #include "AbsVideoDecoder.h"
 #include "AbsAudioDecoder.h"
+#include "HwAbsFrame.h"
+#include "HwFrameAllocator.h"
 
 const int MEDIA_TYPE_UNKNOWN = -1;
 const int MEDIA_TYPE_EOF = 0;
@@ -50,13 +52,14 @@ public:
     /**
      * @return 1: video, 2: audio, 0: failed
      */
-    virtual int grab(AVFrame *avFrame);
+    virtual int grab(HwAbsFrame **frame);
 
     virtual int64_t getVideoDuration() override;
 
     virtual int64_t getAudioDuration() override;
 
 private:
+    HwFrameAllocator *hwFrameAllocator = nullptr;
     string path;
     AVFormatContext *pFormatCtx = nullptr;
     AVCodecContext *vCodecContext = nullptr;
@@ -65,10 +68,14 @@ private:
     int audioTrack = -1, videoTrack = -1, currentTrack = -1;
     AVPacket *avPacket = nullptr;
     AVFrame *resampleFrame = nullptr;
+    AVFrame *audioFrame = nullptr;
+    AVFrame *videoFrame = nullptr;
+    HwAbsFrame *outputFrame;
     AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
     AVRational outputRational = AVRational{1, 1000000};
     int64_t videoDurationUs = -1;
     int64_t audioDurationUs = -1;
+    bool eof = false;
 
     int initSwr();
 
@@ -78,7 +85,7 @@ private:
 
     void printCodecInfo();
 
-    void resample(AVFrame *avFrame);
+    HwAbsFrame *resample(AVFrame *avFrame);
 
     AVSampleFormat getBestSampleFormat(AVSampleFormat in);
 

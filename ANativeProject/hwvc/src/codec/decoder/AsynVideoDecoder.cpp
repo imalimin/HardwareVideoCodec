@@ -12,29 +12,23 @@ extern "C" {
 #endif
 
 AsynVideoDecoder::AsynVideoDecoder() : AbsDecoder(), AbsAudioDecoder(), AbsVideoDecoder() {
+    hwFrameAllocator = new HwFrameAllocator();
     decoder = new DefaultVideoDecoder();
-    vRecycler = new RecyclerBlockQueue<AVFrame>(16, [] {
-        return av_frame_alloc();
-    });
 }
 
 AsynVideoDecoder::~AsynVideoDecoder() {
     playState = STOP;
-    if (vRecycler) {
-        vRecycler->notify();
-    }
     if (pipeline) {
         delete pipeline;
         pipeline = nullptr;
     }
-    if (vRecycler) {
-        vRecycler->clear();
-        delete vRecycler;
-        vRecycler = nullptr;
-    }
     if (decoder) {
         delete decoder;
         decoder = nullptr;
+    }
+    if (hwFrameAllocator) {
+        delete hwFrameAllocator;
+        hwFrameAllocator = nullptr;
     }
 }
 
@@ -52,42 +46,73 @@ bool AsynVideoDecoder::prepare(string path) {
     return true;
 }
 
-int AsynVideoDecoder::grab(Frame *frame) {
-    if (STOP == playState) {
+bool AsynVideoDecoder::grab() {
+    if (cache.size() >= 10) {
+        grabLock.wait();
+        return true;
+    }
+    Logcat::i("HWVC", "HwFrameAllocator::info: cache %d", cache.size());
+    int64_t time = getCurrentTimeUS();
+    HwAbsFrame *frame = nullptr;
+    int ret = decoder->grab(&frame);
+    frame = hwFrameAllocator->ref(frame);
+    if (frame) {
+        cache.push(frame);
+    }
+//    LOGI("Grab frame(fmt:%d,type:%d) cost %lld, cache left %d, ret=%d",
+//         cacheFrame->format,
+//         cacheFrame->key_frame,
+//         (getCurrentTimeUS() - time),
+//         vRecycler->getCacheSize(), ret);
+    return MEDIA_TYPE_EOF != ret;
+}
+
+int AsynVideoDecoder::grab(HwAbsFrame **frame) {
+    if (STOP == playState || cache.empty()) {
         return MEDIA_TYPE_UNKNOWN;
     }
-    AVFrame *f = vRecycler->take();
-    if (!f) {
-        return MEDIA_TYPE_UNKNOWN;
+    if (outputFrame) {
+        hwFrameAllocator->unRef(&outputFrame);
     }
-    frame->pts = f->pts;
-    if (AV_SAMPLE_FMT_S32 == f->format || AV_SAMPLE_FMT_FLT == f->format) {
-        int size = 0;
-        //对于音频，只有linesize[0]被使用，因为音频中，每一个声道的大小应该相等
-        memcpy(frame->data + size, f->data[0], f->linesize[0]);
-        size += f->linesize[0];
-        frame->offset = 0;
-        frame->size = size;
-//        LOGI("AsynVideoDecoder::audio channels=%d, size=%d, nb_samples=%d, %d", f->channels, size, f->nb_samples,
-//             f->linesize[0]);
-        av_frame_unref(f);
-        vRecycler->recycle(f);
+    hwFrameAllocator->printInfo();
+    outputFrame = cache.back();
+    cache.pop();
+    grabLock.notify();
+    *frame = outputFrame;
+    if ((*frame)->isAudio()) {
         return MEDIA_TYPE_AUDIO;
-    } else {
-
     }
-    if (AV_PIX_FMT_NV12 == f->format) {
-        copyNV12(frame, f);
-    } else {
-        copyYV12(frame, f);
-    }
-
-    frame->width = f->width;
-    frame->height = f->height;
-    av_frame_unref(f);
-    if (vRecycler) {
-        vRecycler->recycle(f);
-    }
+//    if (!f) {
+//        return MEDIA_TYPE_UNKNOWN;
+//    }
+//    frame->pts = f->pts;
+//    if (AV_SAMPLE_FMT_S32 == f->format || AV_SAMPLE_FMT_FLT == f->format) {
+//        int size = 0;
+//        //对于音频，只有linesize[0]被使用，因为音频中，每一个声道的大小应该相等
+//        memcpy(frame->data + size, f->data[0], f->linesize[0]);
+//        size += f->linesize[0];
+//        frame->offset = 0;
+//        frame->size = size;
+////        LOGI("AsynVideoDecoder::audio channels=%d, size=%d, nb_samples=%d, %d", f->channels, size, f->nb_samples,
+////             f->linesize[0]);
+//        av_frame_unref(f);
+//        vRecycler->recycle(f);
+//        return MEDIA_TYPE_AUDIO;
+//    } else {
+//
+//    }
+//    if (AV_PIX_FMT_NV12 == f->format) {
+//        copyNV12(frame, f);
+//    } else {
+//        copyYV12(frame, f);
+//    }
+//
+//    frame->width = f->width;
+//    frame->height = f->height;
+//    av_frame_unref(f);
+//    if (vRecycler) {
+//        vRecycler->recycle(f);
+//    }
 
     return MEDIA_TYPE_VIDEO;
 }
@@ -147,52 +172,20 @@ void AsynVideoDecoder::start() {
 void AsynVideoDecoder::pause() {
     if (STOP != playState) {
         playState = PAUSE;
-        vRecycler->notify();
     }
-}
-
-bool AsynVideoDecoder::grab() {
-    if (!vRecycler)
-        return false;
-    AVFrame *cacheFrame = vRecycler->takeCache();
-    if (!cacheFrame) {
-        return false;
-    }
-    long long time = getCurrentTimeUS();
-    int ret = decoder->grab(cacheFrame);
-//    LOGI("Grab frame(fmt:%d,type:%d) cost %lld, cache left %d, ret=%d",
-//         cacheFrame->format,
-//         cacheFrame->key_frame,
-//         (getCurrentTimeUS() - time),
-//         vRecycler->getCacheSize(), ret);
-    if (MEDIA_TYPE_VIDEO == ret) {
-        vRecycler->offer(cacheFrame);
-    } else if (MEDIA_TYPE_AUDIO == ret) {
-        vRecycler->offer(cacheFrame);
-    } else {
-        return false;
-    }
-    return true;
 }
 
 bool AsynVideoDecoder::grabAnVideoFrame() {
-    if (!vRecycler) {
-        return false;
-    }
-    while (true) {
-        AVFrame *cacheFrame = vRecycler->takeCache();
-        if (!cacheFrame) {
-            return false;
-        }
-        int ret = decoder->grab(cacheFrame);
-        if (MEDIA_TYPE_VIDEO == ret) {
-            vRecycler->offer(cacheFrame);
-            return true;
-        } else {
-            vRecycler->recycle(cacheFrame);
-            return false;
-        }
-    }
+//    while (true) {
+//        int ret = decoder->grab(cacheFrame);
+//        if (MEDIA_TYPE_VIDEO == ret) {
+//            vRecycler->offer(cacheFrame);
+//            return true;
+//        } else {
+//            vRecycler->recycle(cacheFrame);
+//            return false;
+//        }
+//    }
 }
 
 int AsynVideoDecoder::getChannels() {
@@ -227,9 +220,8 @@ void AsynVideoDecoder::seek(int64_t us) {
     if (!decoder) {
         return;
     }
-    vRecycler->notify();
+    pause();
     pipeline->queueEvent([this, us] {
-        vRecycler->recycleAll();
         decoder->seek(us);
         grabAnVideoFrame();
     });

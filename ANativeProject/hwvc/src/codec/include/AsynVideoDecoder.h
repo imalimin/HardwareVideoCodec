@@ -12,6 +12,12 @@
 #include "Frame.h"
 #include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
+#include "HwAbsFrame.h"
+#include "HwFrameAllocator.h"
+#include "SimpleLock.h"
+#include <queue>
+
+using namespace std;
 
 enum PlayState {
     PAUSE = 0,
@@ -49,17 +55,20 @@ public:
 
     virtual void pause();
 
-    int grab(Frame *frame);
+    int grab(HwAbsFrame **frame);
 
     virtual int64_t getVideoDuration() override;
 
     virtual int64_t getAudioDuration() override;
 
 private:
+    HwFrameAllocator *hwFrameAllocator = nullptr;
     DefaultVideoDecoder *decoder = nullptr;
-    RecyclerBlockQueue<AVFrame> *vRecycler = nullptr;
     EventPipeline *pipeline = nullptr;
+    queue<HwAbsFrame *> cache;
+    HwAbsFrame *outputFrame = nullptr;//用于缓存一帧，以便在下次grab的时候进行回收
     PlayState playState = STOP;
+    SimpleLock grabLock;
 
     void loop();
 

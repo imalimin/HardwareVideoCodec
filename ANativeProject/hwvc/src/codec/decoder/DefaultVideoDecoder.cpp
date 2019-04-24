@@ -14,7 +14,7 @@ extern "C" {
 #include "../include/FFUtils.h"
 
 DefaultVideoDecoder::DefaultVideoDecoder() : AbsDecoder(), AbsAudioDecoder(), AbsVideoDecoder() {
-
+    hwFrameAllocator = new HwFrameAllocator();
 }
 
 DefaultVideoDecoder::~DefaultVideoDecoder() {
@@ -26,7 +26,12 @@ DefaultVideoDecoder::~DefaultVideoDecoder() {
     if (resampleFrame) {
         av_frame_unref(resampleFrame);
         av_frame_free(&resampleFrame);
-        avPacket = nullptr;
+        resampleFrame = nullptr;
+    }
+    if (videoFrame) {
+        av_frame_unref(videoFrame);
+        av_frame_free(&videoFrame);
+        videoFrame = nullptr;
     }
     if (aCodecContext) {
         avcodec_close(aCodecContext);
@@ -40,6 +45,10 @@ DefaultVideoDecoder::~DefaultVideoDecoder() {
         avformat_close_input(&pFormatCtx);
         avformat_free_context(pFormatCtx);
         pFormatCtx = nullptr;
+    }
+    if (hwFrameAllocator) {
+        delete hwFrameAllocator;
+        hwFrameAllocator = nullptr;
     }
 }
 
@@ -83,12 +92,14 @@ bool DefaultVideoDecoder::prepare(string path) {
     LOGI("DefaultVideoDecoder::prepare(%d x %d, du=%lld/%lld channels=%d, sampleHz=%d, frameSize=%d)",
          width(), height(), getVideoDuration(), getAudioDuration(),
          getChannels(), getSampleHz(), aCodecContext->frame_size);
-    outputSampleFormat = aCodecContext->sample_fmt;
+    outputSampleFormat = getBestSampleFormat(aCodecContext->sample_fmt);
     if (initSwr() < 0) {
         return false;
     }
     //准备资源
     avPacket = av_packet_alloc();
+    audioFrame = av_frame_alloc();
+    videoFrame = av_frame_alloc();
     return true;
 }
 
@@ -96,7 +107,6 @@ int DefaultVideoDecoder::initSwr() {
     if (!av_sample_fmt_is_planar(aCodecContext->sample_fmt)) {
         return -1;
     }
-    outputSampleFormat = getBestSampleFormat(aCodecContext->sample_fmt);
     int oRawLineSize = 0;
     int oRawBuffSize = av_samples_get_buffer_size(&oRawLineSize, getChannels(),
                                                   aCodecContext->frame_size,
@@ -134,78 +144,162 @@ int DefaultVideoDecoder::initSwr() {
     return 0;
 }
 
-int DefaultVideoDecoder::grab(AVFrame *avFrame) {
-    if (currentTrack == videoTrack && 0 == avcodec_receive_frame(vCodecContext, avFrame)) {
-        matchPts(avFrame, videoTrack);
-        return getMediaType(currentTrack);
-    } else if (currentTrack == audioTrack && 0 == avcodec_receive_frame(aCodecContext, avFrame)) {
-        resample(avFrame);
-        matchPts(avFrame, audioTrack);
-        return getMediaType(currentTrack);
-    }
-    if (avPacket) {
-        av_packet_unref(avPacket);
-    }
-    int ret = 0;
-    if ((ret = av_read_frame(pFormatCtx, avPacket)) == 0) {
-//        LOGI("av_read_frame");
-        currentTrack = avPacket->stream_index;
-        //解码
-        int ret = -1;
-        if (videoTrack == currentTrack) {
-            if ((ret = avcodec_send_packet(vCodecContext, avPacket)) == 0) {
-                // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
-                return grab(avFrame);
+/**
+ * Get an audio or a video frame.
+ * @param frame 每次返回的地址可能都一样，所以获取一帧音视频后请立即使用，在下次grab之后可能会被释放
+ */
+int DefaultVideoDecoder::grab(HwAbsFrame **frame) {
+    while (true) {
+        if (0 == av_read_frame(pFormatCtx, avPacket)) {
+            int ret = 0;
+            if (videoTrack == avPacket->stream_index) {
+                ret = avcodec_send_packet(vCodecContext, avPacket);
+            } else if (audioTrack == avPacket->stream_index) {
+                ret = avcodec_send_packet(aCodecContext, avPacket);
             }
-        } else if (audioTrack == currentTrack) {
-            if ((ret = avcodec_send_packet(aCodecContext, avPacket)) == 0) {
-                return grab(avFrame);
+            if (AVERROR_EOF == ret) {
+                eof = true;
             }
-        } else {
-            return grab(avFrame);
+//            switch (ret) {
+//                case AVERROR(EAGAIN): {
+//                    LOGI("you must read output with avcodec_receive_frame");
+//                }
+//                case AVERROR(EINVAL): {
+//                    LOGI("codec not opened, it is an encoder, or requires flush");
+//                    break;
+//                }
+//                case AVERROR(ENOMEM): {
+//                    LOGI("failed to add packet to internal queue");
+//                    break;
+//                }
+//                case AVERROR_EOF: {
+//                    LOGI("eof");
+//                    eof = true;
+//                    break;
+//                }
+//                default:
+//                    LOGI("avcodec_send_packet ret=%d", ret);
+//            }
         }
-        switch (ret) {
-            case AVERROR(EAGAIN): {
-                LOGI("you must read output with avcodec_receive_frame");
-                return grab(avFrame);
+        //尝试去缓冲区中获取解码完成的视频帧
+        if (0 == avcodec_receive_frame(vCodecContext, videoFrame)) {
+            matchPts(videoFrame, videoTrack);
+            if (outputFrame) {
+                hwFrameAllocator->unRef(&outputFrame);
             }
-            case AVERROR(EINVAL): {
-                LOGI("codec not opened, it is an encoder, or requires flush");
-                break;
+            outputFrame = hwFrameAllocator->ref(videoFrame);
+            *frame = outputFrame;
+            Logcat::i("HWVC", "DefaultVideoDecoder::grab video, %d x %d",
+                      videoFrame->width,
+                      videoFrame->height);
+            av_frame_unref(videoFrame);
+            return MEDIA_TYPE_VIDEO;
+        }
+        //如果没有视频帧，尝试去缓冲区中获取解码完成的音频帧
+        if (0 == avcodec_receive_frame(aCodecContext, audioFrame)) {
+            matchPts(videoFrame, audioTrack);
+            if (outputFrame) {
+                hwFrameAllocator->unRef(&outputFrame);
             }
-            case AVERROR(ENOMEM): {
-                LOGI("failed to add packet to internal queue");
-                break;
-            }
-            case AVERROR_EOF: {
-                LOGI("eof");
-                break;
-            }
-            default:
-                LOGI("avcodec_send_packet ret=%d", ret);
+            outputFrame = resample(audioFrame);
+            *frame = outputFrame;
+            Logcat::i("HWVC", "DefaultVideoDecoder::grab audio, %d, %d",
+                      resampleFrame->linesize[0],
+                      resampleFrame->nb_samples);
+            av_frame_unref(audioFrame);
+            return MEDIA_TYPE_AUDIO;
+        }
+        //如果缓冲区中既没有音频也没有视频，并且已经读取完文件，则播放完了
+        if (eof) {
+            Logcat::i("HWVC", "DefaultVideoDecoder::grab end");
+            return MEDIA_TYPE_EOF;
         }
     }
-    if (AVERROR_EOF == ret) {
-        return MEDIA_TYPE_EOF;
-    }
-    return MEDIA_TYPE_UNKNOWN;
 }
 
-void DefaultVideoDecoder::resample(AVFrame *avFrame) {
+//int DefaultVideoDecoder::grab(HwAbsFrame **frame) {
+//    if (currentTrack == videoTrack && 0 == avcodec_receive_frame(vCodecContext, videoFrame)) {
+//        matchPts(videoFrame, videoTrack);
+//        if (outputFrame) {
+//            hwFrameAllocator->unRef(&outputFrame);
+//        }
+//        outputFrame = hwFrameAllocator->ref(videoFrame);
+//        *frame = outputFrame;
+//        return getMediaType(currentTrack);
+//    } else if (currentTrack == audioTrack &&
+//               0 == avcodec_receive_frame(aCodecContext, audioFrame)) {
+//        matchPts(videoFrame, audioTrack);
+//        if (outputFrame) {
+//            hwFrameAllocator->unRef(&outputFrame);
+//        }
+//        outputFrame = resample(audioFrame);
+//        *frame = outputFrame;
+//        return getMediaType(currentTrack);
+//    }
+//    if (avPacket) {
+//        av_packet_unref(avPacket);
+//    }
+//    int ret = 0;
+//    if ((ret = av_read_frame(pFormatCtx, avPacket)) == 0) {
+////        LOGI("av_read_frame");
+//        currentTrack = avPacket->stream_index;
+//        //解码
+//        int ret = -1;
+//        if (videoTrack == currentTrack) {
+//            if ((ret = avcodec_send_packet(vCodecContext, avPacket)) == 0) {
+//                // 一个avPacket可能包含多帧数据，所以需要使用while循环一直读取
+//                return grab(frame);
+//            }
+//        } else if (audioTrack == currentTrack) {
+//            if ((ret = avcodec_send_packet(aCodecContext, avPacket)) == 0) {
+//                return grab(frame);
+//            }
+//        } else {
+//            return grab(frame);
+//        }
+//        switch (ret) {
+//            case AVERROR(EAGAIN): {
+//                LOGI("you must read output with avcodec_receive_frame");
+//                return grab(frame);
+//            }
+//            case AVERROR(EINVAL): {
+//                LOGI("codec not opened, it is an encoder, or requires flush");
+//                break;
+//            }
+//            case AVERROR(ENOMEM): {
+//                LOGI("failed to add packet to internal queue");
+//                break;
+//            }
+//            case AVERROR_EOF: {
+//                LOGI("eof");
+//                break;
+//            }
+//            default:
+//                LOGI("avcodec_send_packet ret=%d", ret);
+//        }
+//    }
+//    if (AVERROR_EOF == ret) {
+//        return MEDIA_TYPE_EOF;
+//    }
+//    return MEDIA_TYPE_UNKNOWN;
+//}
+
+HwAbsFrame *DefaultVideoDecoder::resample(AVFrame *avFrame) {
     if (!swrContext) {
-        return;
+        return nullptr;
     }
     int ret = swr_convert(swrContext, resampleFrame->data, aCodecContext->frame_size,
                           (const uint8_t **) (avFrame->data), aCodecContext->frame_size);
     if (ret < 0) {
         LOGE("DefaultVideoDecoder::resample failed");
-        return;
+        return nullptr;
     }
 //    LOGI("DefaultVideoDecoder::resample: fmt=%d, %d/%d => fmt=%d, %d/%d", avFrame->format,
 //         avFrame->linesize[0],
 //         avFrame->nb_samples, resampleFrame->format, resampleFrame->linesize[0],
 //         resampleFrame->nb_samples);
-    FFUtils::avSamplesCopy(avFrame, resampleFrame);
+//    FFUtils::avSamplesCopy(avFrame, resampleFrame);
+    return hwFrameAllocator->ref(resampleFrame);
 }
 
 int DefaultVideoDecoder::width() {
@@ -310,14 +404,12 @@ AVSampleFormat DefaultVideoDecoder::getBestSampleFormat(AVSampleFormat in) {
 
 int DefaultVideoDecoder::getSampleFormat() {
     assert(aCodecContext);
-    return aCodecContext->sample_fmt;
+    return outputSampleFormat;
 }
 
 int DefaultVideoDecoder::getPerSampleSize() {
     assert(aCodecContext);
-    return aCodecContext->frame_size *
-           av_get_bytes_per_sample(outputSampleFormat) *
-           aCodecContext->channels;
+    return aCodecContext->frame_size;
 }
 
 void DefaultVideoDecoder::matchPts(AVFrame *frame, int track) {

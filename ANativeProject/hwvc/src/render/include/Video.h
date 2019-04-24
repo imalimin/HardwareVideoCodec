@@ -13,7 +13,7 @@
 #include "YUV420PFilter.h"
 #include "EventPipeline.h"
 #include "Egl.h"
-#include "Frame.h"
+#include "HwAbsFrame.h"
 #include "AudioPlayer.h"
 #include "SimpleLock.h"
 #include "../entity/NativeWindow.h"
@@ -38,17 +38,16 @@ public:
 
     bool eventStop(Message *msg);
 
-    bool eventInvalidate(Message *msg);
-
     bool eventSetSource(Message *msg);
 
     bool eventLoop(Message *msg);
+
+    bool invalidate(int tex, uint32_t width, uint32_t height);
 
 private:
     Egl *egl = nullptr;
     TextureAllocator *texAllocator = nullptr;
     AsynVideoDecoder *decoder = nullptr;
-    Frame *frame = nullptr;
     YUV420PFilter *yuvFilter = nullptr;
     GLuint yuv[3];
     PlayState playState = STOP;
