@@ -16,7 +16,7 @@ public:
     function<void(Message *msg)> runnable = nullptr;
     int what;
     int arg1;
-    long arg2;
+    int64_t arg2;
     Object *obj = nullptr;
 
     Message(int what, function<void(Message *msg)> runnable);
