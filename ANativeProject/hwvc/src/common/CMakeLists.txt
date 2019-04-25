@@ -59,6 +59,7 @@ file(
         ${PROJECT_SOURCE_DIR}/utils/*.cpp
         ${PROJECT_SOURCE_DIR}/media/*.cpp
         ${PROJECT_SOURCE_DIR}/media/sles/*.cpp
+        ${PROJECT_SOURCE_DIR}/image/*.cpp
 )
 add_library(
         hwvcom

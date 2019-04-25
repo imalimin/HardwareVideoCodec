@@ -14,8 +14,6 @@ Image::Image() {
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Image::eventPrepare));
     registerEvent(EVENT_IMAGE_SHOW, reinterpret_cast<EventFunc>(&Image::eventShow));
     registerEvent(EVENT_COMMON_INVALIDATE, reinterpret_cast<EventFunc>(&Image::eventInvalidate));
-    decoder = new JpegDecoder();
-    pDecoder = new PngDecoder();
 }
 
 Image::~Image() {
@@ -23,48 +21,39 @@ Image::~Image() {
 
 bool Image::eventRelease(Message *msg) {
     Logcat::i("HWVC", "Image::eventRelease");
-    if (pDecoder) {
-        delete pDecoder;
-        pDecoder = nullptr;
-    }
-    if (decoder) {
-        delete decoder;
-        decoder = nullptr;
-    }
     if (texAllocator) {
         delete texAllocator;
         texAllocator = nullptr;
     }
-    if (rgba) {
-        delete[]rgba;
-        rgba = nullptr;
+    if (hwBitmap) {
+        delete hwBitmap;
+        hwBitmap = nullptr;
     }
     return true;
 }
 
 void Image::show(string path) {
-    if (!decode(path)) {
+    if (!decode(path) && !hwBitmap) {
         return;
     }
-    tex = texAllocator->alloc(rgba, width, height);
+    tex = texAllocator->alloc(hwBitmap->getPixels(), hwBitmap->getWidth(), hwBitmap->getHeight());
     eventInvalidate(nullptr);
 }
 
 bool Image::decode(string path) {
-    if (rgba) {
-        delete[]rgba;
-        rgba = nullptr;
+    if (hwBitmap) {//HwBitmap暂时不支持复用，所以先删除
+        delete[]hwBitmap;
+        hwBitmap = nullptr;
     }
-    int ret = 0;
-    ret = pDecoder->decodeFile(path, &rgba, &width, &height);
-    if (ret <= 0) {
-        ret = decoder->decodeFile(path, &rgba, &width, &height);
-    }
-    if (!ret || 0 == width || 0 == height) {
+    hwBitmap = HwBitmapFactory::decodeFile(path);
+    if (!hwBitmap) {
         Logcat::i("HWVC", "Image decode %s failed", path.c_str());
         return false;
     }
-    Logcat::i("HWVC", "Image decode(%d x %d) %s", width, height, path.c_str());
+    Logcat::i("HWVC", "Image decode(%d x %d) %s",
+              hwBitmap->getWidth(),
+              hwBitmap->getHeight(),
+              path.c_str());
     return true;
 }
 
@@ -83,7 +72,7 @@ bool Image::eventShow(Message *msg) {
 bool Image::eventInvalidate(Message *m) {
     if (GL_NONE != tex) {
         Message *msg = new Message(EVENT_RENDER_FILTER, nullptr);
-        msg->obj = new ObjectBox(new Size(width, height));
+        msg->obj = new ObjectBox(new Size(hwBitmap->getWidth(), hwBitmap->getHeight()));
         msg->arg1 = tex;
         postEvent(msg);
     }

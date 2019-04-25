@@ -12,6 +12,7 @@
 #include "JpegDecoder.h"
 #include "PngDecoder.h"
 #include "TextureAllocator.h"
+#include "HwBitmapFactory.h"
 
 class Image : public Unit {
 public:
@@ -28,11 +29,8 @@ public:
     bool eventInvalidate(Message *msg);
 
 private:
-    JpegDecoder *decoder = nullptr;
-    PngDecoder *pDecoder = nullptr;
     TextureAllocator *texAllocator = nullptr;
-    int width = 0, height = 0;
-    uint8_t *rgba = nullptr;
+    HwBitmap *hwBitmap = nullptr;
     GLuint tex = GL_NONE;
 
     void show(string path);
