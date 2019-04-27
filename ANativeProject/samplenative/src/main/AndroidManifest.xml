@@ -40,6 +40,16 @@
             </intent-filter>
         </activity>
         <activity android:name=".VideoActivity">
+            <!--<intent-filter tools:ignore="AppLinkUrlError">-->
+                <!--<action android:name="android.intent.action.VIEW" />-->
+
+                <!--<category android:name="android.intent.category.DEFAULT" />-->
+
+                <!--<data android:mimeType="video/*" />-->
+                <!--<action android:name="android.intent.action.SEND" />-->
+            <!--</intent-filter>-->
+        </activity>
+        <activity android:name=".AudioActivity">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
 

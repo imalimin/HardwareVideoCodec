@@ -15,15 +15,10 @@
 #include "HwAbsFrame.h"
 #include "HwFrameAllocator.h"
 #include "SimpleLock.h"
+#include "PlayState.h"
 #include <queue>
 
 using namespace std;
-
-enum PlayState {
-    PAUSE = 0,
-    PLAYING = 1,
-    STOP = -1
-};
 
 #ifdef __cplusplus
 extern "C" {

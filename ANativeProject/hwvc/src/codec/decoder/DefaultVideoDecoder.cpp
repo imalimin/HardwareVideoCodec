@@ -197,7 +197,7 @@ int DefaultVideoDecoder::grab(HwAbsFrame **frame) {
         }
         //如果没有视频帧，尝试去缓冲区中获取解码完成的音频帧
         if (0 == avcodec_receive_frame(aCodecContext, audioFrame)) {
-            matchPts(videoFrame, audioTrack);
+            matchPts(audioFrame, audioTrack);
             if (outputFrame) {
                 hwFrameAllocator->unRef(&outputFrame);
             }

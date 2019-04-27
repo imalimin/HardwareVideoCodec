@@ -11,7 +11,7 @@
 #include "HwVideoFrame.h"
 #include "HwAudioFrame.h"
 
-Video::Video() : Unit() {
+Video::Video() : HwStreamMedia() {
     name = __FUNCTION__;
     this->lock = new SimpleLock();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));
@@ -23,7 +23,7 @@ Video::Video() : Unit() {
     decoder = new AsynVideoDecoder();
 }
 
-Video::Video(HandlerThread *handlerThread) : Unit(handlerThread) {
+Video::Video(HandlerThread *handlerThread) : HwStreamMedia(handlerThread) {
     name = __FUNCTION__;
     this->lock = new SimpleLock();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&Video::eventPrepare));

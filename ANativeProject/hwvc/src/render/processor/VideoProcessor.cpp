@@ -7,12 +7,11 @@
 #include "../include/VideoProcessor.h"
 #include "../include/Render.h"
 #include "../include/Video.h"
-#include "../include/Video.h"
 #include "../entity/NativeWindow.h"
 #include "ObjectBox.h"
 #include "String.h"
 
-VideoProcessor::VideoProcessor() {
+VideoProcessor::VideoProcessor() : Object() {
     unitHandler = new HandlerThread("VideoUnits");
     screenHandler = new HandlerThread("ScreenUnit");
     pipeline = new UnitPipeline("VideoProcessor");

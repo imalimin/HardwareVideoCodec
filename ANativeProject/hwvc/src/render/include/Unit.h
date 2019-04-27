@@ -34,6 +34,12 @@ static constexpr int EVENT_VIDEO_SEEK = KID('V', 'D', 'O', 0x03);
 static constexpr int EVENT_VIDEO_SET_SOURCE = KID('V', 'D', 'O', 0x04);
 static constexpr int EVENT_VIDEO_LOOP = KID('V', 'D', 'O', 0x05);
 
+static constexpr int EVENT_AUDIO_START = KID('A', 'D', 'O', 0x01);
+static constexpr int EVENT_AUDIO_PAUSE = KID('A', 'D', 'O', 0x02);
+static constexpr int EVENT_AUDIO_SEEK = KID('A', 'D', 'O', 0x03);
+static constexpr int EVENT_AUDIO_SET_SOURCE = KID('A', 'D', 'O', 0x04);
+static constexpr int EVENT_AUDIO_LOOP = KID('A', 'D', 'O', 0x05);
+
 typedef bool (Unit::*EventFunc)(Message *);
 
 class Event : public Object {

@@ -10,11 +10,11 @@
 
 
 enum ImageFormat {
-    NONE,
-    RGB,
-    RGBA,
-    NV12,
-    NV21,
+    NONE = 0,
+    RGB = 1,
+    RGBA = 2,
+    NV12 = 3,
+    NV21 = 4,
 };
 
 

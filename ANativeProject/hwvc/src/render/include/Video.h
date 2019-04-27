@@ -7,7 +7,7 @@
 #ifndef HARDWAREVIDEOCODEC_VIDEO_H
 #define HARDWAREVIDEOCODEC_VIDEO_H
 
-#include "Unit.h"
+#include "HwStreamMedia.h"
 #include "TextureAllocator.h"
 #include "AsynVideoDecoder.h"
 #include "YUV420PFilter.h"
@@ -18,7 +18,7 @@
 #include "SimpleLock.h"
 #include "../entity/NativeWindow.h"
 
-class Video : public Unit {
+class Video : public HwStreamMedia {
 public:
     Video();
 
