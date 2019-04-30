@@ -14,7 +14,7 @@ AsynAudioDecoder::AsynAudioDecoder() : AbsAudioDecoder() {
 }
 
 AsynAudioDecoder::~AsynAudioDecoder() {
-    playState = STOP;
+    stop();
     if (pipeline) {
         delete pipeline;
         pipeline = nullptr;
@@ -39,7 +39,7 @@ bool AsynAudioDecoder::prepare(string path) {
     if (!pipeline) {
         pipeline = new EventPipeline("AsynAudioDecoder");
     }
-    start();
+//    start();
     return true;
 }
 
@@ -48,7 +48,7 @@ void AsynAudioDecoder::seek(int64_t us) {
 }
 
 void AsynAudioDecoder::start() {
-    if (STOP == playState) {
+    if (STOP == playState || PLAYING == playState) {
         return;
     }
     playState = PLAYING;
@@ -61,11 +61,19 @@ void AsynAudioDecoder::pause() {
     }
 }
 
+void AsynAudioDecoder::stop() {
+    grabLock.notify();
+    if (STOP != playState) {
+        playState = STOP;
+    }
+}
+
 void AsynAudioDecoder::loop() {
     if (PLAYING != playState)
         return;
     pipeline->queueEvent([this] {
         if (!grab()) {
+            Logcat::i("HWVC", "AsynAudioDecoder stop loop");
             return;
         }
         loop();
@@ -74,22 +82,17 @@ void AsynAudioDecoder::loop() {
 
 bool AsynAudioDecoder::grab() {
     if (cache.size() >= 10) {
-        grabLock.wait();
+//        grabLock.wait();
+//        Logcat::i("HWVC", "AsynAudioDecoder::grab wait: %d", cache.size());
         return true;
     }
-    Logcat::i("HWVC", "HwFrameAllocator::info: cache %d", cache.size());
-    int64_t time = getCurrentTimeUS();
+//    Logcat::i("HWVC", "HwFrameAllocator::info: cache %d", cache.size());
     HwAbsFrame *frame = nullptr;
     int ret = decoder->grab(&frame);
     frame = hwFrameAllocator->ref(frame);
     if (frame) {
         cache.push(frame);
     }
-//    LOGI("Grab frame(fmt:%d,type:%d) cost %lld, cache left %d, ret=%d",
-//         cacheFrame->format,
-//         cacheFrame->key_frame,
-//         (getCurrentTimeUS() - time),
-//         vRecycler->getCacheSize(), ret);
     return MEDIA_TYPE_EOF != ret;
 }
 

@@ -18,6 +18,9 @@ MessageQueue::~MessageQueue() {
 }
 
 void MessageQueue::offer(Message *msg) {
+    if (1129270529 == msg->what) {
+        LOGI("UnitPipeline sendMessage");
+    }
     queue->offer(msg);
 }
 

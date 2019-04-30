@@ -12,6 +12,9 @@ UnitPipeline::UnitPipeline(string name) {
 UnitPipeline::~UnitPipeline() {
     Message *msg = new Message(EVENT_COMMON_RELEASE, nullptr);
     postEvent(msg);
+    Logcat::e("HWVC", "UnitPipeline::~UnitPipeline %d, %d, %d, %d, %d, %d, %d", EVENT_COMMON_RELEASE, EVENT_AUDIO_START,
+              EVENT_AUDIO_PAUSE, EVENT_AUDIO_STOP, EVENT_AUDIO_SEEK, EVENT_AUDIO_SET_SOURCE,
+              EVENT_AUDIO_LOOP);
     if (pipeline) {
         delete pipeline;
         pipeline = nullptr;

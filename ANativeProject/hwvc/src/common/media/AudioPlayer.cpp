@@ -43,10 +43,11 @@ void AudioPlayer::initialize(SLEngine *engine) {
         memset(buf, 0, bufSize);
         return new ObjectBox(buf);
     });
-    LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d",
+    LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
          this->channels,
          this->sampleRate,
-         this->samplesPerBuffer);
+         this->samplesPerBuffer,
+         this->format);
     mixObject = nullptr;
     playObject = nullptr;
     playItf = nullptr;

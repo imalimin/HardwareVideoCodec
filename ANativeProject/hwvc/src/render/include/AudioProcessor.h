@@ -25,6 +25,8 @@ public:
 
     void pause();
 
+    void stop();
+
     void seek(int64_t us);
 
 private:

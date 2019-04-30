@@ -52,6 +52,7 @@ HwAbsFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
         uint8_t *buffer = new uint8_t[avFrame->linesize[0]];
         frame->setData(buffer, static_cast<uint64_t>(avFrame->linesize[0]));
     }
+    memset(frame->getData(), 0, frame->getDataSize());
     copyInfo(frame, avFrame);
     refQueue.push_front(frame);
     return frame;

@@ -54,6 +54,13 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_AudioProcessor_pause
     }
 }
 
+JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_AudioProcessor_stop
+        (JNIEnv *env, jobject thiz, jlong handler) {
+    if (handler) {
+        getHandler(handler)->stop();
+    }
+}
+
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_AudioProcessor_seek
         (JNIEnv *env, jobject thiz, jlong handler, jlong us) {
     if (handler) {

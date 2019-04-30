@@ -24,9 +24,13 @@ void HandlerThread::run() {
             continue;
         }
         msg->runnable(msg);
+        int what = msg->what;
+        if (1129270529 == msg->what) {
+            LOGI("UnitPipeline(%s) release", this->name.c_str());
+        }
         delete msg;
         if (this->requestQuitSafely && size <= 0) {
-            LOGI("requestQuitSafely");
+            LOGI("requestQuitSafely(%s) what=%d", this->name.c_str(), what);
             break;
         }
     }
@@ -60,6 +64,9 @@ void HandlerThread::sendMessage(Message *msg) {
 }
 
 void HandlerThread::offer(Message *msg) {
+    if (1129270529 == msg->what) {
+        LOGI("UnitPipeline sendMessage");
+    }
     queue->offer(msg);
 }
 

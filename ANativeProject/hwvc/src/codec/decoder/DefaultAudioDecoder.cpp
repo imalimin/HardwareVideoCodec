@@ -133,7 +133,7 @@ int DefaultAudioDecoder::grab(HwAbsFrame **frame) {
                       resampleFrame->linesize[0],
                       resampleFrame->nb_samples);
             av_frame_unref(audioFrame);
-            return 0;
+            return MEDIA_TYPE_AUDIO;
         }
         //如果缓冲区中既没有音频也没有视频，并且已经读取完文件，则播放完了
         if (eof) {

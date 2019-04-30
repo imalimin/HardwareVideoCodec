@@ -33,6 +33,8 @@ public:
 
     void pause();
 
+    void stop();
+
     /**
      * @return 1: video, 2: audio, 0: failed
      */

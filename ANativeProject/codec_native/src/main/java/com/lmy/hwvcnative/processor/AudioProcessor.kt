@@ -32,6 +32,11 @@ class AudioProcessor : CPPObject() {
         pause(handler)
     }
 
+    fun stop() {
+        if (0L == handler) return
+        stop(handler)
+    }
+
     fun seek(us: Long) {
         if (0L == handler) return
         seek(handler, us)
@@ -47,6 +52,7 @@ class AudioProcessor : CPPObject() {
     private external fun prepare(handler: Long)
     private external fun start(handler: Long)
     private external fun pause(handler: Long)
+    private external fun stop(handler: Long)
     private external fun seek(handler: Long, us: Long)
     private external fun release(handler: Long)
 }

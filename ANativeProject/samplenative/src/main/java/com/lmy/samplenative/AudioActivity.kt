@@ -32,6 +32,7 @@ class AudioActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        processor?.stop()
         processor?.release()
     }
 }

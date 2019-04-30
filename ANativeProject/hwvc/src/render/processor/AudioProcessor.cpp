@@ -52,6 +52,13 @@ void AudioProcessor::pause() {
     }
 }
 
+void AudioProcessor::stop() {
+    if (pipeline) {
+        Message *msg = new Message(EVENT_AUDIO_STOP, nullptr);
+        pipeline->postEvent(msg);
+    }
+}
+
 void AudioProcessor::seek(int64_t us) {
     if (pipeline) {
         pipeline->removeAllMessage(EVENT_AUDIO_SEEK);
