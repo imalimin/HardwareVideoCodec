@@ -8,9 +8,9 @@
 #ifndef HARDWAREVIDEOCODEC_HWABSFRAME_H
 #define HARDWAREVIDEOCODEC_HWABSFRAME_H
 
-#include "Object.h"
+#include "HwMemFrame.h"
 
-class HwAbsFrame : public Object {
+class HwAbsFrame : public HwMemFrame {
 public:
     enum Type {
         VIDEO,
@@ -20,12 +20,6 @@ public:
     HwAbsFrame(Type type);
 
     virtual ~HwAbsFrame();
-
-    uint8_t *getData();
-
-    uint64_t getDataSize();
-
-    void setData(uint8_t *data, uint64_t dataSize);
 
     void setFormat(uint16_t format);
 
@@ -45,8 +39,6 @@ public:
 
 private:
     Type type = Type::AUDIO;
-    uint8_t *data = nullptr;
-    uint64_t dataSize = 0;
     uint16_t format = 0;
     int64_t pts;
 };

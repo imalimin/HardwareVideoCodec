@@ -7,26 +7,12 @@
 
 #include "../include/HwAbsFrame.h"
 
-HwAbsFrame::HwAbsFrame(Type type) {
+HwAbsFrame::HwAbsFrame(Type type) : HwMemFrame() {
     this->type = type;
 }
 
 HwAbsFrame::~HwAbsFrame() {
-    if (data) {
-        delete[]data;
-        data = nullptr;
-    }
-    dataSize = 0;
     format = 0;
-}
-
-uint8_t *HwAbsFrame::getData() { return data; }
-
-uint64_t HwAbsFrame::getDataSize() { return dataSize; }
-
-void HwAbsFrame::setData(uint8_t *data, uint64_t dataSize) {
-    this->data = data;
-    this->dataSize = dataSize;
 }
 
 void HwAbsFrame::setFormat(uint16_t format) { this->format = format; }

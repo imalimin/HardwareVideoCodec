@@ -6,7 +6,7 @@
  */
 #ifndef HARDWAREVIDEOCODEC_RECYCLERQUEUE_H
 #define HARDWAREVIDEOCODEC_RECYCLERQUEUE_H
-
+/*
 #include <functional>
 #include "HwRecycler.h"
 #include <queue>
@@ -37,23 +37,23 @@ public:
 //        }
     }
 
-    /**
+    *//**
      * 消费一个数据
-     */
+     *//*
     T *take() {
         return queue.front();
     }
 
-    /**
+    *//**
      * 提供一个数据
-     */
+     *//*
     void offer(T *e) {
         queue.push(e);
     }
 
-    /*
+    *//*
      * 取出一个缓存
-     */
+     *//*
     T *takeCache() {
         if (recycler) {
             return recycler->take();
@@ -61,16 +61,16 @@ public:
         return nullptr;
     }
 
-    /**
+    *//**
      * 回收一个数据
-     */
+     *//*
     void recycle(T *e) {
         recycler->offer(e);
     }
 
-    /**
+    *//**
      * 回收所有数据
-     */
+     *//*
     void recycleAll() {
         if (0 == size()) return;
         while (size() > 0) {
@@ -98,6 +98,6 @@ public:
 private:
     std::queue<T> queue;
     std::queue<T> recycler;
-};
+};*/
 
 #endif //HARDWAREVIDEOCODEC_RECYCLERQUEUE_H
