@@ -17,7 +17,7 @@ void HandlerThread::run() {
         Message *msg = this->take();
         int size = this->size();
         if (this->requestQuit && !this->requestQuitSafely) {
-            LOGI("requestQuit, %ld, %ld", msg, pthread_self());
+            LOGI("requestQuit(%s), %d, %ld", this->name.c_str(), msg->what, pthread_self());
             break;
         }
         if (nullptr == msg) {
@@ -64,9 +64,6 @@ void HandlerThread::sendMessage(Message *msg) {
 }
 
 void HandlerThread::offer(Message *msg) {
-    if (1129270529 == msg->what) {
-        LOGI("UnitPipeline sendMessage");
-    }
     queue->offer(msg);
 }
 
