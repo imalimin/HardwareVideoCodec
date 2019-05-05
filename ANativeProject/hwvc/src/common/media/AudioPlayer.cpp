@@ -7,6 +7,7 @@
 #include "../include/AudioPlayer.h"
 #include "../include/log.h"
 #include "../include/ObjectBox.h"
+#include "../include/TimeUtils.h"
 
 void bufferQueueCallback(SLAndroidSimpleBufferQueueItf slBufferQueueItf, void *context) {
     AudioPlayer *player = static_cast<AudioPlayer *>(context);
@@ -91,10 +92,9 @@ HwResult AudioPlayer::createEngine() {
 HwResult AudioPlayer::start() {
     (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
     uint32_t bufSize = getBufferByteSize();
-    uint8_t *buffer = new uint8_t[bufSize];
+    uint8_t buffer[bufSize];
     memset(buffer, 0, bufSize);
     write(buffer, bufSize);
-    delete[]buffer;
     bufferEnqueue(bufferQueueItf);
     SLresult result = (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
     if (SL_RESULT_SUCCESS != result) {
@@ -169,9 +169,13 @@ HwResult AudioPlayer::createBufferQueueAudioPlayer() {
     }
     return Hw::SUCCESS;
 }
-
+static int64_t ttime = 0;
 void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
-    LOGE("AudioPlayer...");
+    LOGE("AudioPlayer..., %d, %lld", recycler->size(), getCurrentTimeUS() - ttime);
+    ttime = getCurrentTimeUS();
+    if (!recycler) {
+        return;
+    }
     auto *buffer = recycler->take();
     if (buffer) {
         (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
