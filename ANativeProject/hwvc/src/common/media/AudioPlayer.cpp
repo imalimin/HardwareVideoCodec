@@ -44,6 +44,7 @@ void AudioPlayer::initialize(SLEngine *engine) {
         memset(buf, 0, bufSize);
         return new ObjectBox(buf);
     });
+    this->fifo = new HwMemFIFO(bufSize * 16);
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
          this->channels,
          this->sampleRate,
@@ -183,16 +184,26 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
 //        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
 //    }
 //    recycler->recycle(buffer);
-    ObjectBox *buffer = nullptr;
-    if (pcmList.size() > 0) {
-        buffer = pcmList.front();
-        pcmList.pop();
+    //-----------------------
+//    ObjectBox *buffer = nullptr;
+//    if (pcmList.size() > 0) {
+//        buffer = pcmList.front();
+//        pcmList.pop();
+//    } else {
+//        buffer = new ObjectBox(new uint8_t[getBufferByteSize()]);
+//        memset(buffer->ptr, 0, getBufferByteSize());
+//    }
+//    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
+//    delete buffer;
+    //-----------------------
+    if (fifo->size() >= getBufferByteSize()) {
+        HwMemFrame *frame = fifo->take(getBufferByteSize());
+        (*slBufferQueueItf)->Enqueue(bufferQueueItf, frame->getData(), frame->getDataSize());
     } else {
-        buffer = new ObjectBox(new uint8_t[getBufferByteSize()]);
-        memset(buffer->ptr, 0, getBufferByteSize());
+        uint8_t *buffer = new uint8_t[getBufferByteSize()];
+        memset(buffer, 0, getBufferByteSize());
+        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer, getBufferByteSize());
     }
-    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
-    delete buffer;
 }
 
 HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
@@ -203,9 +214,12 @@ HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
 //    }
 //    memcpy(cache->ptr, buffer, size);
 //    recycler->offer(cache);
-    uint8_t *data = new uint8_t[size];
-    memcpy(data, buffer, size);
-    pcmList.push(new ObjectBox(data));
+    //------------------
+//    uint8_t *data = new uint8_t[size];
+//    memcpy(data, buffer, size);
+//    pcmList.push(new ObjectBox(data));
+    //-----------------
+    fifo->push(buffer, size);
     return Hw::SUCCESS;
 }
 
@@ -221,6 +235,10 @@ void AudioPlayer::stop() {
     if (recycler) {
         delete recycler;
         recycler = nullptr;
+    }
+    if (fifo) {
+        delete fifo;
+        fifo = nullptr;
     }
     if (lock) {
         delete lock;
