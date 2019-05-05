@@ -102,16 +102,15 @@ HwAbsFrame *HwFrameAllocator::ref(HwAbsFrame *src) {
             ++itr;
         }
     }
-    if (!frame) {
+    if (frame) {
+        memcpy(frame->getData(), src->getData(), static_cast<size_t>(frame->getDataSize()));
+        refQueue.push_front(frame);
+    } else {
         if (src->isVideo()) {
             frame = static_cast<HwVideoFrame *>(src)->clone();
         } else if (src->isAudio()) {
             frame = static_cast<HwAudioFrame *>(src)->clone();
         }
-    }
-    if (frame) {
-        memcpy(frame->getData(), src->getData(), static_cast<size_t>(frame->getDataSize()));
-        refQueue.push_front(frame);
     }
     return frame;
 }
