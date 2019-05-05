@@ -172,8 +172,9 @@ int HwAudioInput::grab() {
     if (frame->isAudio()) {
         HwAudioFrame *audioFrame = dynamic_cast<HwAudioFrame *>(frame);
         if (audioPlayer) {
-            Logcat::i("HWVC", "HwAudioInput::play audio: %d, %lld, %lld",
+            Logcat::i("HWVC", "HwAudioInput::play audio: %d, %d, %lld, %lld",
                       audioFrame->getChannels(),
+                      audioFrame->getSampleRate(),
                       audioFrame->getSampleCount(),
                       audioFrame->getDataSize());
             audioPlayer->write(audioFrame->getData(),
