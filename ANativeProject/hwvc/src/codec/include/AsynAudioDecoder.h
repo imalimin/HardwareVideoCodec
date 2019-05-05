@@ -63,6 +63,7 @@ private:
     HwAbsFrame *outputFrame = nullptr;//用于缓存一帧，以便在下次grab的时候进行回收
     PlayState playState = STOP;
     SimpleLock grabLock;
+    FILE *file = nullptr;
 };
 
 

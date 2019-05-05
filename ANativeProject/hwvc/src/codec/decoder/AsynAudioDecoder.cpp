@@ -27,9 +27,14 @@ AsynAudioDecoder::~AsynAudioDecoder() {
         delete hwFrameAllocator;
         hwFrameAllocator = nullptr;
     }
+    if (file) {
+        fclose(file);
+        file = nullptr;
+    }
 }
 
 bool AsynAudioDecoder::prepare(string path) {
+    file = fopen("/sdcard/2.pcm", "wb");
     playState = PAUSE;
     if (decoder) {
         if (!decoder->prepare(path)) {
@@ -108,6 +113,10 @@ int AsynAudioDecoder::grab(HwAbsFrame **frame) {
     cache.pop();
     grabLock.notify();
     *frame = outputFrame;
+    if (file) {
+        fwrite(outputFrame->getData(), 1, outputFrame->getDataSize(), file);
+    }
+//    memset(outputFrame->getData(), 1, outputFrame->getDataSize());
     if ((*frame)->isAudio()) {
         return MEDIA_TYPE_AUDIO;
     }
