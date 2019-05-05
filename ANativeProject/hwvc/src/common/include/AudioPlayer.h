@@ -15,6 +15,7 @@
 #include "SimpleLock.h"
 #include "SLEngine.h"
 #include "HwResult.h"
+#include <queue>
 
 using namespace std;
 
@@ -46,6 +47,7 @@ public:
 private:
     SimpleLock *lock = nullptr;
     RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
+    std::queue<ObjectBox *> pcmList;
     SLEngine *engine = nullptr;
     bool ownEngine = false;
     SLObjectItf mixObject = nullptr;

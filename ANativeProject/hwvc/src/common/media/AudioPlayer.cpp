@@ -169,28 +169,43 @@ HwResult AudioPlayer::createBufferQueueAudioPlayer() {
     }
     return Hw::SUCCESS;
 }
+
 static int64_t ttime = 0;
+
 void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
-    LOGE("AudioPlayer..., %d, %lld", recycler->size(), getCurrentTimeUS() - ttime);
+    LOGE("AudioPlayer..., %d, %lld", pcmList.size(), getCurrentTimeUS() - ttime);
     ttime = getCurrentTimeUS();
-    if (!recycler) {
-        return;
+//    if (!recycler) {
+//        return;
+//    }
+//    auto *buffer = recycler->take();
+//    if (buffer) {
+//        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
+//    }
+//    recycler->recycle(buffer);
+    ObjectBox *buffer = nullptr;
+    if (pcmList.size() > 0) {
+        buffer = pcmList.front();
+        pcmList.pop();
+    } else {
+        buffer = new ObjectBox(new uint8_t[getBufferByteSize()]);
+        memset(buffer->ptr, 0, getBufferByteSize());
     }
-    auto *buffer = recycler->take();
-    if (buffer) {
-        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
-    }
-    recycler->recycle(buffer);
+    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
+    delete buffer;
 }
 
 HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
-    ObjectBox *cache = recycler->takeCache();
-    if (!cache) {
-        LOGE("Cache invalid");
-        return Hw::FAILED;
-    }
-    memcpy(cache->ptr, buffer, size);
-    recycler->offer(cache);
+//    ObjectBox *cache = recycler->takeCache();
+//    if (!cache) {
+//        LOGE("Cache invalid");
+//        return Hw::FAILED;
+//    }
+//    memcpy(cache->ptr, buffer, size);
+//    recycler->offer(cache);
+    uint8_t *data = new uint8_t[size];
+    memcpy(data, buffer, size);
+    pcmList.push(new ObjectBox(data));
     return Hw::SUCCESS;
 }
 
