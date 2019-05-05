@@ -6,22 +6,37 @@
 #include "../include/Unit.h"
 
 UnitPipeline::UnitPipeline(string name) {
+    pthread_mutex_init(&mutex, nullptr);
+    available = true;
     pipeline = new HandlerThread(name);
 }
 
 UnitPipeline::~UnitPipeline() {
-    Message *msg = new Message(EVENT_COMMON_RELEASE, nullptr);
-    postEvent(msg);
-    Logcat::e("HWVC", "UnitPipeline::~UnitPipeline %d, %d, %d, %d, %d, %d, %d", EVENT_COMMON_RELEASE, EVENT_AUDIO_START,
-              EVENT_AUDIO_PAUSE, EVENT_AUDIO_STOP, EVENT_AUDIO_SEEK, EVENT_AUDIO_SET_SOURCE,
-              EVENT_AUDIO_LOOP);
+    release();
     if (pipeline) {
         delete pipeline;
         pipeline = nullptr;
     }
+    pthread_mutex_destroy(&mutex);
 }
 
 void UnitPipeline::release() {
+    if (available) {
+        pthread_mutex_lock(&mutex);
+        available = false;
+        Message *msg1 = new Message(EVENT_COMMON_RELEASE, nullptr);
+        if (pipeline) {
+            msg1->runnable = [this](Message *msg2) {
+                /**
+                 * @NOTE 不置空的话会出现不可预料的崩溃
+                 */
+                msg2->runnable = nullptr;
+                this->dispatch(msg2);
+            };
+            pipeline->sendMessage(msg1);
+        }
+        pthread_mutex_unlock(&mutex);
+    }
 }
 
 void UnitPipeline::postEvent(Message *msg1) {
@@ -33,7 +48,13 @@ void UnitPipeline::postEvent(Message *msg1) {
             msg2->runnable = nullptr;
             this->dispatch(msg2);
         };
-        pipeline->sendMessage(msg1);
+        pthread_mutex_lock(&mutex);
+        if (available) {
+            pipeline->sendMessage(msg1);
+        } else {
+            delete msg1;
+        }
+        pthread_mutex_unlock(&mutex);
     } else {
         this->dispatch(msg1);
     }

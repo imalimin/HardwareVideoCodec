@@ -30,7 +30,9 @@ public:
 
 private:
     HandlerThread *pipeline = nullptr;
+    pthread_mutex_t mutex;
     vector<Unit *> units;
+    bool available = true;
 
     void dispatch(Message *msg);
 
