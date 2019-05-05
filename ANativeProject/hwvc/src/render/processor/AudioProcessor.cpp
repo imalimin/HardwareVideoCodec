@@ -17,6 +17,7 @@ AudioProcessor::AudioProcessor() : Object() {
 AudioProcessor::~AudioProcessor() {
     if (pipeline) {
         pipeline->release();
+        wait(20000);
         delete pipeline;
         pipeline = nullptr;
     }

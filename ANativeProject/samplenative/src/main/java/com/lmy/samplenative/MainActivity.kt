@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.TextureView
+import com.lmy.hwvcnative.media.AudioPlayerTest
 import com.lmy.hwvcnative.processor.PictureProcessor
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -14,6 +15,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     private lateinit var mFilterController: FilterController
     private var processor: PictureProcessor? = PictureProcessor()
     private var surface: Surface? = null
+    private var playerTest = AudioPlayerTest()
     private val surfaceCallback = object : SurfaceHolder.Callback {
         override fun surfaceChanged(holder: SurfaceHolder, p1: Int, p2: Int, p3: Int) {
             Log.i("HWVC", "surfaceChanged: $p1, $p2, $p3 | ${surfaceView.width}, ${surfaceView.height}")
@@ -41,6 +43,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
         surfaceView.keepScreenOn = true
         surfaceView.holder.addCallback(surfaceCallback)
 //        surfaceView.surfaceTextureListener = this
+        playerTest.start()
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
@@ -65,6 +68,7 @@ class MainActivity : BaseActivity(), TextureView.SurfaceTextureListener {
     override fun onDestroy() {
         super.onDestroy()
         surfaceView.holder.removeCallback(surfaceCallback)
+        playerTest.stop()
     }
 
     companion object {
