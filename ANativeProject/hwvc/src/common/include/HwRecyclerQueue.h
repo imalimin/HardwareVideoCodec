@@ -4,52 +4,51 @@
  * This source code is licensed under the GPL license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#ifndef HARDWAREVIDEOCODEC_RECYCLERBLOCKQUEUE_H
-#define HARDWAREVIDEOCODEC_RECYCLERBLOCKQUEUE_H
+#ifndef HARDWAREVIDEOCODEC_RECYCLERQUEUE_H
+#define HARDWAREVIDEOCODEC_RECYCLERQUEUE_H
 
 #include <functional>
 #include "HwRecycler.h"
+#include <queue>
 #include "BlockQueue.h"
 
 template<class T>
-class RecyclerBlockQueue : public HwRecycler<T> {
+class HwRecyclerQueue : public HwRecycler<T> {
 public:
-    RecyclerBlockQueue(int initCount, function<T *()> initor) : HwRecycler<T>() {
-        queue = new BlockQueue<T>();
-        recycler = new BlockQueue<T>();
+    HwRecyclerQueue(int initCount, function<T *()> initor) : HwRecycler<T>() {
         for (int i = 0; i < initCount; ++i) {
             recycle(initor());
         }
     }
 
-    virtual ~RecyclerBlockQueue() {
+    virtual ~HwRecyclerQueue() {
     }
 
     void clear() {
-        if (recycler) {
-            recycler->clear();
-            delete recycler;
-            recycler = nullptr;
-        }
-        if (queue) {
-            queue->clear();
-            delete queue;
-            queue = nullptr;
-        }
+//        if (recycler) {
+//            recycler->clear();
+//            delete recycler;
+//            recycler = nullptr;
+//        }
+//        if (queue) {
+//            queue->clear();
+//            delete queue;
+//            queue = nullptr;
+//        }
     }
 
     /**
      * 消费一个数据
      */
     T *take() {
-        return queue->take();
+        return queue.front();
     }
 
     /**
      * 提供一个数据
      */
     void offer(T *e) {
-        queue->offer(e);
+        queue.push(e);
     }
 
     /*
@@ -97,8 +96,8 @@ public:
     }
 
 private:
-    BlockQueue<T> *queue = nullptr;
-    BlockQueue<T> *recycler = nullptr;
+    std::queue<T> queue;
+    std::queue<T> recycler;
 };
 
-#endif //HARDWAREVIDEOCODEC_RECYCLERBLOCKQUEUE_H
+#endif //HARDWAREVIDEOCODEC_RECYCLERQUEUE_H
