@@ -4,7 +4,6 @@ import android.content.Intent
 import android.text.TextUtils
 import android.widget.Toast
 import com.lmy.hwvcnative.processor.AudioProcessor
-import kotlinx.android.synthetic.main.activity_video.*
 
 class AudioActivity : BaseActivity() {
     private var processor: AudioProcessor? = AudioProcessor()
