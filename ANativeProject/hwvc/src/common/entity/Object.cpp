@@ -6,27 +6,31 @@
  */
 #include "../include/Object.h"
 #include <sys/time.h>
+#include "../include/Logcat.h"
 
 Object::Object() {
     pthread_mutex_init(&mutex, nullptr);
     pthread_cond_init(&cond, nullptr);
-
+//    sem_init(&sem, 0, 0);
 }
 
 Object::~Object() {
+    notify();
+//    sem_destroy(&sem);
     pthread_mutex_destroy(&mutex);
     pthread_cond_destroy(&cond);
 }
 
 void Object::notify() {
     pthread_cond_broadcast(&cond);
+//    sem_post(&sem);//0变成1
 }
 
 void Object::wait() {
+//    sem_wait(&sem);//1变成0，等待
     pthread_mutex_lock(&mutex);
-    if (0 != pthread_cond_wait(&cond, &mutex)) {
-        pthread_mutex_unlock(&mutex);
-    }
+    pthread_cond_wait(&cond, &mutex);
+    pthread_mutex_unlock(&mutex);
 }
 
 void Object::wait(int us) {

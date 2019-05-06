@@ -8,6 +8,7 @@
 #define HARDWAREVIDEOCODEC_OBJECT_H
 
 #include "pthread.h"
+//#include "semaphore.h"
 
 class Object {
 public:
@@ -24,6 +25,7 @@ public:
 private:
     pthread_mutex_t mutex;
     pthread_cond_t cond;
+//    sem_t sem;
 };
 
 
