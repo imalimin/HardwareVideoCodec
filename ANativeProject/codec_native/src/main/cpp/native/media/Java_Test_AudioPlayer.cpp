@@ -1,6 +1,9 @@
-//
-// Created by mingyi.li on 2019/5/5.
-//
+/*
+* Copyright (c) 2018-present, lmyooyo@gmail.com.
+*
+* This source code is licensed under the GPL license found in the
+* LICENSE file in the root directory of this source tree.
+*/
 
 
 #include <jni.h>
@@ -15,6 +18,7 @@ extern "C" {
 static AudioPlayer *player = nullptr;
 static FILE *file = nullptr;
 static EventPipeline *pipeline = nullptr;
+static int index = 0;
 
 static void loopTest() {
     if (!file) {
@@ -24,6 +28,7 @@ static void loopTest() {
         uint8_t data[8192];
         int ret = fread(data, 1, 8192, file);
         if (ret > 0) {
+            ++index;
             player->write(data, 8192);
             loopTest();
         }

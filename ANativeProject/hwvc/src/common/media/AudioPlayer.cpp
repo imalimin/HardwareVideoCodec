@@ -91,6 +91,7 @@ HwResult AudioPlayer::createEngine() {
 }
 
 HwResult AudioPlayer::start() {
+    file = fopen("/sdcard/3.pcm", "wb");
     (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
     uint32_t bufSize = getBufferByteSize();
     uint8_t buffer[bufSize];
@@ -174,8 +175,6 @@ HwResult AudioPlayer::createBufferQueueAudioPlayer() {
 static int64_t ttime = 0;
 
 void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
-    LOGE("AudioPlayer..., %d, %lld", pcmList.size(), getCurrentTimeUS() - ttime);
-    ttime = getCurrentTimeUS();
 //    if (!recycler) {
 //        return;
 //    }
@@ -196,17 +195,29 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
 //    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer->ptr, getBufferByteSize());
 //    delete buffer;
     //-----------------------
+    if (!fifo) {
+        return;
+    }
+    LOGE("AudioPlayer..., %d, %lld", fifo->size(), getCurrentTimeUS() - ttime);
+    ttime = getCurrentTimeUS();
     if (fifo->size() >= getBufferByteSize()) {
         HwMemFrame *frame = fifo->take(getBufferByteSize());
-        (*slBufferQueueItf)->Enqueue(bufferQueueItf, frame->getData(), frame->getDataSize());
-    } else {
-        uint8_t *buffer = new uint8_t[getBufferByteSize()];
-        memset(buffer, 0, getBufferByteSize());
-        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer, getBufferByteSize());
+        if (frame) {
+            (*slBufferQueueItf)->Enqueue(bufferQueueItf, frame->getData(), frame->getDataSize());
+            if (file) {
+                fwrite(frame->getData(), 1, frame->getDataSize(), file);
+            }
+            delete frame;
+            return;
+        }
     }
+    uint8_t *buffer = new uint8_t[getBufferByteSize()];
+    memset(buffer, 0, getBufferByteSize());
+    (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer, getBufferByteSize());
 }
 
 HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
+    Logcat::i("HWVC", "AudioPlayer::write: %d, %d", buffer, buffer + 4);
 //    ObjectBox *cache = recycler->takeCache();
 //    if (!cache) {
 //        LOGE("Cache invalid");
@@ -239,6 +250,10 @@ void AudioPlayer::stop() {
     if (fifo) {
         delete fifo;
         fifo = nullptr;
+    }
+    if (file) {
+        fclose(file);
+        file = nullptr;
     }
     if (lock) {
         delete lock;

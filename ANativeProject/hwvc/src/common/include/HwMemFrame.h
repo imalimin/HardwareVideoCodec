@@ -1,6 +1,9 @@
-//
-// Created by limin on 2019/5/6.
-//
+/*
+* Copyright (c) 2018-present, lmyooyo@gmail.com.
+*
+* This source code is licensed under the GPL license found in the
+* LICENSE file in the root directory of this source tree.
+*/
 
 #ifndef HARDWAREVIDEOCODEC_HWMEMFRAME_H
 #define HARDWAREVIDEOCODEC_HWMEMFRAME_H
@@ -13,11 +16,11 @@ public:
 
     virtual ~HwMemFrame();
 
-    uint8_t *getData();
+    virtual uint8_t *getData();
 
-    uint64_t getDataSize();
+    virtual uint64_t getDataSize();
 
-    void setData(uint8_t *data, uint64_t dataSize);
+    virtual void setData(uint8_t *data, uint64_t dataSize);
 
 private:
     uint8_t *data = nullptr;
