@@ -51,6 +51,7 @@
         </activity>
         <activity android:name=".ImageActivity" />
         <activity android:name=".AudioPlayerActivity" />
+        <activity android:name=".TestMemFIFOActivity" />
         <activity android:name=".AudioActivity">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />

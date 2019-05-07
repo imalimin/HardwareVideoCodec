@@ -11,7 +11,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : BaseActivity() {
     private val ITEMS = arrayListOf(
             Item("AudioPlayerTest") { startActivity(Intent(this, AudioPlayerActivity::class.java)) },
-            Item("AudioPlayer") { startActivity(Intent(this, AudioActivity::class.java)) }
+            Item("AudioPlayer") { startActivity(Intent(this, AudioActivity::class.java)) },
+            Item("TestMemFIFOActivity") { startActivity(Intent(this, TestMemFIFOActivity::class.java)) }
     )
 
     override fun getLayoutResource(): Int = R.layout.activity_main
