@@ -6,8 +6,22 @@
 */
 #include "../include/TimeUtils.h"
 
-long long getCurrentTimeUS() {
+TimeUtils::TimeUtils() : Object() {
+
+}
+
+TimeUtils::~TimeUtils() {
+
+}
+
+int64_t TimeUtils::getCurrentTimeUS() {
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     return static_cast<long long int>(tv.tv_sec * 1000000.0 + tv.tv_usec);
+}
+
+int64_t getCurrentTimeUS() {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return TimeUtils::getCurrentTimeUS();
 }

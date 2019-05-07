@@ -8,7 +8,19 @@
 #define HARDWAREVIDEOCODEC_TIMEUTILS_H
 
 #include <sys/time.h>
+#include "Object.h"
 
-long long getCurrentTimeUS();
+class TimeUtils : public Object {
+public:
+
+    ~TimeUtils();
+
+    static int64_t getCurrentTimeUS();
+
+private:
+    TimeUtils();
+};
+
+int64_t getCurrentTimeUS();
 
 #endif //HARDWAREVIDEOCODEC_TIMEUTILS_H
