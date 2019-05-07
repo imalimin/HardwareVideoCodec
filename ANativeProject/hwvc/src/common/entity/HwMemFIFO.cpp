@@ -8,6 +8,7 @@
 #include "../include/HwMemFIFO.h"
 #include "../include/HwMemFrameRef.h"
 #include "../include/Logcat.h"
+#include "../include/TimeUtils.h"
 
 HwMemFIFO::HwMemFIFO(size_t capacity) : Object() {
     this->capacity = capacity;
@@ -49,14 +50,17 @@ HwMemFrame *HwMemFIFO::take(size_t size) {
         Logcat::e("HWVC", "HwMemFIFO::take b");
         return nullptr;
     }
+    int64_t time = TimeUtils::getCurrentTimeUS();
     writeReadLock.lock();
     HwMemFrame *frame = new HwMemFrameRef(this->reader, size);
     this->reader += size;
     this->_size -= size;
     writeReadLock.unlock();
     notifyLock.notify();
-    Logcat::e("HWVC", "HwMemFIFO::take(%d/%d/%d)(%d, %d)", this->size(), leftCapacity(), capacity,
-              frame->getData(), frame->getData() + 4);
+    Logcat::e("HWVC", "HwMemFIFO::take(%d/%d/%d)(%d, %d), cost: %lld", this->size(), leftCapacity(),
+              capacity,
+              frame->getData(), frame->getData() + 4,
+              getCurrentTimeUS() - time);
     return frame;
 }
 
