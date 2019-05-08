@@ -96,9 +96,7 @@ size_t HwFIFOBuffer::size() {
 void HwFIFOBuffer::movePosition() {
     writeReadLock.lock();
     size_t size = static_cast<size_t>(this->writer - reader);
-    uint8_t tmp[size];
-    memcpy(tmp, this->reader, size);
-    memcpy(first(), tmp, size);
+    memcpy(first(), this->reader, size);
     this->reader = first();
     this->writer = first() + size;
     writeReadLock.unlock();
