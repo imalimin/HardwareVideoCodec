@@ -18,7 +18,7 @@ HwFrameAllocator::~HwFrameAllocator() {
     refQueue.clear();
 }
 
-HwAbsFrame *HwFrameAllocator::ref(AVFrame *avFrame) {
+HwAbsMediaFrame *HwFrameAllocator::ref(AVFrame *avFrame) {
     if (!avFrame) return nullptr;
     if (avFrame->width * avFrame->height > 0) {
         return refVideo(avFrame);
@@ -26,18 +26,18 @@ HwAbsFrame *HwFrameAllocator::ref(AVFrame *avFrame) {
     return refAudio(avFrame);
 }
 
-void HwFrameAllocator::unRef(HwAbsFrame **frame) {
+void HwFrameAllocator::unRef(HwAbsMediaFrame **frame) {
     unRefQueue.push_front(frame[0]);
     refQueue.remove(frame[0]);
     frame[0] = nullptr;
 }
 
-HwAbsFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
-    HwAbsFrame *frame = nullptr;
+HwAbsMediaFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
+    HwAbsMediaFrame *frame = nullptr;
     if (unRefQueue.size() > 0) {
-        list<HwAbsFrame *>::iterator itr = unRefQueue.begin();
+        list<HwAbsMediaFrame *>::iterator itr = unRefQueue.begin();
         while (itr != unRefQueue.end()) {
-            if (HwAbsFrame::Type::AUDIO == (*itr)->getType()
+            if (HwAbsMediaFrame::Type::AUDIO == (*itr)->getType()
                 && (*itr)->getDataSize() == avFrame->linesize[0]) {//帧类型相同，data大小相等，则可以复用
                 frame = *itr;
                 unRefQueue.remove(frame);
@@ -58,13 +58,13 @@ HwAbsFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
     return frame;
 }
 
-HwAbsFrame *HwFrameAllocator::refVideo(AVFrame *avFrame) {
+HwAbsMediaFrame *HwFrameAllocator::refVideo(AVFrame *avFrame) {
     int size = avFrame->width * avFrame->height * 3 / 2;
-    HwAbsFrame *frame = nullptr;
+    HwAbsMediaFrame *frame = nullptr;
     if (unRefQueue.size() > 0) {
-        list<HwAbsFrame *>::iterator itr = unRefQueue.begin();
+        list<HwAbsMediaFrame *>::iterator itr = unRefQueue.begin();
         while (itr != unRefQueue.end()) {
-            if (HwAbsFrame::Type::VIDEO == (*itr)->getType()
+            if (HwAbsMediaFrame::Type::VIDEO == (*itr)->getType()
                 && (*itr)->getDataSize() == size) {//帧类型相同，data大小相等，则可以复用
                 frame = *itr;
                 unRefQueue.remove(frame);
@@ -83,16 +83,16 @@ HwAbsFrame *HwFrameAllocator::refVideo(AVFrame *avFrame) {
     return frame;
 }
 
-void HwFrameAllocator::copyInfo(HwAbsFrame *dest, AVFrame *src) {
+void HwFrameAllocator::copyInfo(HwAbsMediaFrame *dest, AVFrame *src) {
     memcpy(dest->getData(), src->data[0], static_cast<size_t>(dest->getDataSize()));
     dest->setFormat(static_cast<uint16_t>(src->format));
     dest->setPts(src->pts);
 }
 
-HwAbsFrame *HwFrameAllocator::ref(HwAbsFrame *src) {
-    HwAbsFrame *frame = nullptr;
+HwAbsMediaFrame *HwFrameAllocator::ref(HwAbsMediaFrame *src) {
+    HwAbsMediaFrame *frame = nullptr;
     if (unRefQueue.size() > 0) {
-        list<HwAbsFrame *>::iterator itr = unRefQueue.begin();
+        list<HwAbsMediaFrame *>::iterator itr = unRefQueue.begin();
         while (itr != unRefQueue.end()) {
             if ((*itr)->getType() == src->getType()
                 && (*itr)->getDataSize() == src->getDataSize()) {

@@ -9,7 +9,7 @@
 
 #include "AbsVideoDecoder.h"
 #include "AbsAudioDecoder.h"
-#include "HwAbsFrame.h"
+#include "HwAbsMediaFrame.h"
 #include "HwFrameAllocator.h"
 
 #ifdef __cplusplus
@@ -47,7 +47,7 @@ public:
     /**
      * @return 1: video, 2: audio, 0: failed
      */
-    virtual int grab(HwAbsFrame **frame);
+    virtual int grab(HwAbsMediaFrame **frame);
 
     virtual int64_t getVideoDuration() override;
 
@@ -65,7 +65,7 @@ private:
     AVFrame *resampleFrame = nullptr;
     AVFrame *audioFrame = nullptr;
     AVFrame *videoFrame = nullptr;
-    HwAbsFrame *outputFrame;
+    HwAbsMediaFrame *outputFrame;
     AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
     AVRational outputRational = AVRational{1, 1000000};
     int64_t videoDurationUs = -1;
@@ -80,7 +80,7 @@ private:
 
     void printCodecInfo();
 
-    HwAbsFrame *resample(AVFrame *avFrame);
+    HwAbsMediaFrame *resample(AVFrame *avFrame);
 
     AVSampleFormat getBestSampleFormat(AVSampleFormat in);
 

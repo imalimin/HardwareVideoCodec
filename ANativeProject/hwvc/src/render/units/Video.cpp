@@ -179,7 +179,7 @@ void Video::checkFilter() {
 
 int Video::grab() {
     int64_t time = getCurrentTimeUS();
-    HwAbsFrame *frame = nullptr;
+    HwAbsMediaFrame *frame = nullptr;
     int ret = decoder->grab(&frame);
     Logcat::i("HWVC", "Video::grab cost: %lld, ret: %d", getCurrentTimeUS() - time, ret);
     if (!frame) {

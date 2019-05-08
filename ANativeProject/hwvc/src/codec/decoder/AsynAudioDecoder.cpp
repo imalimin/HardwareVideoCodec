@@ -92,7 +92,7 @@ bool AsynAudioDecoder::grab() {
         return true;
     }
 //    Logcat::i("HWVC", "HwFrameAllocator::info: cache %d", cache.size());
-    HwAbsFrame *frame = nullptr;
+    HwAbsMediaFrame *frame = nullptr;
     int ret = decoder->grab(&frame);
     frame = hwFrameAllocator->ref(frame);
     if (frame) {
@@ -101,7 +101,7 @@ bool AsynAudioDecoder::grab() {
     return MEDIA_TYPE_EOF != ret;
 }
 
-int AsynAudioDecoder::grab(HwAbsFrame **frame) {
+int AsynAudioDecoder::grab(HwAbsMediaFrame **frame) {
     if (STOP == playState || cache.empty()) {
         return MEDIA_TYPE_UNKNOWN;
     }

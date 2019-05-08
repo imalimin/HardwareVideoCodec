@@ -4,7 +4,7 @@
 
 #include <jni.h>
 #include <log.h>
-#include "HwMemFIFO.h"
+#include "HwFIFOBuffer.h"
 #include "Logcat.h"
 
 #ifdef __cplusplus
@@ -12,14 +12,14 @@ extern "C" {
 #endif
 
 #define MemFIFOTest_FRAME_SIZE 8192
-HwMemFIFO *fifo = nullptr;
+HwFIFOBuffer *fifo = nullptr;
 uint8_t *data = nullptr;
 int index = 'a';
 
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_test_MemFIFOTest_push
         (JNIEnv *env, jobject thiz) {
     if (!fifo) {
-        fifo = new HwMemFIFO(8 * MemFIFOTest_FRAME_SIZE);
+        fifo = new HwFIFOBuffer(8 * MemFIFOTest_FRAME_SIZE);
         data = new uint8_t[MemFIFOTest_FRAME_SIZE];
     }
     if (index > 'z') {
@@ -34,7 +34,7 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_test_MemFIFOTest_push
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_test_MemFIFOTest_take
         (JNIEnv *env, jobject thiz) {
     if (fifo) {
-        HwMemFrame *frame = fifo->take(MemFIFOTest_FRAME_SIZE);
+        HwAbsFrame *frame = fifo->take(MemFIFOTest_FRAME_SIZE);
         Logcat::i("HWVC", "MemFIFOTest_take: %c, %lld",
                   (char) frame->getData()[0],
                   frame->getDataSize());

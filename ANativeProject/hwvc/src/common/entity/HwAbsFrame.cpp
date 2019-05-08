@@ -5,13 +5,13 @@
 * LICENSE file in the root directory of this source tree.
 */
 
-#include "../include/HwMemFrame.h"
+#include "../include/HwAbsFrame.h"
 
-HwMemFrame::HwMemFrame() : Object() {
+HwAbsFrame::HwAbsFrame() : Object() {
 
 }
 
-HwMemFrame::~HwMemFrame() {
+HwAbsFrame::~HwAbsFrame() {
     if (data) {
         delete[]data;
         data = nullptr;
@@ -19,11 +19,11 @@ HwMemFrame::~HwMemFrame() {
     dataSize = 0;
 }
 
-uint8_t *HwMemFrame::getData() { return data; }
+uint8_t *HwAbsFrame::getData() { return data; }
 
-uint64_t HwMemFrame::getDataSize() { return dataSize; }
+uint64_t HwAbsFrame::getDataSize() { return dataSize; }
 
-void HwMemFrame::setData(uint8_t *data, uint64_t dataSize) {
+void HwAbsFrame::setData(uint8_t *data, uint64_t dataSize) {
     this->data = data;
     this->dataSize = dataSize;
 }

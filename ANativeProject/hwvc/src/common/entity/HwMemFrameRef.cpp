@@ -7,7 +7,7 @@
 
 #include "../include/HwMemFrameRef.h"
 
-HwMemFrameRef::HwMemFrameRef(uint8_t *ref, uint64_t size) : HwMemFrame() {
+HwMemFrameRef::HwMemFrameRef(uint8_t *ref, uint64_t size) : HwAbsFrame() {
     setData(ref, size);
 }
 
@@ -20,6 +20,6 @@ uint8_t *HwMemFrameRef::getData() {
 }
 
 void HwMemFrameRef::setData(uint8_t *data, uint64_t dataSize) {
-    HwMemFrame::setData(nullptr, dataSize);
+    HwAbsFrame::setData(nullptr, dataSize);
     this->ref = data;
 }

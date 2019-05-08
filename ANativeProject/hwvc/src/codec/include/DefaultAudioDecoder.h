@@ -9,7 +9,7 @@
 #define HARDWAREVIDEOCODEC_DEFAULTAUDIODECODER_H
 
 #include "AbsAudioDecoder.h"
-#include "HwAbsFrame.h"
+#include "HwAbsMediaFrame.h"
 #include "HwFrameAllocator.h"
 
 #ifdef __cplusplus
@@ -38,7 +38,7 @@ public:
     /**
      * @return 1: video, 2: audio, 0: failed
      */
-    virtual int grab(HwAbsFrame **frame);
+    virtual int grab(HwAbsMediaFrame **frame);
 
     int getChannels();
 
@@ -57,7 +57,7 @@ private:
 
     AVSampleFormat getBestSampleFormat(AVSampleFormat in);
 
-    HwAbsFrame *resample(AVFrame *avFrame);
+    HwAbsMediaFrame *resample(AVFrame *avFrame);
 
     void matchPts(AVFrame *frame, int track);
 
@@ -73,7 +73,7 @@ private:
     AVPacket *avPacket = nullptr;
     AVFrame *resampleFrame = nullptr;
     AVFrame *audioFrame = nullptr;
-    HwAbsFrame *outputFrame;
+    HwAbsMediaFrame *outputFrame;
     AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
     AVRational outputRational = AVRational{1, 1000000};
     int64_t audioDurationUs = -1;

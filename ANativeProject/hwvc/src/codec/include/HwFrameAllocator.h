@@ -9,7 +9,7 @@
 #define HARDWAREVIDEOCODEC_HWFRAMEALLOCATOR_H
 
 #include "Object.h"
-#include "HwAbsFrame.h"
+#include "HwAbsMediaFrame.h"
 #include <list>
 #include "Logcat.h"
 
@@ -29,25 +29,25 @@ public:
 
     ~HwFrameAllocator();
 
-    HwAbsFrame *ref(AVFrame *avFrame);
+    HwAbsMediaFrame *ref(AVFrame *avFrame);
 
-    HwAbsFrame *ref(HwAbsFrame *src);
+    HwAbsMediaFrame *ref(HwAbsMediaFrame *src);
 
-    void unRef(HwAbsFrame **frame);
+    void unRef(HwAbsMediaFrame **frame);
 
     void printInfo() {
         Logcat::i("HWVC", "HwFrameAllocator::info: %d, %d", refQueue.size(), unRefQueue.size());
     }
 
 private:
-    list<HwAbsFrame *> refQueue;
-    list<HwAbsFrame *> unRefQueue;
+    list<HwAbsMediaFrame *> refQueue;
+    list<HwAbsMediaFrame *> unRefQueue;
 
-    HwAbsFrame *refVideo(AVFrame *avFrame);
+    HwAbsMediaFrame *refVideo(AVFrame *avFrame);
 
-    HwAbsFrame *refAudio(AVFrame *avFrame);
+    HwAbsMediaFrame *refAudio(AVFrame *avFrame);
 
-    void copyInfo(HwAbsFrame *dest, AVFrame *src);
+    void copyInfo(HwAbsMediaFrame *dest, AVFrame *src);
 };
 
 

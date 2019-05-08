@@ -11,7 +11,7 @@
 #include "AbsVideoDecoder.h"
 #include "DefaultAudioDecoder.h"
 #include "EventPipeline.h"
-#include "HwAbsFrame.h"
+#include "HwAbsMediaFrame.h"
 #include "HwFrameAllocator.h"
 #include "SimpleLock.h"
 #include "PlayState.h"
@@ -38,7 +38,7 @@ public:
     /**
      * @return 1: video, 2: audio, 0: failed
      */
-    int grab(HwAbsFrame **frame);
+    int grab(HwAbsMediaFrame **frame);
 
     int getChannels();
 
@@ -59,8 +59,8 @@ private:
     HwFrameAllocator *hwFrameAllocator = nullptr;
     DefaultAudioDecoder *decoder = nullptr;
     EventPipeline *pipeline = nullptr;
-    queue<HwAbsFrame *> cache;
-    HwAbsFrame *outputFrame = nullptr;//用于缓存一帧，以便在下次grab的时候进行回收
+    queue<HwAbsMediaFrame *> cache;
+    HwAbsMediaFrame *outputFrame = nullptr;//用于缓存一帧，以便在下次grab的时候进行回收
     PlayState playState = STOP;
     SimpleLock grabLock;
     FILE *file = nullptr;

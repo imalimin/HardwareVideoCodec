@@ -148,7 +148,7 @@ int DefaultVideoDecoder::initSwr() {
  * Get an audio or a video frame.
  * @param frame 每次返回的地址可能都一样，所以获取一帧音视频后请立即使用，在下次grab之后可能会被释放
  */
-int DefaultVideoDecoder::grab(HwAbsFrame **frame) {
+int DefaultVideoDecoder::grab(HwAbsMediaFrame **frame) {
     while (true) {
         if (0 == av_read_frame(pFormatCtx, avPacket)) {
             int ret = 0;
@@ -217,7 +217,7 @@ int DefaultVideoDecoder::grab(HwAbsFrame **frame) {
     }
 }
 
-//int DefaultVideoDecoder::grab(HwAbsFrame **frame) {
+//int DefaultVideoDecoder::grab(HwAbsMediaFrame **frame) {
 //    if (currentTrack == videoTrack && 0 == avcodec_receive_frame(vCodecContext, videoFrame)) {
 //        matchPts(videoFrame, videoTrack);
 //        if (outputFrame) {
@@ -284,7 +284,7 @@ int DefaultVideoDecoder::grab(HwAbsFrame **frame) {
 //    return MEDIA_TYPE_UNKNOWN;
 //}
 
-HwAbsFrame *DefaultVideoDecoder::resample(AVFrame *avFrame) {
+HwAbsMediaFrame *DefaultVideoDecoder::resample(AVFrame *avFrame) {
     if (!swrContext) {
         return nullptr;
     }

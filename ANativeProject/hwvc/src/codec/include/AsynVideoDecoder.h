@@ -12,7 +12,7 @@
 #include "Frame.h"
 #include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
-#include "HwAbsFrame.h"
+#include "HwAbsMediaFrame.h"
 #include "HwFrameAllocator.h"
 #include "SimpleLock.h"
 #include "PlayState.h"
@@ -50,7 +50,7 @@ public:
 
     virtual void pause();
 
-    int grab(HwAbsFrame **frame);
+    int grab(HwAbsMediaFrame **frame);
 
     virtual int64_t getVideoDuration() override;
 
@@ -60,8 +60,8 @@ private:
     HwFrameAllocator *hwFrameAllocator = nullptr;
     DefaultVideoDecoder *decoder = nullptr;
     EventPipeline *pipeline = nullptr;
-    queue<HwAbsFrame *> cache;
-    HwAbsFrame *outputFrame = nullptr;//用于缓存一帧，以便在下次grab的时候进行回收
+    queue<HwAbsMediaFrame *> cache;
+    HwAbsMediaFrame *outputFrame = nullptr;//用于缓存一帧，以便在下次grab的时候进行回收
     PlayState playState = STOP;
     SimpleLock grabLock;
 

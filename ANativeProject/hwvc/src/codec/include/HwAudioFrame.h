@@ -8,9 +8,9 @@
 #ifndef HARDWAREVIDEOCODEC_HWAUDIOFRAME_H
 #define HARDWAREVIDEOCODEC_HWAUDIOFRAME_H
 
-#include "HwAbsFrame.h"
+#include "HwAbsMediaFrame.h"
 
-class HwAudioFrame : public HwAbsFrame {
+class HwAudioFrame : public HwAbsMediaFrame {
 public:
     HwAudioFrame(uint16_t channels, uint32_t sampleRate, uint64_t sampleCount);
 
@@ -22,7 +22,7 @@ public:
 
     uint64_t getSampleCount();
 
-    virtual HwAbsFrame *clone();
+    virtual HwAbsMediaFrame *clone();
 
 private:
     uint16_t channels = 0;

@@ -53,7 +53,7 @@ bool AsynVideoDecoder::grab() {
     }
     Logcat::i("HWVC", "HwFrameAllocator::info: cache %d", cache.size());
     int64_t time = getCurrentTimeUS();
-    HwAbsFrame *frame = nullptr;
+    HwAbsMediaFrame *frame = nullptr;
     int ret = decoder->grab(&frame);
     frame = hwFrameAllocator->ref(frame);
     if (frame) {
@@ -67,7 +67,7 @@ bool AsynVideoDecoder::grab() {
     return MEDIA_TYPE_EOF != ret;
 }
 
-int AsynVideoDecoder::grab(HwAbsFrame **frame) {
+int AsynVideoDecoder::grab(HwAbsMediaFrame **frame) {
     if (STOP == playState || cache.empty()) {
         return MEDIA_TYPE_UNKNOWN;
     }

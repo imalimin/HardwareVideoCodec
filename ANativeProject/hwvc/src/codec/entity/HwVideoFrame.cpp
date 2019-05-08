@@ -7,7 +7,7 @@
 
 #include "../include/HwVideoFrame.h"
 
-HwVideoFrame::HwVideoFrame(uint32_t width, uint32_t height) : HwAbsFrame(Type::VIDEO) {
+HwVideoFrame::HwVideoFrame(uint32_t width, uint32_t height) : HwAbsMediaFrame(Type::VIDEO) {
     this->width = width;
     this->height = height;
 }
@@ -25,7 +25,7 @@ uint32_t HwVideoFrame::getWidth() { return width; }
 
 uint32_t HwVideoFrame::getHeight() { return height; }
 
-HwAbsFrame *HwVideoFrame::clone() {
+HwAbsMediaFrame *HwVideoFrame::clone() {
     if (!isVideo()) {
         return nullptr;
     }

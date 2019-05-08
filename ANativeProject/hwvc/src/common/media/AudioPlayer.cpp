@@ -44,7 +44,7 @@ void AudioPlayer::initialize(SLEngine *engine) {
         memset(buf, 0, bufSize);
         return new ObjectBox(buf);
     });
-    this->fifo = new HwMemFIFO(bufSize * 16);
+    this->fifo = new HwFIFOBuffer(bufSize * 16);
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
          this->channels,
          this->sampleRate,
@@ -201,7 +201,7 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     LOGE("AudioPlayer..., %d, %lld", fifo->size(), getCurrentTimeUS() - ttime);
     ttime = getCurrentTimeUS();
     if (fifo->size() >= getBufferByteSize()) {
-        HwMemFrame *frame = fifo->take(getBufferByteSize());
+        HwAbsFrame *frame = fifo->take(getBufferByteSize());
         if (frame) {
             (*slBufferQueueItf)->Enqueue(bufferQueueItf, frame->getData(), frame->getDataSize());
             if (file) {

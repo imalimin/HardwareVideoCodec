@@ -8,7 +8,7 @@
 #include "../include/HwAudioFrame.h"
 
 HwAudioFrame::HwAudioFrame(uint16_t channels, uint32_t sampleRate, uint64_t sampleCount)
-        : HwAbsFrame(Type::AUDIO) {
+        : HwAbsMediaFrame(Type::AUDIO) {
     this->channels = channels;
     this->sampleRate = sampleRate;
     this->sampleCount = sampleCount;
@@ -26,7 +26,7 @@ uint32_t HwAudioFrame::getSampleRate() { return sampleRate; }
 
 uint64_t HwAudioFrame::getSampleCount() { return sampleCount; }
 
-HwAbsFrame *HwAudioFrame::clone() {
+HwAbsMediaFrame *HwAudioFrame::clone() {
     if (!isAudio()) {
         return nullptr;
     }

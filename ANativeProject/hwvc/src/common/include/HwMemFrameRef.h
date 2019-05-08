@@ -8,9 +8,9 @@
 #ifndef HARDWAREVIDEOCODEC_HWMEMFRAMEREF_H
 #define HARDWAREVIDEOCODEC_HWMEMFRAMEREF_H
 
-#include "HwMemFrame.h"
+#include "HwAbsFrame.h"
 
-class HwMemFrameRef : public HwMemFrame {
+class HwMemFrameRef : public HwAbsFrame {
 public:
     HwMemFrameRef(uint8_t *ref, uint64_t size);
 

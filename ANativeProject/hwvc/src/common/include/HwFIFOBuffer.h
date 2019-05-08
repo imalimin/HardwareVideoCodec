@@ -9,18 +9,18 @@
 #define HARDWAREVIDEOCODEC_HWMEMFIFO_H
 
 #include "Object.h"
-#include "HwMemFrame.h"
+#include "HwAbsFrame.h"
 #include "SimpleLock.h"
 
-class HwMemFIFO : public Object {
+class HwFIFOBuffer : public Object {
 public:
-    HwMemFIFO(size_t capacity);
+    HwFIFOBuffer(size_t capacity);
 
-    virtual ~HwMemFIFO();
+    virtual ~HwFIFOBuffer();
 
     void push(uint8_t *data, size_t size);
 
-    HwMemFrame *take(size_t size);
+    HwAbsFrame *take(size_t size);
 
     size_t size();
 

@@ -13,7 +13,7 @@
 #include "YUV420PFilter.h"
 #include "EventPipeline.h"
 #include "Egl.h"
-#include "HwAbsFrame.h"
+#include "HwAbsMediaFrame.h"
 #include "AudioPlayer.h"
 #include "SimpleLock.h"
 #include "../entity/NativeWindow.h"

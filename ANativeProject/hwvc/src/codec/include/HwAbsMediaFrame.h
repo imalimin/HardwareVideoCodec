@@ -5,21 +5,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#ifndef HARDWAREVIDEOCODEC_HWABSFRAME_H
-#define HARDWAREVIDEOCODEC_HWABSFRAME_H
+#ifndef HARDWAREVIDEOCODEC_HWADBMEDIAFRAME_H
+#define HARDWAREVIDEOCODEC_HWADBMEDIAFRAME_H
 
-#include "HwMemFrame.h"
+#include "HwAbsFrame.h"
 
-class HwAbsFrame : public HwMemFrame {
+class HwAbsMediaFrame : public HwAbsFrame {
 public:
     enum Type {
         VIDEO,
         AUDIO,
     };
 
-    HwAbsFrame(Type type);
+    HwAbsMediaFrame(Type type);
 
-    virtual ~HwAbsFrame();
+    virtual ~HwAbsMediaFrame();
 
     void setFormat(uint16_t format);
 
@@ -35,7 +35,7 @@ public:
 
     bool isAudio();
 
-    virtual HwAbsFrame *clone()=0;
+    virtual HwAbsMediaFrame *clone()=0;
 
 private:
     Type type = Type::AUDIO;
@@ -44,4 +44,4 @@ private:
 };
 
 
-#endif //HARDWAREVIDEOCODEC_HWABSFRAME_H
+#endif //HARDWAREVIDEOCODEC_HWADBMEDIAFRAME_H

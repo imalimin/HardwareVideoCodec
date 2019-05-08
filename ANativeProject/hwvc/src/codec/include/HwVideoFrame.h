@@ -8,9 +8,9 @@
 #ifndef HARDWAREVIDEOCODEC_HWVIDEOFRAME_H
 #define HARDWAREVIDEOCODEC_HWVIDEOFRAME_H
 
-#include "HwAbsFrame.h"
+#include "HwAbsMediaFrame.h"
 
-class HwVideoFrame : public HwAbsFrame {
+class HwVideoFrame : public HwAbsMediaFrame {
 public:
     HwVideoFrame(uint32_t width, uint32_t height);
 
@@ -24,7 +24,7 @@ public:
 
     uint32_t getHeight();
 
-    virtual HwAbsFrame *clone();
+    virtual HwAbsMediaFrame *clone();
 
 private:
     uint32_t width = 0;

@@ -5,16 +5,16 @@
 * LICENSE file in the root directory of this source tree.
 */
 
-#ifndef HARDWAREVIDEOCODEC_HWMEMFRAME_H
-#define HARDWAREVIDEOCODEC_HWMEMFRAME_H
+#ifndef HARDWAREVIDEOCODEC_HWABSFRAME_H
+#define HARDWAREVIDEOCODEC_HWABSFRAME_H
 
 #include "Object.h"
 
-class HwMemFrame : public Object {
+class HwAbsFrame : public Object {
 public:
-    HwMemFrame();
+    HwAbsFrame();
 
-    virtual ~HwMemFrame();
+    virtual ~HwAbsFrame();
 
     virtual uint8_t *getData();
 
@@ -28,4 +28,4 @@ private:
 };
 
 
-#endif //HARDWAREVIDEOCODEC_HWMEMFRAME_H
+#endif //HARDWAREVIDEOCODEC_HWABSFRAME_H

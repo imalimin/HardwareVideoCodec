@@ -16,7 +16,7 @@
 #include "SLEngine.h"
 #include "HwResult.h"
 #include <queue>
-#include "HwMemFIFO.h"
+#include "HwFIFOBuffer.h"
 
 using namespace std;
 
@@ -49,7 +49,7 @@ private:
     SimpleLock *lock = nullptr;
     RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
     std::queue<ObjectBox *> pcmList;
-    HwMemFIFO *fifo = nullptr;
+    HwFIFOBuffer *fifo = nullptr;
     SLEngine *engine = nullptr;
     bool ownEngine = false;
     SLObjectItf mixObject = nullptr;
