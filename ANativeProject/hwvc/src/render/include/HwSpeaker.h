@@ -8,8 +8,29 @@
 #ifndef HARDWAREVIDEOCODEC_HWSPEAKER_H
 #define HARDWAREVIDEOCODEC_HWSPEAKER_H
 
+#include "Unit.h"
+#include "AudioPlayer.h"
+#include "HwAudioFrame.h"
 
-class HwSpeaker {
+class HwSpeaker : public Unit {
+public:
+    HwSpeaker();
+
+    HwSpeaker(HandlerThread *handlerThread);
+
+    virtual ~HwSpeaker();
+
+    bool eventRelease(Message *msg);
+
+    bool eventPrepare(Message *msg);
+
+    bool eventFeed(Message *msg);
+
+private:
+    void createFromAudioFrame(HwAudioFrame *frame);
+
+private:
+    AudioPlayer *audioPlayer = nullptr;
 
 };
 

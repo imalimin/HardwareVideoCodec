@@ -29,7 +29,7 @@ protected:
     uint16_t channels = 0;
     uint32_t sampleRate = 0;
     uint16_t format = SL_PCMSAMPLEFORMAT_FIXED_16;
-    uint32_t samplesPerBuffer = 0;
+    uint32_t samplesPerBuffer = 0;//sampleCount
 };
 
 class SLAudioDevice : public AudioDevice {

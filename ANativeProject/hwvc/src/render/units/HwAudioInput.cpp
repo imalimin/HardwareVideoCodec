@@ -6,7 +6,6 @@
 */
 
 #include "../include/HwAudioInput.h"
-#include "HwAudioFrame.h"
 #include "TimeUtils.h"
 
 HwAudioInput::HwAudioInput() : HwStreamMedia() {
@@ -23,7 +22,7 @@ HwAudioInput::HwAudioInput() : HwStreamMedia() {
     decoder = new AsynAudioDecoder();
 }
 
-HwAudioInput::HwAudioInput(HandlerThread *handlerThread) {
+HwAudioInput::HwAudioInput(HandlerThread *handlerThread) : HwStreamMedia(handlerThread) {
     name = __FUNCTION__;
     this->lock = new SimpleLock();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&HwAudioInput::eventPrepare));
@@ -40,12 +39,6 @@ HwAudioInput::HwAudioInput(HandlerThread *handlerThread) {
 HwAudioInput::~HwAudioInput() {
     LOGI("HwAudioInput::~HwAudioInput");
     lock->lock();
-    if (audioPlayer) {
-        audioPlayer->stop();
-        delete audioPlayer;
-        audioPlayer = nullptr;
-    }
-    LOGI("HwAudioInput::~audioPlayer");
     if (decoder) {
         delete decoder;
         decoder = nullptr;
@@ -64,7 +57,7 @@ HwAudioInput::~HwAudioInput() {
 bool HwAudioInput::eventPrepare(Message *msg) {
     playState = PAUSE;
     if (decoder->prepare(path)) {
-        createAudioPlayer();
+//        createAudioPlayer();
     } else {
         LOGE("HwAudioInput::open %s failed", path);
         return true;
@@ -88,9 +81,6 @@ bool HwAudioInput::eventStart(Message *msg) {
     if (STOP != playState) {
         playState = PLAYING;
         loop();
-    }
-    if (audioPlayer) {
-        audioPlayer->flush();
     }
     if (decoder) {
         decoder->start();
@@ -141,25 +131,6 @@ void HwAudioInput::loop() {
     postEvent(new Message(EVENT_AUDIO_LOOP, nullptr));
 }
 
-void HwAudioInput::createAudioPlayer() {
-    int format;
-    switch (decoder->getSampleFormat()) {
-        case AV_SAMPLE_FMT_S16:
-            format = SL_PCMSAMPLEFORMAT_FIXED_16;
-            break;
-        case AV_SAMPLE_FMT_U8:
-            format = SL_PCMSAMPLEFORMAT_FIXED_8;
-            break;
-        default:
-            format = SL_PCMSAMPLEFORMAT_FIXED_32;
-    }
-    audioPlayer = new AudioPlayer(decoder->getChannels(),
-                                  decoder->getSampleHz(),
-                                  format,
-                                  decoder->getPerSampleSize());
-    audioPlayer->start();
-}
-
 int HwAudioInput::grab() {
     int64_t time = getCurrentTimeUS();
     HwAbsMediaFrame *frame = nullptr;
@@ -170,17 +141,14 @@ int HwAudioInput::grab() {
     }
     int64_t curPts = frame->getPts();
     if (frame->isAudio()) {
-        HwAudioFrame *audioFrame = dynamic_cast<HwAudioFrame *>(frame);
-        if (audioPlayer) {
-            Logcat::i("HWVC", "HwAudioInput::play audio: %d, %d, %lld, %lld",
-                      audioFrame->getChannels(),
-                      audioFrame->getSampleRate(),
-                      audioFrame->getSampleCount(),
-                      audioFrame->getDataSize());
-            audioPlayer->write(audioFrame->getData(),
-                               static_cast<size_t>(audioFrame->getDataSize()));
-        }
+        playFrame(dynamic_cast<HwAudioFrame *>(frame));
         return MEDIA_TYPE_AUDIO;
     }
     return ret;
+}
+
+void HwAudioInput::playFrame(HwAudioFrame *frame) {
+    Message *msg = new Message(EVENT_SPEAKER_FEED, nullptr);
+    msg->obj = frame;
+    postEvent(msg);
 }

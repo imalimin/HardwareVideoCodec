@@ -7,11 +7,13 @@
 
 #include "../include/AudioProcessor.h"
 #include "../include/HwAudioInput.h"
+#include "../include/HwSpeaker.h"
 #include "ObjectBox.h"
 
 AudioProcessor::AudioProcessor() : Object() {
     pipeline = new UnitPipeline("AudioProcessor");
     pipeline->registerAnUnit(new HwAudioInput());
+    pipeline->registerAnUnit(new HwSpeaker());
 }
 
 AudioProcessor::~AudioProcessor() {

@@ -41,6 +41,8 @@ static constexpr int EVENT_AUDIO_SEEK = KID('A', 'D', 'O', 0x04);
 static constexpr int EVENT_AUDIO_SET_SOURCE = KID('A', 'D', 'O', 0x05);
 static constexpr int EVENT_AUDIO_LOOP = KID('A', 'D', 'O', 0x06);
 
+static constexpr int EVENT_SPEAKER_FEED = KID('S', 'P', 'K', 0x01);
+
 typedef bool (Unit::*EventFunc)(Message *);
 
 class Event : public Object {

@@ -10,7 +10,7 @@
 
 #include "HwStreamMedia.h"
 #include "AsynAudioDecoder.h"
-#include "AudioPlayer.h"
+#include "HwAudioFrame.h"
 
 class HwAudioInput : public HwStreamMedia {
 public:
@@ -41,14 +41,13 @@ private:
 
     int grab();
 
-    void createAudioPlayer();
+    void playFrame(HwAudioFrame *frame);
 
 private:
     AsynAudioDecoder *decoder = nullptr;
     PlayState playState = STOP;
     SimpleLock *lock;
     char *path;
-    AudioPlayer *audioPlayer = nullptr;
 };
 
 
