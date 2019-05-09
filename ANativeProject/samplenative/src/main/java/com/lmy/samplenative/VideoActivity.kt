@@ -2,6 +2,8 @@ package com.lmy.samplenative
 
 import android.content.Intent
 import android.graphics.SurfaceTexture
+import android.net.Uri
+import android.os.Environment
 import android.text.TextUtils
 import android.util.Log
 import android.view.Surface
@@ -11,6 +13,7 @@ import android.widget.SeekBar
 import android.widget.Toast
 import com.lmy.hwvcnative.processor.VideoProcessor
 import kotlinx.android.synthetic.main.activity_video.*
+import java.io.File
 
 class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener,
         SeekBar.OnSeekBarChangeListener {
@@ -26,10 +29,13 @@ class VideoActivity : BaseActivity(), TextureView.SurfaceTextureListener,
         if (uri == null)
             uri = intent.getParcelableExtra(Intent.EXTRA_STREAM)
         if (uri == null) {
-            finish()
-            Toast.makeText(this, "没有找到该文件", Toast.LENGTH_SHORT).show()
-            finish()
-            return
+            val testFile = File(Environment.getExternalStorageDirectory(), "001.mp4")
+            if (!testFile.exists()) {
+                Toast.makeText(this, "没有找到该文件", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
+            uri= Uri.fromFile(testFile)
         }
         val path = getRealFilePath(uri)
         if (TextUtils.isEmpty(path)) {
