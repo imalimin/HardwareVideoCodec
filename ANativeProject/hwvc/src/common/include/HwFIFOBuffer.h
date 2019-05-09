@@ -24,6 +24,8 @@ public:
 
     size_t size();
 
+    void flush();
+
 private:
     bool wantWrite(size_t size);
 
