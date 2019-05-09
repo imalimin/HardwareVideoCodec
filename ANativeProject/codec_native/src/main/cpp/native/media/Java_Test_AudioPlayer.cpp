@@ -19,12 +19,18 @@ static AudioPlayer *player = nullptr;
 static FILE *file = nullptr;
 static EventPipeline *pipeline = nullptr;
 static int index = 0;
+SimpleLock lock;
 
 static void loopTest() {
-    if (!file) {
+    lock.lock();
+    if (!file || !pipeline) {
+        lock.unlock();
         return;
     }
     pipeline->queueEvent([] {
+        if (!player) {
+            return;
+        }
         uint8_t data[8192];
         int ret = fread(data, 1, 8192, file);
         if (ret > 0) {
@@ -33,6 +39,7 @@ static void loopTest() {
             loopTest();
         }
     });
+    lock.unlock();
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_media_AudioPlayerTest_start
@@ -51,14 +58,20 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_media_AudioPlayerTest_start
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_media_AudioPlayerTest_stop
         (JNIEnv *env, jobject thiz) {
     pipeline->queueEvent([] {
-        if (file) {
+        if (player) {
             player->stop();
+            delete player;
+            player = nullptr;
+        }
+        if (file) {
             fclose(file);
             file = nullptr;
         }
     });
+    lock.lock();
     delete pipeline;
     pipeline = nullptr;
+    lock.unlock();
 }
 
 #ifdef __cplusplus
