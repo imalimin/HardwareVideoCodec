@@ -46,8 +46,7 @@ public:
     void bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf);
 
 private:
-    SimpleLock *lock = nullptr;
-    RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
+    SimpleLock lock;
     std::queue<ObjectBox *> pcmList;
     HwFIFOBuffer *fifo = nullptr;
     SLEngine *engine = nullptr;

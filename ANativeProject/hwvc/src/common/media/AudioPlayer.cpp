@@ -36,14 +36,8 @@ AudioPlayer::AudioPlayer(SLEngine *engine,
 }
 
 void AudioPlayer::initialize(SLEngine *engine) {
-    this->lock = new SimpleLock();
     this->engine = engine;
     uint32_t bufSize = getBufferByteSize();
-    this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [bufSize] {
-        uint8_t *buf = new uint8_t[bufSize];
-        memset(buf, 0, bufSize);
-        return new ObjectBox(buf);
-    });
     this->fifo = new HwFIFOBuffer(bufSize * 16);
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
          this->channels,
@@ -217,7 +211,6 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
 }
 
 HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
-    Logcat::i("HWVC", "AudioPlayer::write: %d, %d", buffer, buffer + 4);
 //    ObjectBox *cache = recycler->takeCache();
 //    if (!cache) {
 //        LOGE("Cache invalid");
@@ -235,18 +228,14 @@ HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
 }
 
 void AudioPlayer::flush() {
-    recycler->recycleAll();
+    if (fifo) {
+        fifo->flush();
+    }
 }
 
 void AudioPlayer::stop() {
-    if (recycler) {
-        recycler->notify();
-    }
+    Logcat::i("HWVC", "AudioPlayer::stop");
     this->destroyEngine();
-    if (recycler) {
-        delete recycler;
-        recycler = nullptr;
-    }
     if (fifo) {
         delete fifo;
         fifo = nullptr;
@@ -254,10 +243,6 @@ void AudioPlayer::stop() {
     if (file) {
         fclose(file);
         file = nullptr;
-    }
-    if (lock) {
-        delete lock;
-        lock = nullptr;
     }
 }
 
