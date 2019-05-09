@@ -17,10 +17,14 @@ void HandlerThread::run() {
         Message *msg = this->take();
         int size = this->size();
         if (this->requestQuit && !this->requestQuitSafely) {
-            LOGI("requestQuit(%s), %d, %ld", this->name.c_str(), msg->what, pthread_self());
+            if (msg) {
+                LOGI("requestQuit(%s), %d, %ld", this->name.c_str(), msg->what, pthread_self());
+            } else {
+                LOGI("requestQuit(%s)", this->name.c_str());
+            }
             break;
         }
-        if (nullptr == msg) {
+        if (!msg) {
             continue;
         }
         msg->runnable(msg);
