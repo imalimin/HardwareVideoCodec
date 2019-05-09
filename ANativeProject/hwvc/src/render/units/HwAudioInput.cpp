@@ -52,9 +52,7 @@ HwAudioInput::~HwAudioInput() {
 
 bool HwAudioInput::eventPrepare(Message *msg) {
     playState = PAUSE;
-    if (decoder->prepare(path)) {
-//        createAudioPlayer();
-    } else {
+    if (!decoder->prepare(path)) {
         LOGE("HwAudioInput::open %s failed", path.c_str());
     }
     return false;
@@ -80,7 +78,7 @@ bool HwAudioInput::eventStart(Message *msg) {
         if (decoder) {
             decoder->start();
         }
-        loop();
+//        loop();
     }
     return false;
 }
