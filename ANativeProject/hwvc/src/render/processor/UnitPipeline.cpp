@@ -6,7 +6,6 @@
 #include "../include/Unit.h"
 
 UnitPipeline::UnitPipeline(string name) {
-    pthread_mutex_init(&mutex, nullptr);
     available = true;
     pipeline = new HandlerThread(name);
 }
@@ -17,12 +16,11 @@ UnitPipeline::~UnitPipeline() {
         delete pipeline;
         pipeline = nullptr;
     }
-    pthread_mutex_destroy(&mutex);
 }
 
 void UnitPipeline::release() {
     if (available) {
-        pthread_mutex_lock(&mutex);
+        simpleLock.lock();
         available = false;
         Message *msg1 = new Message(EVENT_COMMON_RELEASE, nullptr);
         if (pipeline) {
@@ -35,7 +33,7 @@ void UnitPipeline::release() {
             };
             pipeline->sendMessage(msg1);
         }
-        pthread_mutex_unlock(&mutex);
+        simpleLock.unlock();
     }
 }
 
@@ -48,13 +46,13 @@ void UnitPipeline::postEvent(Message *msg1) {
             msg2->runnable = nullptr;
             this->dispatch(msg2);
         };
-        pthread_mutex_lock(&mutex);
+        simpleLock.lock();
         if (available) {
             pipeline->sendMessage(msg1);
         } else {
             delete msg1;
         }
-        pthread_mutex_unlock(&mutex);
+        simpleLock.unlock();
     } else {
         this->dispatch(msg1);
     }

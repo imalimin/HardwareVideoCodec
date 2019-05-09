@@ -89,6 +89,7 @@ private:
     map<int, Event *> eventMap;
     UnitPipeline *pipeline = nullptr;
     EventPipeline *eventPipeline = nullptr;
+    SimpleLock simpleLock;
 };
 
 

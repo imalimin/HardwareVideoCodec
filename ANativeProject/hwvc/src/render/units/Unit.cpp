@@ -38,10 +38,12 @@ Unit::~Unit() {
 //        delete itr->second;
     }
     eventMap.clear();
+    simpleLock.lock();
     if (eventPipeline) {
         delete eventPipeline;
         eventPipeline = nullptr;
     }
+    simpleLock.unlock();
 }
 
 bool Unit::registerEvent(int what, EventFunc handler) {
@@ -71,10 +73,12 @@ bool Unit::dispatch(Message *msg) {
 
 void Unit::post(function<void()> runnable) {
     if (runnable) {
+        simpleLock.lock();
         if (eventPipeline) {
             eventPipeline->queueEvent(runnable);
-        } else {
-            runnable();
+            return;
         }
+        simpleLock.unlock();
+        runnable();
     }
 }

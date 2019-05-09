@@ -8,6 +8,7 @@
 #include "Object.h"
 #include "Message.h"
 #include "HandlerThread.h"
+#include "SimpleLock.h"
 #include <vector>
 
 using namespace std;
@@ -30,7 +31,7 @@ public:
 
 private:
     HandlerThread *pipeline = nullptr;
-    pthread_mutex_t mutex;
+    SimpleLock simpleLock;
     vector<Unit *> units;
     bool available = true;
 
