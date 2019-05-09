@@ -8,4 +8,4 @@
 #include "Logcat.h"
 
 #define LOGE(format, ...)  Logcat::e("HWVC", format, ##__VA_ARGS__)
-#define LOGI(format, ...)  Logcat::e( "HWVC", format, ##__VA_ARGS__)
+#define LOGI(format, ...)  Logcat::i( "HWVC", format, ##__VA_ARGS__)
