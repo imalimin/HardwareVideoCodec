@@ -47,7 +47,7 @@ private:
     AsynAudioDecoder *decoder = nullptr;
     PlayState playState = STOP;
     SimpleLock *lock;
-    char *path;
+    string path;
 };
 
 

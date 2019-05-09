@@ -12,6 +12,7 @@
 #include "HwAbsMediaFrame.h"
 #include <list>
 #include "Logcat.h"
+#include <SimpleLock.h>
 
 using namespace std;
 
@@ -40,6 +41,8 @@ public:
     }
 
 private:
+    SimpleLock refLock;
+    SimpleLock unRefLock;
     list<HwAbsMediaFrame *> refQueue;
     list<HwAbsMediaFrame *> unRefQueue;
 

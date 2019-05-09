@@ -6,7 +6,10 @@
 */
 #include <jni.h>
 #include <log.h>
+#include <string>
 #include "AudioProcessor.h"
+
+using namespace std;
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,9 +29,8 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_processor_AudioProcessor_setSourc
     if (handler) {
         int len = env->GetStringUTFLength(path) + 1;
         const char *pPath = env->GetStringUTFChars(path, JNI_FALSE);
-        char *str = new char[len];
-        memcpy(str, pPath, len);
-        getHandler(handler)->setSource(str);
+        std::string pathStr(pPath);
+        getHandler(handler)->setSource(&pathStr);
         env->ReleaseStringUTFChars(path, pPath);
     }
 }

@@ -43,10 +43,6 @@ HwAudioInput::~HwAudioInput() {
         delete decoder;
         decoder = nullptr;
     }
-    if (path) {
-        delete[]path;
-        path = nullptr;
-    }
     lock->unlock();
     if (lock) {
         delete lock;
@@ -59,8 +55,7 @@ bool HwAudioInput::eventPrepare(Message *msg) {
     if (decoder->prepare(path)) {
 //        createAudioPlayer();
     } else {
-        LOGE("HwAudioInput::open %s failed", path);
-        return true;
+        LOGE("HwAudioInput::open %s failed", path.c_str());
     }
     return false;
 }
@@ -72,36 +67,40 @@ bool HwAudioInput::eventRelease(Message *msg) {
 }
 
 bool HwAudioInput::eventSetSource(Message *msg) {
-    this->path = static_cast<char *>(msg->tyrUnBox());
+    string *str = static_cast<string *>(msg->tyrUnBox());
+    this->path = string(str->c_str());
+    delete msg->tyrUnBox();
     return false;
 }
 
 bool HwAudioInput::eventStart(Message *msg) {
     LOGI("HwAudioInput::eventStart");
-    if (STOP != playState) {
+    if (PAUSE == playState) {
         playState = PLAYING;
+        if (decoder) {
+            decoder->start();
+        }
         loop();
-    }
-    if (decoder) {
-        decoder->start();
     }
     return false;
 }
 
 bool HwAudioInput::eventPause(Message *msg) {
-    if (STOP != playState) {
+    if (PLAYING == playState) {
         playState = PAUSE;
-    }
-    if (decoder) {
-        decoder->pause();
+        if (decoder) {
+            decoder->pause();
+        }
     }
     return false;
 }
 
 bool HwAudioInput::eventStop(Message *msg) {
-    playState = STOP;
-    if (decoder) {
-        decoder->stop();
+    if (STOP != playState) {
+        playState = STOP;
+        if (decoder) {
+            decoder->stop();
+        }
     }
     return false;
 }

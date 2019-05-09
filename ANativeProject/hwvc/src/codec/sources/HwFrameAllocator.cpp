@@ -14,8 +14,12 @@ HwFrameAllocator::HwFrameAllocator() {
 }
 
 HwFrameAllocator::~HwFrameAllocator() {
+    unRefLock.lock();
     unRefQueue.clear();
+    unRefLock.unlock();
+    refLock.lock();
     refQueue.clear();
+    refLock.unlock();
 }
 
 HwAbsMediaFrame *HwFrameAllocator::ref(AVFrame *avFrame) {
@@ -27,13 +31,18 @@ HwAbsMediaFrame *HwFrameAllocator::ref(AVFrame *avFrame) {
 }
 
 void HwFrameAllocator::unRef(HwAbsMediaFrame **frame) {
+    unRefLock.lock();
     unRefQueue.push_front(frame[0]);
+    unRefLock.unlock();
+    refLock.lock();
     refQueue.remove(frame[0]);
+    refLock.unlock();
     frame[0] = nullptr;
 }
 
 HwAbsMediaFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
     HwAbsMediaFrame *frame = nullptr;
+    unRefLock.lock();
     if (unRefQueue.size() > 0) {
         list<HwAbsMediaFrame *>::iterator itr = unRefQueue.begin();
         while (itr != unRefQueue.end()) {
@@ -45,6 +54,7 @@ HwAbsMediaFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
             ++itr;
         }
     }
+    unRefLock.unlock();
     if (!frame) {
         frame = new HwAudioFrame(static_cast<uint16_t>(avFrame->channels),
                                  static_cast<uint32_t>(avFrame->sample_rate),
@@ -54,13 +64,16 @@ HwAbsMediaFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
     }
     memset(frame->getData(), 0, frame->getDataSize());
     copyInfo(frame, avFrame);
+    refLock.lock();
     refQueue.push_front(frame);
+    refLock.unlock();
     return frame;
 }
 
 HwAbsMediaFrame *HwFrameAllocator::refVideo(AVFrame *avFrame) {
     int size = avFrame->width * avFrame->height * 3 / 2;
     HwAbsMediaFrame *frame = nullptr;
+    unRefLock.lock();
     if (unRefQueue.size() > 0) {
         list<HwAbsMediaFrame *>::iterator itr = unRefQueue.begin();
         while (itr != unRefQueue.end()) {
@@ -72,6 +85,7 @@ HwAbsMediaFrame *HwFrameAllocator::refVideo(AVFrame *avFrame) {
             ++itr;
         }
     }
+    unRefLock.unlock();
     if (!frame) {
         frame = new HwVideoFrame(static_cast<uint32_t>(avFrame->width),
                                  static_cast<uint32_t>(avFrame->height));
@@ -79,7 +93,9 @@ HwAbsMediaFrame *HwFrameAllocator::refVideo(AVFrame *avFrame) {
         frame->setData(buffer, static_cast<uint64_t>(size));
     }
     copyInfo(frame, avFrame);
+    refLock.lock();
     refQueue.push_front(frame);
+    refLock.unlock();
     return frame;
 }
 
@@ -91,6 +107,7 @@ void HwFrameAllocator::copyInfo(HwAbsMediaFrame *dest, AVFrame *src) {
 
 HwAbsMediaFrame *HwFrameAllocator::ref(HwAbsMediaFrame *src) {
     HwAbsMediaFrame *frame = nullptr;
+    unRefLock.lock();
     if (unRefQueue.size() > 0) {
         list<HwAbsMediaFrame *>::iterator itr = unRefQueue.begin();
         while (itr != unRefQueue.end()) {
@@ -102,9 +119,9 @@ HwAbsMediaFrame *HwFrameAllocator::ref(HwAbsMediaFrame *src) {
             ++itr;
         }
     }
+    unRefLock.unlock();
     if (frame) {
         memcpy(frame->getData(), src->getData(), static_cast<size_t>(frame->getDataSize()));
-        refQueue.push_front(frame);
     } else {
         if (src->isVideo()) {
             frame = static_cast<HwVideoFrame *>(src)->clone();
@@ -112,5 +129,8 @@ HwAbsMediaFrame *HwFrameAllocator::ref(HwAbsMediaFrame *src) {
             frame = static_cast<HwAudioFrame *>(src)->clone();
         }
     }
+    refLock.lock();
+    refQueue.push_front(frame);
+    refLock.unlock();
     return frame;
 }

@@ -1,8 +1,6 @@
 package com.lmy.hwvcnative.processor
 
-import android.view.Surface
 import com.lmy.hwvcnative.CPPObject
-import com.lmy.hwvcnative.FilterSupport
 import com.lmy.hwvcnative.filter.Filter
 
 class AudioProcessor : CPPObject() {
@@ -14,7 +12,7 @@ class AudioProcessor : CPPObject() {
 
     fun setSource(path: String) {
         if (0L == handler) return
-        setSource(handler, path);
+        setSource(handler, path)
     }
 
     fun prepare() {

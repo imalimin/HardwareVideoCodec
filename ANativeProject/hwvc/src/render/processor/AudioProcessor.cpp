@@ -25,10 +25,10 @@ AudioProcessor::~AudioProcessor() {
     }
 }
 
-void AudioProcessor::setSource(char *path) {
+void AudioProcessor::setSource(const string *path) {
     if (pipeline) {
         Message *msg = new Message(EVENT_AUDIO_SET_SOURCE, nullptr);
-        msg->obj = new ObjectBox(path);
+        msg->obj = new ObjectBox(new string(path->c_str()));
         pipeline->postEvent(msg);
     }
 }

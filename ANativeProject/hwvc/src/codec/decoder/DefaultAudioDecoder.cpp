@@ -50,6 +50,7 @@ DefaultAudioDecoder::~DefaultAudioDecoder() {
 };
 
 bool DefaultAudioDecoder::prepare(string path) {
+    Logcat::i("HWVC", "DefaultAudioDecoder::prepare: %s", path.c_str());
     this->path = path;
     av_register_all();
     printCodecInfo();

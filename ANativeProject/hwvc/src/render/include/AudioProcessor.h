@@ -9,7 +9,10 @@
 #define HARDWAREVIDEOCODEC_AUDIOPROCESSOR_H
 
 #include "Object.h"
+#include <string>
 #include "UnitPipeline.h"
+
+using namespace std;
 
 class AudioProcessor : public Object {
 public:
@@ -17,7 +20,7 @@ public:
 
     virtual ~AudioProcessor();
 
-    void setSource(char *path);
+    void setSource(const string *path);
 
     void prepare();
 
