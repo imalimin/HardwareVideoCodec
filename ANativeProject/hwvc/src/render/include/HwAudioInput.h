@@ -48,6 +48,7 @@ private:
     PlayState playState = STOP;
     SimpleLock *lock;
     string path;
+    HwAudioFrame *frame = nullptr;
 };
 
 

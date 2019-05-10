@@ -24,6 +24,8 @@ public:
 
     virtual HwAbsMediaFrame *clone();
 
+    virtual void clone(HwAbsMediaFrame *src);
+
 private:
     uint16_t channels = 0;
     uint32_t sampleRate = 0;

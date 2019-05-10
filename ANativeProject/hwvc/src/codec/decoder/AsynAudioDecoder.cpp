@@ -74,8 +74,10 @@ void AsynAudioDecoder::stop() {
 }
 
 void AsynAudioDecoder::loop() {
-    if (PLAYING != playState)
+    if (PLAYING != playState || !pipeline){
+        Logcat::i("HWVC", "AsynAudioDecoder skip loop");
         return;
+    }
     pipeline->queueEvent([this] {
         if (!grab()) {
             Logcat::i("HWVC", "AsynAudioDecoder stop loop");
@@ -88,7 +90,7 @@ void AsynAudioDecoder::loop() {
 bool AsynAudioDecoder::grab() {
     if (cache.size() >= 10) {
 //        grabLock.wait();
-//        Logcat::i("HWVC", "AsynAudioDecoder::grab wait: %d", cache.size());
+        Logcat::i("HWVC", "AsynAudioDecoder::grab wait: %d", cache.size());
         return true;
     }
 //    Logcat::i("HWVC", "HwFrameAllocator::info: cache %d", cache.size());

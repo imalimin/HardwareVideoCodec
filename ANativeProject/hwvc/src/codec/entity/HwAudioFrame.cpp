@@ -6,6 +6,7 @@
  */
 
 #include "../include/HwAudioFrame.h"
+#include "Logcat.h"
 
 HwAudioFrame::HwAudioFrame(uint16_t channels, uint32_t sampleRate, uint64_t sampleCount)
         : HwAbsMediaFrame(Type::AUDIO) {
@@ -27,9 +28,6 @@ uint32_t HwAudioFrame::getSampleRate() { return sampleRate; }
 uint64_t HwAudioFrame::getSampleCount() { return sampleCount; }
 
 HwAbsMediaFrame *HwAudioFrame::clone() {
-    if (!isAudio()) {
-        return nullptr;
-    }
     HwAudioFrame *destFrame = new HwAudioFrame(channels, sampleRate, sampleCount);
     destFrame->setPts(getPts());
     destFrame->setFormat(getFormat());
@@ -37,4 +35,10 @@ HwAbsMediaFrame *HwAudioFrame::clone() {
     destFrame->setData(buffer, getDataSize());
     memcpy(destFrame->getData(), getData(), static_cast<size_t>(destFrame->getDataSize()));
     return destFrame;
+}
+void HwAudioFrame::clone(HwAbsMediaFrame *src) {
+    if (!src || !src->isAudio() || src->getDataSize() < getDataSize()) {
+        Logcat::e("HWVC", "Invalid frame");
+        return;
+    }
 }

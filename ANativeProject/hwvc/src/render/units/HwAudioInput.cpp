@@ -78,7 +78,7 @@ bool HwAudioInput::eventStart(Message *msg) {
         if (decoder) {
             decoder->start();
         }
-//        loop();
+        loop();
     }
     return false;
 }

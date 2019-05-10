@@ -26,6 +26,8 @@ public:
 
     virtual HwAbsMediaFrame *clone();
 
+    virtual void clone(HwAbsMediaFrame *src);
+
 private:
     uint32_t width = 0;
     uint32_t height = 0;

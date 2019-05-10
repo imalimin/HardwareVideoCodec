@@ -37,6 +37,8 @@ public:
 
     virtual HwAbsMediaFrame *clone()=0;
 
+    virtual void clone(HwAbsMediaFrame *src)=0;
+
 private:
     Type type = Type::AUDIO;
     uint16_t format = 0;

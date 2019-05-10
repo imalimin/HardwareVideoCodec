@@ -6,6 +6,7 @@
  */
 
 #include "../include/HwVideoFrame.h"
+#include "Logcat.h"
 
 HwVideoFrame::HwVideoFrame(uint32_t width, uint32_t height) : HwAbsMediaFrame(Type::VIDEO) {
     this->width = width;
@@ -26,9 +27,6 @@ uint32_t HwVideoFrame::getWidth() { return width; }
 uint32_t HwVideoFrame::getHeight() { return height; }
 
 HwAbsMediaFrame *HwVideoFrame::clone() {
-    if (!isVideo()) {
-        return nullptr;
-    }
     HwVideoFrame *destFrame = new HwVideoFrame(width, height);
     destFrame->setPts(getPts());
     destFrame->setFormat(getFormat());
@@ -36,4 +34,15 @@ HwAbsMediaFrame *HwVideoFrame::clone() {
     destFrame->setData(buffer, getDataSize());
     memcpy(destFrame->getData(), getData(), static_cast<size_t>(destFrame->getDataSize()));
     return destFrame;
+}
+
+void HwVideoFrame::clone(HwAbsMediaFrame *src) {
+    if (!src || !src->isVideo() || src->getDataSize() < getDataSize()) {
+        Logcat::e("HWVC", "Invalid video frame");
+        return;
+    }
+    src->setPts(getPts());
+    src->setFormat(getFormat());
+    memcpy(src->getData(), getData(), getDataSize());
+    src->setData(src->getData(), getDataSize());
 }
