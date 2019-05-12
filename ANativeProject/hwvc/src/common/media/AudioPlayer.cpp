@@ -192,7 +192,9 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     if (!fifo) {
         return;
     }
-    LOGE("AudioPlayer..., %d, %lld", fifo->size(), getCurrentTimeUS() - ttime);
+    if (isLogEnable()) {
+        LOGE("AudioPlayer..., %d, %lld", fifo->size(), getCurrentTimeUS() - ttime);
+    }
     ttime = getCurrentTimeUS();
     if (fifo->size() >= getBufferByteSize()) {
         HwAbsFrame *frame = fifo->take(getBufferByteSize());

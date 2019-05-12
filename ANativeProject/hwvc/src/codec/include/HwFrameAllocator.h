@@ -37,7 +37,7 @@ public:
     void unRef(HwAbsMediaFrame **frame);
 
     void printInfo() {
-        Logcat::i("HWVC", "HwFrameAllocator::info: %d, %d", refQueue.size(), unRefQueue.size());
+        Logcat::i("HWVC", "HwFrameAllocator::info: ref=%d, unRef=%d", refQueue.size(), unRefQueue.size());
     }
 
 private:

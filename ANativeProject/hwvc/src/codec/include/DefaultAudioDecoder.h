@@ -11,6 +11,7 @@
 #include "AbsAudioDecoder.h"
 #include "HwAbsMediaFrame.h"
 #include "HwFrameAllocator.h"
+#include "HwLogEnable.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,7 +26,7 @@ extern "C" {
 }
 #endif
 
-class DefaultAudioDecoder : public AbsAudioDecoder {
+class DefaultAudioDecoder : public AbsAudioDecoder, HwLogEnable {
 public:
     DefaultAudioDecoder();
 

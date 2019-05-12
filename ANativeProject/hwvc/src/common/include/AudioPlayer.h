@@ -17,10 +17,11 @@
 #include "HwResult.h"
 #include <queue>
 #include "HwFIFOBuffer.h"
+#include "HwLogEnable.h"
 
 using namespace std;
 
-class AudioPlayer : public SLAudioDevice {
+class AudioPlayer : public SLAudioDevice, HwLogEnable {
 public:
     AudioPlayer(uint16_t channels,
                 uint32_t sampleRate,

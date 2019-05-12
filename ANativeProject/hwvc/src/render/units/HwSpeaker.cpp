@@ -42,11 +42,11 @@ bool HwSpeaker::eventFeed(Message *msg) {
         HwAudioFrame *frame = dynamic_cast<HwAudioFrame *>(msg->obj);
         createFromAudioFrame(frame);
         if (audioPlayer) {
-            Logcat::i("HWVC", "HwAudioInput::play audio: %d, %d, %lld, %lld",
-                      frame->getChannels(),
-                      frame->getSampleRate(),
-                      frame->getSampleCount(),
-                      frame->getDataSize());
+//            Logcat::i("HWVC", "HwSpeaker::play audio: %d, %d, %lld, %lld",
+//                      frame->getChannels(),
+//                      frame->getSampleRate(),
+//                      frame->getSampleCount(),
+//                      frame->getDataSize());
             audioPlayer->write(frame->getData(), static_cast<size_t>(frame->getDataSize()));
         }
     }

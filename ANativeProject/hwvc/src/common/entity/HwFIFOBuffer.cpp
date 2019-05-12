@@ -35,7 +35,9 @@ void HwFIFOBuffer::push(uint8_t *data, size_t size) {
     if (end() - this->writer + 1 < size) {
         movePosition();
         while (end() - this->writer + 1 < size) {
-            Logcat::e("HWVC", "Capacity is insufficient(left=%d). Wait", leftCapacity());
+            if (isLogEnable()) {
+                Logcat::e("HWVC", "HwFIFOBuffer::push Capacity is insufficient(left=%d). Wait", leftCapacity());
+            }
             notifyLock.wait();
             if (!buf) {
                 return;
@@ -51,12 +53,16 @@ void HwFIFOBuffer::push(uint8_t *data, size_t size) {
     this->writer += size;
     this->_size += size;
     writeReadLock.unlock();
-    Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)", this->size(), leftCapacity(), capacity);
+    if (isLogEnable()) {
+        Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)", this->size(), leftCapacity(), capacity);
+    }
 }
 
 HwAbsFrame *HwFIFOBuffer::take(size_t size) {
     if (this->size() < size) {
-        Logcat::e("HWVC", "HwFIFOBuffer::take b");
+        if (isLogEnable()) {
+            Logcat::e("HWVC", "HwFIFOBuffer::take failed(size=%d, want=%d)", this->size(), size);
+        }
         return nullptr;
     }
     int64_t time = TimeUtils::getCurrentTimeUS();
@@ -69,11 +75,13 @@ HwAbsFrame *HwFIFOBuffer::take(size_t size) {
     this->_size -= size;
     writeReadLock.unlock();
     notifyLock.notify();
-    Logcat::i("HWVC", "HwFIFOBuffer::take(%d/%d/%d)(%d, %d), cost: %lld", this->size(),
-              leftCapacity(),
-              capacity,
-              frame->getData(), frame->getData() + 4,
-              getCurrentTimeUS() - time);
+    if (isLogEnable()) {
+        Logcat::i("HWVC", "HwFIFOBuffer::take(%d/%d/%d)(%d, %d), cost: %lld", this->size(),
+                  leftCapacity(),
+                  capacity,
+                  frame->getData(), frame->getData() + 4,
+                  getCurrentTimeUS() - time);
+    }
     return frame;
 }
 
@@ -116,7 +124,9 @@ void HwFIFOBuffer::movePosition() {
     this->reader = first();
     this->writer = first() + size;
     writeReadLock.unlock();
-    Logcat::i("HWVC", "HwFIFOBuffer::movePosition(left=%d)", leftCapacity());
+    if (isLogEnable()) {
+        Logcat::i("HWVC", "HwFIFOBuffer::movePosition(left=%d)", leftCapacity());
+    }
 }
 
 void HwFIFOBuffer::flush() {
@@ -126,5 +136,7 @@ void HwFIFOBuffer::flush() {
     this->_size = 0;
     writeReadLock.unlock();
     notifyLock.notify();
-    Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)", this->size(), leftCapacity(), capacity);
+    if (isLogEnable()) {
+        Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)", this->size(), leftCapacity(), capacity);
+    }
 }
