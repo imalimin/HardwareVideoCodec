@@ -8,6 +8,7 @@
 #include <string>
 #include "Object.h"
 #include "HandlerThread.h"
+#include "SimpleLock.h"
 
 #ifndef HARDWAREVIDEOCODEC_EVENTPIPELINE_H
 #define HARDWAREVIDEOCODEC_EVENTPIPELINE_H
@@ -24,8 +25,7 @@ public:
 
 private:
     HandlerThread *handlerThread = nullptr;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
+    SimpleLock simpleLock;
     bool shouldQuitThread = false;
 };
 

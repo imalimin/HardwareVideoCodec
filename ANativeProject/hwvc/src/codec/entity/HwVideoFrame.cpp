@@ -14,13 +14,13 @@ HwVideoFrame::HwVideoFrame(uint32_t width, uint32_t height) : HwAbsMediaFrame(Ty
 }
 
 HwVideoFrame::~HwVideoFrame() {
-    this->width = 0;
-    this->height = 0;
+    setSize(0, 0);
 }
 
-void HwVideoFrame::setWidth(uint32_t width) { this->width = width; }
-
-void HwVideoFrame::setHeight(uint32_t height) { this->height = height; }
+void HwVideoFrame::setSize(uint32_t width, uint32_t height) {
+    this->width = width;
+    this->height = height;
+}
 
 uint32_t HwVideoFrame::getWidth() { return width; }
 
@@ -41,8 +41,10 @@ void HwVideoFrame::clone(HwAbsMediaFrame *src) {
         Logcat::e("HWVC", "Invalid video frame");
         return;
     }
-    src->setPts(getPts());
-    src->setFormat(getFormat());
-    memcpy(src->getData(), getData(), getDataSize());
-    src->setData(src->getData(), getDataSize());
+    HwVideoFrame *srcFrame = dynamic_cast<HwVideoFrame *>(src);
+    srcFrame->setPts(getPts());
+    srcFrame->setFormat(getFormat());
+    srcFrame->setSize(getWidth(), getHeight());
+    memcpy(srcFrame->getData(), getData(), getDataSize());
+    srcFrame->setData(srcFrame->getData(), getDataSize());
 }

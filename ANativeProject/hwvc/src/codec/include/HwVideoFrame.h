@@ -16,9 +16,7 @@ public:
 
     virtual ~HwVideoFrame();
 
-    void setWidth(uint32_t width);
-
-    void setHeight(uint32_t height);
+    void setSize(uint32_t width, uint32_t height);
 
     uint32_t getWidth();
 

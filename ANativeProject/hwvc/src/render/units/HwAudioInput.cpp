@@ -10,7 +10,6 @@
 
 HwAudioInput::HwAudioInput() : HwStreamMedia() {
     name = __FUNCTION__;
-    this->lock = new SimpleLock();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&HwAudioInput::eventPrepare));
     registerEvent(EVENT_AUDIO_START, reinterpret_cast<EventFunc>(&HwAudioInput::eventStart));
     registerEvent(EVENT_AUDIO_PAUSE, reinterpret_cast<EventFunc>(&HwAudioInput::eventPause));
@@ -24,7 +23,6 @@ HwAudioInput::HwAudioInput() : HwStreamMedia() {
 
 HwAudioInput::HwAudioInput(HandlerThread *handlerThread) : HwStreamMedia(handlerThread) {
     name = __FUNCTION__;
-    this->lock = new SimpleLock();
     registerEvent(EVENT_COMMON_PREPARE, reinterpret_cast<EventFunc>(&HwAudioInput::eventPrepare));
     registerEvent(EVENT_AUDIO_START, reinterpret_cast<EventFunc>(&HwAudioInput::eventStart));
     registerEvent(EVENT_AUDIO_PAUSE, reinterpret_cast<EventFunc>(&HwAudioInput::eventPause));
@@ -38,16 +36,12 @@ HwAudioInput::HwAudioInput(HandlerThread *handlerThread) : HwStreamMedia(handler
 
 HwAudioInput::~HwAudioInput() {
     LOGI("HwAudioInput::~HwAudioInput");
-    lock->lock();
+    simpleLock.lock();
     if (decoder) {
         delete decoder;
         decoder = nullptr;
     }
-    lock->unlock();
-    if (lock) {
-        delete lock;
-        lock = nullptr;
-    }
+    simpleLock.unlock();
 }
 
 bool HwAudioInput::eventPrepare(Message *msg) {
@@ -113,9 +107,9 @@ bool HwAudioInput::eventLoop(Message *msg) {
     if (PLAYING != playState) {
         return false;
     }
-    lock->lock();
+    simpleLock.lock();
     int ret = grab();
-    lock->unlock();
+    simpleLock.unlock();
     if (MEDIA_TYPE_EOF == ret) {
         eventStop(nullptr);
         return false;
@@ -129,16 +123,13 @@ void HwAudioInput::loop() {
 }
 
 int HwAudioInput::grab() {
-    int64_t time = getCurrentTimeUS();
     HwAbsMediaFrame *frame = nullptr;
     int ret = decoder->grab(&frame);
-//    Logcat::i("HWVC", "HwAudioInput::grab cost: %lld, ret: %d", getCurrentTimeUS() - time, ret);
     if (!frame) {
         return ret;
     }
-    int64_t curPts = frame->getPts();
     if (frame->isAudio()) {
-        playFrame(dynamic_cast<HwAudioFrame *>(frame));
+        playFrame(dynamic_cast<HwAudioFrame *>(frame->clone()));
         return MEDIA_TYPE_AUDIO;
     }
     return ret;

@@ -46,7 +46,8 @@ private:
 private:
     AsynAudioDecoder *decoder = nullptr;
     PlayState playState = STOP;
-    SimpleLock *lock;
+    SimpleLock simpleLock;
+    SimpleLock playTimeLock;
     string path;
     HwAudioFrame *frame = nullptr;
 };

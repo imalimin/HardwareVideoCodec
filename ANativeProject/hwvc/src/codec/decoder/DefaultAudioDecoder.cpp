@@ -34,6 +34,11 @@ DefaultAudioDecoder::~DefaultAudioDecoder() {
         av_frame_free(&resampleFrame);
         resampleFrame = nullptr;
     }
+    if (audioFrame) {
+        av_frame_unref(audioFrame);
+        av_frame_free(&audioFrame);
+        audioFrame = nullptr;
+    }
     if (aCodecContext) {
         avcodec_close(aCodecContext);
         aCodecContext = nullptr;
@@ -267,6 +272,7 @@ HwAbsMediaFrame *DefaultAudioDecoder::resample(AVFrame *avFrame) {
         Logcat::e("HWVC", "DefaultVideoDecoder::resample failed");
         return nullptr;
     }
+    resampleFrame->pts = avFrame->pts;
     return hwFrameAllocator->ref(resampleFrame);
 }
 

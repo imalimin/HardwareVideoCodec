@@ -7,33 +7,31 @@
 #include "../include/EventPipeline.h"
 
 EventPipeline::EventPipeline(string name) {
-    pthread_mutex_init(&mutex, nullptr);
-    pthread_cond_init(&cond, nullptr);
     this->handlerThread = new HandlerThread(name);
     this->shouldQuitThread = false;
 }
 
 EventPipeline::EventPipeline(HandlerThread *handlerThread) {
-    pthread_mutex_init(&mutex, nullptr);
-    pthread_cond_init(&cond, nullptr);
     this->handlerThread = handlerThread;
     this->shouldQuitThread = true;
 }
 
 EventPipeline::~EventPipeline() {
     notify();
+    simpleLock.lock();
     if (shouldQuitThread && handlerThread) {
         delete handlerThread;
     }
     handlerThread = nullptr;
-    pthread_mutex_destroy(&mutex);
-    pthread_cond_destroy(&cond);
+    simpleLock.unlock();
 }
 
 void EventPipeline::queueEvent(function<void()> event) {
+    simpleLock.lock();
     if (handlerThread) {
         handlerThread->sendMessage(new Message(0, [event](Message *msg) {
             event();
         }));
     }
+    simpleLock.unlock();
 }

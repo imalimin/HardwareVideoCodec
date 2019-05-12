@@ -27,6 +27,12 @@ uint32_t HwAudioFrame::getSampleRate() { return sampleRate; }
 
 uint64_t HwAudioFrame::getSampleCount() { return sampleCount; }
 
+void HwAudioFrame::setSampleFormat(uint16_t channels, uint32_t sampleRate, uint64_t sampleCount) {
+    this->channels = channels;
+    this->sampleRate = sampleRate;
+    this->sampleCount = sampleCount;
+}
+
 HwAbsMediaFrame *HwAudioFrame::clone() {
     HwAudioFrame *destFrame = new HwAudioFrame(channels, sampleRate, sampleCount);
     destFrame->setPts(getPts());
@@ -36,9 +42,16 @@ HwAbsMediaFrame *HwAudioFrame::clone() {
     memcpy(destFrame->getData(), getData(), static_cast<size_t>(destFrame->getDataSize()));
     return destFrame;
 }
+
 void HwAudioFrame::clone(HwAbsMediaFrame *src) {
     if (!src || !src->isAudio() || src->getDataSize() < getDataSize()) {
-        Logcat::e("HWVC", "Invalid frame");
+        Logcat::e("HWVC", "Invalid audio frame");
         return;
     }
+    HwAudioFrame *srcFrame = dynamic_cast<HwAudioFrame *>(src);
+    srcFrame->setPts(getPts());
+    srcFrame->setFormat(getFormat());
+    srcFrame->setSampleFormat(channels, sampleRate, sampleCount);
+    memcpy(srcFrame->getData(), getData(), getDataSize());
+    srcFrame->setData(srcFrame->getData(), getDataSize());
 }

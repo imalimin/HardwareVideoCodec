@@ -19,6 +19,7 @@ AsynAudioDecoder::~AsynAudioDecoder() {
         delete pipeline;
         pipeline = nullptr;
     }
+    releaseLock.lock();
     if (decoder) {
         delete decoder;
         decoder = nullptr;
@@ -27,6 +28,7 @@ AsynAudioDecoder::~AsynAudioDecoder() {
         delete hwFrameAllocator;
         hwFrameAllocator = nullptr;
     }
+    releaseLock.unlock();
     if (file) {
         fclose(file);
         file = nullptr;
@@ -36,13 +38,14 @@ AsynAudioDecoder::~AsynAudioDecoder() {
 bool AsynAudioDecoder::prepare(string path) {
     file = fopen("/sdcard/2.pcm", "wb");
     playState = PAUSE;
-    if (decoder) {
-        if (!decoder->prepare(path)) {
-            return false;
-        }
-    }
     if (!pipeline) {
         pipeline = new EventPipeline("AsynAudioDecoder");
+    }
+    if (decoder) {
+        if (!decoder->prepare(path)) {
+            Logcat::e("HWVC", "AsynAudioDecoder::prepare failed");
+            return false;
+        }
     }
 //    start();
     return true;
@@ -74,7 +77,7 @@ void AsynAudioDecoder::stop() {
 }
 
 void AsynAudioDecoder::loop() {
-    if (PLAYING != playState || !pipeline){
+    if (PLAYING != playState || !pipeline) {
         Logcat::i("HWVC", "AsynAudioDecoder skip loop");
         return;
     }
@@ -89,14 +92,20 @@ void AsynAudioDecoder::loop() {
 
 bool AsynAudioDecoder::grab() {
     if (cache.size() >= 10) {
-//        grabLock.wait();
-        Logcat::i("HWVC", "AsynAudioDecoder::grab wait: %d", cache.size());
+        grabLock.wait();
         return true;
     }
 //    Logcat::i("HWVC", "HwFrameAllocator::info: cache %d", cache.size());
     HwAbsMediaFrame *frame = nullptr;
-    int ret = decoder->grab(&frame);
-    frame = hwFrameAllocator->ref(frame);
+    int ret = MEDIA_TYPE_UNKNOWN;
+    releaseLock.lock();
+    if (decoder) {
+        ret = decoder->grab(&frame);
+    }
+    if (hwFrameAllocator) {
+        frame = hwFrameAllocator->ref(frame);
+    }
+    releaseLock.unlock();
     if (frame) {
         cache.push(frame);
     }

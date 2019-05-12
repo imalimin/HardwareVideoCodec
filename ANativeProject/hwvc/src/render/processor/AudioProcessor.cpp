@@ -13,7 +13,7 @@
 AudioProcessor::AudioProcessor() : Object() {
     pipeline = new UnitPipeline("AudioProcessor");
     pipeline->registerAnUnit(new HwAudioInput());
-//    pipeline->registerAnUnit(new HwSpeaker());
+    pipeline->registerAnUnit(new HwSpeaker());
 }
 
 AudioProcessor::~AudioProcessor() {
