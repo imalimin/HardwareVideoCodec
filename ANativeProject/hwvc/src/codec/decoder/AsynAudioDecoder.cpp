@@ -70,20 +70,21 @@ void AsynAudioDecoder::pause() {
 }
 
 void AsynAudioDecoder::stop() {
-    grabLock.notify();
     if (STOP != playState) {
         playState = STOP;
     }
+    grabLock.notify();
 }
 
 void AsynAudioDecoder::loop() {
     if (PLAYING != playState || !pipeline) {
-        Logcat::i("HWVC", "AsynAudioDecoder skip loop");
+        Logcat::i("HWVC", "AsynAudioDecoder::loop skip loop");
         return;
     }
     pipeline->queueEvent([this] {
         if (!grab()) {
-            Logcat::i("HWVC", "AsynAudioDecoder stop loop");
+            pause();
+            Logcat::i("HWVC", "AsynAudioDecoder::loop EOF");
             return;
         }
         loop();
@@ -102,13 +103,11 @@ bool AsynAudioDecoder::grab() {
     if (decoder) {
         ret = decoder->grab(&frame);
     }
-    if (hwFrameAllocator) {
+    if (hwFrameAllocator && frame) {
         frame = hwFrameAllocator->ref(frame);
-    }
-    releaseLock.unlock();
-    if (frame) {
         cache.push(frame);
     }
+    releaseLock.unlock();
     return MEDIA_TYPE_EOF != ret;
 }
 

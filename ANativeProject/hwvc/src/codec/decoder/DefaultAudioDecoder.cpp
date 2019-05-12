@@ -90,6 +90,7 @@ bool DefaultAudioDecoder::prepare(string path) {
     //准备资源
     avPacket = av_packet_alloc();
     audioFrame = av_frame_alloc();
+//    seek(170749167);
     return true;
 }
 
@@ -99,14 +100,12 @@ bool DefaultAudioDecoder::prepare(string path) {
  */
 int DefaultAudioDecoder::grab(HwAbsMediaFrame **frame) {
     while (true) {
-        if (0 == av_read_frame(pFormatCtx, avPacket)) {
-            int ret = 0;
-            if (audioTrack == avPacket->stream_index) {
-                ret = avcodec_send_packet(aCodecContext, avPacket);
-            }
-            if (AVERROR_EOF == ret) {
-                eof = true;
-            }
+        readPkgLock.lock();
+        int ret = av_read_frame(pFormatCtx, avPacket);
+        readPkgLock.unlock();
+        if (0 == ret && audioTrack == avPacket->stream_index) {
+            avcodec_send_packet(aCodecContext, avPacket);
+        }
 //            switch (ret) {
 //                case AVERROR(EAGAIN): {
 //                    LOGI("you must read output with avcodec_receive_frame");
@@ -127,8 +126,11 @@ int DefaultAudioDecoder::grab(HwAbsMediaFrame **frame) {
 //                default:
 //                    LOGI("avcodec_send_packet ret=%d", ret);
 //            }
+        if (AVERROR_EOF == ret) {
+            eof = true;
         }
         if (0 == avcodec_receive_frame(aCodecContext, audioFrame)) {
+            int64_t pts = audioFrame->pts;
             matchPts(audioFrame, audioTrack);
             if (outputFrame) {
                 hwFrameAllocator->unRef(&outputFrame);
@@ -145,14 +147,19 @@ int DefaultAudioDecoder::grab(HwAbsMediaFrame **frame) {
         }
         //如果缓冲区中既没有音频也没有视频，并且已经读取完文件，则播放完了
         if (eof) {
-            Logcat::i("HWVC", "DefaultAudioDecoder::grab end");
+            Logcat::i("HWVC", "DefaultAudioDecoder::grab EOF");
             return AVERROR_EOF;
         }
     }
 }
 
 void DefaultAudioDecoder::seek(int64_t us) {
-
+    us = av_rescale_q_rnd(us, outputTimeBase,
+                          pFormatCtx->streams[audioTrack]->time_base,
+                          AV_ROUND_NEAR_INF);
+    readPkgLock.lock();
+    av_seek_frame(pFormatCtx, audioTrack, us, AVSEEK_FLAG_BACKWARD);
+    readPkgLock.unlock();
 }
 
 int DefaultAudioDecoder::getChannels() {
@@ -184,7 +191,7 @@ int64_t DefaultAudioDecoder::getAudioDuration() {
                                        AV_ROUND_NEAR_INF);
     audioDurationUs = av_rescale_q_rnd(audioDurationUs,
                                        pFormatCtx->streams[audioTrack]->codec->time_base,
-                                       outputRational,
+                                       outputTimeBase,
                                        AV_ROUND_NEAR_INF);
     return audioDurationUs;
 }
@@ -279,13 +286,13 @@ HwAbsMediaFrame *DefaultAudioDecoder::resample(AVFrame *avFrame) {
 }
 
 void DefaultAudioDecoder::matchPts(AVFrame *frame, int track) {
+//    frame->pts = av_rescale_q_rnd(frame->pts,
+//                                  pFormatCtx->streams[track]->time_base,
+//                                  pFormatCtx->streams[track]->codec->time_base,
+//                                  AV_ROUND_NEAR_INF);
     frame->pts = av_rescale_q_rnd(frame->pts,
                                   pFormatCtx->streams[track]->time_base,
-                                  pFormatCtx->streams[track]->codec->time_base,
-                                  AV_ROUND_NEAR_INF);
-    frame->pts = av_rescale_q_rnd(frame->pts,
-                                  pFormatCtx->streams[track]->codec->time_base,
-                                  outputRational,
+                                  outputTimeBase,
                                   AV_ROUND_NEAR_INF);
 }
 

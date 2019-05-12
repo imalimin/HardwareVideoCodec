@@ -76,9 +76,10 @@ private:
     AVFrame *audioFrame = nullptr;
     HwAbsMediaFrame *outputFrame = nullptr;
     AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
-    AVRational outputRational = AVRational{1, 1000000};
+    AVRational outputTimeBase = AVRational{1, 1000000};
     int64_t audioDurationUs = -1;
     bool eof = false;
+    SimpleLock readPkgLock;
 };
 
 
