@@ -24,6 +24,8 @@ public:
 
     void setSampleFormat(uint16_t channels, uint32_t sampleRate, uint64_t sampleCount);
 
+    virtual uint64_t duration();
+
     virtual HwAbsMediaFrame *clone();
 
     virtual void clone(HwAbsMediaFrame *src);

@@ -35,6 +35,11 @@ public:
 
     bool isAudio();
 
+    /**
+     * us
+     */
+    virtual uint64_t duration()=0;
+
     virtual HwAbsMediaFrame *clone()=0;
 
     virtual void clone(HwAbsMediaFrame *src)=0;

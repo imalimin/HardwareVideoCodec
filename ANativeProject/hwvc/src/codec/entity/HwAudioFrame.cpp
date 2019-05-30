@@ -33,6 +33,10 @@ void HwAudioFrame::setSampleFormat(uint16_t channels, uint32_t sampleRate, uint6
     this->sampleCount = sampleCount;
 }
 
+uint64_t HwAudioFrame::duration() {
+    return 1000000 * sampleCount / sampleRate;
+}
+
 HwAbsMediaFrame *HwAudioFrame::clone() {
     HwAudioFrame *destFrame = new HwAudioFrame(channels, sampleRate, sampleCount);
     destFrame->setPts(getPts());

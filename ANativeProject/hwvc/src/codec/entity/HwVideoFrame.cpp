@@ -26,6 +26,10 @@ uint32_t HwVideoFrame::getWidth() { return width; }
 
 uint32_t HwVideoFrame::getHeight() { return height; }
 
+uint64_t HwVideoFrame::duration() {
+    return 0;
+}
+
 HwAbsMediaFrame *HwVideoFrame::clone() {
     HwVideoFrame *destFrame = new HwVideoFrame(width, height);
     destFrame->setPts(getPts());
