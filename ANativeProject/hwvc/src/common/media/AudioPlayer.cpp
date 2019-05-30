@@ -40,7 +40,6 @@ void AudioPlayer::initialize(SLEngine *engine) {
     uint32_t bufSize = sampleRate * channels * format * 0.5;
     bufSize = (bufSize + 7) >> 3;
     this->fifo = new HwFIFOBuffer(bufSize);
-    this->fifo->setLogEnable(true);
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
          this->channels,
          this->sampleRate,
@@ -194,9 +193,7 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     if (!fifo) {
         return;
     }
-    if (isLogEnable()) {
-        LOGE("AudioPlayer..., %d, %lld", fifo->size(), getCurrentTimeUS() - ttime);
-    }
+    Logcat::i("HWVC", "AudioPlayer..., %d, %lld", fifo->size(), getCurrentTimeUS() - ttime);
     ttime = getCurrentTimeUS();
     HwAbsFrame *frame = fifo->take(getBufferByteSize());
     if (frame) {

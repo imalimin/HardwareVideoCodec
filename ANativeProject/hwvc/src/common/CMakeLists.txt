@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(hwvcom)
 
+option(HWDEBUG "Whether show opengl logs." ON)
+if (HWDEBUG)
+    add_definitions(-DHWDEBUG)
+    message(HWDEBUG "Show debug logs。")
+endif ()
+
 set(PREBUILD_STATIC "${PROJECT_SOURCE_DIR}/prebuild/static/${ANDROID_ABI}")
 
 #include_directories(

@@ -5,6 +5,7 @@
 #include "../include/Logcat.h"
 
 void Logcat::i(const string &TAG, const string fmt, ...) {
+#ifdef HWDEBUG
     va_list args;
     va_start(args, fmt);
 #ifdef ANDROID
@@ -13,9 +14,11 @@ void Logcat::i(const string &TAG, const string fmt, ...) {
     printf(fmt.c_str(), args);
 #endif
     va_end(args);
+#endif
 }
 
 void Logcat::e(const string &TAG, const string fmt, ...) {
+#ifdef HWDEBUG
     va_list args;
     va_start(args, fmt);
 #ifdef ANDROID
@@ -24,4 +27,5 @@ void Logcat::e(const string &TAG, const string fmt, ...) {
     printf(fmt.c_str(), args);
 #endif
     va_end(args);
+#endif
 }

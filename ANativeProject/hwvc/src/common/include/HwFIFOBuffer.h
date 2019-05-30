@@ -11,9 +11,8 @@
 #include "Object.h"
 #include "HwAbsFrame.h"
 #include "SimpleLock.h"
-#include "HwLogEnable.h"
 
-class HwFIFOBuffer : public Object, public HwLogEnable {
+class HwFIFOBuffer : public Object{
 public:
     HwFIFOBuffer(size_t capacity);
 

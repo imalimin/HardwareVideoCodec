@@ -11,7 +11,6 @@
 #include "AbsAudioDecoder.h"
 #include "HwAbsMediaFrame.h"
 #include "HwFrameAllocator.h"
-#include "HwLogEnable.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +25,7 @@ extern "C" {
 }
 #endif
 
-class DefaultAudioDecoder : public AbsAudioDecoder, HwLogEnable {
+class DefaultAudioDecoder : public AbsAudioDecoder {
 public:
     DefaultAudioDecoder();
 
@@ -65,6 +64,7 @@ private:
     void printCodecInfo();
 
 private:
+    bool enableDebug = false;
     string path;
     HwFrameAllocator *hwFrameAllocator = nullptr;
     AVFormatContext *pFormatCtx = nullptr;

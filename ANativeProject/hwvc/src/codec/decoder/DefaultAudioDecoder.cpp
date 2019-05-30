@@ -137,7 +137,7 @@ int DefaultAudioDecoder::grab(HwAbsMediaFrame **frame) {
             }
             outputFrame = resample(audioFrame);
             *frame = outputFrame;
-            if (isLogEnable()) {
+            if (enableDebug) {
                 Logcat::i("HWVC", "DefaultAudioDecoder::grab audio, %d, %d",
                           resampleFrame->linesize[0],
                           resampleFrame->nb_samples);
