@@ -37,8 +37,9 @@ AudioPlayer::AudioPlayer(SLEngine *engine,
 
 void AudioPlayer::initialize(SLEngine *engine) {
     this->engine = engine;
-    uint32_t bufSize = getBufferByteSize();
-    this->fifo = new HwFIFOBuffer(1024 * 1024 * 16);
+    uint32_t bufSize = sampleRate * channels * format * 5;
+    bufSize = (bufSize + 7) >> 3;
+    this->fifo = new HwFIFOBuffer(bufSize);
     this->fifo->setLogEnable(true);
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
          this->channels,
@@ -197,16 +198,14 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
         LOGE("AudioPlayer..., %d, %lld", fifo->size(), getCurrentTimeUS() - ttime);
     }
     ttime = getCurrentTimeUS();
-    if (fifo->size() >= getBufferByteSize()) {
-        HwAbsFrame *frame = fifo->take(getBufferByteSize());
-        if (frame) {
-            (*slBufferQueueItf)->Enqueue(bufferQueueItf, frame->getData(), frame->getDataSize());
-            if (file) {
-                fwrite(frame->getData(), 1, frame->getDataSize(), file);
-            }
-            delete frame;
-            return;
+    HwAbsFrame *frame = fifo->take(getBufferByteSize());
+    if (frame) {
+        (*slBufferQueueItf)->Enqueue(bufferQueueItf, frame->getData(), frame->getDataSize());
+        if (file) {
+            fwrite(frame->getData(), 1, frame->getDataSize(), file);
         }
+        delete frame;
+        return;
     }
     uint8_t *buffer = new uint8_t[getBufferByteSize()];
     memset(buffer, 0, getBufferByteSize());
@@ -226,7 +225,10 @@ HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
 //    memcpy(data, buffer, size);
 //    pcmList.push(new ObjectBox(data));
     //-----------------
-    fifo->push(buffer, size);
+    size_t ret = fifo->push(buffer, size);
+    if (0 == ret) {
+        return Hw::FAILED;
+    }
     return Hw::SUCCESS;
 }
 

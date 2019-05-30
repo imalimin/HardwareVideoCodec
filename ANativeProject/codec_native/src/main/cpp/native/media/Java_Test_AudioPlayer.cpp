@@ -20,6 +20,7 @@ static FILE *file = nullptr;
 static EventPipeline *pipeline = nullptr;
 static int index = 0;
 SimpleLock lock;
+SimpleLock waitLock;
 
 static void loopTest() {
     lock.lock();
@@ -35,7 +36,9 @@ static void loopTest() {
         int ret = fread(data, 1, 8192, file);
         if (ret > 0) {
             ++index;
-            player->write(data, 8192);
+            while (Hw::FAILED == player->write(data, 8192)) {
+                waitLock.wait(10000);
+            }
             loopTest();
         }
     });

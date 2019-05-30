@@ -19,8 +19,19 @@ public:
 
     virtual ~HwFIFOBuffer();
 
-    void push(uint8_t *data, size_t size);
+    /**
+     * 把数据写入fifo
+     * @data 数据指针
+     * @size data的大小
+     * @return 返回成功push的size，0表示失败
+     */
+    size_t push(uint8_t *data, size_t size);
 
+    /**
+     * 从fifo读取数据
+     * @size 期望得到的size
+     * @return 返回数据片段映射，大小小于或等于size，该内存片段由fifo维护，切勿进行写操作
+     */
     HwAbsFrame *take(size_t size);
 
     size_t size();
@@ -40,6 +51,8 @@ private:
 
     void movePosition();
 
+    bool willCross(uint8_t *flag, uint8_t *pointer, size_t size);
+
 private:
     uint8_t *buf = nullptr;
     size_t capacity = 0;
@@ -47,6 +60,8 @@ private:
     uint8_t *reader = nullptr;
     uint8_t *writer = nullptr;
     uint8_t *endFlag = nullptr;
+
+    SimpleLock notifyLock;
 };
 
 
