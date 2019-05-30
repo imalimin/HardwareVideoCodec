@@ -37,7 +37,7 @@ AudioPlayer::AudioPlayer(SLEngine *engine,
 
 void AudioPlayer::initialize(SLEngine *engine) {
     this->engine = engine;
-    uint32_t bufSize = sampleRate * channels * format * 5;
+    uint32_t bufSize = sampleRate * channels * format * 0.5;
     bufSize = (bufSize + 7) >> 3;
     this->fifo = new HwFIFOBuffer(bufSize);
     this->fifo->setLogEnable(true);

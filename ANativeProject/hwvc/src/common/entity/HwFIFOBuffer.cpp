@@ -14,7 +14,7 @@ HwFIFOBuffer::HwFIFOBuffer(size_t capacity) : Object() {
     this->capacity = capacity;
     this->buf = new uint8_t[capacity];
     this->_size = 0;
-    this->reader = nullptr;
+    this->reader = end();
     this->writer = first();
     this->endFlag = end();
 }
@@ -26,14 +26,14 @@ HwFIFOBuffer::~HwFIFOBuffer() {
         buf = nullptr;
         writer = nullptr;
         reader = nullptr;
-        endFlag = end();
+        endFlag = nullptr;
     }
     capacity = 0;
 }
 
 bool HwFIFOBuffer::willCross(uint8_t *flag, uint8_t *pointer, size_t size) {
     if (pointer < flag) {
-        if (pointer + size >= flag) {//pointer == flag有歧义，所以也认为是cross，这会导致buf内总有一部分数据无法读取
+        if (pointer + size >= flag) {//TODO pointer == flag有歧义，所以也认为是cross，这会导致buf内总有一部分数据无法读取
             return true;
         }
     }
@@ -44,8 +44,9 @@ size_t HwFIFOBuffer::push(uint8_t *data, size_t size) {
     if (!buf) {
         return 0;
     }
-    while ((this->writer + size > end() + 1 && willCross(this->reader,first(), size)) ||
-            nullptr != this->reader && willCross(this->reader, this->writer, size)){
+    while ((this->writer + size - 1 > end() &&
+            willCross(this->reader, first(), size)) ||
+           willCross(this->reader, this->writer, size)) {
         if (isLogEnable()) {
             Logcat::e("HWVC", "HwFIFOBuffer::push Capacity is insufficient(left=%d). Wait",
                       leftCapacity());
@@ -62,9 +63,6 @@ size_t HwFIFOBuffer::push(uint8_t *data, size_t size) {
     memcpy(this->writer, data, size);
     this->writer += size;
     this->_size += size;
-    if (nullptr == this->reader) {//允许take
-        this->reader = first();
-    }
     if (isLogEnable()) {
         Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)", this->size(), leftCapacity(), capacity);
     }
@@ -76,11 +74,15 @@ HwAbsFrame *HwFIFOBuffer::take(size_t size) {
         Logcat::e("HWVC", "HwFIFOBuffer::take failed(unready)");
         return nullptr;
     }
-    if (this->endFlag - this->reader + 1 <= size) {
-        HwAbsFrame *frame = new HwMemFrameRef(this->reader, this->endFlag - this->reader + 1);
-        this->reader = first();
-        this->_size -= size;
-        return frame;
+    if (this->endFlag - this->reader + 1 <= size) {//TODO 一开始时会产生一个杂音sample
+        if (this->endFlag - this->reader + 1 <= 0) {
+            this->reader = first();
+        } else {
+            HwAbsFrame *frame = new HwMemFrameRef(this->reader, this->endFlag - this->reader + 1);
+            this->reader = first();
+            this->_size -= size;
+            return frame;
+        }
     }
 
     if (willCross(this->writer, this->reader, size)) {//保证不会越过reader
@@ -148,7 +150,7 @@ void HwFIFOBuffer::movePosition() {
 }
 
 void HwFIFOBuffer::flush() {
-    this->reader = nullptr;
+    this->reader = end();
     this->writer = first();
     this->_size = 0;
     notifyLock.notify();

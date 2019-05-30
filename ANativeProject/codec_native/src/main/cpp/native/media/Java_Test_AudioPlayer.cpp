@@ -36,9 +36,7 @@ static void loopTest() {
         int ret = fread(data, 1, 8192, file);
         if (ret > 0) {
             ++index;
-            while (Hw::FAILED == player->write(data, 8192)) {
-                waitLock.wait(10000);
-            }
+            player->write(data, 8192);
             loopTest();
         }
     });
