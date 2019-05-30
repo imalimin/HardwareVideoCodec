@@ -21,7 +21,7 @@
 
 using namespace std;
 
-class AudioPlayer : public SLAudioDevice, HwLogEnable {
+class AudioPlayer : public SLAudioDevice, public HwLogEnable {
 public:
     AudioPlayer(uint16_t channels,
                 uint32_t sampleRate,

@@ -13,7 +13,7 @@
 #include "SimpleLock.h"
 #include "HwLogEnable.h"
 
-class HwFIFOBuffer : public Object, HwLogEnable {
+class HwFIFOBuffer : public Object, public HwLogEnable {
 public:
     HwFIFOBuffer(size_t capacity);
 
@@ -46,8 +46,7 @@ private:
     size_t _size = 0;
     uint8_t *reader = nullptr;
     uint8_t *writer = nullptr;
-    SimpleLock writeReadLock;
-    SimpleLock notifyLock;
+    uint8_t *endFlag = nullptr;
 };
 
 

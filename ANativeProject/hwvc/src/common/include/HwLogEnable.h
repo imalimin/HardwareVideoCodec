@@ -21,7 +21,7 @@ public:
     bool isLogEnable();
 
 private:
-    bool logEnable;
+    bool logEnable = false;
 };
 
 

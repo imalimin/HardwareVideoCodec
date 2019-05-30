@@ -38,7 +38,8 @@ AudioPlayer::AudioPlayer(SLEngine *engine,
 void AudioPlayer::initialize(SLEngine *engine) {
     this->engine = engine;
     uint32_t bufSize = getBufferByteSize();
-    this->fifo = new HwFIFOBuffer(bufSize * 16);
+    this->fifo = new HwFIFOBuffer(1024 * 1024 * 16);
+    this->fifo->setLogEnable(true);
     LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
          this->channels,
          this->sampleRate,
