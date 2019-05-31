@@ -193,7 +193,7 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     if (!fifo) {
         return;
     }
-    Logcat::i("HWVC", "AudioPlayer::bufferEnqueue cost %lld", getCurrentTimeUS() - ttime);
+//    Logcat::i("HWVC", "AudioPlayer::bufferEnqueue cost %lld", getCurrentTimeUS() - ttime);
     ttime = getCurrentTimeUS();
     HwAbsFrame *frame = fifo->take(getBufferByteSize());
     if (frame) {

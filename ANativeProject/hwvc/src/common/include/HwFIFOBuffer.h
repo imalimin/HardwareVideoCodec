@@ -12,7 +12,7 @@
 #include "HwAbsFrame.h"
 #include "SimpleLock.h"
 
-class HwFIFOBuffer : public Object{
+class HwFIFOBuffer : public Object {
 public:
     HwFIFOBuffer(size_t capacity);
 
@@ -51,6 +51,12 @@ private:
     void movePosition();
 
     bool willCross(uint8_t *flag, uint8_t *pointer, size_t size);
+
+    bool willWrite(size_t size);
+
+    size_t willRead(size_t size);
+
+    uint8_t *move(uint8_t *pointer, size_t size);
 
 private:
     uint8_t *buf = nullptr;

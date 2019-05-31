@@ -40,28 +40,72 @@ bool HwFIFOBuffer::willCross(uint8_t *flag, uint8_t *pointer, size_t size) {
     return false;
 }
 
+bool HwFIFOBuffer::willWrite(size_t size) {
+    /*-----------------*/
+    /* ... w ... r ... */
+    /*-----------------*/
+    if (this->writer < this->reader && this->writer + size >= this->reader) {
+        return false;
+    }
+    /*-----------------*/
+    /* ... r ... w ... */
+    /*-----------------*/
+    if (this->writer > this->reader) {
+        size_t left = end() + 1 - this->writer;
+        if (left <= size) {//末尾剩余空间不足，需要移动到first
+            /*-----------------*/
+            /* r ... w ... */
+            /*-----------------*/
+            if (this->reader == first()) {
+                return false;
+            }
+            if (left < size) {
+                this->writer = first();
+                /*-------------*/
+                /* w ... r ... */
+                /*-------------*/
+                if (this->writer + size >= this->reader) {
+                    return false;
+                }
+                this->endFlag = this->writer - 1;
+            }
+        }
+    }
+    return true;
+}
+
+size_t HwFIFOBuffer::willRead(size_t size) {
+    size_t left = this->endFlag + 1 - this->reader;
+    if (left <= size) {
+        return left;
+    }
+    return 0;
+}
+
+uint8_t *HwFIFOBuffer::move(uint8_t *pointer, size_t size) {
+    if (pointer + size > end()) {
+        return first();
+    }
+    return pointer + size;
+}
+
 size_t HwFIFOBuffer::push(uint8_t *data, size_t size) {
     if (!buf) {
         return 0;
     }
-    while ((this->writer + size - 1 > end() &&
-            willCross(this->reader, first(), size)) ||
-           willCross(this->reader, this->writer, size)) {
+    while (!willWrite(size)) {
         Logcat::e("HWVC", "HwFIFOBuffer::push Capacity is insufficient(left=%d). Wait",
                   leftCapacity());
         notifyLock.wait();
     }
-    if (this->writer + size > end() + 1) {
-        this->endFlag = this->writer - 1;
-        if (this->endFlag < first()) {
-            this->endFlag = first();
-        }
-        this->writer = first();
-    }
     memcpy(this->writer, data, size);
-    this->writer += size;
+    this->writer = move(this->writer, size);
     this->_size += size;
-    Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)", this->size(), leftCapacity(), capacity);
+    Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)(%p, %p)", this->size(),
+              leftCapacity(),
+              capacity,
+              this->writer,
+              this->reader);
     return size;
 }
 
@@ -70,35 +114,57 @@ HwAbsFrame *HwFIFOBuffer::take(size_t size) {
         Logcat::e("HWVC", "HwFIFOBuffer::take failed(unready)");
         return nullptr;
     }
-    /**
-     * TODO 当writer == first && reader == end时，会产生一个杂音sample
-     */
-    if (this->endFlag - this->reader + 1 <= size) {
-        if (this->endFlag - this->reader + 1 <= 0) {
+    /*-----------------*/
+    /* ... r ... w ... */
+    /*-----------------*/
+    if (this->reader < this->writer && this->reader + size >= this->writer) {
+        Logcat::e("HWVC", "HwFIFOBuffer::take failed(cross)");
+        return nullptr;
+    }
+    /*-----------------*/
+    /* ... w ... r ... */
+    /*-----------------*/
+    if (this->reader > this->writer) {
+        size_t left = this->endFlag + 1 - this->reader;
+        if (left <= size) {
+            /*-------------*/
+            /* w ... r ... */
+            /*-------------*/
+            if (this->writer == first()) {
+                Logcat::e("HWVC", "HwFIFOBuffer::take failed(First occupied)");
+                return nullptr;
+            }
+            if (left <= 0) {
+                Logcat::e("HWVC", "HwFIFOBuffer::take failed(error) %d", left);
+                return nullptr;
+            }
+            HwAbsFrame *frame = new HwMemFrameRef(this->reader, left);
+            this->endFlag = end();//this->endFlag失效，一个循环只允许使用一次
+            /*-------------*/
+            /* r ... w ... */
+            /*-------------*/
             this->reader = first();
-        } else {
-            HwAbsFrame *frame = new HwMemFrameRef(this->reader, this->endFlag - this->reader + 1);
-            this->reader = first();
-            this->_size -= size;
+            this->_size -= left;
+            notifyLock.notify();
+            Logcat::i("HWVC", "HwFIFOBuffer::take a(%d/%d/%d, %lld)(%p, %p)", this->size(),
+                      leftCapacity(),
+                      capacity,
+                      frame->getDataSize(),
+                      this->writer,
+                      this->reader);
             return frame;
         }
     }
-
-    if (willCross(this->writer, this->reader, size)) {//保证不会越过reader
-        Logcat::e("HWVC", "HwFIFOBuffer::take failed(size=%d, want=%d)", this->size(), size);
-        return nullptr;
-    }
-    int64_t time = TimeUtils::getCurrentTimeUS();
-//    writeReadLock.lock();
     HwAbsFrame *frame = new HwMemFrameRef(this->reader, size);
     this->reader += size;
     this->_size -= size;
     notifyLock.notify();
-    Logcat::i("HWVC", "HwFIFOBuffer::take(%d/%d/%d)(%d, %d), cost: %lld", this->size(),
+    Logcat::i("HWVC", "HwFIFOBuffer::take b(%d/%d/%d, %lld)(%p, %p)", this->size(),
               leftCapacity(),
               capacity,
-              frame->getData(), frame->getData() + 4,
-              getCurrentTimeUS() - time);
+              frame->getDataSize(),
+              this->writer,
+              this->reader);
     return frame;
 }
 
@@ -147,5 +213,5 @@ void HwFIFOBuffer::flush() {
     this->writer = first();
     this->_size = 0;
     notifyLock.notify();
-    Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)", this->size(), leftCapacity(), capacity);
+    Logcat::i("HWVC", "HwFIFOBuffer::flush");
 }
