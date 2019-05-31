@@ -10,6 +10,11 @@
 #include "../include/Logcat.h"
 #include "../include/TimeUtils.h"
 
+/**
+ * 规则
+ * 1. writer不能等于reader
+ * 2. writer不能越过reader，同时reader也不能越过writer
+ */
 HwFIFOBuffer::HwFIFOBuffer(size_t capacity) : Object() {
     this->capacity = capacity;
     this->buf = new uint8_t[capacity];
