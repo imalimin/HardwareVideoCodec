@@ -9,7 +9,7 @@
 #define HARDWAREVIDEOCODEC_HWMEMFIFO_H
 
 #include "Object.h"
-#include "HwAbsFrame.h"
+#include "HwBuffer.h"
 #include "SimpleLock.h"
 
 class HwFIFOBuffer : public Object {
@@ -31,30 +31,22 @@ public:
      * @size 期望得到的size
      * @return 返回数据片段映射，大小小于或等于size，该内存片段由fifo维护，切勿进行写操作
      */
-    HwAbsFrame *take(size_t size);
+    HwBuffer *take(size_t size);
 
     size_t size();
 
     void flush();
 
 private:
-    bool wantWrite(size_t size);
-
     uint8_t *first();
 
     uint8_t *end();
 
     size_t leftCapacity();
 
-    bool empty();
-
-    void movePosition();
-
     bool willCross(uint8_t *flag, uint8_t *pointer, size_t size);
 
     bool willWrite(size_t size);
-
-    size_t willRead(size_t size);
 
     uint8_t *move(uint8_t *pointer, size_t size);
 

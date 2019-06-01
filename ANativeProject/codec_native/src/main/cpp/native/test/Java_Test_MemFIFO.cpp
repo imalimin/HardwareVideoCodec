@@ -42,15 +42,15 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_test_MemFIFOTest_push
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_test_MemFIFOTest_take
         (JNIEnv *env, jobject thiz) {
     if (fifo) {
-        HwAbsFrame *frame = fifo->take(MemFIFOTest_FRAME_SIZE);
-        if (frame) {
+        HwBuffer *buf = fifo->take(MemFIFOTest_FRAME_SIZE);
+        if (buf) {
             ++takeCount;
             Logcat::i("HWVC", "MemFIFOTest_take: %c,%c,%c,%c,%c,%c,%c,%c, %lld, %d",
-                      (char) frame->getData()[0], (char) frame->getData()[1],
-                      (char) frame->getData()[2], (char) frame->getData()[3],
-                      (char) frame->getData()[4], (char) frame->getData()[5],
-                      (char) frame->getData()[6], (char) frame->getData()[7],
-                      frame->getDataSize(), takeCount);
+                      (char) buf->getData()[0], (char) buf->getData()[1],
+                      (char) buf->getData()[2], (char) buf->getData()[3],
+                      (char) buf->getData()[4], (char) buf->getData()[5],
+                      (char) buf->getData()[6], (char) buf->getData()[7],
+                      buf->size(), takeCount);
         }
     }
 }

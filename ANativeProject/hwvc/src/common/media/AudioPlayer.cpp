@@ -194,13 +194,13 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     }
     Logcat::i("HWVC", "AudioPlayer::bufferEnqueue cost %lld", getCurrentTimeUS() - ttime);
     ttime = getCurrentTimeUS();
-    HwAbsFrame *frame = fifo->take(getBufferByteSize());
-    if (frame) {
-        (*slBufferQueueItf)->Enqueue(bufferQueueItf, frame->getData(), frame->getDataSize());
+    HwBuffer *buf = fifo->take(getBufferByteSize());
+    if (buf) {
+        (*slBufferQueueItf)->Enqueue(bufferQueueItf, buf->getData(), buf->size());
         if (file) {
-            fwrite(frame->getData(), 1, frame->getDataSize(), file);
+            fwrite(buf->getData(), 1, buf->size(), file);
         }
-        delete frame;
+        delete buf;
         return;
     }
     uint8_t *buffer = new uint8_t[getBufferByteSize()];
