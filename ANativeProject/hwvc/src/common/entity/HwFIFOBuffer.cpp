@@ -115,7 +115,7 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
     /* ... r ... w ... */
     /*-----------------*/
     if (this->reader < this->writer && this->reader + size >= this->writer) {
-        Logcat::e("HWVC", "HwFIFOBuffer::take failed(cross)");
+        Logcat::e("HWVC", "HwFIFOBuffer::take failed(cross a)");
         return nullptr;
     }
     /*-----------------*/
@@ -134,6 +134,27 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
             if (left <= 0) {
                 Logcat::e("HWVC", "HwFIFOBuffer::take failed(error) %d", left);
                 return nullptr;
+            }
+            if (left < size && left != 1) {
+                size_t right = size - left;
+                if (first() + right >= this->writer) {
+                    Logcat::e("HWVC", "HwFIFOBuffer::take failed(cross b)");
+                    return nullptr;
+                }
+                HwBuffer *buf = HwBuffer::alloc(size);
+                memcpy(buf->getData(), this->reader, left);
+                memcpy(buf->getData() + left, first(), right);
+                this->endFlag = end();//this->endFlag失效，一个循环只允许使用一次
+                this->reader = first() + right;
+                this->_size -= size;
+                notifyLock.notify();
+                Logcat::i("HWVC", "HwFIFOBuffer::take c(%d/%d/%d, %lld)(%p, %p)", this->size(),
+                          leftCapacity(),
+                          capacity,
+                          buf->size(),
+                          this->writer,
+                          this->reader);
+                return buf;
             }
             HwBuffer *buf = HwBuffer::wrap(this->reader, left);
             this->endFlag = end();//this->endFlag失效，一个循环只允许使用一次
