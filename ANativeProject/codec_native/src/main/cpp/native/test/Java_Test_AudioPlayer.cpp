@@ -10,6 +10,7 @@
 #include <log.h>
 #include "../include/AudioPlayer.h"
 #include "../include/EventPipeline.h"
+#include <mutex>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,13 +20,13 @@ static AudioPlayer *player = nullptr;
 static FILE *file = nullptr;
 static EventPipeline *pipeline = nullptr;
 static int index = 0;
-SimpleLock lock;
+SimpleLock simpleLock;
 SimpleLock waitLock;
 
 static void loopTest() {
-    lock.lock();
+    simpleLock.lock();
     if (!file || !pipeline) {
-        lock.unlock();
+        simpleLock.unlock();
         return;
     }
     pipeline->queueEvent([] {
@@ -40,7 +41,7 @@ static void loopTest() {
             loopTest();
         }
     });
-    lock.unlock();
+    simpleLock.unlock();
 }
 
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_media_AudioPlayerTest_start
@@ -69,10 +70,10 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_media_AudioPlayerTest_stop
             file = nullptr;
         }
     });
-    lock.lock();
+    simpleLock.lock();
     delete pipeline;
     pipeline = nullptr;
-    lock.unlock();
+    simpleLock.unlock();
 }
 
 #ifdef __cplusplus
