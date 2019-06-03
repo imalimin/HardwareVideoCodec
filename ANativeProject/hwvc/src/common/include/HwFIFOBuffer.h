@@ -11,6 +11,7 @@
 #include "Object.h"
 #include "HwBuffer.h"
 #include "SimpleLock.h"
+#include <mutex>
 
 class HwFIFOBuffer : public Object {
 public:
@@ -50,6 +51,8 @@ private:
 
     uint8_t *move(uint8_t *pointer, size_t size);
 
+    void printBufferState();
+
 private:
     uint8_t *buf = nullptr;
     size_t capacity = 0;
@@ -59,6 +62,7 @@ private:
     uint8_t *endFlag = nullptr;
 
     SimpleLock notifyLock;
+    std::mutex mutex;
 };
 
 

@@ -113,6 +113,15 @@ HwResult AudioPlayer::createBufferQueueAudioPlayer() {
                                              format,
                                              getChannelMask(),
                                              SL_BYTEORDER_LITTLEENDIAN};
+    //在 Android 5.0（API 级别 21）及更高版本上运行的应用可以使用单精度浮点格式向音频播放器提供数据。
+//    SLAndroidDataFormat_PCM_EX format_pcm = {SL_ANDROID_DATAFORMAT_PCM_EX,
+//                                             channels,
+//                                             sampleRate * 1000,
+//                                             SL_PCMSAMPLEFORMAT_FIXED_32,
+//                                             SL_PCMSAMPLEFORMAT_FIXED_32,
+//                                             getChannelMask(),
+//                                             SL_BYTEORDER_LITTLEENDIAN,
+//                                             SL_ANDROID_PCM_REPRESENTATION_FLOAT};
     SLDataSource audioSrc = {&loc_bufq, &format_pcm};
 
     // configure audio sink

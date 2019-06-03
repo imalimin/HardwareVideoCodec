@@ -98,11 +98,10 @@ size_t HwFIFOBuffer::push(uint8_t *data, size_t size) {
     memcpy(this->writer, data, size);
     this->writer = move(this->writer, size);
     this->_size += size;
-    Logcat::i("HWVC", "HwFIFOBuffer::push(%d/%d/%d)(%p, %p)", this->size(),
-              leftCapacity(),
-              capacity,
-              this->writer,
-              this->reader);
+    Logcat::i("HWVC", "HwFIFOBuffer::push %d, %d",
+              size,
+              this->size());
+    printBufferState();
     return size;
 }
 
@@ -135,27 +134,25 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
                 Logcat::e("HWVC", "HwFIFOBuffer::take failed(error) %d", left);
                 return nullptr;
             }
-            if (left < size && left != 1) {
-                size_t right = size - left;
-                if (first() + right >= this->writer) {
-                    Logcat::e("HWVC", "HwFIFOBuffer::take failed(cross b)");
-                    return nullptr;
-                }
-                HwBuffer *buf = HwBuffer::alloc(size);
-                memcpy(buf->getData(), this->reader, left);
-                memcpy(buf->getData() + left, first(), right);
-                this->endFlag = end();//this->endFlag失效，一个循环只允许使用一次
-                this->reader = first() + right;
-                this->_size -= size;
-                notifyLock.notify();
-                Logcat::i("HWVC", "HwFIFOBuffer::take c(%d/%d/%d, %lld)(%p, %p)", this->size(),
-                          leftCapacity(),
-                          capacity,
-                          buf->size(),
-                          this->writer,
-                          this->reader);
-                return buf;
-            }
+//            if (left < size && left != 1) {
+//                size_t right = size - left;
+//                if (first() + right >= this->writer) {
+//                    Logcat::e("HWVC", "HwFIFOBuffer::take failed(cross b)");
+//                    return nullptr;
+//                }
+//                HwBuffer *buf = HwBuffer::alloc(size);
+//                memcpy(buf->getData(), this->reader, left);
+//                memcpy(buf->getData() + left, first(), right);
+//                this->endFlag = end();//this->endFlag失效，一个循环只允许使用一次
+//                this->reader = first() + right;
+//                this->_size -= size;
+//                notifyLock.notify();
+//                Logcat::i("HWVC", "HwFIFOBuffer::take c %d, %d",
+//                          buf->size(),
+//                          this->size());
+//                printBufferState();
+//                return buf;
+//            }
             HwBuffer *buf = HwBuffer::wrap(this->reader, left);
             this->endFlag = end();//this->endFlag失效，一个循环只允许使用一次
             /*-------------*/
@@ -164,12 +161,10 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
             this->reader = first();
             this->_size -= left;
             notifyLock.notify();
-            Logcat::i("HWVC", "HwFIFOBuffer::take a(%d/%d/%d, %lld)(%p, %p)", this->size(),
-                      leftCapacity(),
-                      capacity,
+            Logcat::i("HWVC", "HwFIFOBuffer::take a %d, %d",
                       buf->size(),
-                      this->writer,
-                      this->reader);
+                      this->size());
+            printBufferState();
             return buf;
         }
     }
@@ -177,12 +172,10 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
     this->reader += size;
     this->_size -= size;
     notifyLock.notify();
-    Logcat::i("HWVC", "HwFIFOBuffer::take b(%d/%d/%d, %lld)(%p, %p)", this->size(),
-              leftCapacity(),
-              capacity,
+    Logcat::i("HWVC", "HwFIFOBuffer::take b %d, %d",
               buf->size(),
-              this->writer,
-              this->reader);
+              this->size());
+    printBufferState();
     return buf;
 }
 
@@ -213,4 +206,43 @@ void HwFIFOBuffer::flush() {
     this->_size = 0;
     notifyLock.notify();
     Logcat::i("HWVC", "HwFIFOBuffer::flush");
+}
+
+void HwFIFOBuffer::printBufferState() {
+#if 1
+    std::lock_guard<std::mutex> lock_guard(mutex);
+    const uint8_t *reader = this->reader;
+    const uint8_t *writer = this->writer;
+    size_t delta = reader - writer;
+    Logcat::i("HWVC HwFIFOBuffer",
+              "/*--------------------------------------------------------------------------------------------------*/");
+    if (delta > 0) {
+        Logcat::i("HWVC HwFIFOBuffer", "/* %p .. %10d .. W%p .. %10d .. R%p .. %10d .. %p */",
+                  first(),
+                  writer - first(),
+                  writer,
+                  delta,
+                  reader,
+                  end() - reader,
+                  end());
+    } else if (delta < 0) {
+        Logcat::i("HWVC HwFIFOBuffer", "/* %p .. %10d .. R%p .. %10d .. W%p .. %10d .. %p */",
+                  first(),
+                  reader - first(),
+                  reader,
+                  delta,
+                  writer,
+                  end() - writer,
+                  end());
+    } else {
+        Logcat::i("HWVC HwFIFOBuffer", "/* %p .. %10d .. RW%p .. %10d .. %p */",
+                  first(),
+                  reader - first(),
+                  reader,
+                  end() - reader,
+                  end());
+    }
+    Logcat::i("HWVC HwFIFOBuffer",
+              "/*--------------------------------------------------------------------------------------------------*/");
+#endif
 }
