@@ -8,7 +8,7 @@
 
 #include <jni.h>
 #include <log.h>
-#include "../include/AudioPlayer.h"
+#include "../include/HwAudioPlayer.h"
 #include "../include/EventPipeline.h"
 #include <mutex>
 
@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-static AudioPlayer *player = nullptr;
+static HwAudioPlayer *player = nullptr;
 static FILE *file = nullptr;
 static EventPipeline *pipeline = nullptr;
 static int index = 0;
@@ -51,7 +51,7 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_media_AudioPlayerTest_start
     if (file) {
         pipeline->queueEvent([] {
             Logcat::e("HWVC", "AudioPlayerTest_start");
-            player = new AudioPlayer(2, 48000, SL_PCMSAMPLEFORMAT_FIXED_32, 1024);
+            player = new HwAudioPlayer(2, 48000, SL_PCMSAMPLEFORMAT_FIXED_32, 1024);
             player->start();
             loopTest();
         });

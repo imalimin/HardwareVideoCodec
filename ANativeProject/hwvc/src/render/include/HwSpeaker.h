@@ -9,7 +9,7 @@
 #define HARDWAREVIDEOCODEC_HWSPEAKER_H
 
 #include "Unit.h"
-#include "AudioPlayer.h"
+#include "HwAudioPlayer.h"
 #include "HwAudioFrame.h"
 
 class HwSpeaker : public Unit {
@@ -30,7 +30,7 @@ private:
     void createFromAudioFrame(HwAudioFrame *frame);
 
 private:
-    AudioPlayer *audioPlayer = nullptr;
+    HwAudioPlayer *player = nullptr;
 
 };
 

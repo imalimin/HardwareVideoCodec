@@ -22,10 +22,10 @@ HwSpeaker::HwSpeaker(HandlerThread *handlerThread) : Unit(handlerThread) {
 
 HwSpeaker::~HwSpeaker() {
     LOGI("HwSpeaker::~HwSpeaker");
-    if (audioPlayer) {
-        audioPlayer->stop();
-        delete audioPlayer;
-        audioPlayer = nullptr;
+    if (player) {
+        player->stop();
+        delete player;
+        player = nullptr;
     }
 }
 
@@ -41,20 +41,20 @@ bool HwSpeaker::eventFeed(Message *msg) {
     if (msg->obj) {
         HwAudioFrame *frame = dynamic_cast<HwAudioFrame *>(msg->obj);
         createFromAudioFrame(frame);
-        if (audioPlayer) {
+        if (player) {
 //            Logcat::i("HWVC", "HwSpeaker::play audio: %d, %d, %lld, %lld",
 //                      frame->getChannels(),
 //                      frame->getSampleRate(),
 //                      frame->getSampleCount(),
 //                      frame->getDataSize());
-            audioPlayer->write(frame->getData(), static_cast<size_t>(frame->getDataSize()));
+            player->write(frame->getData(), static_cast<size_t>(frame->getDataSize()));
         }
     }
     return false;
 }
 
 void HwSpeaker::createFromAudioFrame(HwAudioFrame *frame) {
-    if (audioPlayer) {
+    if (player) {
         return;
     }
     int format;
@@ -68,9 +68,9 @@ void HwSpeaker::createFromAudioFrame(HwAudioFrame *frame) {
         default:
             format = SL_PCMSAMPLEFORMAT_FIXED_32;
     }
-    audioPlayer = new AudioPlayer(frame->getChannels(),
+    player = new HwAudioPlayer(frame->getChannels(),
                                   frame->getSampleRate(),
                                   static_cast<uint16_t>(format),
                                   static_cast<uint32_t>(frame->getSampleCount()));
-    audioPlayer->start();
+    player->start();
 }

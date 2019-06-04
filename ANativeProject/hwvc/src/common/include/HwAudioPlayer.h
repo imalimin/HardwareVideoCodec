@@ -20,20 +20,20 @@
 
 using namespace std;
 
-class AudioPlayer : public SLAudioDevice {
+class HwAudioPlayer : public SLAudioDevice {
 public:
-    AudioPlayer(uint16_t channels,
+    HwAudioPlayer(uint16_t channels,
                 uint32_t sampleRate,
                 uint16_t format,
                 uint32_t samplesPerBuffer);
 
-    AudioPlayer(SLEngine *engine,
+    HwAudioPlayer(SLEngine *engine,
                 uint16_t channels,
                 uint32_t sampleRate,
                 uint16_t format,
                 uint32_t samplesPerBuffer);
 
-    virtual ~AudioPlayer();
+    virtual ~HwAudioPlayer();
 
     virtual HwResult start();
 

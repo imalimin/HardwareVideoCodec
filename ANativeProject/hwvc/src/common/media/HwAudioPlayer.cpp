@@ -4,17 +4,17 @@
 * This source code is licensed under the GPL license found in the
 * LICENSE file in the root directory of this source tree.
 */
-#include "../include/AudioPlayer.h"
+#include "../include/HwAudioPlayer.h"
 #include "../include/log.h"
 #include "../include/ObjectBox.h"
 #include "../include/TimeUtils.h"
 
 void bufferQueueCallback(SLAndroidSimpleBufferQueueItf slBufferQueueItf, void *context) {
-    AudioPlayer *player = static_cast<AudioPlayer *>(context);
+    HwAudioPlayer *player = static_cast<HwAudioPlayer *>(context);
     player->bufferEnqueue(slBufferQueueItf);
 }
 
-AudioPlayer::AudioPlayer(uint16_t channels,
+HwAudioPlayer::HwAudioPlayer(uint16_t channels,
                          uint32_t sampleRate,
                          uint16_t format,
                          uint32_t samplesPerBuffer) : SLAudioDevice(channels,
@@ -24,7 +24,7 @@ AudioPlayer::AudioPlayer(uint16_t channels,
     initialize(nullptr);
 }
 
-AudioPlayer::AudioPlayer(SLEngine *engine,
+HwAudioPlayer::HwAudioPlayer(SLEngine *engine,
                          uint16_t channels,
                          uint32_t sampleRate,
                          uint16_t format,
@@ -35,12 +35,12 @@ AudioPlayer::AudioPlayer(SLEngine *engine,
     initialize(engine);
 }
 
-void AudioPlayer::initialize(SLEngine *engine) {
+void HwAudioPlayer::initialize(SLEngine *engine) {
     this->engine = engine;
     uint32_t bufSize = sampleRate * channels * format * 0.5;
     bufSize = (bufSize + 7) >> 3;
     this->fifo = new HwFIFOBuffer(bufSize);
-    LOGI("Create AudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
+    LOGI("Create HwAudioPlayer, channels=%d, sampleHz=%d, minBufferSize=%d, format=%d",
          this->channels,
          this->sampleRate,
          this->samplesPerBuffer,
@@ -50,22 +50,22 @@ void AudioPlayer::initialize(SLEngine *engine) {
     playItf = nullptr;
     HwResult ret = this->createEngine();
     if (Hw::SUCCESS != ret) {
-        LOGE("AudioPlayer create failed");
+        LOGE("HwAudioPlayer create failed");
     }
 
 }
 
-AudioPlayer::~AudioPlayer() {
-    LOGI("~AudioPlayer");
+HwAudioPlayer::~HwAudioPlayer() {
+    LOGI("HwAudioPlayerer");
     stop();
 }
 
-HwResult AudioPlayer::createEngine() {
+HwResult HwAudioPlayer::createEngine() {
     if (!engine) {
         ownEngine = true;
         engine = new SLEngine();
         if (!engine || !engine->valid()) {
-            LOGE("AudioPlayer create failed");
+            LOGE("HwAudioPlayer create failed");
             stop();
             return Hw::FAILED;
         }
@@ -85,7 +85,7 @@ HwResult AudioPlayer::createEngine() {
     return createBufferQueueAudioPlayer();
 }
 
-HwResult AudioPlayer::start() {
+HwResult HwAudioPlayer::start() {
     file = fopen("/sdcard/3.pcm", "wb");
     (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
     uint32_t bufSize = getBufferByteSize();
@@ -101,7 +101,7 @@ HwResult AudioPlayer::start() {
     return Hw::SUCCESS;
 }
 
-HwResult AudioPlayer::createBufferQueueAudioPlayer() {
+HwResult HwAudioPlayer::createBufferQueueAudioPlayer() {
     // configure audio source
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
             SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
@@ -178,7 +178,7 @@ HwResult AudioPlayer::createBufferQueueAudioPlayer() {
 
 static int64_t ttime = 0;
 
-void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
+void HwAudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
 //    if (!recycler) {
 //        return;
 //    }
@@ -202,7 +202,7 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     if (!fifo) {
         return;
     }
-    Logcat::i("HWVC", "AudioPlayer::bufferEnqueue cost %lld", getCurrentTimeUS() - ttime);
+    Logcat::i("HWVC", "HwAudioPlayer::bufferEnqueue cost %lld", getCurrentTimeUS() - ttime);
     ttime = getCurrentTimeUS();
     HwBuffer *buf = fifo->take(getBufferByteSize());
     if (buf) {
@@ -218,7 +218,7 @@ void AudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) 
     (*slBufferQueueItf)->Enqueue(bufferQueueItf, buffer, getBufferByteSize());
 }
 
-HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
+HwResult HwAudioPlayer::write(uint8_t *buffer, size_t size) {
 //    ObjectBox *cache = recycler->takeCache();
 //    if (!cache) {
 //        LOGE("Cache invalid");
@@ -238,14 +238,14 @@ HwResult AudioPlayer::write(uint8_t *buffer, size_t size) {
     return Hw::SUCCESS;
 }
 
-void AudioPlayer::flush() {
+void HwAudioPlayer::flush() {
     if (fifo) {
         fifo->flush();
     }
 }
 
-void AudioPlayer::stop() {
-    Logcat::i("HWVC", "AudioPlayer::stop");
+void HwAudioPlayer::stop() {
+    Logcat::i("HWVC", "HwAudioPlayer::stop");
     this->destroyEngine();
     if (fifo) {
         delete fifo;
@@ -257,7 +257,7 @@ void AudioPlayer::stop() {
     }
 }
 
-void AudioPlayer::destroyEngine() {
+void HwAudioPlayer::destroyEngine() {
     if (nullptr != playObject) {
         (*playObject)->Destroy(playObject);
         playObject = nullptr;

@@ -263,7 +263,7 @@ void Video::createAudioPlayer() {
         default:
             format = SL_PCMSAMPLEFORMAT_FIXED_32;
     }
-    audioPlayer = new AudioPlayer(decoder->getChannels(),
+    audioPlayer = new HwAudioPlayer(decoder->getChannels(),
                                   decoder->getSampleHz(),
                                   format,
                                   decoder->getPerSampleSize());

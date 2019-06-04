@@ -14,7 +14,7 @@
 #include "EventPipeline.h"
 #include "Egl.h"
 #include "HwAbsMediaFrame.h"
-#include "AudioPlayer.h"
+#include "HwAudioPlayer.h"
 #include "SimpleLock.h"
 #include "../entity/NativeWindow.h"
 
@@ -53,7 +53,7 @@ private:
     PlayState playState = STOP;
     SimpleLock *lock;
     char *path;
-    AudioPlayer *audioPlayer = nullptr;
+    HwAudioPlayer *audioPlayer = nullptr;
     int64_t lastPts = 0;
     int64_t lastShowTime = 0;
 
