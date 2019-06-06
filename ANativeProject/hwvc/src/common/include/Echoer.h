@@ -8,7 +8,7 @@
 #define HARDWAREVIDEOCODEC_EOCHER_H
 
 #include "HwAudioPlayer.h"
-#include "AudioRecorder.h"
+#include "HwAudioRecorder.h"
 #include "EventPipeline.h"
 #include "SLEngine.h"
 
@@ -26,7 +26,7 @@ private:
     int minBufferSize = 0;
     SLEngine *engine = nullptr;
     HwAudioPlayer *player = nullptr;
-    AudioRecorder *recorder = nullptr;
+    HwAudioRecorder *recorder = nullptr;
     EventPipeline *pipeline = nullptr;
     uint8_t *buffer = nullptr;
     bool running = false;

@@ -5,15 +5,15 @@
 * LICENSE file in the root directory of this source tree.
 */
 
-#include "../include/AudioRecorder.h"
+#include "../include/HwAudioRecorder.h"
 
 void bufferDequeueCallback(SLAndroidSimpleBufferQueueItf slBufferQueueItf, void *context) {
-    AudioRecorder *recorder = static_cast<AudioRecorder *>(context);
+    HwAudioRecorder *recorder = static_cast<HwAudioRecorder *>(context);
     recorder->bufferDequeue(slBufferQueueItf);
 }
 
-void AudioRecorder::bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
-    LOGE("AudioRecorder...");
+void HwAudioRecorder::bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
+    Logcat::i("HWVC", "HwAudioRecorder...");
     if (buffer) {
         if (pcmFile) {
             fwrite(buffer->ptr, 1, getBufferByteSize(), pcmFile);
@@ -27,7 +27,7 @@ void AudioRecorder::bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf
     }
 }
 
-AudioRecorder::AudioRecorder(uint16_t channels,
+HwAudioRecorder::HwAudioRecorder(uint16_t channels,
                              uint32_t sampleRate,
                              uint16_t format,
                              uint32_t samplesPerBuffer) : SLAudioDevice(channels,
@@ -37,7 +37,7 @@ AudioRecorder::AudioRecorder(uint16_t channels,
     initialize(nullptr);
 }
 
-AudioRecorder::AudioRecorder(SLEngine *engine,
+HwAudioRecorder::HwAudioRecorder(SLEngine *engine,
                              uint16_t channels,
                              uint32_t sampleRate,
                              uint16_t format,
@@ -48,10 +48,10 @@ AudioRecorder::AudioRecorder(SLEngine *engine,
     initialize(engine);
 }
 
-void AudioRecorder::initialize(SLEngine *engine) {
+void HwAudioRecorder::initialize(SLEngine *engine) {
     pcmFile = fopen("/sdcard/pcm_tmp.pcm", "w");
     this->engine = engine;
-    LOGI("Create AudioRecorder, channels=%d, sampleHz=%d",
+    LOGI("Create HwAudioRecorder, channels=%d, sampleHz=%d",
          this->channels,
          this->sampleRate);
     uint32_t bufSize = getBufferByteSize();
@@ -62,17 +62,17 @@ void AudioRecorder::initialize(SLEngine *engine) {
     });
     HwResult ret = this->createEngine();
     if (Hw::SUCCESS != ret) {
-        LOGE("AudioRecorder start failed");
+        LOGE("HwAudioRecorder start failed");
     }
 
 }
 
-AudioRecorder::~AudioRecorder() {
-    LOGI("~AudioRecorder");
+HwAudioRecorder::~HwAudioRecorder() {
+    LOGI("HwAudioRecorderer");
     stop();
 }
 
-HwResult AudioRecorder::start() {
+HwResult HwAudioRecorder::start() {
     HwResult ret = recorder->stop();
     if (Hw::SUCCESS != ret) {
         return ret;
@@ -90,7 +90,7 @@ HwResult AudioRecorder::start() {
     return Hw::SUCCESS;
 }
 
-void AudioRecorder::stop() {
+void HwAudioRecorder::stop() {
     if (recorder) {
         HwResult ret = recorder->stop();
         if (Hw::SUCCESS != ret) {
@@ -115,7 +115,7 @@ void AudioRecorder::stop() {
     }
 }
 
-size_t AudioRecorder::read(uint8_t *buffer) {
+size_t HwAudioRecorder::read(uint8_t *buffer) {
     ObjectBox *cache = recycler->take();
     if (!cache) {
         LOGE("Cache invalid");
@@ -127,11 +127,11 @@ size_t AudioRecorder::read(uint8_t *buffer) {
     return bufSize;
 }
 
-void AudioRecorder::AudioRecorder::flush() {
+void HwAudioRecorder::flush() {
 
 }
 
-HwResult AudioRecorder::createEngine() {
+HwResult HwAudioRecorder::createEngine() {
     if (!engine) {
         ownEngine = true;
         engine = new SLEngine();
@@ -144,7 +144,7 @@ HwResult AudioRecorder::createEngine() {
     return createBufferQueueObject();
 }
 
-HwResult AudioRecorder::createBufferQueueObject() {
+HwResult HwAudioRecorder::createBufferQueueObject() {
     recorder = new SLRecorder(engine);
     HwResult ret = recorder->initialize(this);
     if (Hw::FAILED == ret) {
@@ -157,7 +157,7 @@ HwResult AudioRecorder::createBufferQueueObject() {
     return Hw::SUCCESS;
 }
 
-void AudioRecorder::destroyEngine() {
+void HwAudioRecorder::destroyEngine() {
     if (recorder) {
         delete recorder;
         recorder = nullptr;

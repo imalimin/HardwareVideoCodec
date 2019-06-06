@@ -17,20 +17,20 @@
 #include "SLRecorder.h"
 #include "HwResult.h"
 
-class AudioRecorder : public SLAudioDevice {
+class HwAudioRecorder : public SLAudioDevice {
 public:
-    AudioRecorder(uint16_t channels,
+    HwAudioRecorder(uint16_t channels,
                   uint32_t sampleRate,
                   uint16_t format,
                   uint32_t samplesPerBuffer);
 
-    AudioRecorder(SLEngine *engine,
+    HwAudioRecorder(SLEngine *engine,
                   uint16_t channels,
                   uint32_t sampleRate,
                   uint16_t format,
                   uint32_t samplesPerBuffer);
 
-    virtual ~AudioRecorder();
+    virtual ~HwAudioRecorder();
 
     virtual HwResult start();
 
