@@ -5,9 +5,9 @@
 #ifndef HARDWAREVIDEOCODEC_ANATIVEWINDOW_H
 #define HARDWAREVIDEOCODEC_ANATIVEWINDOW_H
 
-#include "Object.h"
-#include "../include/Egl.h"
-#include "../include/HwWindow.h"
+#include "../../common/include/Object.h"
+#include "Egl.h"
+#include "HwWindow.h"
 
 class NativeWindow : public Object {
 public:

@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.4.1)
 project(hwvc_render)
 include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
-        ${PROJECT_SOURCE_DIR}/../codec/include
-        ${PROJECT_SOURCE_DIR}/../codec/include/ff
 )
 option(GL_DEBUG "Whether show opengl logs." ON)
 if (GL_DEBUG)
@@ -52,7 +50,6 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         hwvc_render
         hwvcom
-        hwvc_codec
         # Links the target library to the log library
         # included in the NDK.
         GLESv2

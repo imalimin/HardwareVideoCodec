@@ -5,7 +5,7 @@
 #include "../include/PictureProcessor.h"
 #include "../include/Render.h"
 #include "../include/Image.h"
-#include "../entity/NativeWindow.h"
+#include "../include/NativeWindow.h"
 #include "ObjectBox.h"
 
 PictureProcessor::PictureProcessor() {

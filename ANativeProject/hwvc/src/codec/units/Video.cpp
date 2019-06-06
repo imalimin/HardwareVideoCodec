@@ -8,8 +8,8 @@
 #include "ObjectBox.h"
 #include "Size.h"
 #include "TimeUtils.h"
-#include "HwVideoFrame.h"
-#include "HwAudioFrame.h"
+#include "../include/HwVideoFrame.h"
+#include "../include/HwAudioFrame.h"
 
 Video::Video() : HwStreamMedia() {
     name = __FUNCTION__;
@@ -264,9 +264,9 @@ void Video::createAudioPlayer() {
             format = SL_PCMSAMPLEFORMAT_FIXED_32;
     }
     audioPlayer = new HwAudioPlayer(decoder->getChannels(),
-                                  decoder->getSampleHz(),
-                                  format,
-                                  decoder->getPerSampleSize());
+                                    decoder->getSampleHz(),
+                                    format,
+                                    decoder->getPerSampleSize());
     audioPlayer->start();
 }
 

@@ -5,7 +5,7 @@
 * LICENSE file in the root directory of this source tree.
 */
 
-#include <ff/libavutil/samplefmt.h>
+#include <libavutil/samplefmt.h>
 #include "../include/HwSpeaker.h"
 
 HwSpeaker::HwSpeaker() : Unit() {
@@ -69,8 +69,8 @@ void HwSpeaker::createFromAudioFrame(HwAudioFrame *frame) {
             format = SL_PCMSAMPLEFORMAT_FIXED_32;
     }
     player = new HwAudioPlayer(frame->getChannels(),
-                                  frame->getSampleRate(),
-                                  static_cast<uint16_t>(format),
-                                  static_cast<uint32_t>(frame->getSampleCount()));
+                               frame->getSampleRate(),
+                               static_cast<uint16_t>(format),
+                               static_cast<uint32_t>(frame->getSampleCount()));
     player->start();
 }

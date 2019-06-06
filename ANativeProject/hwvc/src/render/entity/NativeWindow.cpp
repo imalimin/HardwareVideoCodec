@@ -2,7 +2,7 @@
 // Created by mingyi.li on 2018/12/25.
 //
 
-#include "NativeWindow.h"
+#include "../include/NativeWindow.h"
 
 NativeWindow::NativeWindow(HwWindow *win, Egl *egl) {
     this->win = win;

@@ -5,11 +5,11 @@
 * LICENSE file in the root directory of this source tree.
 */
 #include "../include/VideoProcessor.h"
-#include "../include/Render.h"
+#include "Render.h"
 #include "../include/Video.h"
-#include "../entity/NativeWindow.h"
+#include "NativeWindow.h"
 #include "ObjectBox.h"
-#include "String.h"
+#include <string>
 
 VideoProcessor::VideoProcessor() : Object() {
     unitHandler = new HandlerThread("VideoUnits");

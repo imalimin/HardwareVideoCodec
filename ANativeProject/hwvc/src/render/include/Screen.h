@@ -8,7 +8,7 @@
 #include "Unit.h"
 #include "Egl.h"
 #include "BaseDrawer.h"
-#include "../entity/NativeWindow.h"
+#include "NativeWindow.h"
 
 class Screen : public Unit {
 public:

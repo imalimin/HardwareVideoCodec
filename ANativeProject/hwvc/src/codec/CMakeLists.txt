@@ -6,6 +6,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/../common/include
         ${CMAKE_CURRENT_SOURCE_DIR}/include/x264
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ff
+        ${PROJECT_SOURCE_DIR}/../render/include
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
@@ -80,6 +81,8 @@ file(
         ${PROJECT_SOURCE_DIR}/entity/*.cpp
         ${PROJECT_SOURCE_DIR}/utils/*.cpp
         ${PROJECT_SOURCE_DIR}/sources/*.cpp
+        ${PROJECT_SOURCE_DIR}/processor/*.cpp
+        ${PROJECT_SOURCE_DIR}/units/*.cpp
 )
 add_library( # Sets the name of the library.
         hwvc_codec
@@ -107,6 +110,7 @@ target_link_libraries( # Specifies the target library.
         libavutil
         libswresample
         hwvcom
+        hwvc_render
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})

@@ -9,14 +9,14 @@
 
 #include "HwStreamMedia.h"
 #include "TextureAllocator.h"
-#include "AsynVideoDecoder.h"
+#include "../include/AsynVideoDecoder.h"
 #include "YUV420PFilter.h"
 #include "EventPipeline.h"
 #include "Egl.h"
 #include "HwAbsMediaFrame.h"
 #include "HwAudioPlayer.h"
 #include "SimpleLock.h"
-#include "../entity/NativeWindow.h"
+#include "NativeWindow.h"
 
 class Video : public HwStreamMedia {
 public:
