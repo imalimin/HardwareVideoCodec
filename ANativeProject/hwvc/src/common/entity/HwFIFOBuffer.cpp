@@ -105,17 +105,13 @@ size_t HwFIFOBuffer::push(uint8_t *data, size_t size) {
     return size;
 }
 
-HwBuffer *HwFIFOBuffer::take(size_t size) {
-    if (!buf || nullptr == this->reader) {
-        Logcat::e("HWVC", "HwFIFOBuffer::take failed(unready)");
-        return nullptr;
-    }
+bool HwFIFOBuffer::willRead(size_t size) {
     /*-----------------*/
     /* ... r ... w ... */
     /*-----------------*/
     if (this->reader < this->writer && this->reader + size >= this->writer) {
         Logcat::e("HWVC", "HwFIFOBuffer::take failed(cross a)");
-        return nullptr;
+        return false;
     }
     /*-----------------*/
     /* ... w ... r ... */
@@ -128,11 +124,11 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
             /*-------------*/
             if (this->writer == first()) {
                 Logcat::e("HWVC", "HwFIFOBuffer::take failed(First occupied)");
-                return nullptr;
+                return false;
             }
             if (left <= 0) {
                 Logcat::e("HWVC", "HwFIFOBuffer::take failed(error) %d", left);
-                return nullptr;
+                return false;
             }
 //            if (left < size && left != 1) {
 //                size_t right = size - left;
@@ -153,6 +149,25 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
 //                printBufferState();
 //                return buf;
 //            }
+        }
+    }
+    return true;
+}
+
+HwBuffer *HwFIFOBuffer::take(size_t size) {
+    if (!buf || nullptr == this->reader) {
+        Logcat::e("HWVC", "HwFIFOBuffer::take failed(unready)");
+        return nullptr;
+    }
+    if(!willRead(size)){
+        return nullptr;
+    }
+    /*-----------------*/
+    /* ... w ... r ... */
+    /*-----------------*/
+    if (this->reader > this->writer) {
+        size_t left = this->endFlag + 1 - this->reader;
+        if (left <= size) {
             HwBuffer *buf = HwBuffer::wrap(this->reader, left);
             this->endFlag = end();//this->endFlag失效，一个循环只允许使用一次
             /*-------------*/

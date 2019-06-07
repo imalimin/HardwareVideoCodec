@@ -49,6 +49,8 @@ private:
 
     bool willWrite(size_t size);
 
+    bool willRead(size_t size);
+
     uint8_t *move(uint8_t *pointer, size_t size);
 
     void printBufferState();
