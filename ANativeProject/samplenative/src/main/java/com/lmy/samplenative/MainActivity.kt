@@ -6,11 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import com.lmy.samplenative.ui.TestAudioRecorderActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : BaseActivity() {
     private val ITEMS = arrayListOf(
             Item("AudioPlayerTest") { startActivity(Intent(this, AudioPlayerActivity::class.java)) },
+            Item("AudioRecorderTest") { startActivity(Intent(this, TestAudioRecorderActivity::class.java)) },
             Item("AudioPlayer") { startActivity(Intent(this, AudioActivity::class.java)) },
             Item("TestMemFIFOActivity") { startActivity(Intent(this, TestMemFIFOActivity::class.java)) }
     )

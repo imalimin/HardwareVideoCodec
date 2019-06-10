@@ -62,6 +62,7 @@
                 <action android:name="android.intent.action.SEND" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.TestAudioRecorderActivity" />
     </application>
 
 </manifest>

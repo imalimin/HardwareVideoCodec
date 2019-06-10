@@ -17,6 +17,8 @@ class HwFIFOBuffer : public Object {
 public:
     HwFIFOBuffer(size_t capacity);
 
+    HwFIFOBuffer(size_t capacity, bool writeMode);
+
     virtual ~HwFIFOBuffer();
 
     /**
@@ -56,6 +58,11 @@ private:
     void printBufferState();
 
 private:
+    /**
+     * true: push阻塞
+     * false: take阻塞
+     */
+    bool writeMode = true;
     uint8_t *buf = nullptr;
     size_t capacity = 0;
     size_t _size = 0;

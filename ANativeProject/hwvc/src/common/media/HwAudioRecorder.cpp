@@ -13,53 +13,46 @@ void bufferDequeueCallback(SLAndroidSimpleBufferQueueItf slBufferQueueItf, void 
 }
 
 void HwAudioRecorder::bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf) {
-    Logcat::i("HWVC", "HwAudioRecorder...");
-    if (buffer) {
-        if (pcmFile) {
-            fwrite(buffer->ptr, 1, getBufferByteSize(), pcmFile);
+    if (this->buffer) {
+        Logcat::i("HWVC", "HwAudioRecorder...");
+        (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer->getData(), buffer->size());
+        fwrite(buffer->getData(), 1, buffer->size(), pcmFile);
+        if (fifo) {
+            fifo->push(buffer->getData(), buffer->size());
         }
-        recycler->offer(buffer);
-        buffer = nullptr;
-    }
-    buffer = recycler->takeCache();
-    if (buffer) {
-        (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer->ptr, getBufferByteSize());
     }
 }
 
 HwAudioRecorder::HwAudioRecorder(uint16_t channels,
-                             uint32_t sampleRate,
-                             uint16_t format,
-                             uint32_t samplesPerBuffer) : SLAudioDevice(channels,
-                                                                        sampleRate,
-                                                                        format,
-                                                                        samplesPerBuffer) {
+                                 uint32_t sampleRate,
+                                 uint16_t format,
+                                 uint32_t samplesPerBuffer) : SLAudioDevice(channels,
+                                                                            sampleRate,
+                                                                            format,
+                                                                            samplesPerBuffer) {
     initialize(nullptr);
 }
 
 HwAudioRecorder::HwAudioRecorder(SLEngine *engine,
-                             uint16_t channels,
-                             uint32_t sampleRate,
-                             uint16_t format,
-                             uint32_t samplesPerBuffer) : SLAudioDevice(channels,
-                                                                        sampleRate,
-                                                                        format,
-                                                                        samplesPerBuffer) {
+                                 uint16_t channels,
+                                 uint32_t sampleRate,
+                                 uint16_t format,
+                                 uint32_t samplesPerBuffer) : SLAudioDevice(channels,
+                                                                            sampleRate,
+                                                                            format,
+                                                                            samplesPerBuffer) {
     initialize(engine);
 }
 
 void HwAudioRecorder::initialize(SLEngine *engine) {
-    pcmFile = fopen("/sdcard/pcm_tmp.pcm", "w");
+    pcmFile = fopen("/sdcard/pcm_sl.pcm", "wb");
     this->engine = engine;
     LOGI("Create HwAudioRecorder, channels=%d, sampleHz=%d",
          this->channels,
          this->sampleRate);
-    uint32_t bufSize = getBufferByteSize();
-    this->recycler = new RecyclerBlockQueue<ObjectBox>(16, [bufSize] {
-        uint8_t *buf = new uint8_t[bufSize];
-        memset(buf, 0, bufSize);
-        return new ObjectBox(buf);
-    });
+    uint32_t bufSize = getBufferByteSize() * 16;
+    this->fifo = new HwFIFOBuffer(bufSize, false);
+    this->buffer = HwBuffer::alloc(getBufferByteSize());
     HwResult ret = this->createEngine();
     if (Hw::SUCCESS != ret) {
         LOGE("HwAudioRecorder start failed");
@@ -101,30 +94,22 @@ void HwAudioRecorder::stop() {
         fclose(pcmFile);
         pcmFile = nullptr;
     }
-    if (recycler) {
-        recycler->notify();
+    if (buffer) {
+        delete buffer;
+        buffer = nullptr;
     }
-    destroyEngine();
-    if (recycler) {
-        if (buffer) {
-            recycler->offer(buffer);
-            buffer = nullptr;
-        }
-        delete recycler;
-        recycler = nullptr;
+    if (fifo) {
+        delete fifo;
+        fifo = nullptr;
     }
 }
 
-size_t HwAudioRecorder::read(uint8_t *buffer) {
-    ObjectBox *cache = recycler->take();
-    if (!cache) {
-        LOGE("Cache invalid");
+HwBuffer *HwAudioRecorder::read(size_t size) {
+    if (!fifo) {
+        Logcat::e("HWVC", "FIFO invalid");
         return 0;
     }
-    uint32_t bufSize = getBufferByteSize();
-    memcpy(cache->ptr, buffer, bufSize);
-    recycler->recycle(cache);
-    return bufSize;
+    return fifo->take(size);
 }
 
 void HwAudioRecorder::flush() {

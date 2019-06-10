@@ -9,26 +9,26 @@
 
 #include <string>
 #include "AudioDevice.h"
-#include "ObjectBox.h"
-#include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
 #include "SimpleLock.h"
 #include "SLEngine.h"
 #include "SLRecorder.h"
 #include "HwResult.h"
+#include "HwFIFOBuffer.h"
+#include "HwBuffer.h"
 
 class HwAudioRecorder : public SLAudioDevice {
 public:
     HwAudioRecorder(uint16_t channels,
-                  uint32_t sampleRate,
-                  uint16_t format,
-                  uint32_t samplesPerBuffer);
+                    uint32_t sampleRate,
+                    uint16_t format,
+                    uint32_t samplesPerBuffer);
 
     HwAudioRecorder(SLEngine *engine,
-                  uint16_t channels,
-                  uint32_t sampleRate,
-                  uint16_t format,
-                  uint32_t samplesPerBuffer);
+                    uint16_t channels,
+                    uint32_t sampleRate,
+                    uint16_t format,
+                    uint32_t samplesPerBuffer);
 
     virtual ~HwAudioRecorder();
 
@@ -36,19 +36,18 @@ public:
 
     virtual void stop();
 
-    virtual size_t read(uint8_t *buffer);
+    virtual HwBuffer *read(size_t size);
 
     virtual void flush();
 
     void bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueItf);
 
 private:
-    RecyclerBlockQueue<ObjectBox> *recycler = nullptr;
-
     SLEngine *engine = nullptr;
     bool ownEngine = false;
     SLRecorder *recorder = nullptr;
-    ObjectBox *buffer = nullptr;
+    HwFIFOBuffer *fifo = nullptr;
+    HwBuffer *buffer = nullptr;
     FILE *pcmFile = nullptr;
 
     HwResult createEngine();

@@ -61,7 +61,7 @@ void Echoer::stop() {
 
 void Echoer::loop() {
     pipeline->queueEvent([this] {
-        recorder->read(buffer);
+//        recorder->read(buffer);
         if (player) {
             player->write(buffer, minBufferSize);
         }
