@@ -6,12 +6,13 @@
 */
 #include "../include/Echoer.h"
 
-Echoer::Echoer(int channels, int sampleHz, int format, int minBufferSize) {
-    this->minBufferSize = minBufferSize;
+Echoer::Echoer(int channels, int sampleHz, int format, int samplesPerBuffer) {
+    this->samplesPerBuffer = samplesPerBuffer;
     this->buffer = new uint8_t[minBufferSize];
     this->engine = new SLEngine();
-    recorder = new HwAudioRecorder(engine, channels, sampleHz, format, minBufferSize);
-    player = new HwAudioPlayer(engine, channels, sampleHz, format, minBufferSize);
+    recorder = new HwAudioRecorder(engine, channels, sampleHz, format, samplesPerBuffer);
+    player = new HwAudioPlayer(engine, channels, sampleHz, format, samplesPerBuffer);
+    this->minBufferSize = player->getBufferByteSize();
     this->pipeline = new EventPipeline("Echoer");
 }
 
@@ -21,15 +22,13 @@ Echoer::~Echoer() {
 
 void Echoer::start() {
     running = true;
-    pipeline->queueEvent([this] {
-        if (player) {
-            player->start();
-        }
-        if (recorder) {
-            recorder->start();
-        }
-        loop();
-    });
+    if (player) {
+        player->start();
+    }
+    if (recorder) {
+        recorder->start();
+    }
+    loop();
 }
 
 void Echoer::stop() {
@@ -62,12 +61,13 @@ void Echoer::stop() {
 }
 
 void Echoer::loop() {
-    if (this->running) {
+    if (!running) {
         return;
     }
     pipeline->queueEvent([this] {
         HwBuffer *buffer = recorder->read(minBufferSize);
         if (player && buffer) {
+            Logcat::i("HWVC", "Echo write %d", buffer->size());
             player->write(buffer->getData(), buffer->size());
         }
         delete buffer;

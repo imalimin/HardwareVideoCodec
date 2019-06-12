@@ -14,7 +14,7 @@
 
 class Echoer : public Object {
 public:
-    Echoer(int channels, int sampleHz, int format, int minBufferSize);
+    Echoer(int channels, int sampleHz, int format, int samplesPerBuffer);
 
     ~Echoer();
 
@@ -23,6 +23,7 @@ public:
     void stop();
 
 private:
+    int samplesPerBuffer = 0;
     int minBufferSize = 0;
     SLEngine *engine = nullptr;
     HwAudioPlayer *player = nullptr;

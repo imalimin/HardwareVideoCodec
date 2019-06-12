@@ -1,10 +1,21 @@
 package com.lmy.hwvcnative.media
 
+import android.content.Context
+import android.media.AudioManager
 import com.lmy.hwvcnative.CPPObject
 
-class Echoer : CPPObject() {
+class Echoer(context: Context) : CPPObject() {
     init {
-        handler = create(1, 48000, 0x0010, 1024)
+        val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val sampleRateStr: String? = am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
+        var sampleRate: Int = sampleRateStr?.let { str ->
+            Integer.parseInt(str).takeUnless { it == 0 }
+        } ?: 44100
+        val samplesPerBufferStr: String? = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
+        val samplesPerBuffer: Int = samplesPerBufferStr?.let { str ->
+            Integer.parseInt(str).takeUnless { it == 0 }
+        } ?: 256
+        handler = create(2, sampleRate, 0x0010, samplesPerBuffer)
     }
 
     fun start() {
