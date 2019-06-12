@@ -99,6 +99,10 @@ size_t HwFIFOBuffer::push(uint8_t *data, size_t size) {
             return 0;
         }
         notifyLock.wait();
+        if (requestFlush) {
+            requestFlush = false;
+            return 0;
+        }
     }
     memcpy(this->writer, data, size);
     this->writer = move(this->writer, size);
@@ -172,6 +176,10 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
             return nullptr;
         }
         notifyLock.wait();
+        if (requestFlush) {
+            requestFlush = false;
+            return nullptr;
+        }
     }
     /*-----------------*/
     /* ... w ... r ... */
@@ -231,6 +239,7 @@ void HwFIFOBuffer::flush() {
     this->writer = first();
     this->_size = 0;
     notifyLock.notify();
+    requestFlush = true;
     Logcat::i("HWVC", "HwFIFOBuffer::flush");
 }
 

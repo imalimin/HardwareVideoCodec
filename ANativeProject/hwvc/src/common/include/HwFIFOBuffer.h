@@ -70,6 +70,7 @@ private:
 
     SimpleLock notifyLock;
     std::mutex mutex;
+    bool requestFlush = false;
 };
 
 
