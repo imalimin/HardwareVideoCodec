@@ -21,4 +21,9 @@ class TestAudioRecorderActivity : BaseActivity() {
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        recorder.stop()
+    }
 }
