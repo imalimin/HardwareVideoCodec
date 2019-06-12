@@ -30,6 +30,7 @@ private:
     EventPipeline *pipeline = nullptr;
     uint8_t *buffer = nullptr;
     bool running = false;
+    SimpleLock simpleLock;
 
     void loop();
 };

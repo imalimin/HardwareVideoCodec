@@ -16,13 +16,4 @@ class EchoActivity : BaseActivity() {
         super.onDestroy()
         echo?.stop()
     }
-
-    companion object {
-        init {
-            System.loadLibrary("hwvcom")
-            System.loadLibrary("hwvc_codec")
-            System.loadLibrary("hwvc_render")
-            System.loadLibrary("hwvc_native")
-        }
-    }
 }

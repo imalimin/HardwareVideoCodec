@@ -14,7 +14,8 @@ class MainActivity : BaseActivity() {
             Item("AudioPlayerTest") { startActivity(Intent(this, AudioPlayerActivity::class.java)) },
             Item("AudioRecorderTest") { startActivity(Intent(this, TestAudioRecorderActivity::class.java)) },
             Item("AudioPlayer") { startActivity(Intent(this, AudioActivity::class.java)) },
-            Item("TestMemFIFOActivity") { startActivity(Intent(this, TestMemFIFOActivity::class.java)) }
+            Item("TestMemFIFOActivity") { startActivity(Intent(this, TestMemFIFOActivity::class.java)) },
+                    Item("Test Echo") { startActivity(Intent(this, EchoActivity::class.java)) }
     )
 
     override fun getLayoutResource(): Int = R.layout.activity_main
@@ -22,16 +23,6 @@ class MainActivity : BaseActivity() {
         listView.adapter = Adapter(this, R.layout.item_simple_text, ITEMS)
         listView.setOnItemClickListener { parent, view, position, id ->
             (listView.adapter as Adapter).getItem(position).action()
-        }
-    }
-
-    companion object {
-
-        init {
-            System.loadLibrary("hwvcom")
-            System.loadLibrary("hwvc_codec")
-            System.loadLibrary("hwvc_render")
-            System.loadLibrary("hwvc_native")
         }
     }
 

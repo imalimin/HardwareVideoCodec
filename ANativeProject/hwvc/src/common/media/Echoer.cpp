@@ -33,7 +33,9 @@ void Echoer::start() {
 }
 
 void Echoer::stop() {
+    simpleLock.lock();
     running = false;
+    simpleLock.unlock();
     if (pipeline) {
         delete pipeline;
         pipeline = nullptr;
@@ -60,13 +62,15 @@ void Echoer::stop() {
 }
 
 void Echoer::loop() {
+    if (this->running) {
+        return;
+    }
     pipeline->queueEvent([this] {
-//        recorder->read(buffer);
-        if (player) {
-            player->write(buffer, minBufferSize);
+        HwBuffer *buffer = recorder->read(minBufferSize);
+        if (player && buffer) {
+            player->write(buffer->getData(), buffer->size());
         }
-        if (this->running) {
-            this->loop();
-        }
+        delete buffer;
+        this->loop();
     });
 }
