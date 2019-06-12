@@ -1,13 +1,13 @@
 package com.lmy.samplenative
 
-import com.lmy.hwvcnative.media.Echoer
+import com.lmy.hwvcnative.media.HwEchoPlayer
 import kotlinx.android.synthetic.main.activity_echo.*
 
 class EchoActivity : BaseActivity() {
-    private var echo: Echoer? = null
+    private var echo: HwEchoPlayer? = null
     override fun getLayoutResource(): Int = R.layout.activity_echo
     override fun initView() {
-        echo = Echoer(applicationContext)
+        echo = HwEchoPlayer(applicationContext)
         startBtn.setOnClickListener { echo?.start() }
         stopBtn.setOnClickListener { echo?.stop() }
     }

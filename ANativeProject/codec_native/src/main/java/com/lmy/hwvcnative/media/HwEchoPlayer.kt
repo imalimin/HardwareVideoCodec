@@ -4,11 +4,11 @@ import android.content.Context
 import android.media.AudioManager
 import com.lmy.hwvcnative.CPPObject
 
-class Echoer(context: Context) : CPPObject() {
+class HwEchoPlayer(context: Context) : CPPObject() {
     init {
         val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val sampleRateStr: String? = am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
-        var sampleRate: Int = sampleRateStr?.let { str ->
+        val sampleRate: Int = sampleRateStr?.let { str ->
             Integer.parseInt(str).takeUnless { it == 0 }
         } ?: 44100
         val samplesPerBufferStr: String? = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)

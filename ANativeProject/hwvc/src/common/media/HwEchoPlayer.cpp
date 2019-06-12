@@ -4,23 +4,23 @@
 * This source code is licensed under the GPL license found in the
 * LICENSE file in the root directory of this source tree.
 */
-#include "../include/Echoer.h"
+#include "../include/HwEchoPlayer.h"
 
-Echoer::Echoer(int channels, int sampleHz, int format, int samplesPerBuffer) {
+HwEchoPlayer::HwEchoPlayer(int channels, int sampleHz, int format, int samplesPerBuffer) {
     this->samplesPerBuffer = samplesPerBuffer;
     this->buffer = new uint8_t[minBufferSize];
     this->engine = new SLEngine();
     recorder = new HwAudioRecorder(engine, channels, sampleHz, format, samplesPerBuffer);
     player = new HwAudioPlayer(engine, channels, sampleHz, format, samplesPerBuffer);
     this->minBufferSize = player->getBufferByteSize();
-    this->pipeline = new EventPipeline("Echoer");
+    this->pipeline = new EventPipeline("HwEchoPlayer");
 }
 
-Echoer::~Echoer() {
+HwEchoPlayer::~HwEchoPlayer() {
     stop();
 }
 
-void Echoer::start() {
+void HwEchoPlayer::start() {
     running = true;
     if (player) {
         player->start();
@@ -31,7 +31,7 @@ void Echoer::start() {
     loop();
 }
 
-void Echoer::stop() {
+void HwEchoPlayer::stop() {
     simpleLock.lock();
     running = false;
     simpleLock.unlock();
@@ -60,14 +60,14 @@ void Echoer::stop() {
     minBufferSize = 0;
 }
 
-void Echoer::loop() {
+void HwEchoPlayer::loop() {
     if (!running) {
         return;
     }
     pipeline->queueEvent([this] {
         HwBuffer *buffer = recorder->read(minBufferSize);
         if (player && buffer) {
-            Logcat::i("HWVC", "Echo write %d", buffer->size());
+//            Logcat::i("HWVC", "Echo write %d", buffer->size());
             player->write(buffer->getData(), buffer->size());
         }
         delete buffer;

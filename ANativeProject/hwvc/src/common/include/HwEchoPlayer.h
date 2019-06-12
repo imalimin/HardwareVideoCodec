@@ -12,11 +12,11 @@
 #include "EventPipeline.h"
 #include "SLEngine.h"
 
-class Echoer : public Object {
+class HwEchoPlayer : public Object {
 public:
-    Echoer(int channels, int sampleHz, int format, int samplesPerBuffer);
+    HwEchoPlayer(int channels, int sampleHz, int format, int samplesPerBuffer);
 
-    ~Echoer();
+    ~HwEchoPlayer();
 
     void start();
 
