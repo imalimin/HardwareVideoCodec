@@ -19,7 +19,7 @@ HwFIFOBuffer::HwFIFOBuffer(size_t capacity) : Object() {
     this->capacity = capacity;
     this->buf = new uint8_t[capacity];
     this->_size = 0;
-    this->reader = end();
+    this->reader = first();
     this->writer = first();
     this->endFlag = end();
     this->writeMode = true;
@@ -29,7 +29,7 @@ HwFIFOBuffer::HwFIFOBuffer(size_t capacity, bool writeMode) : Object() {
     this->capacity = capacity;
     this->buf = new uint8_t[capacity];
     this->_size = 0;
-    this->reader = end();
+    this->reader = first();
     this->writer = first();
     this->endFlag = end();
     this->writeMode = writeMode;
@@ -45,15 +45,6 @@ HwFIFOBuffer::~HwFIFOBuffer() {
         endFlag = nullptr;
     }
     capacity = 0;
-}
-
-bool HwFIFOBuffer::willCross(uint8_t *flag, uint8_t *pointer, size_t size) {
-    if (pointer < flag) {
-        if (pointer + size >= flag) {//TODO pointer == flag有歧义，所以也认为是cross，这会导致buf内总有一部分数据无法读取
-            return true;
-        }
-    }
-    return false;
 }
 
 bool HwFIFOBuffer::willWrite(size_t size) {
@@ -175,7 +166,7 @@ HwBuffer *HwFIFOBuffer::take(size_t size) {
         return nullptr;
     }
     while (!willRead(size)) {
-        Logcat::e("HWVC", "HwFIFOBuffer::push Capacity is insufficient(left=%d). Wait",
+        Logcat::e("HWVC", "HwFIFOBuffer::take Capacity is insufficient(left=%d). Wait",
                   leftCapacity());
         if (writeMode) {
             return nullptr;
@@ -236,7 +227,7 @@ size_t HwFIFOBuffer::size() {
 }
 
 void HwFIFOBuffer::flush() {
-    this->reader = end();
+    this->reader = first();
     this->writer = first();
     this->_size = 0;
     notifyLock.notify();

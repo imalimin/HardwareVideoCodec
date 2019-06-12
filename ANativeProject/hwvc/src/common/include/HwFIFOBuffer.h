@@ -47,8 +47,6 @@ private:
 
     size_t leftCapacity();
 
-    bool willCross(uint8_t *flag, uint8_t *pointer, size_t size);
-
     bool willWrite(size_t size);
 
     bool willRead(size_t size);
