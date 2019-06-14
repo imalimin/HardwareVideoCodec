@@ -48,7 +48,6 @@ private:
     SLRecorder *recorder = nullptr;
     HwFIFOBuffer *fifo = nullptr;
     HwBuffer *buffer = nullptr;
-    FILE *pcmFile = nullptr;
 
     HwResult createEngine();
 

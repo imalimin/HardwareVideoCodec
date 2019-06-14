@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#define TEST_HWRECORDER_PCM "/sdcard/pcm_sl_read.pcm"
+
 static HwAudioRecorder *recorder = nullptr;
 static HwAudioPlayer *player = nullptr;
 static EventPipeline *pipeline = nullptr;
@@ -87,7 +89,7 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_test_TestHwAudioRecorder_start
     if (!pipeline) {
         pipeline = new EventPipeline("AudioRecorderTest");
     }
-    pcmFile = fopen("/sdcard/pcm_sl_read.pcm", "wb");
+    pcmFile = fopen(TEST_HWRECORDER_PCM, "wb");
     recorder = new HwAudioRecorder(2, 48000, SL_PCMSAMPLEFORMAT_FIXED_32, 1024);
     recorder->start();
     loop();
@@ -99,7 +101,7 @@ JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_test_TestHwAudioRecorder_play
     if (!pipeline) {
         pipeline = new EventPipeline("AudioRecorderTest");
     }
-    pcmFile = fopen("/sdcard/pcm_sl_read.pcm", "rb");
+    pcmFile = fopen(TEST_HWRECORDER_PCM, "rb");
     player = new HwAudioPlayer(2, 48000, SL_PCMSAMPLEFORMAT_FIXED_32, 1024);
     player->start();
     loop();

@@ -16,6 +16,8 @@
 extern "C" {
 #endif
 
+#define TEST_HWPLAYER_PCM "/sdcard/pcm_sl_read.pcm"
+
 static HwAudioPlayer *player = nullptr;
 static FILE *file = nullptr;
 static EventPipeline *pipeline = nullptr;
@@ -47,7 +49,7 @@ static void loopTest() {
 JNIEXPORT void JNICALL Java_com_lmy_hwvcnative_media_AudioPlayerTest_start
         (JNIEnv *env, jobject thiz) {
     pipeline = new EventPipeline("AudioPlayerTest");
-    file = fopen("/sdcard/2.pcm", "rb");
+    file = fopen(TEST_HWPLAYER_PCM, "rb");
     if (file) {
         pipeline->queueEvent([] {
             Logcat::e("HWVC", "AudioPlayerTest_start");

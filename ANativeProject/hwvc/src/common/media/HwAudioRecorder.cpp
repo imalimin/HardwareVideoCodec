@@ -16,7 +16,6 @@ void HwAudioRecorder::bufferDequeue(SLAndroidSimpleBufferQueueItf slBufferQueueI
     if (this->buffer) {
         Logcat::i("HWVC", "HwAudioRecorder...");
         (*slBufferQueueItf)->Enqueue(slBufferQueueItf, buffer->getData(), buffer->size());
-        fwrite(buffer->getData(), 1, buffer->size(), pcmFile);
         if (fifo) {
             fifo->push(buffer->getData(), buffer->size());
         }
@@ -45,7 +44,6 @@ HwAudioRecorder::HwAudioRecorder(SLEngine *engine,
 }
 
 void HwAudioRecorder::initialize(SLEngine *engine) {
-    pcmFile = fopen("/sdcard/pcm_sl.pcm", "wb");
     this->engine = engine;
     LOGI("Create HwAudioRecorder, channels=%d, sampleHz=%d",
          this->channels,
@@ -89,10 +87,6 @@ void HwAudioRecorder::stop() {
         if (Hw::SUCCESS != ret) {
             LOGE("Recorder SetRecordState stop failed!");
         }
-    }
-    if (pcmFile) {
-        fclose(pcmFile);
-        pcmFile = nullptr;
     }
     if (buffer) {
         delete buffer;
