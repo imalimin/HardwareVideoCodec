@@ -9,12 +9,16 @@ HwSources::HwSources(HwSourcesAllocator *allocator) : Object() {
 }
 
 HwSources::~HwSources() {
-
+    allocator = nullptr;
 }
 
 void HwSources::recycle() {
-    if (allocator) {
+    if (!isDetach()) {
         HwSources *entity = this;
         allocator->unRef(&entity);
     }
+}
+
+bool HwSources::isDetach() {
+    return nullptr == allocator;
 }
