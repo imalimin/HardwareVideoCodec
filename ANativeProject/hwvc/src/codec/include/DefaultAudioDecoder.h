@@ -69,7 +69,6 @@ private:
     HwFrameAllocator *hwFrameAllocator = nullptr;
     AVFormatContext *pFormatCtx = nullptr;
     AVCodecContext *aCodecContext = nullptr;
-    SwrContext *swrContext = nullptr;
     int audioTrack = -1;
     AVPacket *avPacket = nullptr;
     AVFrame *resampleFrame = nullptr;
