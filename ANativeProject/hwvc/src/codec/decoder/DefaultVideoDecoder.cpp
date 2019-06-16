@@ -185,7 +185,7 @@ int DefaultVideoDecoder::grab(HwAbsMediaFrame **frame) {
         if (0 == avcodec_receive_frame(vCodecContext, videoFrame)) {
             matchPts(videoFrame, videoTrack);
             if (outputFrame) {
-                hwFrameAllocator->unRef(&outputFrame);
+                outputFrame->recycle();
             }
             outputFrame = hwFrameAllocator->ref(videoFrame);
             *frame = outputFrame;
@@ -199,7 +199,7 @@ int DefaultVideoDecoder::grab(HwAbsMediaFrame **frame) {
         if (0 == avcodec_receive_frame(aCodecContext, audioFrame)) {
             matchPts(audioFrame, audioTrack);
             if (outputFrame) {
-                hwFrameAllocator->unRef(&outputFrame);
+                outputFrame->recycle();
             }
             outputFrame = resample(audioFrame);
             *frame = outputFrame;

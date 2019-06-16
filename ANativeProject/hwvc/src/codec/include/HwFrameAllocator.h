@@ -9,6 +9,7 @@
 #define HARDWAREVIDEOCODEC_HWFRAMEALLOCATOR_H
 
 #include "Object.h"
+#include "HwSourcesAllocator.h"
 #include "HwAbsMediaFrame.h"
 #include <list>
 #include "Logcat.h"
@@ -24,7 +25,7 @@ extern "C" {
 }
 #endif
 
-class HwFrameAllocator : public Object {
+class HwFrameAllocator : public HwSourcesAllocator {
 public:
     HwFrameAllocator();
 
@@ -34,10 +35,11 @@ public:
 
     HwAbsMediaFrame *ref(HwAbsMediaFrame *src);
 
-    void unRef(HwAbsMediaFrame **frame);
+    void unRef(HwSources **entity);
 
     void printInfo() {
-        Logcat::i("HWVC", "HwFrameAllocator::info: ref=%d, unRef=%d", refQueue.size(), unRefQueue.size());
+        Logcat::i("HWVC", "HwFrameAllocator::info: ref=%d, unRef=%d", refQueue.size(),
+                  unRefQueue.size());
     }
 
 private:

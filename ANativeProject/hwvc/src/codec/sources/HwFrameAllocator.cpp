@@ -9,7 +9,7 @@
 #include "../include/HwVideoFrame.h"
 #include "../include/HwAudioFrame.h"
 
-HwFrameAllocator::HwFrameAllocator() {
+HwFrameAllocator::HwFrameAllocator() : HwSourcesAllocator() {
 
 }
 
@@ -30,14 +30,14 @@ HwAbsMediaFrame *HwFrameAllocator::ref(AVFrame *avFrame) {
     return refAudio(avFrame);
 }
 
-void HwFrameAllocator::unRef(HwAbsMediaFrame **frame) {
+void HwFrameAllocator::unRef(HwSources **entity) {
     unRefLock.lock();
-    unRefQueue.push_front(frame[0]);
+    unRefQueue.push_front(reinterpret_cast<HwAbsMediaFrame *const &>(entity[0]));
     unRefLock.unlock();
     refLock.lock();
-    refQueue.remove(frame[0]);
+    refQueue.remove(reinterpret_cast<HwAbsMediaFrame *const &>(entity[0]));
     refLock.unlock();
-    frame[0] = nullptr;
+    entity[0] = nullptr;
 }
 
 HwAbsMediaFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
@@ -56,7 +56,7 @@ HwAbsMediaFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
     }
     unRefLock.unlock();
     if (!frame) {
-        frame = new HwAudioFrame(static_cast<uint16_t>(avFrame->channels),
+        frame = new HwAudioFrame(this, static_cast<uint16_t>(avFrame->channels),
                                  static_cast<uint32_t>(avFrame->sample_rate),
                                  static_cast<uint64_t>(avFrame->nb_samples));
         uint8_t *buffer = new uint8_t[avFrame->linesize[0]];
@@ -87,7 +87,7 @@ HwAbsMediaFrame *HwFrameAllocator::refVideo(AVFrame *avFrame) {
     }
     unRefLock.unlock();
     if (!frame) {
-        frame = new HwVideoFrame(static_cast<uint32_t>(avFrame->width),
+        frame = new HwVideoFrame(this, static_cast<uint32_t>(avFrame->width),
                                  static_cast<uint32_t>(avFrame->height));
         uint8_t *buffer = new uint8_t[size];
         frame->setData(buffer, static_cast<uint64_t>(size));

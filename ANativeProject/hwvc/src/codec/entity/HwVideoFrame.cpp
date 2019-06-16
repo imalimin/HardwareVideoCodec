@@ -8,7 +8,8 @@
 #include "../include/HwVideoFrame.h"
 #include "Logcat.h"
 
-HwVideoFrame::HwVideoFrame(uint32_t width, uint32_t height) : HwAbsMediaFrame(Type::VIDEO) {
+HwVideoFrame::HwVideoFrame(HwSourcesAllocator *allocator, uint32_t width, uint32_t height)
+        : HwAbsMediaFrame(allocator, Type::VIDEO) {
     this->width = width;
     this->height = height;
 }
@@ -31,7 +32,7 @@ uint64_t HwVideoFrame::duration() {
 }
 
 HwAbsMediaFrame *HwVideoFrame::clone() {
-    HwVideoFrame *destFrame = new HwVideoFrame(width, height);
+    HwVideoFrame *destFrame = new HwVideoFrame(allocator, width, height);
     destFrame->setPts(getPts());
     destFrame->setFormat(getFormat());
     uint8_t *buffer = new uint8_t[getDataSize()];

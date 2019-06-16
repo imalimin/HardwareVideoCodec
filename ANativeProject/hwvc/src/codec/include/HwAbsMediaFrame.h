@@ -9,15 +9,16 @@
 #define HARDWAREVIDEOCODEC_HWADBMEDIAFRAME_H
 
 #include "HwAbsFrame.h"
+#include "HwSourcesAllocator.h"
 
-class HwAbsMediaFrame : public HwAbsFrame {
+class HwAbsMediaFrame : public HwSources, public HwAbsFrame {
 public:
     enum Type {
         VIDEO,
         AUDIO,
     };
 
-    HwAbsMediaFrame(Type type);
+    HwAbsMediaFrame(HwSourcesAllocator *allocator, Type type);
 
     virtual ~HwAbsMediaFrame();
 

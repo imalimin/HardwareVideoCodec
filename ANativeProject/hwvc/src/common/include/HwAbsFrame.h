@@ -10,7 +10,7 @@
 
 #include "Object.h"
 
-class HwAbsFrame : public Object {
+class HwAbsFrame : virtual public Object {
 public:
     HwAbsFrame();
 

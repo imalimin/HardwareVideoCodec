@@ -7,7 +7,8 @@
 
 #include "../include/HwAbsMediaFrame.h"
 
-HwAbsMediaFrame::HwAbsMediaFrame(Type type) : HwAbsFrame() {
+HwAbsMediaFrame::HwAbsMediaFrame(HwSourcesAllocator *allocator, Type type) : HwSources(allocator),
+                                                                             HwAbsFrame() {
     this->type = type;
 }
 

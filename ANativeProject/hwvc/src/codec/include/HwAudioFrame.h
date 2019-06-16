@@ -12,7 +12,10 @@
 
 class HwAudioFrame : public HwAbsMediaFrame {
 public:
-    HwAudioFrame(uint16_t channels, uint32_t sampleRate, uint64_t sampleCount);
+    HwAudioFrame(HwSourcesAllocator *allocator,
+                 uint16_t channels,
+                 uint32_t sampleRate,
+                 uint64_t sampleCount);
 
     virtual ~HwAudioFrame();
 

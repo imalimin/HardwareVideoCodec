@@ -8,8 +8,9 @@
 #include "../include/HwAudioFrame.h"
 #include "Logcat.h"
 
-HwAudioFrame::HwAudioFrame(uint16_t channels, uint32_t sampleRate, uint64_t sampleCount)
-        : HwAbsMediaFrame(Type::AUDIO) {
+HwAudioFrame::HwAudioFrame(HwSourcesAllocator *allocator, uint16_t channels, uint32_t sampleRate,
+                           uint64_t sampleCount)
+        : HwAbsMediaFrame(allocator, Type::AUDIO) {
     this->channels = channels;
     this->sampleRate = sampleRate;
     this->sampleCount = sampleCount;
@@ -38,7 +39,7 @@ uint64_t HwAudioFrame::duration() {
 }
 
 HwAbsMediaFrame *HwAudioFrame::clone() {
-    HwAudioFrame *destFrame = new HwAudioFrame(channels, sampleRate, sampleCount);
+    HwAudioFrame *destFrame = new HwAudioFrame(allocator, channels, sampleRate, sampleCount);
     destFrame->setPts(getPts());
     destFrame->setFormat(getFormat());
     uint8_t *buffer = new uint8_t[getDataSize()];

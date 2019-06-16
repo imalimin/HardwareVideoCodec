@@ -116,7 +116,7 @@ int AsynAudioDecoder::grab(HwAbsMediaFrame **frame) {
         return MEDIA_TYPE_UNKNOWN;
     }
     if (outputFrame) {
-        hwFrameAllocator->unRef(&outputFrame);
+        outputFrame->recycle();
     }
     hwFrameAllocator->printInfo();
     outputFrame = cache.back();
