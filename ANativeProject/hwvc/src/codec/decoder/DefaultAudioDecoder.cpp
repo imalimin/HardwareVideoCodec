@@ -48,6 +48,10 @@ DefaultAudioDecoder::~DefaultAudioDecoder() {
         avformat_free_context(pFormatCtx);
         pFormatCtx = nullptr;
     }
+    if (outputFrame) {
+        outputFrame->recycle();
+        outputFrame = nullptr;
+    }
     if (hwFrameAllocator) {
         delete hwFrameAllocator;
         hwFrameAllocator = nullptr;
@@ -106,6 +110,7 @@ int DefaultAudioDecoder::grab(HwAbsMediaFrame **frame) {
         if (0 == ret && audioTrack == avPacket->stream_index) {
             avcodec_send_packet(aCodecContext, avPacket);
         }
+        av_packet_unref(avPacket);//Or av_free_packet?
 //            switch (ret) {
 //                case AVERROR(EAGAIN): {
 //                    LOGI("you must read output with avcodec_receive_frame");
