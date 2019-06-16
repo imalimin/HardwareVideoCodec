@@ -31,8 +31,14 @@ public:
 
     ~HwFrameAllocator();
 
+    /**
+     * Copy frame
+     */
     HwAbsMediaFrame *ref(AVFrame *avFrame);
 
+    /**
+     * Copy frame
+     */
     HwAbsMediaFrame *ref(HwAbsMediaFrame *src);
 
     void unRef(HwSources **entity);

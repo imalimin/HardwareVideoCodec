@@ -15,19 +15,9 @@ HwFrameAllocator::HwFrameAllocator() : HwSourcesAllocator() {
 
 HwFrameAllocator::~HwFrameAllocator() {
     unRefLock.lock();
-    list<HwAbsMediaFrame *>::iterator itr = unRefQueue.begin();
-    while (itr != unRefQueue.end()) {
-        delete *itr;
-        ++itr;
-    }
     unRefQueue.clear();
     unRefLock.unlock();
     refLock.lock();
-    itr = refQueue.begin();
-    while (itr != refQueue.end()) {
-        delete *itr;
-        ++itr;
-    }
     refQueue.clear();
     refLock.unlock();
 }
@@ -41,17 +31,14 @@ HwAbsMediaFrame *HwFrameAllocator::ref(AVFrame *avFrame) {
 }
 
 void HwFrameAllocator::unRef(HwSources **entity) {
+    HwAbsMediaFrame *frame = reinterpret_cast<HwAbsMediaFrame *>(entity[0]);
+    entity[0] = nullptr;
     unRefLock.lock();
-    int size = unRefQueue.size();
-    unRefQueue.push_front(reinterpret_cast<HwAbsMediaFrame *>(entity[0]));
-    size = unRefQueue.size();
+    unRefQueue.push_front(frame);
     unRefLock.unlock();
     refLock.lock();
-    size = refQueue.size();
-    refQueue.remove(reinterpret_cast<HwAbsMediaFrame *>(entity[0]));
-    size = refQueue.size();
+    refQueue.remove(frame);
     refLock.unlock();
-    entity[0] = nullptr;
 }
 
 HwAbsMediaFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {
@@ -141,12 +128,9 @@ HwAbsMediaFrame *HwFrameAllocator::ref(HwAbsMediaFrame *src) {
         } else if (src->isAudio()) {
             HwAudioFrame *audioFrame = static_cast<HwAudioFrame *>(src);
 
-            frame = new HwAudioFrame(this, audioFrame->getFormat(),
-                                     static_cast<uint16_t>(audioFrame->getChannels()),
-                                     static_cast<uint32_t>(audioFrame->getSampleRate()),
-                                     static_cast<uint64_t>(audioFrame->getSampleCount()));
-
-            src->clone(audioFrame);
+            frame = new HwAudioFrame(this, audioFrame->getFormat(), audioFrame->getChannels(),
+                                     audioFrame->getSampleRate(), audioFrame->getSampleCount());
+            audioFrame->clone(frame);
         }
     }
     refLock.lock();
