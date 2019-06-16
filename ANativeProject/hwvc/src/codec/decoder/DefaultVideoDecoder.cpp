@@ -407,7 +407,7 @@ int DefaultVideoDecoder::getSampleFormat() {
     return outputSampleFormat;
 }
 
-int DefaultVideoDecoder::getPerSampleSize() {
+int DefaultVideoDecoder::getSamplesPerBuffer() {
     assert(aCodecContext);
     return aCodecContext->frame_size;
 }

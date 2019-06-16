@@ -46,7 +46,7 @@ public:
 
     int getSampleFormat();
 
-    int getPerSampleSize();
+    int getSamplesPerBuffer();
 
     int64_t getAudioDuration();
 

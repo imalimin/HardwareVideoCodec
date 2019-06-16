@@ -146,9 +146,9 @@ int AsynAudioDecoder::getSampleFormat() {
     return AV_SAMPLE_FMT_NONE;
 }
 
-int AsynAudioDecoder::getPerSampleSize() {
+int AsynAudioDecoder::getSamplesPerBuffer() {
     if (decoder) {
-        return decoder->getPerSampleSize();
+        return decoder->getSamplesPerBuffer();
     }
     return 0;
 }

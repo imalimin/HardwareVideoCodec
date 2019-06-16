@@ -42,7 +42,7 @@ public:
 
     virtual int getSampleFormat() override;
 
-    virtual int getPerSampleSize() override;
+    virtual int getSamplesPerBuffer() override;
 
     virtual void seek(int64_t us) override;
 

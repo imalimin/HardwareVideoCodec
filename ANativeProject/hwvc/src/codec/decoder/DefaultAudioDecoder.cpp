@@ -175,7 +175,7 @@ int DefaultAudioDecoder::getSampleFormat() {
     return outputSampleFormat;
 }
 
-int DefaultAudioDecoder::getPerSampleSize() {
+int DefaultAudioDecoder::getSamplesPerBuffer() {
     assert(aCodecContext);
     return aCodecContext->frame_size;
 }

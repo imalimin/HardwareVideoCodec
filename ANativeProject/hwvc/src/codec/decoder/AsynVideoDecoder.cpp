@@ -209,9 +209,9 @@ int AsynVideoDecoder::getSampleFormat() {
     return AV_SAMPLE_FMT_NONE;
 }
 
-int AsynVideoDecoder::getPerSampleSize() {
+int AsynVideoDecoder::getSamplesPerBuffer() {
     if (decoder) {
-        return decoder->getPerSampleSize();
+        return decoder->getSamplesPerBuffer();
     }
     return 0;
 }

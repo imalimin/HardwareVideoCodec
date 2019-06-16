@@ -24,7 +24,7 @@ public:
 
     virtual int getSampleFormat()=0;
 
-    virtual int getPerSampleSize()=0;
+    virtual int getSamplesPerBuffer()=0;
 
     virtual int64_t getAudioDuration()=0;
 };

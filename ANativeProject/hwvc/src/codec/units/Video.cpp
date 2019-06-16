@@ -266,7 +266,7 @@ void Video::createAudioPlayer() {
     audioPlayer = new HwAudioPlayer(decoder->getChannels(),
                                     decoder->getSampleHz(),
                                     format,
-                                    decoder->getPerSampleSize());
+                                    decoder->getSamplesPerBuffer());
     audioPlayer->start();
 }
 
