@@ -25,17 +25,10 @@ DefaultAudioDecoder::DefaultAudioDecoder() : AbsAudioDecoder() {
 
 DefaultAudioDecoder::~DefaultAudioDecoder() {
     if (avPacket) {
-        av_packet_unref(avPacket);
         av_packet_free(&avPacket);
         avPacket = nullptr;
     }
-    if (resampleFrame) {
-        av_frame_unref(resampleFrame);
-        av_frame_free(&resampleFrame);
-        resampleFrame = nullptr;
-    }
     if (audioFrame) {
-        av_frame_unref(audioFrame);
         av_frame_free(&audioFrame);
         audioFrame = nullptr;
     }
@@ -48,9 +41,9 @@ DefaultAudioDecoder::~DefaultAudioDecoder() {
         avformat_free_context(pFormatCtx);
         pFormatCtx = nullptr;
     }
-    if (outputFrame) {
-        outputFrame->recycle();
-        outputFrame = nullptr;
+    if (outHwFrame) {
+        outHwFrame->recycle();
+        outHwFrame = nullptr;
     }
     if (hwFrameAllocator) {
         delete hwFrameAllocator;
@@ -87,10 +80,14 @@ bool DefaultAudioDecoder::prepare(string path) {
     Logcat::e("HWVC",
               "DefaultAudioDecoder::prepare(duration=%lld channels=%d, sampleHz=%d, frameSize=%d)",
               getAudioDuration(), getChannels(), getSampleHz(), aCodecContext->frame_size);
-    outputSampleFormat = getBestSampleFormat(aCodecContext->sample_fmt);
-    if (initSwr() < 0) {
-        return false;
-    }
+    outSampleFormat = getBestSampleFormat(aCodecContext->sample_fmt);
+    translator = new HwAudioTranslator(
+            HwSampleFormat(HwAbsMediaFrame::convertToAudioFrameFormat(outSampleFormat),
+                           getChannels(),
+                           getSampleHz()),
+            HwSampleFormat(HwAbsMediaFrame::convertToAudioFrameFormat(aCodecContext->sample_fmt),
+                           getChannels(),
+                           getSampleHz()));
     //准备资源
     avPacket = av_packet_alloc();
     audioFrame = av_frame_alloc();
@@ -135,19 +132,13 @@ int DefaultAudioDecoder::grab(HwAbsMediaFrame **frame) {
             eof = true;
         }
         if (0 == avcodec_receive_frame(aCodecContext, audioFrame)) {
-            int64_t pts = audioFrame->pts;
             matchPts(audioFrame, audioTrack);
-            if (outputFrame) {
-                outputFrame->recycle();
-                outputFrame = nullptr;
+            if (outHwFrame) {
+                outHwFrame->recycle();
+                outHwFrame = nullptr;
             }
-            outputFrame = resample(audioFrame);
-            *frame = outputFrame;
-            if (enableDebug) {
-                Logcat::i("HWVC", "DefaultAudioDecoder::grab audio, %d, %d",
-                          resampleFrame->linesize[0],
-                          resampleFrame->nb_samples);
-            }
+            outHwFrame = resample(audioFrame);
+            *frame = outHwFrame;
             av_frame_unref(audioFrame);
             return MEDIA_TYPE_AUDIO;
         }
@@ -178,7 +169,7 @@ int DefaultAudioDecoder::getSampleHz() {
 
 int DefaultAudioDecoder::getSampleFormat() {
     assert(aCodecContext);
-    return outputSampleFormat;
+    return outSampleFormat;
 }
 
 int DefaultAudioDecoder::getSamplesPerBuffer() {
@@ -200,47 +191,6 @@ int64_t DefaultAudioDecoder::getAudioDuration() {
                                        outputTimeBase,
                                        AV_ROUND_NEAR_INF);
     return audioDurationUs;
-}
-
-int DefaultAudioDecoder::initSwr() {
-    if (!av_sample_fmt_is_planar(aCodecContext->sample_fmt)) {
-        return -1;
-    }
-    int oRawLineSize = 0;
-    int oRawBuffSize = av_samples_get_buffer_size(&oRawLineSize, getChannels(),
-                                                  aCodecContext->frame_size,
-                                                  outputSampleFormat,
-                                                  0);
-    resampleFrame = av_frame_alloc();
-    resampleFrame->nb_samples = aCodecContext->frame_size;
-    resampleFrame->format = outputSampleFormat;
-    resampleFrame->channels = getChannels();
-    resampleFrame->channel_layout = aCodecContext->channel_layout;
-    resampleFrame->sample_rate = getSampleHz();
-    int ret = avcodec_fill_audio_frame(resampleFrame, getChannels(), outputSampleFormat,
-                                       (const uint8_t *) av_malloc(oRawBuffSize), oRawBuffSize, 0);
-    if (ret < 0) {
-        Logcat::e("HWVC", "******** resampleFrame alloc failed(size=%d). *********", oRawBuffSize);
-        return ret;
-    }
-    Logcat::e("HWVC", "DefaultVideoDecoder::initSwr: %lld, %d, %d => %lld, %d, %d",
-              resampleFrame->channel_layout,
-              AVSampleFormat(resampleFrame->format),
-              resampleFrame->sample_rate,
-              aCodecContext->channel_layout,
-              aCodecContext->sample_fmt,
-              getSampleHz());
-    swrContext = swr_alloc_set_opts(swrContext, resampleFrame->channel_layout,
-                                    AVSampleFormat(resampleFrame->format),
-                                    resampleFrame->sample_rate,
-                                    aCodecContext->channel_layout,
-                                    aCodecContext->sample_fmt,
-                                    getSampleHz(), 0, nullptr);
-    if (!swrContext || 0 != swr_init(swrContext)) {
-        Logcat::e("HWVC", "DefaultVideoDecoder::initSwr failed");
-        return -1;
-    }
-    return 0;
 }
 
 bool DefaultAudioDecoder::openTrack(int track, AVCodecContext **context) {
@@ -278,17 +228,13 @@ bool DefaultAudioDecoder::openTrack(int track, AVCodecContext **context) {
 }
 
 HwAbsMediaFrame *DefaultAudioDecoder::resample(AVFrame *avFrame) {
-    if (!swrContext) {
+    if (!translator) {
         return nullptr;
     }
-    int ret = swr_convert(swrContext, resampleFrame->data, aCodecContext->frame_size,
-                          (const uint8_t **) (avFrame->data), aCodecContext->frame_size);
-    if (ret < 0) {
-        Logcat::e("HWVC", "DefaultVideoDecoder::resample failed");
-        return nullptr;
-    }
-    resampleFrame->pts = avFrame->pts;
-    return hwFrameAllocator->ref(resampleFrame);
+    AVFrame *outFrame = nullptr;
+    translator->translate(&outFrame, &avFrame);
+    outFrame->pts = avFrame->pts;
+    return hwFrameAllocator->ref(outFrame);
 }
 
 void DefaultAudioDecoder::matchPts(AVFrame *frame, int track) {

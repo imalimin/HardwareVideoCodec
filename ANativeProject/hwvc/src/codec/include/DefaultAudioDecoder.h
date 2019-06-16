@@ -11,6 +11,7 @@
 #include "AbsAudioDecoder.h"
 #include "HwAbsMediaFrame.h"
 #include "HwFrameAllocator.h"
+#include "HwAudioTranslator.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,8 +52,6 @@ public:
     int64_t getAudioDuration();
 
 private:
-    int initSwr();
-
     bool openTrack(int track, AVCodecContext **context);
 
     AVSampleFormat getBestSampleFormat(AVSampleFormat in);
@@ -69,12 +68,12 @@ private:
     HwFrameAllocator *hwFrameAllocator = nullptr;
     AVFormatContext *pFormatCtx = nullptr;
     AVCodecContext *aCodecContext = nullptr;
+    HwAudioTranslator *translator = nullptr;
     int audioTrack = -1;
     AVPacket *avPacket = nullptr;
-    AVFrame *resampleFrame = nullptr;
     AVFrame *audioFrame = nullptr;
-    HwAbsMediaFrame *outputFrame = nullptr;
-    AVSampleFormat outputSampleFormat = AV_SAMPLE_FMT_S16;
+    HwAbsMediaFrame *outHwFrame = nullptr;
+    AVSampleFormat outSampleFormat = AV_SAMPLE_FMT_S16;
     AVRational outputTimeBase = AVRational{1, 1000000};
     int64_t audioDurationUs = -1;
     bool eof = false;

@@ -83,6 +83,7 @@ file(
         ${PROJECT_SOURCE_DIR}/sources/*.cpp
         ${PROJECT_SOURCE_DIR}/processor/*.cpp
         ${PROJECT_SOURCE_DIR}/units/*.cpp
+        ${PROJECT_SOURCE_DIR}/translator/*.cpp
 )
 add_library( # Sets the name of the library.
         hwvc_codec

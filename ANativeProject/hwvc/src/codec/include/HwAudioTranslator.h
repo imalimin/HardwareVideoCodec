@@ -13,24 +13,28 @@
 extern "C" {
 #endif
 
+#include "ff/libavcodec/avcodec.h"
+#include "ff/libavformat/avformat.h"
+#include "ff/libavutil/avutil.h"
 #include "ff/libswresample/swresample.h"
 
 #ifdef __cplusplus
 }
 #endif
 
-class HwResampler : public Object {
+class HwAudioTranslator : public Object {
 public:
-    HwResampler(HwSampleFormat outFormat, HwSampleFormat inFormat);
+    HwAudioTranslator(HwSampleFormat outFormat, HwSampleFormat inFormat);
 
-    virtual ~HwResampler();
+    virtual ~HwAudioTranslator();
 
-    bool convert(HwBuffer *dest, HwBuffer *src);
+    bool translate(AVFrame **dest, AVFrame **src);
 
 private:
     SwrContext *swrContext = nullptr;
     HwSampleFormat inFormat;
     HwSampleFormat outFormat;
+    AVFrame *outFrame = nullptr;
 };
 
 
