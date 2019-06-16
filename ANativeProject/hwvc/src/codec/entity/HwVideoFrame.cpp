@@ -8,8 +8,11 @@
 #include "../include/HwVideoFrame.h"
 #include "Logcat.h"
 
-HwVideoFrame::HwVideoFrame(HwSourcesAllocator *allocator, uint32_t width, uint32_t height)
-        : HwAbsMediaFrame(allocator, Type::VIDEO) {
+HwVideoFrame::HwVideoFrame(HwSourcesAllocator *allocator,
+                           HwFrameFormat format,
+                           uint32_t width,
+                           uint32_t height)
+        : HwAbsMediaFrame(allocator, format, HwAbsMediaFrame::getImageSize(format, width, height)) {
     this->width = width;
     this->height = height;
 }
@@ -32,17 +35,16 @@ uint64_t HwVideoFrame::duration() {
 }
 
 HwAbsMediaFrame *HwVideoFrame::clone() {
-    HwVideoFrame *destFrame = new HwVideoFrame(allocator, width, height);
+    HwVideoFrame *destFrame = new HwVideoFrame(allocator, getFormat(), width, height);
     destFrame->setPts(getPts());
     destFrame->setFormat(getFormat());
-    uint8_t *buffer = new uint8_t[getDataSize()];
-    destFrame->setData(buffer, getDataSize());
-    memcpy(destFrame->getData(), getData(), static_cast<size_t>(destFrame->getDataSize()));
+    memcpy(destFrame->getBuffer()->getData(), getBuffer()->getData(),
+           static_cast<size_t>(destFrame->getBufferSize()));
     return destFrame;
 }
 
 void HwVideoFrame::clone(HwAbsMediaFrame *src) {
-    if (!src || !src->isVideo() || src->getDataSize() < getDataSize()) {
+    if (!src || !src->isVideo() || src->getBufferSize() < getBufferSize()) {
         Logcat::e("HWVC", "Invalid video frame");
         return;
     }
@@ -50,6 +52,5 @@ void HwVideoFrame::clone(HwAbsMediaFrame *src) {
     srcFrame->setPts(getPts());
     srcFrame->setFormat(getFormat());
     srcFrame->setSize(getWidth(), getHeight());
-    memcpy(srcFrame->getData(), getData(), getDataSize());
-    srcFrame->setData(srcFrame->getData(), getDataSize());
+    memcpy(srcFrame->getBuffer()->getData(), getBuffer()->getData(), getBufferSize());
 }

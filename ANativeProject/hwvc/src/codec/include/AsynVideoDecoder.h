@@ -9,13 +9,13 @@
 
 #include "AbsVideoDecoder.h"
 #include "DefaultVideoDecoder.h"
-#include "Frame.h"
 #include "RecyclerBlockQueue.h"
 #include "EventPipeline.h"
 #include "HwAbsMediaFrame.h"
 #include "HwFrameAllocator.h"
 #include "SimpleLock.h"
 #include "PlayState.h"
+#include "HwVideoFrame.h"
 #include <queue>
 
 using namespace std;
@@ -70,12 +70,12 @@ private:
     /**
      * YUV420P
      */
-    void copyYV12(Frame *dest, AVFrame *src);
+    void copyYV12(HwVideoFrame *dest, AVFrame *src);
 
     /**
      * YUV420SP
      */
-    void copyNV12(Frame *dest, AVFrame *src);
+    void copyNV12(HwVideoFrame *dest, AVFrame *src);
 
     bool grab();
 

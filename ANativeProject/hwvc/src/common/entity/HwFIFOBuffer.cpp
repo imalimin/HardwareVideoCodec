@@ -6,7 +6,6 @@
 */
 
 #include "../include/HwFIFOBuffer.h"
-#include "../include/HwMemFrameRef.h"
 #include "../include/Logcat.h"
 #include "../include/TimeUtils.h"
 

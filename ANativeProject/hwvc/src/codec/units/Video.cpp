@@ -234,9 +234,9 @@ int Video::grab() {
             Logcat::i("HWVC", "Video::play audio: %d, %lld, %lld",
                       audioFrame->getChannels(),
                       audioFrame->getSampleCount(),
-                      audioFrame->getDataSize());
-            audioPlayer->write(audioFrame->getData(),
-                               static_cast<size_t>(audioFrame->getDataSize()));
+                      audioFrame->getBufferSize());
+            audioPlayer->write(audioFrame->getBuffer()->getData(),
+                               static_cast<size_t>(audioFrame->getBufferSize()));
         }
         return MEDIA_TYPE_AUDIO;
     }

@@ -117,24 +117,24 @@ int AsynVideoDecoder::grab(HwAbsMediaFrame **frame) {
     return MEDIA_TYPE_VIDEO;
 }
 
-void AsynVideoDecoder::copyYV12(Frame *dest, AVFrame *src) {
-    int size = src->width * src->height;
-    dest->offset = 0;
-    dest->size = size * 3 / 2;
-    memcpy(dest->data, src->data[0], size);
-    memcpy(dest->data + size, src->data[1], size / 4);
-    memcpy(dest->data + size + size / 4, src->data[2], size / 4);
-}
-
-void AsynVideoDecoder::copyNV12(Frame *dest, AVFrame *src) {
-    int size = src->width * src->height;
-    memcpy(dest->data, src->data[0], size);
-    int uvSize = size / 4;
-    for (int i = 0; i < uvSize; ++i) {
-        *(dest->data + size + i) = src->data[1][i * 2];
-        *(dest->data + size + uvSize + i) = src->data[1][i * 2 + 1];
-    }
-}
+//void AsynVideoDecoder::copyYV12(HwVideoFrame *dest, AVFrame *src) {
+//    int size = src->width * src->height;
+//    dest->offset = 0;
+//    dest->size = size * 3 / 2;
+//    memcpy(dest->data, src->data[0], size);
+//    memcpy(dest->data + size, src->data[1], size / 4);
+//    memcpy(dest->data + size + size / 4, src->data[2], size / 4);
+//}
+//
+//void AsynVideoDecoder::copyNV12(HwVideoFrame *dest, AVFrame *src) {
+//    int size = src->width * src->height;
+//    memcpy(dest->data, src->data[0], size);
+//    int uvSize = size / 4;
+//    for (int i = 0; i < uvSize; ++i) {
+//        *(dest->data + size + i) = src->data[1][i * 2];
+//        *(dest->data + size + uvSize + i) = src->data[1][i * 2 + 1];
+//    }
+//}
 
 int AsynVideoDecoder::width() {
     if (decoder) {

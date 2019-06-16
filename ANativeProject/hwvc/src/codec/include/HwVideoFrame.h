@@ -12,7 +12,10 @@
 
 class HwVideoFrame : public HwAbsMediaFrame {
 public:
-    HwVideoFrame(HwSourcesAllocator *allocator, uint32_t width, uint32_t height);
+    HwVideoFrame(HwSourcesAllocator *allocator,
+                 HwFrameFormat format,
+                 uint32_t width,
+                 uint32_t height);
 
     virtual ~HwVideoFrame();
 

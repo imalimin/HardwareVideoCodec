@@ -11,22 +11,60 @@
 #include "HwAbsFrame.h"
 #include "HwSourcesAllocator.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "../include/ff/libavutil/samplefmt.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+enum HwFrameFormat {
+    HW_FMT_NONE = -1,
+    HW_IMAGE_RGB,
+    HW_IMAGE_RGBA,
+    HW_IMAGE_YV12,/** YUV420P */
+    HW_IMAGE_NV12,/** YUV420SP */
+    HW_SAMPLE_U8 = 100,/** unsigned 8 bits */
+    HW_SAMPLE_S16,/** signed 16 bits */
+    HW_SAMPLE_S32,/** signed 32 bits */
+    HW_SAMPLE_FLT,/** float */
+    HW_SAMPLE_DBL,/** double */
+};
+
 class HwAbsMediaFrame : public HwSources, public HwAbsFrame {
 public:
-    enum Type {
-        VIDEO,
-        AUDIO,
-    };
+    /**
+     * Convert to AVSampleFormat
+     */
+    static AVSampleFormat convertAudioFrameFormat(HwFrameFormat format);
 
-    HwAbsMediaFrame(HwSourcesAllocator *allocator, Type type);
+    /**
+     * Convert to HwFrameFormat
+     */
+    static HwFrameFormat convertToAudioFrameFormat(AVSampleFormat format);
+
+    /**
+     * For audio
+     */
+    static int getBytesPerSample(HwFrameFormat format);
+
+    /**
+     * For video
+     */
+    static int getImageSize(HwFrameFormat format, int width, int height);
+
+public:
+
+    HwAbsMediaFrame(HwSourcesAllocator *allocator, HwFrameFormat format, size_t size);
 
     virtual ~HwAbsMediaFrame();
 
-    void setFormat(uint16_t format);
+    void setFormat(HwFrameFormat format);
 
-    uint16_t getFormat();
-
-    Type getType();
+    HwFrameFormat getFormat();
 
     void setPts(int64_t pts);
 
@@ -46,8 +84,7 @@ public:
     virtual void clone(HwAbsMediaFrame *src)=0;
 
 private:
-    Type type = Type::AUDIO;
-    uint16_t format = 0;
+    HwFrameFormat format = HW_FMT_NONE;
     int64_t pts;
 };
 

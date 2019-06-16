@@ -8,9 +8,12 @@
 #include "../include/HwAudioFrame.h"
 #include "Logcat.h"
 
-HwAudioFrame::HwAudioFrame(HwSourcesAllocator *allocator, uint16_t channels, uint32_t sampleRate,
+HwAudioFrame::HwAudioFrame(HwSourcesAllocator *allocator,
+                           HwFrameFormat format,
+                           uint16_t channels,
+                           uint32_t sampleRate,
                            uint64_t sampleCount)
-        : HwAbsMediaFrame(allocator, Type::AUDIO) {
+        : HwAbsMediaFrame(allocator, format, sampleCount * channels * getBytesPerSample(format)) {
     this->channels = channels;
     this->sampleRate = sampleRate;
     this->sampleCount = sampleCount;
@@ -39,17 +42,17 @@ uint64_t HwAudioFrame::duration() {
 }
 
 HwAbsMediaFrame *HwAudioFrame::clone() {
-    HwAudioFrame *destFrame = new HwAudioFrame(allocator, channels, sampleRate, sampleCount);
+    HwAudioFrame *destFrame = new HwAudioFrame(allocator, getFormat(),
+                                               channels, sampleRate,
+                                               sampleCount);
     destFrame->setPts(getPts());
     destFrame->setFormat(getFormat());
-    uint8_t *buffer = new uint8_t[getDataSize()];
-    destFrame->setData(buffer, getDataSize());
-    memcpy(destFrame->getData(), getData(), static_cast<size_t>(destFrame->getDataSize()));
+    memcpy(destFrame->getBuffer()->getData(), getBuffer()->getData(), destFrame->getBufferSize());
     return destFrame;
 }
 
 void HwAudioFrame::clone(HwAbsMediaFrame *src) {
-    if (!src || !src->isAudio() || src->getDataSize() < getDataSize()) {
+    if (!src || !src->isAudio() || src->getBufferSize() < getBufferSize()) {
         Logcat::e("HWVC", "Invalid audio frame");
         return;
     }
@@ -57,6 +60,5 @@ void HwAudioFrame::clone(HwAbsMediaFrame *src) {
     srcFrame->setPts(getPts());
     srcFrame->setFormat(getFormat());
     srcFrame->setSampleFormat(channels, sampleRate, sampleCount);
-    memcpy(srcFrame->getData(), getData(), getDataSize());
-    srcFrame->setData(srcFrame->getData(), getDataSize());
+    memcpy(srcFrame->getBuffer()->getData(), getBuffer()->getData(), getBufferSize());
 }

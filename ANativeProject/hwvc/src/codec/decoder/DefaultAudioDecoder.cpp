@@ -134,6 +134,7 @@ int DefaultAudioDecoder::grab(HwAbsMediaFrame **frame) {
             matchPts(audioFrame, audioTrack);
             if (outputFrame) {
                 outputFrame->recycle();
+                outputFrame = nullptr;
             }
             outputFrame = resample(audioFrame);
             *frame = outputFrame;

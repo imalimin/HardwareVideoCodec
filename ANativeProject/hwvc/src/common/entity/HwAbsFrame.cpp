@@ -7,23 +7,17 @@
 
 #include "../include/HwAbsFrame.h"
 
-HwAbsFrame::HwAbsFrame() : Object() {
-
+HwAbsFrame::HwAbsFrame(size_t size) : Object() {
+    buf = HwBuffer::alloc(size);
 }
 
 HwAbsFrame::~HwAbsFrame() {
-    if (data) {
-        delete[]data;
-        data = nullptr;
+    if (buf) {
+        delete buf;
+        buf = nullptr;
     }
-    dataSize = 0;
 }
 
-uint8_t *HwAbsFrame::getData() { return data; }
+HwBuffer *HwAbsFrame::getBuffer() { return buf; }
 
-uint64_t HwAbsFrame::getDataSize() { return dataSize; }
-
-void HwAbsFrame::setData(uint8_t *data, uint64_t dataSize) {
-    this->data = data;
-    this->dataSize = dataSize;
-}
+size_t HwAbsFrame::getBufferSize() { return buf->size(); }

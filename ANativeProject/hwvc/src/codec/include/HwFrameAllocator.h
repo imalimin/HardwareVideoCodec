@@ -37,10 +37,7 @@ public:
 
     void unRef(HwSources **entity);
 
-    void printInfo() {
-        Logcat::i("HWVC", "HwFrameAllocator::info: ref=%d, unRef=%d", refQueue.size(),
-                  unRefQueue.size());
-    }
+    void printInfo();
 
 private:
     SimpleLock refLock;

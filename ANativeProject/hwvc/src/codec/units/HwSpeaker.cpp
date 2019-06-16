@@ -47,7 +47,7 @@ bool HwSpeaker::eventFeed(Message *msg) {
 //                      frame->getSampleRate(),
 //                      frame->getSampleCount(),
 //                      frame->getDataSize());
-            player->write(frame->getData(), static_cast<size_t>(frame->getDataSize()));
+            player->write(frame->getBuffer()->getData(), frame->getBufferSize());
         }
     }
     return false;

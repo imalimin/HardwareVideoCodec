@@ -9,22 +9,20 @@
 #define HARDWAREVIDEOCODEC_HWABSFRAME_H
 
 #include "Object.h"
+#include "HwBuffer.h"
 
 class HwAbsFrame : virtual public Object {
 public:
-    HwAbsFrame();
+    HwAbsFrame(size_t size);
 
     virtual ~HwAbsFrame();
 
-    virtual uint8_t *getData();
+    virtual HwBuffer *getBuffer();
 
-    virtual uint64_t getDataSize();
-
-    virtual void setData(uint8_t *data, uint64_t dataSize);
+    virtual size_t getBufferSize();
 
 private:
-    uint8_t *data = nullptr;
-    uint64_t dataSize = 0;
+    HwBuffer *buf;
 };
 
 
