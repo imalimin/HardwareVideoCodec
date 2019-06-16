@@ -55,7 +55,6 @@ private:
     SLObjectItf playObject = nullptr;
     SLPlayItf playItf = nullptr;
     SLAndroidSimpleBufferQueueItf bufferQueueItf = nullptr;
-    FILE *file = nullptr;
 
     HwResult createEngine();
 

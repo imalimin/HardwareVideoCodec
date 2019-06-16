@@ -64,7 +64,6 @@ private:
     PlayState playState = STOP;
     SimpleLock grabLock;
     SimpleLock releaseLock;
-    FILE *file = nullptr;
 };
 
 

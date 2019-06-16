@@ -85,7 +85,6 @@ HwResult HwAudioPlayer::createEngine() {
 }
 
 HwResult HwAudioPlayer::start() {
-    file = fopen("/sdcard/3.pcm", "wb");
     (*playItf)->SetPlayState(playItf, SL_PLAYSTATE_STOPPED);
     uint32_t bufSize = getBufferByteSize();
     uint8_t buffer[bufSize];
@@ -206,9 +205,6 @@ void HwAudioPlayer::bufferEnqueue(SLAndroidSimpleBufferQueueItf slBufferQueueItf
     HwBuffer *buf = fifo->take(getBufferByteSize());
     if (buf) {
         (*slBufferQueueItf)->Enqueue(bufferQueueItf, buf->getData(), buf->size());
-        if (file) {
-            fwrite(buf->getData(), 1, buf->size(), file);
-        }
         delete buf;
         return;
     }
@@ -249,10 +245,6 @@ void HwAudioPlayer::stop() {
     if (fifo) {
         delete fifo;
         fifo = nullptr;
-    }
-    if (file) {
-        fclose(file);
-        file = nullptr;
     }
 }
 
