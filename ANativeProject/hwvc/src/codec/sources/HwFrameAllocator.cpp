@@ -15,9 +15,21 @@ HwFrameAllocator::HwFrameAllocator() : HwSourcesAllocator() {
 
 HwFrameAllocator::~HwFrameAllocator() {
     unRefLock.lock();
+    list<HwAbsMediaFrame *>::iterator itr = unRefQueue.begin();
+    while (itr != unRefQueue.end()) {
+        HwAbsMediaFrame *frame = *itr;
+        delete frame;
+        ++itr;
+    }
     unRefQueue.clear();
     unRefLock.unlock();
     refLock.lock();
+    itr = refQueue.begin();
+    while (itr != refQueue.end()) {
+        HwAbsMediaFrame *frame = *itr;
+        delete frame;
+        ++itr;
+    }
     refQueue.clear();
     refLock.unlock();
 }
