@@ -3,6 +3,7 @@
 //
 
 #include "../include/HwSourcesAllocator.h"
+#include "../include/Logcat.h"
 
 HwSources::HwSources(HwSourcesAllocator *allocator) : Object() {
     this->allocator = allocator;
@@ -15,7 +16,11 @@ HwSources::~HwSources() {
 void HwSources::recycle() {
     if (!isDetach()) {
         HwSources *entity = this;
-        allocator->unRef(&entity);
+        if (!allocator->recycle(&entity)) {
+            Logcat::e("HWVC", "HwSources recycle failed. Is it(%p) managed by allocator(%p)",
+                      this,
+                      allocator);
+        }
     }
 }
 

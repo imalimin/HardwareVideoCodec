@@ -37,7 +37,7 @@ public:
 
     virtual ~HwSourcesAllocator();
 
-    virtual void unRef(HwSources **entity) = 0;
+    virtual bool recycle(HwSources **entity) = 0;
 
 };
 

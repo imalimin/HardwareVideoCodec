@@ -42,15 +42,30 @@ HwAbsMediaFrame *HwFrameAllocator::ref(AVFrame *avFrame) {
     return refAudio(avFrame);
 }
 
-void HwFrameAllocator::unRef(HwSources **entity) {
+bool HwFrameAllocator::recycle(HwSources **entity) {
     HwAbsMediaFrame *frame = reinterpret_cast<HwAbsMediaFrame *>(entity[0]);
     entity[0] = nullptr;
+    if (!isRef(frame)) {
+        return false;
+    }
     unRefLock.lock();
     unRefQueue.push_front(frame);
     unRefLock.unlock();
     refLock.lock();
     refQueue.remove(frame);
     refLock.unlock();
+    return true;
+}
+
+bool HwFrameAllocator::isRef(HwAbsMediaFrame *frame) {
+    list<HwAbsMediaFrame *>::iterator itr = refQueue.begin();
+    while (itr != refQueue.end()) {
+        if (*itr == frame) {
+            return true;
+        }
+        ++itr;
+    }
+    return false;
 }
 
 HwAbsMediaFrame *HwFrameAllocator::refAudio(AVFrame *avFrame) {

@@ -25,7 +25,7 @@ extern "C" {
 }
 #endif
 
-class HwFrameAllocator : public HwSourcesAllocator {
+class HwFrameAllocator : virtual public HwSourcesAllocator {
 public:
     HwFrameAllocator();
 
@@ -41,21 +41,25 @@ public:
      */
     HwAbsMediaFrame *ref(HwAbsMediaFrame *src);
 
-    void unRef(HwSources **entity);
+    bool recycle(HwSources **entity);
 
     void printInfo();
 
 private:
-    SimpleLock refLock;
-    SimpleLock unRefLock;
-    list<HwAbsMediaFrame *> refQueue;
-    list<HwAbsMediaFrame *> unRefQueue;
 
     HwAbsMediaFrame *refVideo(AVFrame *avFrame);
 
     HwAbsMediaFrame *refAudio(AVFrame *avFrame);
 
     void copyInfo(HwAbsMediaFrame *dest, AVFrame *src);
+
+    bool isRef(HwAbsMediaFrame *frame);
+
+private:
+    SimpleLock refLock;
+    SimpleLock unRefLock;
+    list<HwAbsMediaFrame *> refQueue;
+    list<HwAbsMediaFrame *> unRefQueue;
 };
 
 
