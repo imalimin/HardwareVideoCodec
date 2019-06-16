@@ -8,14 +8,14 @@
 #include "../include/HwAbsMediaFrame.h"
 
 AVSampleFormat HwAbsMediaFrame::convertAudioFrameFormat(HwFrameFormat format) {
-    if (format >= HW_SAMPLE_U8 && format <= HW_SAMPLE_DBL) {
+    if (format >= HW_SAMPLE_U8 && format < HW_SAMPLE_END) {
         return static_cast<AVSampleFormat>(format - HW_SAMPLE_U8);
     }
     return AV_SAMPLE_FMT_NONE;
 }
 
 HwFrameFormat HwAbsMediaFrame::convertToAudioFrameFormat(AVSampleFormat format) {
-    if (format >= AV_SAMPLE_FMT_U8 && format <= AV_SAMPLE_FMT_DBL) {
+    if (format >= AV_SAMPLE_FMT_U8 && format < AV_SAMPLE_FMT_NB) {
         return static_cast<HwFrameFormat>(format + HW_SAMPLE_U8);
     }
     return HW_FMT_NONE;
@@ -58,9 +58,9 @@ void HwAbsMediaFrame::setPts(int64_t pts) { this->pts = pts; }
 int64_t HwAbsMediaFrame::getPts() { return pts; }
 
 bool HwAbsMediaFrame::isVideo() {
-    return getFormat() >= HW_IMAGE_RGB && getFormat() < HW_SAMPLE_U8;
+    return getFormat() >= HW_IMAGE_RGB && getFormat() < HW_IMAGE_END;
 }
 
 bool HwAbsMediaFrame::isAudio() {
-    return getFormat() >= HW_SAMPLE_U8 && getFormat() <= HW_SAMPLE_DBL;
+    return getFormat() >= HW_SAMPLE_U8 && getFormat() < HW_SAMPLE_END;
 }
