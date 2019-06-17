@@ -60,7 +60,7 @@ bool HwAudioTranslator::translate(AVFrame **dest, AVFrame **src) {
         outFrame = av_frame_alloc();
         outFrame->nb_samples = nbSample;
         outFrame->format = HwAbsMediaFrame::convertAudioFrameFormat(outFormat.getFormat());
-        outFrame->channels = outFormat.getChannels();
+//        outFrame->channels = outFormat.getChannels();
         outFrame->channel_layout = av_get_default_channel_layout(outFormat.getChannels());
         outFrame->sample_rate = outFormat.getSampleRate();
         outFrame->pts = 0;
