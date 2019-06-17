@@ -34,13 +34,13 @@ enum HwFrameFormat {
     HW_SAMPLE_S32,     /** signed 32 bits */
     HW_SAMPLE_FLT,     /** float */
     HW_SAMPLE_DBL,     /** double */
-    HW_SAMPLE_S64,     /** signed 64 bits */
 
     HW_SAMPLE_U8P,     /** unsigned 8 bits, planar */
     HW_SAMPLE_S16P,    /** signed 16 bits, planar */
     HW_SAMPLE_S32P,    /** signed 32 bits, planar */
     HW_SAMPLE_FLTP,    /** float, planar */
-    HW_SAMPLE_DBLP,    /** double, planar */    ///< double, planar
+    HW_SAMPLE_DBLP,    /** double, planar */
+    HW_SAMPLE_S64,     /** signed 64 bits */
     HW_SAMPLE_S64P,    /** signed 64 bits, planar */
     HW_SAMPLE_END,    /** End flag of sample formats. DO NOT USE if linking dynamically */
 };

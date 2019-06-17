@@ -232,9 +232,10 @@ HwAbsMediaFrame *DefaultAudioDecoder::resample(AVFrame *avFrame) {
         return nullptr;
     }
     AVFrame *outFrame = nullptr;
-    translator->translate(&outFrame, &avFrame);
-    outFrame->pts = avFrame->pts;
-    return hwFrameAllocator->ref(outFrame);
+    if(translator->translate(&outFrame, &avFrame)){
+        return hwFrameAllocator->ref(outFrame);
+    }
+    return nullptr;
 }
 
 void DefaultAudioDecoder::matchPts(AVFrame *frame, int track) {

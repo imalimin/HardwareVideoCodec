@@ -59,11 +59,11 @@ void HwSpeaker::createFromAudioFrame(HwAudioFrame *frame) {
     }
     int format;
     switch (frame->getFormat()) {
-        case AV_SAMPLE_FMT_S16:
-            format = SL_PCMSAMPLEFORMAT_FIXED_16;
-            break;
-        case AV_SAMPLE_FMT_U8:
+        case HW_SAMPLE_U8:
             format = SL_PCMSAMPLEFORMAT_FIXED_8;
+            break;
+        case HW_SAMPLE_S16:
+            format = SL_PCMSAMPLEFORMAT_FIXED_16;
             break;
         default:
             format = SL_PCMSAMPLEFORMAT_FIXED_32;
