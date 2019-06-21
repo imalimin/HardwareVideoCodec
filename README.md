@@ -1,4 +1,7 @@
-# HWVC(HardwareVideoCodec)
+# ⚠️HardwareVideoCodec will not be updated
+This project has been migrated to [hwvc](https://github.com/lmylr/hwvc) now. [hwvc](https://github.com/lmylr/hwvc) is a cross-platform project. Committed to quickly and easily implement a variety of complex multimedia needs, including recording and editing. This project uses c / c + + implementation, currently only supports Android platform, but it can also be easily ported to other platforms, such as IOS.
+
+## HWVC(HardwareVideoCodec)
 [ ![Download](https://api.bintray.com/packages/lmylr/maven/hardwarevideocodec/images/download.svg) ](https://bintray.com/lmylr/maven/hardwarevideocodec/_latestVersion)
 
 HWVC is an efficient video encoding library for Android. Supports `software` and `hardware` encode.
